@@ -1,0 +1,16 @@
+# Cursor Rules for InterviewProof
+
+## 🎯 Project Context
+**App:** InterviewProof  
+**Stack:** Next.js, Supabase, Stripe  
+**Stage:** MVP Development  
+**User Level:** C
+
+## 📋 Directives
+1. Read `AGENTS.md` first
+2. Reference `agent_docs/`
+3. Plan before coding
+4. Incremental changes only
+5. Fix failures before proceeding
+6. No linting role
+7. Ask one clarifying question if blocked
