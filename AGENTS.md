@@ -4,7 +4,7 @@
 **App:** InterviewProof
 **Goal:** Help job candidates understand exactly what will cause rejection in a specific interview so they can fix the highest-impact gaps quickly.
 **Stack:** Next.js 16, Supabase (Postgres + pgvector + Auth + Storage), TypeScript, Stripe, OpenAI/Anthropic LLM, OpenAI Embeddings
-**Current Phase:** Phase 2 - Core Features
+**Current Phase:** Phase 3 - Frontend UI
 
 ## 🛠 Commands
 ```bash
@@ -21,17 +21,21 @@ npm run test         # Run tests (TBD)
 ## 📁 Project Structure
 ```
 src/
-├── app/              # Next.js App Router pages
-├── components/       # React UI components
+├── app/
+│   ├── api/report/   # API routes (create, analyze, [id], unlock, rerun)
+│   └── ...           # Pages (TBD)
+├── components/       # React UI components (TBD)
 ├── lib/
-│   └── supabase/     # Supabase clients (client, server, middleware)
+│   ├── supabase/     # Supabase clients (client, server, middleware)
+│   └── openai.ts     # OpenAI client + model constants
 ├── server/
-│   ├── scoring/      # Deterministic scoring engine
-│   └── rag/          # Extraction, retrieval, LLM analysis
+│   ├── scoring/      # Deterministic scoring engine (v0.1)
+│   ├── rag/          # Extraction, retrieval, LLM analysis
+│   └── pipeline.ts   # Full analysis pipeline orchestrator
 └── types/            # TypeScript interfaces
 
 supabase/
-├── migrations/       # SQL schema migrations
+├── migrations/       # SQL schema migrations (001, 002)
 └── seed.sql          # Initial rubric + question data
 ```
 
@@ -79,8 +83,8 @@ supabase/
 
 ## 🔄 Current State
 **Last Updated:** January 14, 2026
-**Working On:** Phase 2 - Core Backend
-**Recently Completed:** Phase 1 - Foundation (Next.js, Supabase setup, DB schema, pre-commit hooks)
+**Working On:** Phase 3 - Frontend UI
+**Recently Completed:** Phase 2 - Core Backend (extraction, RAG, analysis, API routes)
 **Blocked By:** None
 
 ## 🚀 Roadmap
@@ -92,13 +96,19 @@ supabase/
 - [x] Create database schema (001_initial_schema.sql)
 - [x] Create seed data (rubric chunks, question archetypes)
 
-### Phase 2: Core Backend (In Progress)
-- [ ] Implement extraction pipeline (resume + JD parsing)
-- [ ] Implement RAG pipeline (embed, retrieve, analyze)
-- [ ] Connect scoring engine to LLM output
-- [ ] Build API routes (create, analyze, unlock, rerun)
+### Phase 2: Core Backend ✅
+- [x] Implement extraction pipeline (resume + JD parsing with LLM)
+- [x] Implement RAG pipeline (embeddings + vector search)
+- [x] Implement LLM analysis with strict JSON output
+- [x] Connect scoring engine to LLM output
+- [x] Build API routes:
+  - `POST /api/report/create` - Create report
+  - `POST /api/report/analyze` - Run analysis pipeline
+  - `GET /api/report/[id]` - Get report (gated)
+  - `POST /api/report/unlock` - Spend credit
+  - `POST /api/report/rerun` - Re-analyze (paid only)
 
-### Phase 3: Frontend UI
+### Phase 3: Frontend UI (Next)
 - [ ] Landing page
 - [ ] Upload page (resume + JD + round selection)
 - [ ] Results page (score + top 3 risks + paywall)
@@ -110,9 +120,9 @@ supabase/
 - [ ] Credits ledger logic
 
 ### Phase 5: Polish
-- [ ] Rerun + delta tracking
 - [ ] PDF export
 - [ ] Account page
+- [ ] Mobile QA
 
 ## 🔧 Key Architecture Decisions
 - **Scoring:** Deterministic weights in `src/server/scoring/engine.ts` (v0.1)
