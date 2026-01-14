@@ -67,7 +67,7 @@
 8. Paid: unlock full 10–15 risks + question set + study plan + PDF + rerun + delta
 
 ### Mermaid diagram
-```mermaid
+mermaid
 graph TB
   U[User] --> W[Next.js Web App]
   W --> A[API Layer - Next.js Route Handlers]
@@ -79,7 +79,7 @@ graph TB
   A --> P[Stripe Payments/Credits]
   A --> PDF[PDF Generator]
   S --> W
-4) Data Model (Postgres / Supabase)
+Data Model (Postgres / Supabase)
 Tables
 users (managed by Supabase Auth)
 Use Supabase Auth default tables; do not build custom auth in MVP.
@@ -181,7 +181,7 @@ tags (jsonb)
 
 embedding (vector)
 
-5) RAG + Deterministic Scoring Design
+RAG + Deterministic Scoring Design
 Why this is “vertical AI” (not wrapper)
 A vertical tool is not “vector DB = vertical”. Verticality comes from:
 
@@ -305,7 +305,7 @@ Why it matters for this round
 
 This is where trust comes from.
 
-6) API Design (Next.js Route Handlers)
+API Design (Next.js Route Handlers)
 Auth
 Use Supabase Auth:
 
@@ -375,7 +375,7 @@ Faster to ship, worse automation
 
 Not recommended if you want clean metrics
 
-7) Frontend Architecture (Next.js)
+Frontend Architecture (Next.js)
 App routes (suggested)
 / Landing
 
@@ -393,25 +393,25 @@ Component structure
 css
 Copy code
 src/
-  app/
-    new/
-    r/[reportId]/
-    account/
-  components/
-    UploadDropzone.tsx
-    RoundSelector.tsx
-    ScoreCard.tsx
-    RiskList.tsx
-    PaywallCTA.tsx
-    DeltaView.tsx
-  lib/
-    supabaseClient.ts
-    api.ts
-    gating.ts
-  server/
-    scoring/
-    rag/
-    pdf/
+app/
+new/
+r/[reportId]/
+account/
+components/
+UploadDropzone.tsx
+RoundSelector.tsx
+ScoreCard.tsx
+RiskList.tsx
+PaywallCTA.tsx
+DeltaView.tsx
+lib/
+supabaseClient.ts
+api.ts
+gating.ts
+server/
+scoring/
+rag/
+pdf/
 UX rules
 The product must feel “serious diagnostic”:
 
@@ -425,7 +425,7 @@ Free output must feel incomplete (score + top 3 only)
 
 Paid unlock must feel like “resolution”: full risks + questions + plan + PDF + rerun
 
-8) PDF Export
+PDF Export
 Primary recommendation
 React PDF generator server-side:
 
@@ -445,7 +445,7 @@ On-demand generation is simplest (no storage cost)
 
 Cached PDF in storage is faster for repeat downloads
 
-9) Determinism & Reproducibility Strategy
+Determinism & Reproducibility Strategy
 Deterministic scoring
 All math/weights in code
 
@@ -477,7 +477,7 @@ rubric_version
 
 Store in runs to confirm reproducibility and for debugging.
 
-10) Security & Privacy
+Security & Privacy
 Data handling
 Store resumes in Supabase Storage with private bucket
 
@@ -499,7 +499,7 @@ File size limit on resume upload
 
 Virus scanning optional (post-MVP)
 
-11) Observability & Analytics (MVP)
+Observability & Analytics (MVP)
 What to track (minimum)
 Upload started → upload completed
 
@@ -520,7 +520,7 @@ PostHog (easy) or simple DB events table
 
 Sentry for errors (especially JSON parse failures, webhook failures)
 
-12) Development Workflow (for 2-week MVP)
+Development Workflow (for 2-week MVP)
 AI coding setup
 You said you use Claude Code CLI in VS Code.
 Recommended split:
@@ -551,7 +551,7 @@ Lint + typecheck
 
 One smoke E2E test for main flow (upload → analyze → paywall)
 
-13) Implementation Plan (Two Weeks, 5–10 hours/week)
+Implementation Plan (Two Weeks, 5–10 hours/week)
 Week 1 — End-to-end “shockingly real” demo
 Next.js skeleton + UI screens
 
@@ -584,7 +584,7 @@ Mobile QA + polish
 
 Milestone: Paid loop works end-to-end.
 
-14) Cost Breakdown (MVP)
+Cost Breakdown (MVP)
 MVP (0–200 users)
 Vercel: $0
 
@@ -611,7 +611,7 @@ Cache embeddings for identical inputs
 
 Keep rubric library curated and versioned
 
-15) Key Trade-offs (Honest)
+Key Trade-offs (Honest)
 Trade-off 1: Speed vs “perfect rubric”
 MVP rubric must be good enough to feel legitimate
 
@@ -626,7 +626,7 @@ Trade-off 3: PDF quality vs engineering time
 Perfect PDF layout takes time
 Decision: generate a clean, minimal PDF from structured JSON; improve later.
 
-16) Definition of Technical Success (MVP)
+Definition of Technical Success (MVP)
 You have a successful MVP when:
 
 Free: score + top 3 risks reliably generated
@@ -639,3 +639,153 @@ Outputs feel diagnostic (evidence mapping), not generic AI advice
 
 No silent failures; errors are visible and recoverable
 
+CI/CD
+
+CI/CD goals
+
+Every PR runs lint, typecheck, unit tests, and build
+
+main branch deploys automatically to production
+
+Preview deployments for PRs to review UI quickly
+
+Recommended approach: GitHub Actions + Vercel
+
+Git workflow
+
+main
+
+feature/* branches
+
+PR required to merge to main
+
+GitHub Actions (CI)
+Create .github/workflows/ci.yml
+
+yaml
+Copy code
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+Deployment (CD)
+
+Connect GitHub repo to Vercel
+
+PRs auto-generate preview deployments
+
+Merge to main triggers production deployment
+
+Environment variables (Vercel)
+
+NEXT_PUBLIC_SUPABASE_URL
+
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+SUPABASE_SERVICE_ROLE_KEY
+
+STRIPE_SECRET_KEY
+
+STRIPE_WEBHOOK_SECRET
+
+LLM_API_KEY
+
+EMBEDDINGS_API_KEY
+
+Testing
+
+Testing goals
+
+Deterministic scoring stays deterministic
+
+Credit accounting never drifts
+
+Paid gating is correct (free vs paid outputs)
+
+Main user journey works end-to-end
+
+Unit tests (highest priority)
+
+scoring engine:
+
+same inputs -> same score
+
+weight changes only via version bump
+
+risk band thresholds (0–39, 40–69, 70–100)
+
+credits ledger:
+
+balance computation is correct
+
+spending blocks if balance < 1
+
+unlock spends exactly 1 credit
+
+gating:
+
+free returns top 3
+
+paid returns 10–15
+
+rerun allowed only once
+
+Integration tests
+
+report pipeline:
+
+report/create -> creates report + placeholder run
+
+report/analyze -> creates run with required fields
+
+Stripe:
+
+webhook purchase -> credits_ledger purchase entry
+
+unlock -> credits_ledger spend entry + report paid_unlocked=true
+
+rerun:
+
+paid + run_index < 1 -> allowed
+
+otherwise -> denied
+
+E2E tests (Playwright)
+One critical flow (smoke):
+
+upload resume + paste JD + choose round
+
+analyze -> score + top 3 risks visible
+
+click unlock -> purchase (or mocked unlock) -> full diagnostic visible
+
+download PDF works (paid only)
+
+rerun -> delta view shows changes vs prior run
+
+Visual verification loop (for UI changes)
+
+Generate UI with AI
+
+Render locally
+
+Inspect desktop + mobile
+
+Fix regressions before merge
