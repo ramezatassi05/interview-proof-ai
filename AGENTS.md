@@ -4,7 +4,7 @@
 **App:** InterviewProof
 **Goal:** Help job candidates understand exactly what will cause rejection in a specific interview so they can fix the highest-impact gaps quickly.
 **Stack:** Next.js 16, Supabase (Postgres + pgvector + Auth + Storage), TypeScript, Stripe, OpenAI/Anthropic LLM, OpenAI Embeddings
-**Current Phase:** Phase 3 - Frontend UI
+**Current Phase:** MVP Complete
 
 ## 🛠 Commands
 ```bash
@@ -23,11 +23,22 @@ npm run test         # Run tests (TBD)
 src/
 ├── app/
 │   ├── api/report/   # API routes (create, analyze, [id], unlock, rerun)
-│   └── ...           # Pages (TBD)
-├── components/       # React UI components (TBD)
+│   ├── auth/         # Auth pages (login, callback)
+│   ├── new/          # Upload page
+│   ├── r/[id]/       # Results + full diagnostic pages
+│   └── page.tsx      # Landing page
+├── components/
+│   ├── ui/           # Button, Card, Input, Textarea, Badge, Spinner
+│   ├── layout/       # Header, Footer, Container
+│   ├── upload/       # RoundSelector, AnalysisProgress
+│   ├── results/      # ScoreCard, RiskList, RiskItem, PaywallCTA
+│   └── diagnostic/   # InterviewQuestions, StudyPlan, ScoreBreakdown, DeltaView
+├── hooks/
+│   └── useAuth.tsx   # Auth context and hook
 ├── lib/
 │   ├── supabase/     # Supabase clients (client, server, middleware)
-│   └── openai.ts     # OpenAI client + model constants
+│   ├── openai.ts     # OpenAI client + model constants
+│   └── api.ts        # API client for frontend
 ├── server/
 │   ├── scoring/      # Deterministic scoring engine (v0.1)
 │   ├── rag/          # Extraction, retrieval, LLM analysis
@@ -83,8 +94,8 @@ supabase/
 
 ## 🔄 Current State
 **Last Updated:** January 14, 2026
-**Working On:** Phase 3 - Frontend UI
-**Recently Completed:** Phase 2 - Core Backend (extraction, RAG, analysis, API routes)
+**Working On:** MVP Complete - Ready for testing
+**Recently Completed:** Phase 5 - Polish (PDF export, account page, mobile responsive)
 **Blocked By:** None
 
 ## 🚀 Roadmap
@@ -108,21 +119,27 @@ supabase/
   - `POST /api/report/unlock` - Spend credit
   - `POST /api/report/rerun` - Re-analyze (paid only)
 
-### Phase 3: Frontend UI (Next)
-- [ ] Landing page
-- [ ] Upload page (resume + JD + round selection)
-- [ ] Results page (score + top 3 risks + paywall)
-- [ ] Full diagnostic page (gated)
+### Phase 3: Frontend UI ✅
+- [x] Landing page
+- [x] Upload page (resume + JD + round selection)
+- [x] Results page (score + top 3 risks + paywall)
+- [x] Full diagnostic page (gated)
+- [x] Auth pages (login, callback)
+- [x] UI components (Button, Card, Input, Textarea, Badge, Spinner)
+- [x] Layout components (Header, Footer, Container)
+- [x] API client (lib/api.ts)
 
-### Phase 4: Payments
-- [ ] Stripe Checkout integration
-- [ ] Webhook handler
-- [ ] Credits ledger logic
+### Phase 4: Payments ✅
+- [x] Stripe Checkout integration (POST /api/checkout)
+- [x] Webhook handler (POST /api/webhook/stripe)
+- [x] Credits ledger logic (purchase + spend in webhook)
+- [x] PaywallCTA redirects to Stripe checkout
 
-### Phase 5: Polish
-- [ ] PDF export
-- [ ] Account page
-- [ ] Mobile QA
+### Phase 5: Polish ✅
+- [x] PDF export (GET /api/report/[id]/pdf)
+- [x] Account page (/account) with credits + report history
+- [x] Mobile responsive header and layouts
+- [x] Download PDF button on full diagnostic page
 
 ## 🔧 Key Architecture Decisions
 - **Scoring:** Deterministic weights in `src/server/scoring/engine.ts` (v0.1)
