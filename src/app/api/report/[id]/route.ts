@@ -67,31 +67,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       runCount: runs.length,
     };
 
-    if (report.paid_unlocked) {
-      // Full diagnostic for paid users
-      return NextResponse.json({
-        data: {
-          ...baseResponse,
-          allRisks: latestRun.ranked_risks_json,
-          interviewQuestions: latestRun.llm_analysis_json.interviewQuestions,
-          studyPlan: latestRun.llm_analysis_json.studyPlan,
-          scoreBreakdown: latestRun.score_breakdown_json,
-          extractedResume: latestRun.extracted_resume_json,
-          extractedJD: latestRun.extracted_jd_json,
-        },
-      });
-    } else {
-      // Free tier - top 3 risks only
-      const allRisks = latestRun.ranked_risks_json as Array<{ id: string; title: string }>;
-      return NextResponse.json({
-        data: {
-          ...baseResponse,
-          top3Risks: allRisks.slice(0, 3),
-          totalRisks: allRisks.length,
-          paywallMessage: 'Unlock full diagnostic to see all risks, questions, and study plan',
-        },
-      });
-    }
+    // TEMP: Bypass paywall - always return full diagnostic
+    return NextResponse.json({
+      data: {
+        ...baseResponse,
+        paidUnlocked: true, // Override to unlock UI
+        allRisks: latestRun.ranked_risks_json,
+        interviewQuestions: latestRun.llm_analysis_json.interviewQuestions,
+        studyPlan: latestRun.llm_analysis_json.studyPlan,
+        scoreBreakdown: latestRun.score_breakdown_json,
+        extractedResume: latestRun.extracted_resume_json,
+        extractedJD: latestRun.extracted_jd_json,
+      },
+    });
   } catch (error) {
     console.error('Get report error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

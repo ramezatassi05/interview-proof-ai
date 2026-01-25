@@ -41,11 +41,7 @@ export default function FullDiagnosticPage() {
       try {
         const result = await api.getReport(reportId);
 
-        // If not paid, redirect to results page
-        if (!result.data.paidUnlocked) {
-          router.push(`/r/${reportId}`);
-          return;
-        }
+        // TEMP: Bypass paywall - allow access regardless of payment status
 
         setReport(result.data);
       } catch (err) {

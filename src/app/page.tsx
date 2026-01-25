@@ -59,7 +59,8 @@ const STEPS = [
   {
     number: '1',
     title: 'Upload Your Materials',
-    description: "Paste your resume and the job description for the role you're targeting.",
+    description:
+      "Upload your resume PDF and paste the job description for the role you're targeting.",
   },
   {
     number: '2',

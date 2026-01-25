@@ -11,6 +11,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
+import { PdfUpload } from '@/components/ui/PdfUpload';
 import { Button } from '@/components/ui/Button';
 import { RoundSelector } from '@/components/upload/RoundSelector';
 import { AnalysisProgress } from '@/components/upload/AnalysisProgress';
@@ -43,7 +44,7 @@ export default function NewReportPage() {
     const newErrors: FormErrors = {};
 
     if (resumeText.trim().length < 50) {
-      newErrors.resumeText = 'Resume must be at least 50 characters';
+      newErrors.resumeText = 'Please upload a resume PDF';
     }
 
     if (jobDescriptionText.trim().length < 50) {
@@ -125,8 +126,8 @@ export default function NewReportPage() {
                   New Interview Diagnostic
                 </h1>
                 <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-                  Paste your resume and job description to get a readiness score and rejection
-                  risks.
+                  Upload your resume and paste the job description to get a readiness score and
+                  rejection risks.
                 </p>
               </div>
 
@@ -134,15 +135,11 @@ export default function NewReportPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Resume</CardTitle>
-                    <CardDescription>Paste your full resume text below</CardDescription>
+                    <CardDescription>Upload your resume as a PDF</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Textarea
-                      value={resumeText}
-                      onChange={(e) => setResumeText(e.target.value)}
-                      placeholder="Paste your resume text here..."
-                      rows={10}
-                      showCount
+                    <PdfUpload
+                      onTextExtracted={setResumeText}
                       error={errors.resumeText}
                       disabled={isLoading}
                     />
