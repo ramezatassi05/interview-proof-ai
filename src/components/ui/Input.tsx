@@ -17,7 +17,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]"
           >
             {label}
           </label>
@@ -26,20 +26,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={`
-            w-full rounded-lg border bg-white px-3 py-2 text-sm text-zinc-900
-            placeholder:text-zinc-400
-            focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-1
-            disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-500
-            dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500
-            ${error ? 'border-red-500 focus:ring-red-500' : 'border-zinc-300 dark:border-zinc-700'}
+            w-full rounded-xl border bg-[var(--bg-elevated)] px-4 py-3 text-sm text-[var(--text-primary)]
+            placeholder:text-[var(--text-muted)]
+            focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)]
+            disabled:cursor-not-allowed disabled:opacity-50
+            ${error ? 'border-[var(--color-danger)] focus:ring-[var(--color-danger)]' : 'border-[var(--border-default)]'}
             ${className}
           `}
           {...props}
         />
-        {hint && !error && (
-          <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400">{hint}</p>
-        )}
-        {error && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>}
+        {hint && !error && <p className="mt-1.5 text-xs text-[var(--text-muted)]">{hint}</p>}
+        {error && <p className="mt-1.5 text-xs text-[var(--color-danger)]">{error}</p>}
       </div>
     );
   }

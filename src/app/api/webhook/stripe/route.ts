@@ -43,9 +43,16 @@ export async function POST(request: Request) {
     const userId = session.metadata?.user_id;
     const reportId = session.metadata?.report_id;
     const credits = parseInt(session.metadata?.credits || '1', 10);
+    const purchaseType = session.metadata?.type; // 'credit_bundle' or undefined (legacy)
 
-    if (!userId || !reportId) {
-      console.error('Missing metadata in checkout session:', session.id);
+    if (!userId) {
+      console.error('Missing user_id in checkout session:', session.id);
+      return NextResponse.json({ error: 'Missing required metadata' }, { status: 400 });
+    }
+
+    // For legacy flow, reportId is required
+    if (!purchaseType && !reportId) {
+      console.error('Missing report_id in legacy checkout session:', session.id);
       return NextResponse.json({ error: 'Missing required metadata' }, { status: 400 });
     }
 
@@ -82,6 +89,17 @@ export async function POST(request: Request) {
         throw purchaseError;
       }
 
+      // For credit bundle purchases, we're done - no report to unlock
+      if (purchaseType === 'credit_bundle') {
+        console.log('Successfully processed credit bundle purchase:', {
+          userId,
+          credits,
+          eventId: event.id,
+        });
+        return NextResponse.json({ received: true });
+      }
+
+      // Legacy flow: also spend credit and unlock the report
       // 2. Spend credit for the report
       const { data: spendLedger, error: spendError } = await supabase
         .from('credits_ledger')

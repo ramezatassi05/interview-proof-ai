@@ -117,23 +117,33 @@ export function PdfUpload({ onTextExtracted, error, disabled }: PdfUploadProps) 
       />
 
       {fileName ? (
-        <div className="flex items-center justify-between rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">
-          <div className="flex items-center gap-3">
-            <svg className="h-8 w-8 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2 5 5h-5V4zM8.5 13h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1zm0 2h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1zm0 2h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1 0-1z" />
-            </svg>
+        <div className="flex items-center justify-between rounded-xl border border-[var(--color-success)]/30 bg-[var(--color-success-muted)] px-4 py-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--color-success)]/20">
+              <svg
+                className="h-6 w-6 text-[var(--color-success)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
             <div>
-              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{fileName}</p>
-              <p className="text-xs text-green-600 dark:text-green-400">
-                Resume uploaded successfully
-              </p>
+              <p className="text-sm font-medium text-[var(--text-primary)]">{fileName}</p>
+              <p className="text-xs text-[var(--color-success)]">Resume uploaded successfully</p>
             </div>
           </div>
           <button
             type="button"
             onClick={handleRemove}
             disabled={disabled || isUploading}
-            className="rounded p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-700 dark:hover:text-zinc-300"
+            className="rounded-lg p-2 text-[var(--text-muted)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -152,61 +162,65 @@ export function PdfUpload({ onTextExtracted, error, disabled }: PdfUploadProps) 
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           className={`
-            flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-10 transition-colors
-            ${isDragging ? 'border-zinc-500 bg-zinc-100 dark:bg-zinc-800' : 'border-zinc-300 dark:border-zinc-700'}
-            ${disabled || isUploading ? 'cursor-not-allowed opacity-50' : 'hover:border-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'}
-            ${displayError ? 'border-red-500' : ''}
+            flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-12 transition-all
+            ${isDragging ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10' : 'border-[var(--border-default)]'}
+            ${disabled || isUploading ? 'cursor-not-allowed opacity-50' : 'hover:border-[var(--accent-primary)] hover:bg-[var(--bg-elevated)]'}
+            ${displayError ? 'border-[var(--color-danger)]' : ''}
           `}
         >
           {isUploading ? (
             <>
-              <svg className="h-10 w-10 animate-spin text-zinc-400" fill="none" viewBox="0 0 24 24">
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                />
-              </svg>
-              <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">Processing PDF...</p>
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent-primary)]/20">
+                <svg
+                  className="h-8 w-8 animate-spin text-[var(--accent-primary)]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  />
+                </svg>
+              </div>
+              <p className="mt-4 text-sm text-[var(--text-secondary)]">Processing PDF...</p>
             </>
           ) : (
             <>
-              <svg
-                className="h-10 w-10 text-zinc-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                />
-              </svg>
-              <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                  Click to upload
-                </span>{' '}
-                or drag and drop
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent-primary)]/20">
+                <svg
+                  className="h-7 w-7 text-[var(--accent-primary)]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+              </div>
+              <p className="mt-4 text-sm text-[var(--text-secondary)]">
+                <span className="font-semibold text-[var(--text-primary)]">Click to upload</span> or
+                drag and drop
               </p>
-              <p className="mt-1 text-xs text-zinc-500">PDF up to 5MB</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">PDF up to 5MB</p>
             </>
           )}
         </div>
       )}
 
-      {displayError && (
-        <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{displayError}</p>
-      )}
+      {displayError && <p className="mt-2 text-xs text-[var(--color-danger)]">{displayError}</p>}
     </div>
   );
 }

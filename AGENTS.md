@@ -4,7 +4,7 @@
 **App:** InterviewProof
 **Goal:** Help job candidates understand exactly what will cause rejection in a specific interview so they can fix the highest-impact gaps quickly.
 **Stack:** Next.js 16, Supabase (Postgres + pgvector + Auth + Storage), TypeScript, Stripe, OpenAI/Anthropic LLM, OpenAI Embeddings
-**Current Phase:** MVP Complete
+**Current Phase:** Post-MVP (Phase 7)
 
 ## 🛠 Commands
 ```bash
@@ -28,8 +28,8 @@ src/
 │   ├── r/[id]/       # Results + full diagnostic pages
 │   └── page.tsx      # Landing page
 ├── components/
-│   ├── ui/           # Button, Card, Input, Textarea, Badge, Spinner, ProgressBar, Collapsible, ThemeToggle, Tabs
-│   ├── layout/       # Header, Footer, Container
+│   ├── ui/           # Button, Card, Input, Textarea, Badge, Spinner, ProgressBar, Collapsible, ThemeToggle, Tabs, RadialScoreIndicator
+│   ├── layout/       # Header, Footer, Container, AppLayout, Sidebar, IntelligencePanel
 │   ├── upload/       # RoundSelector, AnalysisProgress
 │   ├── results/      # ScoreCard, RiskList, RiskItem, PaywallCTA, ExecutiveSummary, StrengthsAndRisks
 │   └── diagnostic/   # InterviewQuestions, StudyPlan, ScoreBreakdown, DeltaView
@@ -95,8 +95,8 @@ supabase/
 
 ## 🔄 Current State
 **Last Updated:** January 25, 2026
-**Working On:** Post-MVP UI enhancements
-**Recently Completed:** Phase 6 - UI Enhancement (report redesign, light mode)
+**Working On:** Phase 7b - Diagnostic Intelligence Enhancements
+**Recently Completed:** Phase 7a (UI Architecture) + Phase 7e (Terminology)
 **Blocked By:** None
 
 ## 🚀 Roadmap
@@ -158,16 +158,16 @@ supabase/
 
 ### Phase 7: Career Intelligence Engine (Post-MVP)
 
-#### Phase 7a: UI Architecture Overhaul
-- [ ] Three-layer layout (left sidebar, center panel, right sticky panel)
-- [ ] Left sidebar navigation:
+#### Phase 7a: UI Architecture Overhaul ✅
+- [x] Three-layer layout (left sidebar, center panel, right sticky panel)
+- [x] Left sidebar navigation:
   - Dashboard
   - Diagnostics
   - Risk Simulation
   - Study Intelligence
   - Progress History
   - Credits Wallet
-- [ ] Context-aware right panel (updates based on active tab)
+- [x] Context-aware right panel (updates based on active tab)
 
 #### Phase 7b: Diagnostic Intelligence Enhancements
 - [ ] Interview Archetype Profile (classify candidates)
@@ -187,11 +187,11 @@ supabase/
 - [ ] Credit spending options
 - [ ] Earning mechanics (uploads, completions, referrals)
 
-#### Phase 7e: Language & Positioning Upgrade
-- [ ] Rename: Score Breakdown → Signal Strength Analysis
-- [ ] Rename: Risks → Recruiter Red Flags
-- [ ] Rename: Study Plan → Execution Roadmap
-- [ ] Rename: Pass Probability → Interview Conversion Likelihood
+#### Phase 7e: Language & Positioning Upgrade ✅
+- [x] Rename: Score Breakdown → Signal Strength Analysis
+- [x] Rename: Risks → Recruiter Red Flags
+- [x] Rename: Study Plan → Execution Roadmap
+- [x] Rename: Pass Probability → Interview Conversion Likelihood
 
 ## 🔧 Key Architecture Decisions
 - **Scoring:** Deterministic weights in `src/server/scoring/engine.ts` (v0.1)

@@ -68,52 +68,56 @@ export function AnalysisProgress({ isAnalyzing }: AnalysisProgressProps) {
 
   return (
     <div className="space-y-6">
-      <div className="relative h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+      {/* Progress bar */}
+      <div className="relative h-3 overflow-hidden rounded-full bg-[var(--track-bg)]">
         <div
-          className="absolute left-0 top-0 h-full bg-zinc-900 transition-all duration-300 dark:bg-white"
+          className="absolute left-0 top-0 h-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
 
+      {/* Steps */}
       <div className="space-y-3">
         {ANALYSIS_STEPS.map((step, i) => (
           <div
             key={step.key}
             className={`flex items-center gap-3 ${
               i < currentStep
-                ? 'text-zinc-400 dark:text-zinc-500'
+                ? 'text-[var(--color-success)]'
                 : i === currentStep
-                  ? 'text-zinc-900 dark:text-zinc-100'
-                  : 'text-zinc-300 dark:text-zinc-600'
+                  ? 'text-[var(--text-primary)]'
+                  : 'text-[var(--text-muted)]'
             }`}
           >
-            <div className="flex h-5 w-5 items-center justify-center">
+            <div className="flex h-6 w-6 items-center justify-center">
               {i < currentStep ? (
-                <svg
-                  className="h-4 w-4 text-green-600 dark:text-green-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-success)]">
+                  <svg
+                    className="h-3 w-3 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
               ) : i === currentStep ? (
                 <Spinner size="sm" />
               ) : (
                 <div className="h-2 w-2 rounded-full bg-current" />
               )}
             </div>
-            <span className="text-sm">{step.label}</span>
+            <span className="text-sm font-medium">{step.label}</span>
           </div>
         ))}
       </div>
 
-      <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="text-center text-sm text-[var(--text-muted)]">
         This usually takes 30-60 seconds
       </p>
     </div>

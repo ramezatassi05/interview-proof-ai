@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useCredits } from '@/hooks/useCredits';
 import { Container } from '@/components/layout/Container';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -11,6 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge, riskBandToVariant } from '@/components/ui/Badge';
 import { LoadingOverlay } from '@/components/ui/Spinner';
+import { CREDITS_PER_REPORT } from '@/lib/stripe';
 import type { RiskBand, RoundType } from '@/types';
 
 interface ReportSummary {
@@ -31,6 +33,7 @@ interface AccountData {
 export default function AccountPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { balance, openPurchaseModal, refreshBalance } = useCredits();
   const [data, setData] = useState<AccountData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +58,8 @@ export default function AccountPage() {
         }
         const result = await res.json();
         setData(result.data);
+        // Sync credits balance with the provider
+        refreshBalance();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -63,7 +68,7 @@ export default function AccountPage() {
     };
 
     fetchAccount();
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, refreshBalance]);
 
   if (authLoading || loading) {
     return (
@@ -122,21 +127,30 @@ export default function AccountPage() {
 
             {/* Credits Card */}
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Credits</CardTitle>
+                <Button variant="accent" size="sm" onClick={openPurchaseModal}>
+                  Buy Credits
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">
-                    {data.creditBalance}
+                    {balance}
                   </span>
                   <span className="text-zinc-500 dark:text-zinc-400">
-                    credit{data.creditBalance !== 1 ? 's' : ''} remaining
+                    credit{balance !== 1 ? 's' : ''} remaining
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                  Each credit unlocks one full diagnostic report.
+                  {CREDITS_PER_REPORT} credits unlock one full diagnostic report.
                 </p>
+                {balance > 0 && (
+                  <p className="mt-1 text-sm text-[var(--accent-primary)]">
+                    You can unlock {Math.floor(balance / CREDITS_PER_REPORT)} report
+                    {Math.floor(balance / CREDITS_PER_REPORT) !== 1 ? 's' : ''}.
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>

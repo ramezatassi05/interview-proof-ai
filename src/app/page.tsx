@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
+import { RadialScoreIndicator } from '@/components/ui/RadialScoreIndicator';
 
 const VALUE_PROPS = [
   {
@@ -80,48 +81,64 @@ export default function LandingPage() {
   const ctaHref = user ? '/new' : '/auth/login?redirect=/new';
 
   return (
-    <div className="flex min-h-screen flex-col bg-white dark:bg-zinc-950">
+    <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
       <Header />
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
-          <Container className="py-24 text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl md:text-6xl">
-              Know What Will <span className="text-red-600 dark:text-red-500">Sink You</span>
+        <section className="relative overflow-hidden border-b border-[var(--border-default)]">
+          {/* Background gradient effects */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[var(--accent-primary)]/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[var(--accent-secondary)]/10 rounded-full blur-3xl" />
+
+          <Container className="relative py-24 text-center">
+            {/* Animated preview radial */}
+            <div className="mb-8 flex justify-center">
+              <div className="relative">
+                <RadialScoreIndicator score={73} size="xl" variant="warning" animated />
+                <div className="absolute -top-2 -right-2 px-2 py-1 rounded-full bg-[var(--color-warning-muted)] border border-[var(--color-warning)]/30 text-xs font-medium text-[var(--color-warning)]">
+                  Preview
+                </div>
+              </div>
+            </div>
+
+            <h1 className="text-4xl font-bold tracking-tight text-[var(--text-primary)] sm:text-5xl md:text-6xl">
+              Know What Will <span className="text-[var(--color-danger)]">Sink You</span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
+            <p className="mx-auto mt-6 max-w-2xl text-lg text-[var(--text-secondary)]">
               Stop guessing why you fail interviews. Get a job-specific diagnostic that identifies
               your exact rejection risks and tells you what to fix first.
             </p>
             <div className="mt-10 flex justify-center gap-4">
               <Link href={ctaHref}>
-                <Button size="lg" disabled={loading}>
+                <Button variant="accent" size="lg" glow disabled={loading}>
                   Start Your Diagnostic
                 </Button>
               </Link>
             </div>
-            <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-4 text-sm text-[var(--text-muted)]">
               Free preview. Full diagnostic for $15.
             </p>
           </Container>
         </section>
 
         {/* Value Props */}
-        <section className="border-b border-zinc-200 dark:border-zinc-800">
+        <section className="border-b border-[var(--border-default)]">
           <Container className="py-20">
             <div className="grid gap-8 md:grid-cols-3">
               {VALUE_PROPS.map((prop) => (
-                <div key={prop.title} className="text-center">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">
+                <div
+                  key={prop.title}
+                  className="text-center rounded-xl p-6 bg-[var(--bg-card)] border border-[var(--border-default)] card-hover"
+                >
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white shadow-lg">
                     {prop.icon}
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h3 className="mt-6 text-lg font-semibold text-[var(--text-primary)]">
                     {prop.title}
                   </h3>
-                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    {prop.description}
-                  </p>
+                  <p className="mt-3 text-sm text-[var(--text-secondary)]">{prop.description}</p>
                 </div>
               ))}
             </div>
@@ -129,23 +146,27 @@ export default function LandingPage() {
         </section>
 
         {/* How It Works */}
-        <section className="border-b border-zinc-200 dark:border-zinc-800">
+        <section className="border-b border-[var(--border-default)]">
           <Container className="py-20">
-            <h2 className="text-center text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-center text-3xl font-bold text-[var(--text-primary)]">
               How It Works
             </h2>
             <div className="mt-12 grid gap-8 md:grid-cols-3">
-              {STEPS.map((step) => (
+              {STEPS.map((step, index) => (
                 <div key={step.number} className="relative">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 text-lg font-bold text-white dark:bg-white dark:text-zinc-900">
-                    {step.number}
+                  {/* Connector line */}
+                  {index < STEPS.length - 1 && (
+                    <div className="hidden md:block absolute top-5 left-[calc(50%+32px)] w-[calc(100%-64px)] h-0.5 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]" />
+                  )}
+                  <div className="flex flex-col items-center text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] text-lg font-bold text-white shadow-lg glow-accent">
+                      {step.number}
+                    </div>
+                    <h3 className="mt-6 text-lg font-semibold text-[var(--text-primary)]">
+                      {step.title}
+                    </h3>
+                    <p className="mt-3 text-sm text-[var(--text-secondary)]">{step.description}</p>
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                    {step.title}
-                  </h3>
-                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    {step.description}
-                  </p>
                 </div>
               ))}
             </div>
@@ -153,16 +174,21 @@ export default function LandingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="bg-zinc-900 dark:bg-zinc-800">
-          <Container className="py-20 text-center">
-            <h2 className="text-3xl font-bold text-white">Ready to Find Your Gaps?</h2>
-            <p className="mx-auto mt-4 max-w-xl text-zinc-400">
+        <section className="relative overflow-hidden bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-elevated)]">
+          <div className="absolute inset-0 bg-[var(--accent-primary)]/5" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--accent-primary)]/10 rounded-full blur-3xl" />
+
+          <Container className="relative py-20 text-center">
+            <h2 className="text-3xl font-bold text-[var(--text-primary)]">
+              Ready to Find Your Gaps?
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-[var(--text-secondary)]">
               Don&apos;t walk into your next interview unprepared. Get a clear, evidence-based
               diagnostic in minutes.
             </p>
             <div className="mt-8">
               <Link href={ctaHref}>
-                <Button size="lg" variant="secondary" disabled={loading}>
+                <Button variant="accent" size="lg" glow disabled={loading}>
                   Start Your Diagnostic
                 </Button>
               </Link>

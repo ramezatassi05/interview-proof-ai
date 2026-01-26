@@ -14,7 +14,7 @@ const sizeStyles: Record<SpinnerSize, string> = {
 export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
   return (
     <svg
-      className={`animate-spin text-zinc-600 dark:text-zinc-400 ${sizeStyles[size]} ${className}`}
+      className={`animate-spin text-[var(--accent-primary)] ${sizeStyles[size]} ${className}`}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -37,7 +37,7 @@ export function LoadingOverlay({ message = 'Loading...' }: LoadingOverlayProps) 
   return (
     <div className="flex min-h-[200px] flex-col items-center justify-center gap-3">
       <Spinner size="lg" />
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">{message}</p>
+      <p className="text-sm text-[var(--text-secondary)]">{message}</p>
     </div>
   );
 }

@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useCredits } from '@/hooks/useCredits';
+import { CreditsBalance } from '@/components/ui/CreditsBalance';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -85,25 +87,11 @@ const navItems = [
     href: '#',
     disabled: true,
   },
-  {
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-        />
-      </svg>
-    ),
-    label: 'Credits Wallet',
-    href: '/account',
-    disabled: false,
-  },
 ];
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { balance, loading: creditsLoading, openPurchaseModal } = useCredits();
 
   const isActive = (item: (typeof navItems)[0]) => {
     if (item.matchPattern) {
@@ -206,7 +194,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* Bottom section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[var(--border-default)]">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[var(--border-default)] space-y-3">
+          {/* Credits Balance */}
+          {!creditsLoading && (
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">
+                Credits
+              </span>
+              <CreditsBalance balance={balance} size="sm" onClick={openPurchaseModal} />
+            </div>
+          )}
+
           <Link
             href="/new"
             className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white font-medium text-sm hover:opacity-90 transition-opacity"

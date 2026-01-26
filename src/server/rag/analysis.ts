@@ -103,7 +103,8 @@ Analyze the candidate's interview readiness and return a JSON object with:
    Reference rubric IDs and JD requirements that support this risk.
 
 3. **interviewQuestions** (6-10 questions):
-   Likely questions based on gaps, mapped to risk IDs.
+   Generate technical and job-relevant questions only, based on skill gaps and experience gaps identified. Each question should relate to the candidate's ability to perform the job role.
+   IMPORTANT: Do NOT include any questions about citizenship, nationality, immigration status, age, religion, marital status, family planning, disability, or any other protected characteristics. These are illegal to ask in interviews and not relevant to technical assessment.
 
 4. **studyPlan** (5-8 items):
    Concrete prep tasks with time estimates, mapped to risk IDs.

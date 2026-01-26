@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
+import { CREDITS_PER_REPORT } from '@/lib/stripe';
 
 const UnlockReportSchema = z.object({
   reportId: z.string().uuid(),
@@ -69,25 +70,25 @@ export async function POST(request: NextRequest) {
 
     const currentBalance = balanceResult as number;
 
-    if (currentBalance < 1) {
+    if (currentBalance < CREDITS_PER_REPORT) {
       return NextResponse.json(
         {
           error: 'Insufficient credits',
           currentBalance,
-          requiredCredits: 1,
+          requiredCredits: CREDITS_PER_REPORT,
           message: 'Purchase credits to unlock the full diagnostic',
         },
         { status: 402 }
       );
     }
 
-    // Spend 1 credit (insert negative ledger entry)
+    // Spend credits (insert negative ledger entry)
     const { data: ledgerEntry, error: ledgerError } = await supabase
       .from('credits_ledger')
       .insert({
         user_id: user.id,
         type: 'spend',
-        amount: -1,
+        amount: -CREDITS_PER_REPORT,
       })
       .select('id')
       .single();
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
       data: {
         reportId,
         unlocked: true,
-        creditsRemaining: currentBalance - 1,
+        creditsRemaining: currentBalance - CREDITS_PER_REPORT,
         message: 'Report unlocked successfully. Full diagnostic now available.',
       },
     });

@@ -66,7 +66,7 @@ export default function ResultsPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex min-h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
+      <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
         <Header />
         <main className="flex flex-1 items-center justify-center">
           <LoadingOverlay message="Loading your results..." />
@@ -78,13 +78,13 @@ export default function ResultsPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
+      <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
         <Header />
         <main className="flex flex-1 items-center justify-center">
           <Container size="sm">
-            <div className="rounded-lg border border-red-200 bg-red-50 p-8 text-center dark:border-red-800 dark:bg-red-900/20">
-              <h2 className="text-lg font-semibold text-red-800 dark:text-red-400">Error</h2>
-              <p className="mt-2 text-red-600 dark:text-red-400">{error}</p>
+            <div className="rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] p-8 text-center">
+              <h2 className="text-lg font-semibold text-[var(--color-danger)]">Error</h2>
+              <p className="mt-2 text-[var(--text-secondary)]">{error}</p>
               <Button variant="secondary" onClick={() => router.push('/new')} className="mt-4">
                 Start New Analysis
               </Button>
@@ -98,15 +98,15 @@ export default function ResultsPage() {
 
   if (!report || !report.analyzed) {
     return (
-      <div className="flex min-h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
+      <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
         <Header />
         <main className="flex flex-1 items-center justify-center">
           <Container size="sm">
-            <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-8 text-center">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 Analysis Not Complete
               </h2>
-              <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+              <p className="mt-2 text-[var(--text-secondary)]">
                 This report hasn&apos;t been analyzed yet.
               </p>
               <Button variant="secondary" onClick={() => router.push('/new')} className="mt-4">
@@ -121,16 +121,16 @@ export default function ResultsPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
       <Header />
 
       <main className="flex-1 py-12">
         <Container size="md">
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">
               Your Interview Diagnostic
             </h1>
-            <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 text-[var(--text-secondary)]">
               {report.roundType.charAt(0).toUpperCase() + report.roundType.slice(1)} interview
               analysis
             </p>
@@ -144,18 +144,23 @@ export default function ResultsPage() {
               totalRisks={report.totalRisks}
             />
 
-            {/* Top 3 Risks */}
-            {report.top3Risks && report.top3Risks.length > 0 && (
-              <RiskList
-                risks={report.top3Risks}
-                title="Top 3 Rejection Risks"
-                showEvidence={false}
-              />
-            )}
+            {/* Two Column Layout for larger screens */}
+            <div className="grid gap-8 lg:grid-cols-2">
+              {/* Top 3 Risks */}
+              {report.top3Risks && report.top3Risks.length > 0 && (
+                <div className="lg:col-span-2">
+                  <RiskList
+                    risks={report.top3Risks}
+                    title="Top 3 Rejection Risks"
+                    showEvidence={false}
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Paywall */}
             {!report.paidUnlocked && report.totalRisks && (
-              <PaywallCTA reportId={reportId} totalRisks={report.totalRisks} />
+              <PaywallCTA reportId={reportId} totalRisks={report.totalRisks - 3} />
             )}
           </div>
         </Container>

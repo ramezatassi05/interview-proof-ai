@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { useCredits } from '@/hooks/useCredits';
 import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { CreditsBalance } from '@/components/ui/CreditsBalance';
 import { Container } from './Container';
 
 interface HeaderProps {
@@ -13,6 +15,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
   const { user, loading, signOut } = useAuth();
+  const { balance, loading: creditsLoading, openPurchaseModal } = useCredits();
 
   return (
     <header className="border-b border-[var(--border-default)] bg-[var(--bg-secondary)]">
@@ -63,6 +66,9 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
               <div className="h-9 w-20 animate-pulse rounded-lg bg-[var(--bg-elevated)]" />
             ) : user ? (
               <div className="flex items-center gap-4">
+                {!creditsLoading && (
+                  <CreditsBalance balance={balance} size="sm" onClick={openPurchaseModal} />
+                )}
                 <Link href="/new">
                   <Button variant="accent" size="sm">
                     New Analysis
@@ -70,13 +76,13 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
                 </Link>
                 <Link
                   href="/account"
-                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors hidden sm:block"
                 >
                   Account
                 </Link>
                 <button
                   onClick={() => signOut()}
-                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors hidden sm:block"
                 >
                   Sign Out
                 </button>

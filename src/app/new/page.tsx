@@ -23,6 +23,12 @@ interface FormErrors {
   submit?: string;
 }
 
+const STEPS = [
+  { number: 1, label: 'Resume' },
+  { number: 2, label: 'Job Description' },
+  { number: 3, label: 'Interview Type' },
+];
+
 export default function NewReportPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -101,14 +107,24 @@ export default function NewReportPage() {
 
   const isLoading = isSubmitting || isAnalyzing;
 
+  // Calculate current step for progress
+  const getCurrentStep = () => {
+    if (resumeText.length < 50) return 1;
+    if (jobDescriptionText.length < 50) return 2;
+    if (!roundType) return 3;
+    return 4; // All complete
+  };
+
+  const currentStep = getCurrentStep();
+
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
       <Header />
 
       <main className="flex-1 py-12">
         <Container size="md">
           {isAnalyzing ? (
-            <Card className="mx-auto max-w-lg">
+            <Card variant="glass" className="mx-auto max-w-lg">
               <CardHeader>
                 <CardTitle>Analyzing Your Readiness</CardTitle>
                 <CardDescription>
@@ -121,14 +137,71 @@ export default function NewReportPage() {
             </Card>
           ) : (
             <form onSubmit={handleSubmit}>
+              {/* Header */}
               <div className="mb-8">
-                <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                <h1 className="text-2xl font-bold text-[var(--text-primary)]">
                   New Interview Diagnostic
                 </h1>
-                <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+                <p className="mt-2 text-[var(--text-secondary)]">
                   Upload your resume and paste the job description to get a readiness score and
                   rejection risks.
                 </p>
+              </div>
+
+              {/* Progress Stepper */}
+              <div className="mb-8 flex items-center justify-between">
+                {STEPS.map((step, index) => (
+                  <div key={step.number} className="flex items-center">
+                    <div
+                      className={`
+                        flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-all
+                        ${
+                          currentStep > step.number
+                            ? 'bg-[var(--color-success)] text-white'
+                            : currentStep === step.number
+                              ? 'bg-[var(--accent-primary)] text-white glow-accent'
+                              : 'bg-[var(--bg-elevated)] text-[var(--text-muted)]'
+                        }
+                      `}
+                    >
+                      {currentStep > step.number ? (
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      ) : (
+                        step.number
+                      )}
+                    </div>
+                    <span
+                      className={`ml-2 text-sm font-medium ${
+                        currentStep >= step.number
+                          ? 'text-[var(--text-primary)]'
+                          : 'text-[var(--text-muted)]'
+                      }`}
+                    >
+                      {step.label}
+                    </span>
+                    {index < STEPS.length - 1 && (
+                      <div
+                        className={`mx-4 h-0.5 w-12 sm:w-20 rounded ${
+                          currentStep > step.number
+                            ? 'bg-[var(--color-success)]'
+                            : 'bg-[var(--border-default)]'
+                        }`}
+                      />
+                    )}
+                  </div>
+                ))}
               </div>
 
               <div className="space-y-6">
@@ -183,13 +256,13 @@ export default function NewReportPage() {
                 </Card>
 
                 {errors.submit && (
-                  <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-                    <p className="text-sm text-red-800 dark:text-red-400">{errors.submit}</p>
+                  <div className="rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] p-4">
+                    <p className="text-sm text-[var(--color-danger)]">{errors.submit}</p>
                   </div>
                 )}
 
                 <div className="flex justify-end">
-                  <Button type="submit" size="lg" loading={isLoading}>
+                  <Button variant="accent" type="submit" size="lg" loading={isLoading} glow>
                     Analyze My Readiness
                   </Button>
                 </div>
