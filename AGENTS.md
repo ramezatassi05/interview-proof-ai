@@ -28,13 +28,14 @@ src/
 │   ├── r/[id]/       # Results + full diagnostic pages
 │   └── page.tsx      # Landing page
 ├── components/
-│   ├── ui/           # Button, Card, Input, Textarea, Badge, Spinner
+│   ├── ui/           # Button, Card, Input, Textarea, Badge, Spinner, ProgressBar, Collapsible, ThemeToggle, Tabs
 │   ├── layout/       # Header, Footer, Container
 │   ├── upload/       # RoundSelector, AnalysisProgress
-│   ├── results/      # ScoreCard, RiskList, RiskItem, PaywallCTA
+│   ├── results/      # ScoreCard, RiskList, RiskItem, PaywallCTA, ExecutiveSummary, StrengthsAndRisks
 │   └── diagnostic/   # InterviewQuestions, StudyPlan, ScoreBreakdown, DeltaView
 ├── hooks/
-│   └── useAuth.tsx   # Auth context and hook
+│   ├── useAuth.tsx   # Auth context and hook
+│   └── useTheme.tsx  # Theme context (dark/light mode)
 ├── lib/
 │   ├── supabase/     # Supabase clients (client, server, middleware)
 │   ├── openai.ts     # OpenAI client + model constants
@@ -93,9 +94,9 @@ supabase/
 - docs/TechDesign-InterviewProof-MVP.md
 
 ## 🔄 Current State
-**Last Updated:** January 14, 2026
-**Working On:** MVP Complete - Ready for testing
-**Recently Completed:** Phase 5 - Polish (PDF export, account page, mobile responsive)
+**Last Updated:** January 25, 2026
+**Working On:** Post-MVP UI enhancements
+**Recently Completed:** Phase 6 - UI Enhancement (report redesign, light mode)
 **Blocked By:** None
 
 ## 🚀 Roadmap
@@ -141,12 +142,66 @@ supabase/
 - [x] Mobile responsive header and layouts
 - [x] Download PDF button on full diagnostic page
 
+### Phase 6: UI Enhancement ✅
+- [x] Report UI redesign with IdeaProof-inspired patterns
+  - [x] Horizontal progress bars for score breakdown (replaces radial)
+  - [x] Two-column Strengths & Risks layout (green/red tinted cards)
+  - [x] Highlight summary box in Executive Summary (amber gradient)
+  - [x] Numbered suggestions in Study Plan (colored circles by priority)
+  - [x] Expandable/collapsible sections with chevron toggles
+- [x] Light mode support
+  - [x] ThemeProvider with localStorage persistence
+  - [x] System preference detection (prefers-color-scheme)
+  - [x] Theme toggle button in header
+  - [x] Complete light color palette
+  - [x] Smooth theme transitions
+
+### Phase 7: Career Intelligence Engine (Post-MVP)
+
+#### Phase 7a: UI Architecture Overhaul
+- [ ] Three-layer layout (left sidebar, center panel, right sticky panel)
+- [ ] Left sidebar navigation:
+  - Dashboard
+  - Diagnostics
+  - Risk Simulation
+  - Study Intelligence
+  - Progress History
+  - Credits Wallet
+- [ ] Context-aware right panel (updates based on active tab)
+
+#### Phase 7b: Diagnostic Intelligence Enhancements
+- [ ] Interview Archetype Profile (classify candidates)
+- [ ] Interview Round Forecast (pass probability by round)
+- [ ] Cognitive Risk Map (spider chart)
+- [ ] Career Trajectory Projection
+- [ ] Recruiter Red Flag Simulation
+
+#### Phase 7c: Practice Intelligence Features
+- [ ] Practice Sync Intelligence (LeetCode stats, mock counts)
+- [ ] Precision Practice Prescriptions
+- [ ] Pressure Handling Index (0-100)
+- [ ] Consistency & Momentum Score
+
+#### Phase 7d: ProofCredits System
+- [ ] Credits wallet UI
+- [ ] Credit spending options
+- [ ] Earning mechanics (uploads, completions, referrals)
+
+#### Phase 7e: Language & Positioning Upgrade
+- [ ] Rename: Score Breakdown → Signal Strength Analysis
+- [ ] Rename: Risks → Recruiter Red Flags
+- [ ] Rename: Study Plan → Execution Roadmap
+- [ ] Rename: Pass Probability → Interview Conversion Likelihood
+
 ## 🔧 Key Architecture Decisions
 - **Scoring:** Deterministic weights in `src/server/scoring/engine.ts` (v0.1)
 - **LLM:** Returns strict JSON only; scoring authority is code, not LLM
 - **Database:** pgvector for semantic search on rubrics/questions
 - **Auth:** Supabase Auth with magic link
 - **RLS:** Users can only access their own data
+- **Theming:** CSS variables with class-based switching (.light/.dark on html element)
+  - Uses `useSyncExternalStore` to avoid React hydration issues
+  - Persists to localStorage, respects system preference on first visit
 
 ## ⚠️ What NOT To Do
 - Do NOT delete files without confirmation

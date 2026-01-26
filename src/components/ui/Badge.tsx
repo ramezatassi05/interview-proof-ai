@@ -1,28 +1,36 @@
 import { ReactNode } from 'react';
 import type { RiskBand } from '@/types';
 
-type BadgeVariant = 'default' | 'high' | 'medium' | 'low' | 'critical';
+type BadgeVariant = 'default' | 'high' | 'medium' | 'low' | 'critical' | 'success' | 'accent';
 
 interface BadgeProps {
   children: ReactNode;
   variant?: BadgeVariant;
   className?: string;
+  glow?: boolean;
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  default: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
-  high: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-  medium: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-  low: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  critical: 'bg-red-600 text-white dark:bg-red-700',
+  default:
+    'bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-default)]',
+  high: 'bg-[var(--color-danger-muted)] text-[var(--color-danger)] border border-[var(--color-danger)]/30',
+  medium:
+    'bg-[var(--color-warning-muted)] text-[var(--color-warning)] border border-[var(--color-warning)]/30',
+  low: 'bg-[var(--color-success-muted)] text-[var(--color-success)] border border-[var(--color-success)]/30',
+  critical: 'bg-[var(--color-danger)] text-white',
+  success:
+    'bg-[var(--color-success-muted)] text-[var(--color-success)] border border-[var(--color-success)]/30',
+  accent:
+    'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] border border-[var(--accent-primary)]/30',
 };
 
-export function Badge({ children, variant = 'default', className = '' }: BadgeProps) {
+export function Badge({ children, variant = 'default', className = '', glow = false }: BadgeProps) {
   return (
     <span
       className={`
         inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
         ${variantStyles[variant]}
+        ${glow ? 'shadow-[0_0_10px_rgba(99,102,241,0.3)]' : ''}
         ${className}
       `}
     >

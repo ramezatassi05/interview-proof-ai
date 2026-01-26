@@ -1,9 +1,14 @@
 import { ReactNode } from 'react';
 
+type CardVariant = 'default' | 'elevated' | 'bordered' | 'glass';
+
 interface CardProps {
   children: ReactNode;
   className?: string;
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  variant?: CardVariant;
+  hover?: boolean;
+  glow?: boolean;
 }
 
 const paddingStyles = {
@@ -13,13 +18,29 @@ const paddingStyles = {
   lg: 'p-8',
 };
 
-export function Card({ children, className = '', padding = 'md' }: CardProps) {
+const variantStyles: Record<CardVariant, string> = {
+  default: 'bg-[var(--bg-card)] border border-[var(--border-default)]',
+  elevated: 'bg-[var(--bg-elevated)] border border-[var(--border-default)] shadow-lg',
+  bordered: 'bg-[var(--bg-card)] border-2 border-[var(--border-accent)]',
+  glass: 'glass',
+};
+
+export function Card({
+  children,
+  className = '',
+  padding = 'md',
+  variant = 'default',
+  hover = false,
+  glow = false,
+}: CardProps) {
   return (
     <div
       className={`
-        rounded-xl border border-zinc-200 bg-white shadow-sm
-        dark:border-zinc-800 dark:bg-zinc-900
+        rounded-xl
+        ${variantStyles[variant]}
         ${paddingStyles[padding]}
+        ${hover ? 'card-hover cursor-pointer' : ''}
+        ${glow ? 'glow-accent' : ''}
         ${className}
       `}
     >
@@ -44,9 +65,7 @@ interface CardTitleProps {
 
 export function CardTitle({ children, className = '' }: CardTitleProps) {
   return (
-    <h3 className={`text-lg font-semibold text-zinc-900 dark:text-zinc-100 ${className}`}>
-      {children}
-    </h3>
+    <h3 className={`text-lg font-semibold text-[var(--text-primary)] ${className}`}>{children}</h3>
   );
 }
 
@@ -56,7 +75,7 @@ interface CardDescriptionProps {
 }
 
 export function CardDescription({ children, className = '' }: CardDescriptionProps) {
-  return <p className={`mt-1 text-sm text-zinc-600 dark:text-zinc-400 ${className}`}>{children}</p>;
+  return <p className={`mt-1 text-sm text-[var(--text-secondary)] ${className}`}>{children}</p>;
 }
 
 interface CardContentProps {

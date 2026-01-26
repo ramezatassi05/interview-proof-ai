@@ -2,21 +2,24 @@
 
 import { forwardRef, ButtonHTMLAttributes } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'accent' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
+  glow?: boolean;
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary:
-    'bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100',
+  primary: 'bg-[var(--text-primary)] text-[var(--bg-primary)] hover:opacity-90',
   secondary:
-    'border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700',
-  ghost: 'text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800',
+    'border border-[var(--border-default)] bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:bg-[var(--bg-card)] hover:border-[var(--border-accent)]',
+  ghost:
+    'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]',
+  accent: 'btn-premium text-white hover:opacity-90',
+  danger: 'bg-[var(--color-danger)] text-white hover:opacity-90',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -31,6 +34,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       variant = 'primary',
       size = 'md',
       loading = false,
+      glow = false,
       disabled,
       className = '',
       children,
@@ -46,11 +50,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={isDisabled}
         className={`
           inline-flex items-center justify-center gap-2 rounded-lg font-medium
-          transition-colors focus-visible:outline-none focus-visible:ring-2
-          focus-visible:ring-zinc-500 focus-visible:ring-offset-2
+          transition-all duration-200 focus-visible:outline-none focus-visible:ring-2
+          focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2
+          focus-visible:ring-offset-[var(--bg-primary)]
           disabled:cursor-not-allowed disabled:opacity-50
           ${variantStyles[variant]}
           ${sizeStyles[size]}
+          ${glow && variant === 'accent' ? 'pulse-glow' : ''}
           ${className}
         `}
         {...props}
