@@ -1,4 +1,10 @@
-import type { LLMAnalysis, ScoreBreakdown, RiskBand } from '@/types';
+import type { LLMAnalysis, ScoreBreakdown, RiskBand, RecruiterSimulation } from '@/types';
+
+// Re-export all scoring functions from submodules
+export { classifyArchetype } from './archetype';
+export { computeRoundForecasts } from './forecast';
+export { computeCognitiveRiskMap } from './cognitive';
+export { computeTrajectoryProjection } from './trajectory';
 
 const SCORING_VERSION = 'v0.1';
 
@@ -66,4 +72,75 @@ export function computeRiskBand(score: number): RiskBand {
  */
 export function getScoringVersion(): string {
   return SCORING_VERSION;
+}
+
+/**
+ * Builds recruiter simulation from LLM-provided recruiter signals.
+ * This is a pass-through with added deterministic processing.
+ */
+export function buildRecruiterSimulation(recruiterSignals: {
+  immediateRedFlags: string[];
+  hiddenStrengths: string[];
+  estimatedScreenTimeSeconds: number;
+  firstImpression: 'proceed' | 'maybe' | 'reject';
+}): RecruiterSimulation {
+  // Generate recruiter notes based on signals
+  const notes = generateRecruiterNotes(recruiterSignals);
+
+  return {
+    immediateRedFlags: recruiterSignals.immediateRedFlags,
+    hiddenStrengths: recruiterSignals.hiddenStrengths,
+    estimatedScreenTimeSeconds: recruiterSignals.estimatedScreenTimeSeconds,
+    firstImpression: recruiterSignals.firstImpression,
+    recruiterNotes: notes,
+    version: SCORING_VERSION,
+  };
+}
+
+/**
+ * Generates recruiter notes based on the simulation signals.
+ */
+function generateRecruiterNotes(signals: {
+  immediateRedFlags: string[];
+  hiddenStrengths: string[];
+  estimatedScreenTimeSeconds: number;
+  firstImpression: 'proceed' | 'maybe' | 'reject';
+}): string {
+  const { immediateRedFlags, hiddenStrengths, estimatedScreenTimeSeconds, firstImpression } =
+    signals;
+
+  const parts: string[] = [];
+
+  // Screen time assessment
+  if (estimatedScreenTimeSeconds < 30) {
+    parts.push('Very quick scan - resume may not stand out.');
+  } else if (estimatedScreenTimeSeconds < 60) {
+    parts.push('Standard review time.');
+  } else {
+    parts.push('Extended review - something caught attention.');
+  }
+
+  // Red flag summary
+  if (immediateRedFlags.length === 0) {
+    parts.push('No immediate concerns.');
+  } else if (immediateRedFlags.length <= 2) {
+    parts.push('Minor concerns to address.');
+  } else {
+    parts.push('Multiple red flags may cause hesitation.');
+  }
+
+  // Hidden strengths
+  if (hiddenStrengths.length >= 3) {
+    parts.push('Hidden strengths could differentiate in interview.');
+  }
+
+  // First impression context
+  const impressionMap = {
+    proceed: 'Likely to advance to phone screen.',
+    maybe: 'On the fence - may depend on candidate pool.',
+    reject: 'Risk of being filtered out early.',
+  };
+  parts.push(impressionMap[firstImpression]);
+
+  return parts.join(' ');
 }

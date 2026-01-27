@@ -1,4 +1,13 @@
-import type { ExtractedResume, ExtractedJD, RoundType, LLMAnalysis, RiskBand } from '@/types';
+import type {
+  ExtractedResume,
+  ExtractedJD,
+  RoundType,
+  LLMAnalysis,
+  RiskBand,
+  DiagnosticIntelligence,
+  PrepPreferences,
+  PersonalizedStudyPlan,
+} from '@/types';
 import { extractResumeData, extractJDData } from './rag/extraction';
 import {
   retrieveContext,
@@ -6,12 +15,22 @@ import {
   summarizeJDForRetrieval,
 } from './rag/retrieval';
 import { performAnalysis } from './rag/analysis';
-import { computeReadinessScore, computeRiskBand } from './scoring/engine';
+import {
+  computeReadinessScore,
+  computeRiskBand,
+  classifyArchetype,
+  computeRoundForecasts,
+  computeCognitiveRiskMap,
+  computeTrajectoryProjection,
+  buildRecruiterSimulation,
+} from './scoring/engine';
+import { generatePersonalizedStudyPlan } from './scoring/studyplan';
 
 export interface PipelineInput {
   resumeText: string;
   jobDescriptionText: string;
   roundType: RoundType;
+  prepPreferences?: PrepPreferences;
 }
 
 export interface PipelineOutput {
@@ -22,6 +41,8 @@ export interface PipelineOutput {
   readinessScore: number;
   riskBand: RiskBand;
   scoreBreakdown: ReturnType<typeof computeReadinessScore>['breakdown'];
+  diagnosticIntelligence: DiagnosticIntelligence;
+  personalizedStudyPlan?: PersonalizedStudyPlan;
 }
 
 /**
@@ -32,7 +53,7 @@ export interface PipelineOutput {
  * 4. Compute deterministic score
  */
 export async function runAnalysisPipeline(input: PipelineInput): Promise<PipelineOutput> {
-  const { resumeText, jobDescriptionText, roundType } = input;
+  const { resumeText, jobDescriptionText, roundType, prepPreferences } = input;
 
   // Step 1: Extract structured data (parallel)
   const [extractedResume, extractedJD] = await Promise.all([
@@ -52,14 +73,33 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
   const retrievalResult = await retrieveContext(resumeSummary, jdSummary, roundType);
 
   // Step 4: Perform LLM analysis
-  const llmAnalysis = await performAnalysis(extractedResume, extractedJD, roundType, {
-    rubricChunks: retrievalResult.rubricChunks,
-    questionArchetypes: retrievalResult.questionArchetypes,
-  });
+  const llmAnalysis = await performAnalysis(
+    extractedResume,
+    extractedJD,
+    roundType,
+    {
+      rubricChunks: retrievalResult.rubricChunks,
+      questionArchetypes: retrievalResult.questionArchetypes,
+    },
+    prepPreferences
+  );
 
   // Step 5: Compute deterministic score
   const { score, breakdown } = computeReadinessScore(llmAnalysis);
   const riskBand = computeRiskBand(score);
+
+  // Step 6: Compute diagnostic intelligence (Phase 7b)
+  const diagnosticIntelligence = computeDiagnosticIntelligence(llmAnalysis, score, prepPreferences);
+
+  // Step 7: Generate personalized study plan if preferences provided
+  const personalizedStudyPlan = prepPreferences
+    ? generatePersonalizedStudyPlan(
+        llmAnalysis.studyPlan,
+        prepPreferences,
+        llmAnalysis.rankedRisks,
+        roundType
+      )
+    : undefined;
 
   return {
     extractedResume,
@@ -69,7 +109,93 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     readinessScore: score,
     riskBand,
     scoreBreakdown: breakdown,
+    diagnosticIntelligence,
+    personalizedStudyPlan,
   };
+}
+
+/**
+ * Computes all diagnostic intelligence features from LLM analysis.
+ * All computations are deterministic - same inputs always produce same outputs.
+ */
+function computeDiagnosticIntelligence(
+  llmAnalysis: LLMAnalysis,
+  score: number,
+  prepPreferences?: PrepPreferences
+): DiagnosticIntelligence {
+  // Compute archetype profile
+  const archetypeProfile = classifyArchetype(llmAnalysis);
+
+  // Compute round forecasts
+  const roundForecasts = computeRoundForecasts(llmAnalysis);
+
+  // Compute cognitive risk map
+  const cognitiveRiskMap = computeCognitiveRiskMap(llmAnalysis);
+
+  // Compute trajectory projection (use user's timeline if available)
+  const trajectoryProjection = computeTrajectoryProjection(score, llmAnalysis, prepPreferences);
+
+  // Build recruiter simulation (uses LLM signals if available, otherwise defaults)
+  const recruiterSimulation = llmAnalysis.recruiterSignals
+    ? buildRecruiterSimulation(llmAnalysis.recruiterSignals)
+    : buildDefaultRecruiterSimulation(llmAnalysis, score);
+
+  return {
+    archetypeProfile,
+    roundForecasts,
+    cognitiveRiskMap,
+    trajectoryProjection,
+    recruiterSimulation,
+    generatedAt: new Date().toISOString(),
+    version: 'v0.1',
+  };
+}
+
+/**
+ * Builds a default recruiter simulation when LLM signals are not available.
+ * Used for backwards compatibility with older analyses.
+ */
+function buildDefaultRecruiterSimulation(
+  llmAnalysis: LLMAnalysis,
+  score: number
+): DiagnosticIntelligence['recruiterSimulation'] {
+  // Extract top risks as red flags
+  const immediateRedFlags = llmAnalysis.rankedRisks
+    .filter((r) => r.severity === 'critical' || r.severity === 'high')
+    .slice(0, 4)
+    .map((r) => r.title);
+
+  // Infer hidden strengths from high category scores
+  const hiddenStrengths: string[] = [];
+  if (llmAnalysis.categoryScores.hardMatch >= 0.7) {
+    hiddenStrengths.push('Strong technical skills alignment');
+  }
+  if (llmAnalysis.categoryScores.evidenceDepth >= 0.7) {
+    hiddenStrengths.push('Well-documented impact and achievements');
+  }
+  if (llmAnalysis.categoryScores.clarity >= 0.7) {
+    hiddenStrengths.push('Clear and professional communication');
+  }
+
+  // Estimate screen time based on clarity score
+  const estimatedScreenTimeSeconds = Math.round(30 + llmAnalysis.categoryScores.clarity * 60);
+
+  // Determine first impression based on overall score
+  let firstImpression: 'proceed' | 'maybe' | 'reject';
+  if (score >= 70) {
+    firstImpression = 'proceed';
+  } else if (score >= 45) {
+    firstImpression = 'maybe';
+  } else {
+    firstImpression = 'reject';
+  }
+
+  return buildRecruiterSimulation({
+    immediateRedFlags,
+    hiddenStrengths,
+    estimatedScreenTimeSeconds,
+    firstImpression,
+  });
 }
 
 /**

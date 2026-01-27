@@ -1,7 +1,21 @@
 import { z } from 'zod';
 import { getOpenAIClient, MODELS } from '@/lib/openai';
-import type { ExtractedResume, ExtractedJD, RoundType, LLMAnalysis } from '@/types';
+import type {
+  ExtractedResume,
+  ExtractedJD,
+  RoundType,
+  LLMAnalysis,
+  PrepPreferences,
+} from '@/types';
 import type { RubricChunk, QuestionArchetype } from './retrieval';
+
+// Zod schema for recruiter signals (new in Phase 7b)
+const RecruiterSignalsSchema = z.object({
+  immediateRedFlags: z.array(z.string()),
+  hiddenStrengths: z.array(z.string()),
+  estimatedScreenTimeSeconds: z.number().min(5).max(300),
+  firstImpression: z.enum(['proceed', 'maybe', 'reject']),
+});
 
 // Zod schema for LLM analysis output validation
 const LLMAnalysisSchema = z.object({
@@ -35,13 +49,59 @@ const LLMAnalysisSchema = z.object({
       task: z.string(),
       timeEstimateMinutes: z.number(),
       mappedRiskId: z.string(),
+      // Enhanced fields (optional for backwards compatibility)
+      description: z.string().optional(),
+      priority: z.enum(['critical', 'high', 'medium']).optional(),
+      category: z.enum(['technical', 'behavioral', 'practice', 'review']).optional(),
     })
   ),
+  recruiterSignals: RecruiterSignalsSchema,
 });
 
 interface AnalysisContext {
   rubricChunks: RubricChunk[];
   questionArchetypes: QuestionArchetype[];
+}
+
+/**
+ * Maps timeline to days for calculations.
+ */
+function getTimelineDays(timeline: PrepPreferences['timeline']): number {
+  const mapping: Record<PrepPreferences['timeline'], number> = {
+    '1day': 1,
+    '3days': 3,
+    '1week': 7,
+    '2weeks': 14,
+    '4weeks_plus': 28,
+  };
+  return mapping[timeline];
+}
+
+/**
+ * Gets experience level label for display.
+ */
+function getExperienceLabel(level: PrepPreferences['experienceLevel']): string {
+  const mapping: Record<PrepPreferences['experienceLevel'], string> = {
+    entry: 'entry-level (0-2 years)',
+    mid: 'mid-level (2-5 years)',
+    senior: 'senior (5-10 years)',
+    staff_plus: 'staff+ (10+ years)',
+  };
+  return mapping[level];
+}
+
+/**
+ * Gets focus area labels for display.
+ */
+function getFocusAreaLabels(areas: PrepPreferences['focusAreas']): string[] {
+  const mapping: Record<string, string> = {
+    technical_depth: 'Technical Depth',
+    behavioral_stories: 'Behavioral Stories',
+    system_design: 'System Design',
+    communication: 'Communication',
+    domain_knowledge: 'Domain Knowledge',
+  };
+  return areas.map((a) => mapping[a] || a);
 }
 
 /**
@@ -51,7 +111,8 @@ function buildAnalysisPrompt(
   resumeData: ExtractedResume,
   jdData: ExtractedJD,
   roundType: RoundType,
-  context: AnalysisContext
+  context: AnalysisContext,
+  prepPreferences?: PrepPreferences
 ): string {
   const rubricText = context.rubricChunks.map((c) => `[${c.id}] ${c.chunkText}`).join('\n\n');
 
@@ -87,7 +148,24 @@ ${rubricText}
 
 ## Question Bank (Reference IDs for likely questions)
 ${questionText}
+${
+  prepPreferences
+    ? `
+## User Prep Context
+- Interview in: ${getTimelineDays(prepPreferences.timeline)} days
+- Daily prep time: ${prepPreferences.dailyHours} hours
+- Experience level: ${getExperienceLabel(prepPreferences.experienceLevel)}
+- Focus areas: ${getFocusAreaLabels(prepPreferences.focusAreas).join(', ')}
+${prepPreferences.additionalContext ? `- User notes: ${prepPreferences.additionalContext}` : ''}
 
+When generating the study plan:
+- Adjust task depth and complexity for ${getExperienceLabel(prepPreferences.experienceLevel)} candidates
+- Prioritize tasks that address: ${getFocusAreaLabels(prepPreferences.focusAreas).join(', ')}
+- Include description, category, and priority level for each task
+- Total time should fit within ${Math.round(getTimelineDays(prepPreferences.timeline) * prepPreferences.dailyHours * 60)} minutes
+`
+    : ''
+}
 ## Your Task
 Analyze the candidate's interview readiness and return a JSON object with:
 
@@ -106,8 +184,23 @@ Analyze the candidate's interview readiness and return a JSON object with:
    Generate technical and job-relevant questions only, based on skill gaps and experience gaps identified. Each question should relate to the candidate's ability to perform the job role.
    IMPORTANT: Do NOT include any questions about citizenship, nationality, immigration status, age, religion, marital status, family planning, disability, or any other protected characteristics. These are illegal to ask in interviews and not relevant to technical assessment.
 
-4. **studyPlan** (5-8 items):
-   Concrete prep tasks with time estimates, mapped to risk IDs.
+4. **studyPlan** (${prepPreferences ? '8-12' : '5-8'} items):
+   Concrete prep tasks with time estimates, mapped to risk IDs.${
+     prepPreferences
+       ? `
+   For each task, also include:
+   - description: A 1-2 sentence explanation of what to do and why
+   - priority: "critical" | "high" | "medium" based on impact
+   - category: "technical" | "behavioral" | "practice" | "review"`
+       : ''
+   }
+
+5. **recruiterSignals** (recruiter perspective simulation):
+   Simulate how a recruiter would perceive this candidate on first resume scan:
+   - immediateRedFlags: 2-5 things that would make a recruiter hesitate
+   - hiddenStrengths: 2-4 undervalued strengths a quick scan might miss
+   - estimatedScreenTimeSeconds: How long a recruiter would spend (15-120 typical)
+   - firstImpression: "proceed" (advance to screen), "maybe" (on fence), or "reject"
 
 Return ONLY valid JSON matching this exact structure:
 {
@@ -140,9 +233,22 @@ Return ONLY valid JSON matching this exact structure:
     {
       "task": "Specific prep task",
       "timeEstimateMinutes": 30,
-      "mappedRiskId": "risk-1"
+      "mappedRiskId": "risk-1"${
+        prepPreferences
+          ? `,
+      "description": "What to do and why this helps",
+      "priority": "critical|high|medium",
+      "category": "technical|behavioral|practice|review"`
+          : ''
+      }
     }
-  ]
+  ],
+  "recruiterSignals": {
+    "immediateRedFlags": ["Red flag that would make recruiter hesitate"],
+    "hiddenStrengths": ["Strength that quick scan might miss"],
+    "estimatedScreenTimeSeconds": 45,
+    "firstImpression": "proceed|maybe|reject"
+  }
 }`;
 }
 
@@ -158,10 +264,11 @@ export async function performAnalysis(
   jdData: ExtractedJD,
   roundType: RoundType,
   context: AnalysisContext,
+  prepPreferences?: PrepPreferences,
   retries = 2
 ): Promise<LLMAnalysis> {
   const openai = getOpenAIClient();
-  const prompt = buildAnalysisPrompt(resumeData, jdData, roundType, context);
+  const prompt = buildAnalysisPrompt(resumeData, jdData, roundType, context, prepPreferences);
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {

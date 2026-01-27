@@ -18,6 +18,11 @@ import { RiskList } from '@/components/results/RiskList';
 import { InterviewQuestions } from '@/components/diagnostic/InterviewQuestions';
 import { StudyPlan } from '@/components/diagnostic/StudyPlan';
 import { ScoreBreakdown } from '@/components/diagnostic/ScoreBreakdown';
+import { ArchetypeCard } from '@/components/diagnostic/ArchetypeCard';
+import { RoundForecast } from '@/components/diagnostic/RoundForecast';
+import { CognitiveRadar } from '@/components/diagnostic/CognitiveRadar';
+import { TrajectoryChart } from '@/components/diagnostic/TrajectoryChart';
+import { RecruiterView } from '@/components/diagnostic/RecruiterView';
 
 type ReportData = GetReportResponse['data'];
 
@@ -231,6 +236,87 @@ export default function FullDiagnosticPage() {
           >
             Execution Roadmap
           </TabTrigger>
+          <TabTrigger
+            id="archetype"
+            icon={
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            }
+          >
+            Profile
+          </TabTrigger>
+          <TabTrigger
+            id="forecast"
+            icon={
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5"
+                />
+              </svg>
+            }
+          >
+            Round Forecast
+          </TabTrigger>
+          <TabTrigger
+            id="cognitive"
+            icon={
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                />
+              </svg>
+            }
+          >
+            Cognitive Map
+          </TabTrigger>
+          <TabTrigger
+            id="trajectory"
+            icon={
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
+            }
+          >
+            Trajectory
+          </TabTrigger>
+          <TabTrigger
+            id="recruiter"
+            icon={
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+            }
+          >
+            Recruiter View
+          </TabTrigger>
         </TabList>
 
         <TabContent id="scores">
@@ -269,10 +355,63 @@ export default function FullDiagnosticPage() {
 
         <TabContent id="study">
           {report.studyPlan && report.studyPlan.length > 0 ? (
-            <StudyPlan tasks={report.studyPlan} />
+            <StudyPlan
+              tasks={report.studyPlan}
+              personalizedStudyPlan={report.personalizedStudyPlan}
+            />
           ) : (
             <div className="text-center py-12 text-[var(--text-secondary)]">
               No execution roadmap available
+            </div>
+          )}
+        </TabContent>
+
+        <TabContent id="archetype">
+          {report.diagnosticIntelligence?.archetypeProfile ? (
+            <ArchetypeCard profile={report.diagnosticIntelligence.archetypeProfile} />
+          ) : (
+            <div className="text-center py-12 text-[var(--text-secondary)]">
+              No archetype profile available
+            </div>
+          )}
+        </TabContent>
+
+        <TabContent id="forecast">
+          {report.diagnosticIntelligence?.roundForecasts ? (
+            <RoundForecast forecasts={report.diagnosticIntelligence.roundForecasts} />
+          ) : (
+            <div className="text-center py-12 text-[var(--text-secondary)]">
+              No round forecast available
+            </div>
+          )}
+        </TabContent>
+
+        <TabContent id="cognitive">
+          {report.diagnosticIntelligence?.cognitiveRiskMap ? (
+            <CognitiveRadar riskMap={report.diagnosticIntelligence.cognitiveRiskMap} />
+          ) : (
+            <div className="text-center py-12 text-[var(--text-secondary)]">
+              No cognitive risk map available
+            </div>
+          )}
+        </TabContent>
+
+        <TabContent id="trajectory">
+          {report.diagnosticIntelligence?.trajectoryProjection ? (
+            <TrajectoryChart projection={report.diagnosticIntelligence.trajectoryProjection} />
+          ) : (
+            <div className="text-center py-12 text-[var(--text-secondary)]">
+              No trajectory projection available
+            </div>
+          )}
+        </TabContent>
+
+        <TabContent id="recruiter">
+          {report.diagnosticIntelligence?.recruiterSimulation ? (
+            <RecruiterView simulation={report.diagnosticIntelligence.recruiterSimulation} />
+          ) : (
+            <div className="text-center py-12 text-[var(--text-secondary)]">
+              No recruiter simulation available
             </div>
           )}
         </TabContent>

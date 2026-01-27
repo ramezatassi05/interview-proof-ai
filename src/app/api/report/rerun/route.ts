@@ -104,6 +104,7 @@ export async function POST(request: NextRequest) {
       readiness_score: pipelineResult.readinessScore,
       risk_band: pipelineResult.riskBand,
       ranked_risks_json: pipelineResult.llmAnalysis.rankedRisks,
+      diagnostic_intelligence_json: pipelineResult.diagnosticIntelligence,
     });
 
     if (runError) {
@@ -123,6 +124,7 @@ export async function POST(request: NextRequest) {
         readinessScore: previousRun.readiness_score,
         riskBand: previousRun.risk_band as RiskBand,
         scoreBreakdown: previousRun.score_breakdown_json,
+        diagnosticIntelligence: previousRun.diagnostic_intelligence_json,
       };
 
       delta = computeDelta(previousPipelineOutput, pipelineResult);

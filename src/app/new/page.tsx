@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { api, APIRequestError } from '@/lib/api';
-import type { RoundType } from '@/types';
+import type { RoundType, PrepPreferences } from '@/types';
 
 import { Container } from '@/components/layout/Container';
 import { Header } from '@/components/layout/Header';
@@ -14,12 +14,14 @@ import { Textarea } from '@/components/ui/Textarea';
 import { PdfUpload } from '@/components/ui/PdfUpload';
 import { Button } from '@/components/ui/Button';
 import { RoundSelector } from '@/components/upload/RoundSelector';
+import { PrepPreferencesForm } from '@/components/upload/PrepPreferencesForm';
 import { AnalysisProgress } from '@/components/upload/AnalysisProgress';
 
 interface FormErrors {
   resumeText?: string;
   jobDescriptionText?: string;
   roundType?: string;
+  prepPreferences?: string;
   submit?: string;
 }
 
@@ -27,6 +29,7 @@ const STEPS = [
   { number: 1, label: 'Resume' },
   { number: 2, label: 'Job Description' },
   { number: 3, label: 'Interview Type' },
+  { number: 4, label: 'Study Plan' },
 ];
 
 export default function NewReportPage() {
@@ -36,6 +39,7 @@ export default function NewReportPage() {
   const [resumeText, setResumeText] = useState('');
   const [jobDescriptionText, setJobDescriptionText] = useState('');
   const [roundType, setRoundType] = useState<RoundType | null>(null);
+  const [prepPreferences, setPrepPreferences] = useState<PrepPreferences | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -61,6 +65,11 @@ export default function NewReportPage() {
       newErrors.roundType = 'Please select an interview round type';
     }
 
+    // prepPreferences is optional but if started, must have at least one focus area
+    if (prepPreferences && prepPreferences.focusAreas.length === 0) {
+      newErrors.prepPreferences = 'Please select at least one focus area';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -79,6 +88,7 @@ export default function NewReportPage() {
         resumeText: resumeText.trim(),
         jobDescriptionText: jobDescriptionText.trim(),
         roundType,
+        prepPreferences: prepPreferences || undefined,
       });
 
       const reportId = createResult.data.reportId;
@@ -112,7 +122,8 @@ export default function NewReportPage() {
     if (resumeText.length < 50) return 1;
     if (jobDescriptionText.length < 50) return 2;
     if (!roundType) return 3;
-    return 4; // All complete
+    if (!prepPreferences) return 4;
+    return 5; // All complete
   };
 
   const currentStep = getCurrentStep();
@@ -251,6 +262,23 @@ export default function NewReportPage() {
                       value={roundType}
                       onChange={setRoundType}
                       error={errors.roundType}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Personalized Study Plan</CardTitle>
+                    <CardDescription>
+                      Tell us about your timeline and preferences to get a tailored preparation
+                      roadmap
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <PrepPreferencesForm
+                      value={prepPreferences}
+                      onChange={setPrepPreferences}
+                      error={errors.prepPreferences}
                     />
                   </CardContent>
                 </Card>

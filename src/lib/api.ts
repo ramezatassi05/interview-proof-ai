@@ -1,4 +1,13 @@
-import type { RoundType, RiskItem, LLMAnalysis, ScoreBreakdown, DeltaComparison } from '@/types';
+import type {
+  RoundType,
+  RiskItem,
+  LLMAnalysis,
+  ScoreBreakdown,
+  DeltaComparison,
+  DiagnosticIntelligence,
+  PrepPreferences,
+  PersonalizedStudyPlan,
+} from '@/types';
 
 const API_BASE = '/api';
 
@@ -50,6 +59,11 @@ export interface GetReportResponse {
     interviewQuestions?: LLMAnalysis['interviewQuestions'];
     studyPlan?: LLMAnalysis['studyPlan'];
     scoreBreakdown?: ScoreBreakdown;
+    // Phase 7b: Diagnostic Intelligence
+    diagnosticIntelligence?: DiagnosticIntelligence;
+    // Personalized Study Plan
+    prepPreferences?: PrepPreferences;
+    personalizedStudyPlan?: PersonalizedStudyPlan;
   };
 }
 
@@ -108,6 +122,7 @@ class APIClient {
     resumeText: string;
     jobDescriptionText: string;
     roundType: RoundType;
+    prepPreferences?: PrepPreferences;
   }): Promise<CreateReportResponse> {
     return this.request<CreateReportResponse>('/report/create', {
       method: 'POST',

@@ -3,10 +3,30 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import type { RoundType } from '@/types';
 
+const PrepPreferencesSchema = z.object({
+  timeline: z.enum(['1day', '3days', '1week', '2weeks', '4weeks_plus']),
+  dailyHours: z.number().min(0.5).max(6),
+  experienceLevel: z.enum(['entry', 'mid', 'senior', 'staff_plus']),
+  focusAreas: z
+    .array(
+      z.enum([
+        'technical_depth',
+        'behavioral_stories',
+        'system_design',
+        'communication',
+        'domain_knowledge',
+      ])
+    )
+    .min(1)
+    .max(3),
+  additionalContext: z.string().optional(),
+});
+
 const CreateReportSchema = z.object({
   resumeText: z.string().min(50, 'Resume text too short'),
   jobDescriptionText: z.string().min(50, 'Job description too short'),
   roundType: z.enum(['technical', 'behavioral', 'case', 'finance']),
+  prepPreferences: PrepPreferencesSchema.optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -34,7 +54,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { resumeText, jobDescriptionText, roundType } = validation.data;
+    const { resumeText, jobDescriptionText, roundType, prepPreferences } = validation.data;
 
     // Create report
     const { data: report, error: insertError } = await supabase
@@ -45,6 +65,7 @@ export async function POST(request: NextRequest) {
         resume_text: resumeText,
         job_description_text: jobDescriptionText,
         paid_unlocked: false,
+        prep_preferences_json: prepPreferences || null,
       })
       .select('id, created_at')
       .single();

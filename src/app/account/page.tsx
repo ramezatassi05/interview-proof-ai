@@ -72,7 +72,7 @@ export default function AccountPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex min-h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
+      <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
         <Header />
         <main className="flex flex-1 items-center justify-center">
           <LoadingOverlay message="Loading account..." />
@@ -84,15 +84,13 @@ export default function AccountPage() {
 
   if (error || !data) {
     return (
-      <div className="flex min-h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
+      <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
         <Header />
         <main className="flex flex-1 items-center justify-center">
           <Container size="sm">
-            <div className="rounded-lg border border-red-200 bg-red-50 p-8 text-center dark:border-red-800 dark:bg-red-900/20">
-              <h2 className="text-lg font-semibold text-red-800 dark:text-red-400">Error</h2>
-              <p className="mt-2 text-red-600 dark:text-red-400">
-                {error || 'Failed to load account'}
-              </p>
+            <div className="rounded-lg border border-[var(--color-danger)] border-opacity-30 bg-[var(--color-danger-muted)] p-8 text-center">
+              <h2 className="text-lg font-semibold text-[var(--color-danger)]">Error</h2>
+              <p className="mt-2 text-[var(--color-danger)]">{error || 'Failed to load account'}</p>
             </div>
           </Container>
         </main>
@@ -102,12 +100,12 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
       <Header />
 
       <main className="flex-1 py-12">
         <Container size="md">
-          <h1 className="mb-8 text-2xl font-bold text-zinc-900 dark:text-zinc-100">Account</h1>
+          <h1 className="mb-8 text-2xl font-bold text-[var(--text-primary)]">Account</h1>
 
           <div className="grid gap-6 md:grid-cols-2">
             {/* Profile Card */}
@@ -118,8 +116,8 @@ export default function AccountPage() {
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Email</p>
-                    <p className="font-medium text-zinc-900 dark:text-zinc-100">{data.email}</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Email</p>
+                    <p className="font-medium text-[var(--text-primary)]">{data.email}</p>
                   </div>
                 </div>
               </CardContent>
@@ -135,14 +133,12 @@ export default function AccountPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">
-                    {balance}
-                  </span>
-                  <span className="text-zinc-500 dark:text-zinc-400">
+                  <span className="text-4xl font-bold text-[var(--text-primary)]">{balance}</span>
+                  <span className="text-[var(--text-secondary)]">
                     credit{balance !== 1 ? 's' : ''} remaining
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="mt-2 text-sm text-[var(--text-secondary)]">
                   {CREDITS_PER_REPORT} credits unlock one full diagnostic report.
                 </p>
                 {balance > 0 && (
@@ -158,9 +154,7 @@ export default function AccountPage() {
           {/* Reports History */}
           <div className="mt-8">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                Your Reports
-              </h2>
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Your Reports</h2>
               <Link href="/new">
                 <Button size="sm">New Analysis</Button>
               </Link>
@@ -169,7 +163,7 @@ export default function AccountPage() {
             {data.reports.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <p className="text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[var(--text-secondary)]">
                     No reports yet. Start your first diagnostic!
                   </p>
                   <Link href="/new">
@@ -184,22 +178,22 @@ export default function AccountPage() {
                     key={report.id}
                     href={`/r/${report.id}${report.paidUnlocked ? '/full' : ''}`}
                   >
-                    <Card className="transition-colors hover:border-zinc-400 dark:hover:border-zinc-600">
+                    <Card className="transition-colors hover:border-[var(--border-accent)]">
                       <CardContent className="flex items-center justify-between py-4">
                         <div className="flex items-center gap-4">
                           <div>
-                            <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                            <p className="font-medium text-[var(--text-primary)]">
                               {report.roundType.charAt(0).toUpperCase() + report.roundType.slice(1)}{' '}
                               Interview
                             </p>
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            <p className="text-sm text-[var(--text-secondary)]">
                               {new Date(report.createdAt).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           {report.readinessScore !== null && (
-                            <span className="text-lg font-bold text-zinc-700 dark:text-zinc-300">
+                            <span className="text-lg font-bold text-[var(--text-primary)]">
                               {report.readinessScore}
                             </span>
                           )}

@@ -43,7 +43,12 @@ export interface LLMAnalysis {
     task: string;
     timeEstimateMinutes: number;
     mappedRiskId: string;
+    // Enhanced fields (optional for backwards compatibility)
+    description?: string;
+    priority?: 'critical' | 'high' | 'medium';
+    category?: 'technical' | 'behavioral' | 'practice' | 'review';
   }[];
+  recruiterSignals?: RecruiterSignals; // Optional for backwards compatibility
 }
 
 export interface RiskItem {
@@ -134,6 +139,7 @@ export interface CreateReportRequest {
   resumeFile?: File;
   jobDescriptionText: string;
   roundType: RoundType;
+  prepPreferences?: PrepPreferences;
 }
 
 export interface AnalyzeReportResponse {
@@ -148,6 +154,7 @@ export interface FullDiagnosticResponse extends AnalyzeReportResponse {
   interviewQuestions: LLMAnalysis['interviewQuestions'];
   studyPlan: LLMAnalysis['studyPlan'];
   scoreBreakdown: ScoreBreakdown;
+  personalizedStudyPlan?: PersonalizedStudyPlan;
 }
 
 export interface DeltaComparison {
@@ -157,4 +164,150 @@ export interface DeltaComparison {
   resolvedRisks: RiskItem[];
   remainingRisks: RiskItem[];
   newRisks: RiskItem[];
+}
+
+// ============================================
+// Phase 7b: Diagnostic Intelligence Types
+// ============================================
+
+// Interview Archetype Classification
+export type InterviewArchetypeType =
+  | 'technical_potential_low_polish'
+  | 'strong_theoretical_weak_execution'
+  | 'resume_strong_system_weak'
+  | 'balanced_but_unproven'
+  | 'high_ceiling_low_volume_practice';
+
+export interface ArchetypeProfile {
+  archetype: InterviewArchetypeType;
+  confidence: number; // 0-1
+  label: string;
+  description: string;
+  coachingTips: string[];
+  version: string;
+}
+
+// Interview Round Forecast
+export interface RoundForecastItem {
+  roundType: 'technical' | 'behavioral' | 'case';
+  passProbability: number; // 0-1
+  primaryStrength: string;
+  primaryRisk: string;
+}
+
+export interface InterviewRoundForecasts {
+  forecasts: RoundForecastItem[];
+  recommendedFocus: string;
+  version: string;
+}
+
+// Cognitive Risk Map (Spider Chart)
+export interface CognitiveRiskMap {
+  dimensions: {
+    analyticalReasoning: number; // 0-1
+    communicationClarity: number; // 0-1
+    technicalDepth: number; // 0-1
+    adaptability: number; // 0-1
+    problemStructuring: number; // 0-1
+  };
+  lowestDimension: string;
+  highestDimension: string;
+  version: string;
+}
+
+// Career Trajectory Projection (days-based for interview prep window)
+export interface TrajectoryProjection {
+  currentScore: number;
+  day3Projection: {
+    score: number;
+    assumptions: string[];
+  };
+  day7Projection: {
+    score: number;
+    assumptions: string[];
+  };
+  day14Projection: {
+    score: number;
+    assumptions: string[];
+  };
+  improvementPotential: 'low' | 'medium' | 'high';
+  version: string;
+}
+
+// Recruiter Simulation
+export type FirstImpression = 'proceed' | 'maybe' | 'reject';
+
+export interface RecruiterSimulation {
+  immediateRedFlags: string[];
+  hiddenStrengths: string[];
+  estimatedScreenTimeSeconds: number;
+  firstImpression: FirstImpression;
+  recruiterNotes: string;
+  version: string;
+}
+
+// Combined Diagnostic Intelligence Output
+export interface DiagnosticIntelligence {
+  archetypeProfile: ArchetypeProfile;
+  roundForecasts: InterviewRoundForecasts;
+  cognitiveRiskMap: CognitiveRiskMap;
+  trajectoryProjection: TrajectoryProjection;
+  recruiterSimulation: RecruiterSimulation;
+  generatedAt: string;
+  version: string;
+}
+
+// Extended LLM Analysis with Recruiter Signals
+export interface RecruiterSignals {
+  immediateRedFlags: string[];
+  hiddenStrengths: string[];
+  estimatedScreenTimeSeconds: number;
+  firstImpression: FirstImpression;
+}
+
+// ============================================
+// Personalized Study Plan Types
+// ============================================
+
+export type InterviewTimeline = '1day' | '3days' | '1week' | '2weeks' | '4weeks_plus';
+export type ExperienceLevel = 'entry' | 'mid' | 'senior' | 'staff_plus';
+export type FocusArea =
+  | 'technical_depth'
+  | 'behavioral_stories'
+  | 'system_design'
+  | 'communication'
+  | 'domain_knowledge';
+
+export interface PrepPreferences {
+  timeline: InterviewTimeline;
+  dailyHours: number;
+  experienceLevel: ExperienceLevel;
+  focusAreas: FocusArea[];
+  additionalContext?: string;
+}
+
+export interface DetailedTask {
+  id: string;
+  task: string;
+  description: string;
+  timeEstimateMinutes: number;
+  priority: 'critical' | 'high' | 'medium';
+  mappedRiskId: string;
+  category: 'technical' | 'behavioral' | 'practice' | 'review';
+}
+
+export interface DailyPlan {
+  dayNumber: number;
+  label: string;
+  theme: string;
+  totalMinutes: number;
+  tasks: DetailedTask[];
+}
+
+export interface PersonalizedStudyPlan {
+  preferences: PrepPreferences;
+  totalDays: number;
+  totalHours: number;
+  dailyPlans: DailyPlan[];
+  version: string;
 }

@@ -78,6 +78,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         scoreBreakdown: latestRun.score_breakdown_json,
         extractedResume: latestRun.extracted_resume_json,
         extractedJD: latestRun.extracted_jd_json,
+        diagnosticIntelligence: latestRun.diagnostic_intelligence_json,
+        prepPreferences: report.prep_preferences_json || undefined,
+        personalizedStudyPlan: latestRun.personalized_study_plan_json || undefined,
       },
     });
   } catch (error) {

@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
       resumeText: report.resume_text,
       jobDescriptionText: report.job_description_text,
       roundType: report.round_type as RoundType,
+      prepPreferences: report.prep_preferences_json || undefined,
     });
 
     // Store the run
@@ -81,6 +82,8 @@ export async function POST(request: NextRequest) {
       readiness_score: pipelineResult.readinessScore,
       risk_band: pipelineResult.riskBand,
       ranked_risks_json: pipelineResult.llmAnalysis.rankedRisks,
+      diagnostic_intelligence_json: pipelineResult.diagnosticIntelligence,
+      personalized_study_plan_json: pipelineResult.personalizedStudyPlan || null,
     });
 
     if (runError) {
