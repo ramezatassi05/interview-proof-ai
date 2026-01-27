@@ -7,6 +7,7 @@ import type {
   DiagnosticIntelligence,
   PrepPreferences,
   PersonalizedStudyPlan,
+  PersonalizedCoaching,
 } from '@/types';
 
 const API_BASE = '/api';
@@ -64,6 +65,8 @@ export interface GetReportResponse {
     // Personalized Study Plan
     prepPreferences?: PrepPreferences;
     personalizedStudyPlan?: PersonalizedStudyPlan;
+    // Personalized Coaching (LLM-generated specific advice)
+    personalizedCoaching?: PersonalizedCoaching;
   };
 }
 

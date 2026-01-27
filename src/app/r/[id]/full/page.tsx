@@ -23,6 +23,7 @@ import { RoundForecast } from '@/components/diagnostic/RoundForecast';
 import { CognitiveRadar } from '@/components/diagnostic/CognitiveRadar';
 import { TrajectoryChart } from '@/components/diagnostic/TrajectoryChart';
 import { RecruiterView } from '@/components/diagnostic/RecruiterView';
+import { PriorityActions } from '@/components/diagnostic/PriorityActions';
 
 type ReportData = GetReportResponse['data'];
 
@@ -163,6 +164,13 @@ export default function FullDiagnosticPage() {
         roundType={report.roundType}
         scoreBreakdown={report.scoreBreakdown}
       />
+
+      {/* Priority Actions - High visibility "Start Here" section */}
+      {report.personalizedCoaching?.priorityActions && (
+        <div className="mt-8">
+          <PriorityActions actions={report.personalizedCoaching.priorityActions} />
+        </div>
+      )}
 
       {/* Strengths & Risks - Two column layout */}
       <div className="mt-8">
@@ -378,7 +386,10 @@ export default function FullDiagnosticPage() {
 
         <TabContent id="forecast">
           {report.diagnosticIntelligence?.roundForecasts ? (
-            <RoundForecast forecasts={report.diagnosticIntelligence.roundForecasts} />
+            <RoundForecast
+              forecasts={report.diagnosticIntelligence.roundForecasts}
+              userRoundType={report.roundType}
+            />
           ) : (
             <div className="text-center py-12 text-[var(--text-secondary)]">
               No round forecast available

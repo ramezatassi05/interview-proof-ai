@@ -67,8 +67,14 @@ const ARCHETYPE_DEFINITIONS: Record<
 /**
  * Classifies candidate into an interview archetype based on score patterns.
  * Deterministic classification - same inputs always produce same outputs.
+ *
+ * @param analysis - The LLM analysis output
+ * @param personalizedTips - Optional LLM-generated tips to override hardcoded defaults
  */
-export function classifyArchetype(analysis: LLMAnalysis): ArchetypeProfile {
+export function classifyArchetype(
+  analysis: LLMAnalysis,
+  personalizedTips?: string[]
+): ArchetypeProfile {
   const { categoryScores } = analysis;
   const { hardMatch, evidenceDepth, roundReadiness, clarity, companyProxy } = categoryScores;
 
@@ -147,12 +153,16 @@ export function classifyArchetype(analysis: LLMAnalysis): ArchetypeProfile {
 
   const definition = ARCHETYPE_DEFINITIONS[archetype];
 
+  // Use personalized tips if provided, otherwise fall back to hardcoded defaults
+  const tips =
+    personalizedTips && personalizedTips.length >= 3 ? personalizedTips : definition.coachingTips;
+
   return {
     archetype,
     confidence: Math.round(confidence * 100) / 100, // Round to 2 decimal places
     label: definition.label,
     description: definition.description,
-    coachingTips: definition.coachingTips,
+    coachingTips: tips,
     version: ARCHETYPE_VERSION,
   };
 }

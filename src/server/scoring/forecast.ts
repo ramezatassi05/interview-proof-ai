@@ -97,8 +97,14 @@ function findStrengthAndRisk(
 /**
  * Computes interview round forecasts based on category scores.
  * Deterministic computation - same inputs always produce same outputs.
+ *
+ * @param analysis - The LLM analysis output
+ * @param personalizedFocus - Optional LLM-generated focus to override hardcoded defaults
  */
-export function computeRoundForecasts(analysis: LLMAnalysis): InterviewRoundForecasts {
+export function computeRoundForecasts(
+  analysis: LLMAnalysis,
+  personalizedFocus?: string
+): InterviewRoundForecasts {
   const { categoryScores } = analysis;
 
   const roundTypes: ('technical' | 'behavioral' | 'case')[] = ['technical', 'behavioral', 'case'];
@@ -120,15 +126,21 @@ export function computeRoundForecasts(analysis: LLMAnalysis): InterviewRoundFore
     f.passProbability < min.passProbability ? f : min
   );
 
+  // Use personalized focus if provided, otherwise fall back to hardcoded defaults
   const focusMap: Record<string, string> = {
     technical: 'Focus on technical fundamentals and coding practice',
     behavioral: 'Practice storytelling and refine your narrative',
     case: 'Study problem-solving frameworks and structured thinking',
   };
 
+  const focus =
+    personalizedFocus && personalizedFocus.length >= 30
+      ? personalizedFocus
+      : focusMap[lowestForecast.roundType];
+
   return {
     forecasts,
-    recommendedFocus: focusMap[lowestForecast.roundType],
+    recommendedFocus: focus,
     version: FORECAST_VERSION,
   };
 }

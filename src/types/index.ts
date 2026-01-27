@@ -49,6 +49,7 @@ export interface LLMAnalysis {
     category?: 'technical' | 'behavioral' | 'practice' | 'review';
   }[];
   recruiterSignals?: RecruiterSignals; // Optional for backwards compatibility
+  personalizedCoaching?: PersonalizedCoaching; // LLM-generated specific advice
 }
 
 export interface RiskItem {
@@ -263,6 +264,19 @@ export interface RecruiterSignals {
   hiddenStrengths: string[];
   estimatedScreenTimeSeconds: number;
   firstImpression: FirstImpression;
+}
+
+// Personalized Coaching (LLM-generated specific advice)
+export interface PriorityAction {
+  action: string;
+  rationale: string;
+  resource?: string;
+}
+
+export interface PersonalizedCoaching {
+  archetypeTips: string[]; // 4 tips specific to this candidate
+  roundFocus: string; // Specific focus advice for weakest round
+  priorityActions: PriorityAction[]; // Top 3 immediate actions
 }
 
 // ============================================

@@ -123,11 +123,14 @@ function computeDiagnosticIntelligence(
   score: number,
   prepPreferences?: PrepPreferences
 ): DiagnosticIntelligence {
-  // Compute archetype profile
-  const archetypeProfile = classifyArchetype(llmAnalysis);
+  // Extract personalized coaching if available
+  const coaching = llmAnalysis.personalizedCoaching;
 
-  // Compute round forecasts
-  const roundForecasts = computeRoundForecasts(llmAnalysis);
+  // Compute archetype profile (with personalized tips if available)
+  const archetypeProfile = classifyArchetype(llmAnalysis, coaching?.archetypeTips);
+
+  // Compute round forecasts (with personalized focus if available)
+  const roundForecasts = computeRoundForecasts(llmAnalysis, coaching?.roundFocus);
 
   // Compute cognitive risk map
   const cognitiveRiskMap = computeCognitiveRiskMap(llmAnalysis);

@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import type { InterviewRoundForecasts, RoundForecastItem } from '@/types';
 
 interface RoundForecastProps {
   forecasts: InterviewRoundForecasts;
+  userRoundType?: string;
 }
 
 // Round type display names and colors
@@ -25,6 +27,36 @@ const ROUND_CONFIG: Record<string, { label: string; color: string; bgColor: stri
   },
 };
 
+// Educational context for each round type
+const ROUND_EXPLANATIONS: Record<
+  string,
+  { measures: string; typicalQuestions: string; evaluatedBy: string }
+> = {
+  technical: {
+    measures: 'Coding ability, system design, and technical problem-solving',
+    typicalQuestions: 'Algorithm problems, code review, architecture discussions',
+    evaluatedBy: 'Your skills match to JD requirements + evidence of hands-on work',
+  },
+  behavioral: {
+    measures: 'Communication, teamwork, leadership, and cultural fit',
+    typicalQuestions: 'Tell me about a time..., How do you handle conflict...',
+    evaluatedBy: 'Your clarity of expression + demonstrated impact in past roles',
+  },
+  case: {
+    measures: 'Structured thinking, problem decomposition, business judgment',
+    typicalQuestions: 'How would you approach..., Estimate the market size...',
+    evaluatedBy: 'Your analytical clarity + ability to structure ambiguous problems',
+  },
+};
+
+// Probability interpretation helper
+function getProbabilityMeaning(probability: number): string {
+  if (probability >= 0.75) return 'Strong position — focus on polish and confidence';
+  if (probability >= 0.55) return 'Competitive but has gaps — targeted prep recommended';
+  if (probability >= 0.35) return 'Significant preparation needed — prioritize this area';
+  return 'Major gaps identified — consider timeline adjustment';
+}
+
 function getProbabilityLabel(probability: number): { label: string; color: string } {
   if (probability >= 0.7) return { label: 'Strong', color: 'text-emerald-400' };
   if (probability >= 0.5) return { label: 'Moderate', color: 'text-amber-400' };
@@ -32,16 +64,37 @@ function getProbabilityLabel(probability: number): { label: string; color: strin
   return { label: 'Critical', color: 'text-red-400' };
 }
 
-function ForecastBar({ forecast }: { forecast: RoundForecastItem }) {
+interface ForecastBarProps {
+  forecast: RoundForecastItem;
+  isUserRound?: boolean;
+}
+
+function ForecastBar({ forecast, isUserRound }: ForecastBarProps) {
+  const [expanded, setExpanded] = useState(false);
   const config = ROUND_CONFIG[forecast.roundType];
+  const explanation = ROUND_EXPLANATIONS[forecast.roundType];
   const percentage = Math.round(forecast.passProbability * 100);
   const probabilityInfo = getProbabilityLabel(forecast.passProbability);
+  const probabilityMeaning = getProbabilityMeaning(forecast.passProbability);
 
   return (
-    <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4">
+    <div
+      className={`rounded-lg border bg-[var(--bg-elevated)] p-4 ${
+        isUserRound
+          ? 'border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]/30'
+          : 'border-[var(--border-default)]'
+      }`}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <span className="font-medium text-[var(--text-primary)]">{config.label}</span>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          {isUserRound && (
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent)]/20 text-[var(--color-accent)]">
+              Your Focus
+            </span>
+          )}
+          <span className="font-medium text-[var(--text-primary)]">{config.label}</span>
+        </div>
         <div className="flex items-center gap-2">
           <span className={`text-sm font-medium ${probabilityInfo.color}`}>
             {probabilityInfo.label}
@@ -49,6 +102,9 @@ function ForecastBar({ forecast }: { forecast: RoundForecastItem }) {
           <span className="text-lg font-bold text-[var(--text-primary)]">{percentage}%</span>
         </div>
       </div>
+
+      {/* Probability interpretation */}
+      <p className="text-xs text-[var(--text-muted)] mb-3">{probabilityMeaning}</p>
 
       {/* Progress bar */}
       <div className={`h-3 w-full rounded-full ${config.bgColor}`}>
@@ -69,15 +125,52 @@ function ForecastBar({ forecast }: { forecast: RoundForecastItem }) {
           <span className="text-red-400">{forecast.primaryRisk}</span>
         </div>
       </div>
+
+      {/* Expandable "What this measures" section */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="mt-3 flex items-center gap-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+      >
+        <svg
+          className={`h-4 w-4 transition-transform ${expanded ? 'rotate-90' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+        What this measures
+      </button>
+
+      {expanded && explanation && (
+        <div className="mt-3 pl-5 space-y-2 text-sm border-l-2 border-[var(--border-default)]">
+          <div>
+            <span className="text-[var(--text-muted)]">Evaluates: </span>
+            <span className="text-[var(--text-secondary)]">{explanation.measures}</span>
+          </div>
+          <div>
+            <span className="text-[var(--text-muted)]">Typical Questions: </span>
+            <span className="text-[var(--text-secondary)]">{explanation.typicalQuestions}</span>
+          </div>
+          <div>
+            <span className="text-[var(--text-muted)]">Based On: </span>
+            <span className="text-[var(--text-secondary)]">{explanation.evaluatedBy}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export function RoundForecast({ forecasts }: RoundForecastProps) {
-  // Sort by probability (lowest first to highlight areas needing work)
-  const sortedForecasts = [...forecasts.forecasts].sort(
-    (a, b) => a.passProbability - b.passProbability
-  );
+export function RoundForecast({ forecasts, userRoundType }: RoundForecastProps) {
+  // Sort forecasts: user's round first, then by probability (lowest first)
+  const sortedForecasts = [...forecasts.forecasts].sort((a, b) => {
+    // User's selected round always first
+    if (a.roundType === userRoundType) return -1;
+    if (b.roundType === userRoundType) return 1;
+    // Then sort by probability (lowest first to highlight areas needing work)
+    return a.passProbability - b.passProbability;
+  });
 
   return (
     <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
@@ -87,14 +180,18 @@ export function RoundForecast({ forecasts }: RoundForecastProps) {
           Interview Round Forecast
         </h3>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
-          Pass probability by interview stage based on your profile
+          How prepared you are for each interview stage based on your resume signals
         </p>
       </div>
 
       {/* Forecast bars */}
       <div className="space-y-4">
         {sortedForecasts.map((forecast) => (
-          <ForecastBar key={forecast.roundType} forecast={forecast} />
+          <ForecastBar
+            key={forecast.roundType}
+            forecast={forecast}
+            isUserRound={forecast.roundType === userRoundType}
+          />
         ))}
       </div>
 

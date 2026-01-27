@@ -17,6 +17,22 @@ const RecruiterSignalsSchema = z.object({
   firstImpression: z.enum(['proceed', 'maybe', 'reject']),
 });
 
+// Zod schema for personalized coaching (LLM-generated specific advice)
+const PersonalizedCoachingSchema = z.object({
+  archetypeTips: z.array(z.string()).min(3).max(5),
+  roundFocus: z.string().min(30),
+  priorityActions: z
+    .array(
+      z.object({
+        action: z.string(),
+        rationale: z.string(),
+        resource: z.string().optional(),
+      })
+    )
+    .min(2)
+    .max(4),
+});
+
 // Zod schema for LLM analysis output validation
 const LLMAnalysisSchema = z.object({
   categoryScores: z.object({
@@ -56,6 +72,7 @@ const LLMAnalysisSchema = z.object({
     })
   ),
   recruiterSignals: RecruiterSignalsSchema,
+  personalizedCoaching: PersonalizedCoachingSchema,
 });
 
 interface AnalysisContext {
@@ -202,6 +219,31 @@ Analyze the candidate's interview readiness and return a JSON object with:
    - estimatedScreenTimeSeconds: How long a recruiter would spend (15-120 typical)
    - firstImpression: "proceed" (advance to screen), "maybe" (on fence), or "reject"
 
+6. **personalizedCoaching** (CRITICAL - candidate-specific actionable advice):
+   Generate advice that directly references THIS candidate's specific resume and JD.
+
+   IMPORTANT: Every piece of advice MUST be specific and actionable. Avoid generic advice like:
+   - BAD: "Practice explaining complex concepts"
+   - BAD: "Use the STAR method"
+   - BAD: "Focus on technical fundamentals"
+
+   Instead, reference specific skills, technologies, projects, and gaps from the resume and JD:
+   - GOOD: "Your Kubernetes experience is strong but buried in bullet 4 - lead your intro pitch with it since the JD mentions it 3 times"
+   - GOOD: "The payment processing project lacks metrics - add latency/throughput numbers before your interview"
+
+   Fields:
+   - archetypeTips: 4 coaching tips tailored to their specific weakness pattern
+     Each tip should reference a specific skill, project, or gap from the resume/JD analysis.
+
+   - roundFocus: One specific focus statement for their weakest interview round
+     Example: "Your behavioral stories mention teamwork but lack conflict resolution examples. Prepare 3 stories about technical disagreements using 'My Position → Their Position → Resolution → Outcome' format."
+
+   - priorityActions: Top 3 things to do before the interview
+     Each must have:
+     - action: Specific, concrete task (not "practice more" but "solve 8 medium BFS/DFS problems")
+     - rationale: Why this matters for THIS candidate's specific gaps
+     - resource: (optional) Specific resource, tool, or approach
+
 Return ONLY valid JSON matching this exact structure:
 {
   "categoryScores": {
@@ -248,6 +290,22 @@ Return ONLY valid JSON matching this exact structure:
     "hiddenStrengths": ["Strength that quick scan might miss"],
     "estimatedScreenTimeSeconds": 45,
     "firstImpression": "proceed|maybe|reject"
+  },
+  "personalizedCoaching": {
+    "archetypeTips": [
+      "Specific tip referencing their actual resume skills/projects...",
+      "Another tip addressing a specific JD requirement gap...",
+      "Tip about a specific technology or experience they should highlight...",
+      "Tip about a specific weakness to address with concrete action..."
+    ],
+    "roundFocus": "Specific focus statement for their weakest round, referencing actual gaps and concrete steps...",
+    "priorityActions": [
+      {
+        "action": "Specific action referencing their resume/JD",
+        "rationale": "Why this matters for THIS candidate",
+        "resource": "Optional specific resource or approach"
+      }
+    ]
   }
 }`;
 }

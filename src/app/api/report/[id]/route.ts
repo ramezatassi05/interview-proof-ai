@@ -81,6 +81,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         diagnosticIntelligence: latestRun.diagnostic_intelligence_json,
         prepPreferences: report.prep_preferences_json || undefined,
         personalizedStudyPlan: latestRun.personalized_study_plan_json || undefined,
+        personalizedCoaching: latestRun.llm_analysis_json?.personalizedCoaching || undefined,
       },
     });
   } catch (error) {
