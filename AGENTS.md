@@ -32,7 +32,7 @@ src/
 │   ├── layout/       # Header, Footer, Container, AppLayout, Sidebar, IntelligencePanel
 │   ├── upload/       # RoundSelector, AnalysisProgress
 │   ├── results/      # ScoreCard, RiskList, RiskItem, PaywallCTA, ExecutiveSummary, StrengthsAndRisks
-│   └── diagnostic/   # InterviewQuestions, StudyPlan, ScoreBreakdown, DeltaView
+│   └── diagnostic/   # InterviewQuestions, StudyPlan, ScoreBreakdown, ArchetypeCard, RoundForecast, CognitiveRadar, TrajectoryChart, RecruiterView, PriorityActions
 ├── hooks/
 │   ├── useAuth.tsx   # Auth context and hook
 │   └── useTheme.tsx  # Theme context (dark/light mode)
@@ -94,9 +94,9 @@ supabase/
 - docs/TechDesign-InterviewProof-MVP.md
 
 ## 🔄 Current State
-**Last Updated:** January 25, 2026
-**Working On:** Phase 7b - Diagnostic Intelligence Enhancements
-**Recently Completed:** Phase 7a (UI Architecture) + Phase 7e (Terminology)
+**Last Updated:** January 27, 2026
+**Working On:** Phase 7c - Practice Intelligence Features
+**Recently Completed:** Phase 7b (Diagnostic Intelligence) + Phase 7a (UI Architecture) + Phase 7e (Terminology)
 **Blocked By:** None
 
 ## 🚀 Roadmap
@@ -169,12 +169,14 @@ supabase/
   - Credits Wallet
 - [x] Context-aware right panel (updates based on active tab)
 
-#### Phase 7b: Diagnostic Intelligence Enhancements
-- [ ] Interview Archetype Profile (classify candidates)
-- [ ] Interview Round Forecast (pass probability by round)
-- [ ] Cognitive Risk Map (spider chart)
-- [ ] Career Trajectory Projection
-- [ ] Recruiter Red Flag Simulation
+#### Phase 7b: Diagnostic Intelligence Enhancements ✅
+- [x] Interview Archetype Profile (classify candidates)
+- [x] Interview Round Forecast (pass probability by round + educational context)
+- [x] Interview Skills Profile (renamed from Cognitive Risk Map, spider chart + dimension explanations)
+- [x] Career Trajectory Projection
+- [x] Recruiter Red Flag Simulation
+- [x] Priority Actions ("Start Here" high-visibility section)
+- [x] Personalized Study Plan integration
 
 #### Phase 7c: Practice Intelligence Features
 - [ ] Practice Sync Intelligence (LeetCode stats, mock counts)
