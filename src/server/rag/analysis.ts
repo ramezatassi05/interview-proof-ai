@@ -152,6 +152,8 @@ Recent Technologies: ${resumeData.recencySignals.join(', ')}
 Project Evidence: ${resumeData.projectEvidence.join('; ')}
 
 ## Job Description Requirements
+Target Company: ${jdData.companyName ?? 'Not specified'}
+
 Must Have: ${jdData.mustHave.join(', ')}
 
 Nice to Have: ${jdData.niceToHave.join(', ')}
@@ -184,6 +186,8 @@ When generating the study plan:
     : ''
 }
 ## Your Task
+When a company name is known, reference it by name in coaching tips, recruiter signals, and risk rationales (e.g., "for your Amazon interview" not "for this interview").
+
 Analyze the candidate's interview readiness and return a JSON object with:
 
 1. **categoryScores** (0-1 for each):

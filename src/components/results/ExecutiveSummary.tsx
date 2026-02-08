@@ -11,6 +11,7 @@ interface ExecutiveSummaryProps {
   roundType: string;
   scoreBreakdown?: ScoreBreakdown;
   evidenceContext?: EvidenceContext;
+  companyName?: string;
 }
 
 export function ExecutiveSummary({
@@ -20,6 +21,7 @@ export function ExecutiveSummary({
   roundType,
   scoreBreakdown,
   evidenceContext,
+  companyName,
 }: ExecutiveSummaryProps) {
   // Calculate pass probability based on score and risk band
   const getPassProbability = () => {
@@ -42,6 +44,9 @@ export function ExecutiveSummary({
   // Generate highlight insight based on score and risk band
   const getHighlightInsight = () => {
     const roundLabel = roundType.charAt(0).toUpperCase() + roundType.slice(1);
+    const interviewLabel = companyName
+      ? `${companyName} ${roundLabel} interview`
+      : `${roundLabel} interview`;
 
     if (readinessScore >= 80) {
       if (totalRisks <= 2) {
@@ -51,21 +56,21 @@ export function ExecutiveSummary({
           evidenceContext && totalCount > 0
             ? `Your experience covers ${matchedCount} of ${totalCount} must-have requirements — focus on practicing delivery.`
             : `Your experience aligns well with requirements - focus on practicing delivery.`;
-        return `Strong candidate profile for ${roundLabel} interview. ${evidenceNote}`;
+        return `Strong candidate profile for ${interviewLabel}. ${evidenceNote}`;
       }
-      return `Good readiness score, but address the ${totalRisks} identified risks to maximize your chances in the ${roundLabel} interview.`;
+      return `Good readiness score, but address the ${totalRisks} identified risks to maximize your chances in the ${interviewLabel}.`;
     }
 
     if (readinessScore >= 60) {
       const weakArea = scoreBreakdown ? getWeakestArea(scoreBreakdown) : 'key requirements';
-      return `Moderate readiness for ${roundLabel} interview. Prioritize strengthening your ${weakArea} before the interview.`;
+      return `Moderate readiness for ${interviewLabel}. Prioritize strengthening your ${weakArea} before the interview.`;
     }
 
     if (readinessScore >= 40) {
-      return `Your profile needs work for this ${roundLabel} interview. Review the study plan below and address high-priority risks first.`;
+      return `Your profile needs work for this ${interviewLabel}. Review the study plan below and address high-priority risks first.`;
     }
 
-    return `Significant gaps identified for this ${roundLabel} interview. Consider gaining more relevant experience or targeting different roles.`;
+    return `Significant gaps identified for this ${interviewLabel}. Consider gaining more relevant experience or targeting different roles.`;
   };
 
   const getWeakestArea = (breakdown: ScoreBreakdown): string => {
@@ -94,6 +99,7 @@ export function ExecutiveSummary({
         <div>
           <h2 className="text-xl font-bold text-[var(--text-primary)]">Executive Summary</h2>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            {companyName ? `${companyName} ` : ''}
             {roundType.charAt(0).toUpperCase() + roundType.slice(1)} Readiness Intelligence
           </p>
         </div>

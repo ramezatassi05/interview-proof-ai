@@ -23,6 +23,11 @@ const ExtractedJDSchema = z.object({
   niceToHave: z.array(z.string()),
   keywords: z.array(z.string()),
   senioritySignals: z.array(z.string()),
+  companyName: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? undefined),
 });
 
 const RESUME_EXTRACTION_PROMPT = `You are an expert resume parser. Extract structured information from the following resume text.
@@ -62,7 +67,8 @@ Return a JSON object with this exact structure:
   "mustHave": ["required skill/qualification 1", "required skill/qualification 2", ...],
   "niceToHave": ["preferred skill 1", "preferred skill 2", ...],
   "keywords": ["keyword1", "keyword2", ...],
-  "senioritySignals": ["years of experience", "leadership indicators", ...]
+  "senioritySignals": ["years of experience", "leadership indicators", ...],
+  "companyName": "Company name if mentioned, or null"
 }
 
 Guidelines:
@@ -70,6 +76,7 @@ Guidelines:
 - niceToHave: Requirements stated as preferred, bonus, or nice-to-have
 - keywords: Important technical terms, technologies, and domain concepts
 - senioritySignals: Indicators of expected experience level (years, titles, leadership)
+- companyName: The hiring company name if explicitly mentioned in the JD, otherwise null
 
 Return ONLY valid JSON, no other text.
 
