@@ -1,6 +1,7 @@
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { RiskItem, LLMAnalysis, ScoreBreakdown, RiskBand, RoundType } from '@/types';
+import { formatHoursMinutes } from '@/lib/format';
 
 // Define styles
 const styles = StyleSheet.create({
@@ -235,7 +236,7 @@ export function DiagnosticPDF({
   };
 
   const totalStudyMinutes = studyPlan.reduce((sum, t) => sum + t.timeEstimateMinutes, 0);
-  const totalStudyHours = Math.round((totalStudyMinutes / 60) * 10) / 10;
+  const totalStudyHoursFormatted = formatHoursMinutes(totalStudyMinutes / 60);
 
   return (
     <Document>
@@ -354,7 +355,7 @@ export function DiagnosticPDF({
 
         {/* Study Plan */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Study Plan (~{totalStudyHours} hours)</Text>
+          <Text style={styles.sectionTitle}>Study Plan (~{totalStudyHoursFormatted})</Text>
           {studyPlan.map((task, index) => (
             <View key={index} style={styles.studyItem}>
               <View style={styles.studyCheckbox} />

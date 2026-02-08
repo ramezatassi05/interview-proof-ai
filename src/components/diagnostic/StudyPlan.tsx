@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { LLMAnalysis, PersonalizedStudyPlan, DailyPlan, DetailedTask } from '@/types';
+import { formatHoursMinutes } from '@/lib/format';
 
 interface StudyPlanProps {
   tasks: LLMAnalysis['studyPlan'];
@@ -135,7 +136,9 @@ function PersonalizedPlanView({
           <span className="text-[var(--text-secondary)]">
             {completedCount}/{totalTasks} tasks
           </span>
-          <span className="text-[var(--text-secondary)]">{plan.totalHours}h total</span>
+          <span className="text-[var(--text-secondary)]">
+            {formatHoursMinutes(plan.totalHours)} total
+          </span>
         </div>
       </div>
 
@@ -433,8 +436,8 @@ function LegacyPlanView({
   const completedMinutes = tasks
     .filter((_, i) => completedTasks.has(`legacy-${i}`))
     .reduce((sum, t) => sum + t.timeEstimateMinutes, 0);
-  const totalHours = Math.round((totalMinutes / 60) * 10) / 10;
-  const completedHours = Math.round((completedMinutes / 60) * 10) / 10;
+  const totalHours = totalMinutes / 60;
+  const completedHours = completedMinutes / 60;
   const completedCount = tasks.filter((_, i) => completedTasks.has(`legacy-${i}`)).length;
   const progress = Math.round((completedCount / tasks.length) * 100);
 
@@ -493,7 +496,7 @@ function LegacyPlanView({
             {completedCount}/{tasks.length} tasks
           </span>
           <span className="text-[var(--text-secondary)]">
-            {completedHours}/{totalHours}h completed
+            {formatHoursMinutes(completedHours)}/{formatHoursMinutes(totalHours)} completed
           </span>
         </div>
       </div>

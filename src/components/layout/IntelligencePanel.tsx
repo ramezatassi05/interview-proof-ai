@@ -1,6 +1,7 @@
 'use client';
 
 import type { GetReportResponse } from '@/lib/api';
+import { formatHoursMinutes } from '@/lib/format';
 
 type ReportData = GetReportResponse['data'];
 
@@ -231,13 +232,15 @@ function QuestionsIntelligence({ reportData }: { reportData: ReportData }) {
 function StudyIntelligence({ reportData }: { reportData: ReportData }) {
   const tasks = reportData.studyPlan ?? [];
   const totalMinutes = tasks.reduce((sum, t) => sum + t.timeEstimateMinutes, 0);
-  const totalHours = Math.round(totalMinutes / 60);
+  const totalHours = totalMinutes / 60;
 
   return (
     <div className="space-y-4">
       <div className="rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
         <span className="text-xs font-medium text-[var(--text-muted)]">Time to Complete</span>
-        <p className="mt-1 text-2xl font-bold text-[var(--accent-primary)]">{totalHours}h</p>
+        <p className="mt-1 text-2xl font-bold text-[var(--accent-primary)]">
+          {formatHoursMinutes(totalHours)}
+        </p>
         <p className="text-xs text-[var(--text-secondary)]">
           {tasks.length} tasks in your execution roadmap
         </p>

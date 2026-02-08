@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { formatHoursMinutes } from '@/lib/format';
 import type {
   PracticeIntelligence,
   PracticeSyncIntelligence,
@@ -515,7 +516,7 @@ function PracticeRxSection({ data }: { data: PrecisionPracticeRx }) {
       <div className="flex items-center justify-center mb-4">
         <div className="text-center">
           <div className="text-3xl font-bold text-[var(--text-primary)]">
-            ~{data.totalEstimatedHours}h
+            ~{formatHoursMinutes(data.totalEstimatedHours)}
           </div>
           <div className="text-sm text-[var(--text-muted)]">Total Estimated Practice</div>
         </div>

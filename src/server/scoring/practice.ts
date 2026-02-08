@@ -12,6 +12,7 @@ import type {
   MomentumBand,
   PracticeIntelligence,
 } from '@/types';
+import { formatHoursMinutes } from '@/lib/format';
 
 const PRACTICE_VERSION = 'v0.1';
 
@@ -280,8 +281,8 @@ export function computePracticeRx(analysis: LLMAnalysis): PrecisionPracticeRx {
   if (highCount > 0) parts.push(`${highCount} high-priority prescription(s)`);
   const focusSummary =
     parts.length > 0
-      ? `Your plan includes ${parts.join(' and ')}, totaling ~${totalEstimatedHours} hours of targeted practice.`
-      : `${prescriptions.length} prescriptions totaling ~${totalEstimatedHours} hours of balanced practice.`;
+      ? `Your plan includes ${parts.join(' and ')}, totaling ~${formatHoursMinutes(totalEstimatedHours)} of targeted practice.`
+      : `${prescriptions.length} prescriptions totaling ~${formatHoursMinutes(totalEstimatedHours)} of balanced practice.`;
 
   return {
     prescriptions,
