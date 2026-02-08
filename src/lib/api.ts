@@ -8,6 +8,8 @@ import type {
   PrepPreferences,
   PersonalizedStudyPlan,
   PersonalizedCoaching,
+  ExtractedResume,
+  ExtractedJD,
 } from '@/types';
 
 const API_BASE = '/api';
@@ -67,6 +69,9 @@ export interface GetReportResponse {
     personalizedStudyPlan?: PersonalizedStudyPlan;
     // Personalized Coaching (LLM-generated specific advice)
     personalizedCoaching?: PersonalizedCoaching;
+    // Extracted data for evidence-backed claims
+    extractedResume?: ExtractedResume;
+    extractedJD?: ExtractedJD;
   };
 }
 

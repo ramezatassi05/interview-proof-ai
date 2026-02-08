@@ -247,6 +247,21 @@ export interface RecruiterSimulation {
   version: string;
 }
 
+// Evidence Context — maps categories/signals to specific resume/JD data points
+export interface EvidenceContext {
+  categoryEvidence: {
+    hardMatch: string;
+    evidenceDepth: string;
+    roundReadiness: string;
+    clarity: string;
+    companyProxy: string;
+  };
+  matchedMustHaves: string[];
+  unmatchedMustHaves: string[];
+  matchedNiceToHaves: string[];
+  strongestMetrics: string[];
+}
+
 // Combined Diagnostic Intelligence Output
 export interface DiagnosticIntelligence {
   archetypeProfile: ArchetypeProfile;
@@ -254,6 +269,98 @@ export interface DiagnosticIntelligence {
   cognitiveRiskMap: CognitiveRiskMap;
   trajectoryProjection: TrajectoryProjection;
   recruiterSimulation: RecruiterSimulation;
+  practiceIntelligence?: PracticeIntelligence;
+  evidenceContext?: EvidenceContext;
+  generatedAt: string;
+  version: string;
+}
+
+// ============================================
+// Phase 7c: Practice Intelligence Types
+// ============================================
+
+// Practice Sync Intelligence — coding + mock readiness
+export interface PracticeSyncIntelligence {
+  codingExposure: {
+    score: number; // 0-1
+    level: 'low' | 'moderate' | 'high';
+    signals: string[];
+  };
+  mockReadiness: {
+    score: number; // 0-1
+    level: 'low' | 'moderate' | 'high';
+    signals: string[];
+  };
+  overallPracticeReadiness: number; // 0-100
+  recommendation: string;
+  version: string;
+}
+
+// Single practice prescription
+export type PracticeType = 'coding' | 'mock_interview' | 'review' | 'drill' | 'project';
+
+export interface PracticePrescription {
+  id: string;
+  title: string;
+  targetGap: string;
+  mappedRiskId: string;
+  practiceType: PracticeType;
+  estimatedSessions: number;
+  estimatedMinutesPerSession: number;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  priority: 'critical' | 'high' | 'medium';
+  rationale: string;
+}
+
+// Precision Practice Rx — aggregated prescriptions
+export interface PrecisionPracticeRx {
+  prescriptions: PracticePrescription[];
+  totalEstimatedHours: number;
+  focusSummary: string;
+  version: string;
+}
+
+// Pressure Handling Index
+export type PressureBand = 'low' | 'moderate' | 'high' | 'elite';
+
+export interface PressureHandlingIndex {
+  score: number; // 0-100
+  band: PressureBand;
+  dimensions: {
+    timeConstraintResilience: number; // 0-1
+    ambiguityTolerance: number; // 0-1
+    technicalConfidence: number; // 0-1
+    communicationUnderStress: number; // 0-1
+  };
+  weakestDimension: string;
+  strongestDimension: string;
+  coachingNote: string;
+  version: string;
+}
+
+// Consistency & Momentum Score
+export type MomentumBand = 'stalled' | 'inconsistent' | 'steady' | 'strong_momentum';
+
+export interface ConsistencyMomentumScore {
+  score: number; // 0-100
+  band: MomentumBand;
+  signals: {
+    skillBreadth: number; // 0-1
+    evidenceRecency: number; // 0-1
+    depthVsBreadth: number; // 0-1
+    progressionClarity: number; // 0-1
+  };
+  insights: string[];
+  recommendation: string;
+  version: string;
+}
+
+// Combined Practice Intelligence Output
+export interface PracticeIntelligence {
+  practiceSync: PracticeSyncIntelligence;
+  practiceRx: PrecisionPracticeRx;
+  pressureIndex: PressureHandlingIndex;
+  consistencyMomentum: ConsistencyMomentumScore;
   generatedAt: string;
   version: string;
 }

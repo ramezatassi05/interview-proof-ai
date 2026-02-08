@@ -16,6 +16,8 @@ npm run format       # Prettier format all
 npm run format:check # Prettier check
 npm run typecheck    # TypeScript check
 npm run test         # Run tests (TBD)
+
+npx ts-node scripts/populate-embeddings.ts  # Populate vector embeddings
 ```
 
 ## 📁 Project Structure
@@ -23,22 +25,26 @@ npm run test         # Run tests (TBD)
 src/
 ├── app/
 │   ├── api/report/   # API routes (create, analyze, [id], unlock, rerun)
+│   ├── api/credits/  # Credits history API
+│   ├── api/referral/ # Referral code + stats API
 │   ├── auth/         # Auth pages (login, callback)
 │   ├── new/          # Upload page
 │   ├── r/[id]/       # Results + full diagnostic pages
+│   ├── wallet/       # Credits wallet page
 │   └── page.tsx      # Landing page
 ├── components/
 │   ├── ui/           # Button, Card, Input, Textarea, Badge, Spinner, ProgressBar, Collapsible, ThemeToggle, Tabs, RadialScoreIndicator
 │   ├── layout/       # Header, Footer, Container, AppLayout, Sidebar, IntelligencePanel
 │   ├── upload/       # RoundSelector, AnalysisProgress
 │   ├── results/      # ScoreCard, RiskList, RiskItem, PaywallCTA, ExecutiveSummary, StrengthsAndRisks
-│   └── diagnostic/   # InterviewQuestions, StudyPlan, ScoreBreakdown, ArchetypeCard, RoundForecast, CognitiveRadar, TrajectoryChart, RecruiterView, PriorityActions
+│   └── diagnostic/   # InterviewQuestions, StudyPlan, ScoreBreakdown, ArchetypeCard, RoundForecast, CognitiveRadar, TrajectoryChart, RecruiterView, PriorityActions, PracticeIntelligencePanel
 ├── hooks/
 │   ├── useAuth.tsx   # Auth context and hook
 │   └── useTheme.tsx  # Theme context (dark/light mode)
 ├── lib/
 │   ├── supabase/     # Supabase clients (client, server, middleware)
 │   ├── openai.ts     # OpenAI client + model constants
+│   ├── credits.ts    # Credit grant utility + referral helpers
 │   └── api.ts        # API client for frontend
 ├── server/
 │   ├── scoring/      # Deterministic scoring engine (v0.1)
@@ -49,6 +55,9 @@ src/
 supabase/
 ├── migrations/       # SQL schema migrations (001, 002)
 └── seed.sql          # Initial rubric + question data
+
+scripts/
+└── populate-embeddings.ts  # Generate OpenAI embeddings for RAG tables
 ```
 
 ## 🧠 How I Should Think
@@ -94,9 +103,9 @@ supabase/
 - docs/TechDesign-InterviewProof-MVP.md
 
 ## 🔄 Current State
-**Last Updated:** January 27, 2026
-**Working On:** Phase 7c - Practice Intelligence Features
-**Recently Completed:** Phase 7b (Diagnostic Intelligence) + Phase 7a (UI Architecture) + Phase 7e (Terminology)
+**Last Updated:** February 3, 2026
+**Working On:** Phase 7 complete
+**Recently Completed:** Phase 7d (ProofCredits System) + Phase 7c (Practice Intelligence) + Phase 7b (Diagnostic Intelligence) + Phase 7a (UI Architecture) + Phase 7e (Terminology)
 **Blocked By:** None
 
 ## 🚀 Roadmap
@@ -178,16 +187,21 @@ supabase/
 - [x] Priority Actions ("Start Here" high-visibility section)
 - [x] Personalized Study Plan integration
 
-#### Phase 7c: Practice Intelligence Features
-- [ ] Practice Sync Intelligence (LeetCode stats, mock counts)
-- [ ] Precision Practice Prescriptions
-- [ ] Pressure Handling Index (0-100)
-- [ ] Consistency & Momentum Score
+#### Phase 7c: Practice Intelligence Features ✅
+- [x] Practice Sync Intelligence (coding exposure + mock readiness)
+- [x] Precision Practice Rx (targeted prescriptions from risk gaps)
+- [x] Pressure Handling Index (0-100, 4 dimensions)
+- [x] Consistency & Momentum Score (4 signals + insights)
 
-#### Phase 7d: ProofCredits System
-- [ ] Credits wallet UI
-- [ ] Credit spending options
-- [ ] Earning mechanics (uploads, completions, referrals)
+#### Phase 7d: ProofCredits System ✅
+- [x] Credits wallet page (/wallet) with balance, earning cards, transaction history
+- [x] Credit grant utility (idempotent via stripe_event_id convention)
+- [x] Upload bonus (1 credit per analysis)
+- [x] First-unlock bonus (2 credits, one-time)
+- [x] Referral system (3 credits each for referrer + referred)
+- [x] Transaction history API with pagination
+- [x] Referral API (code generation + stats)
+- [x] Sidebar nav item for Credits Wallet
 
 #### Phase 7e: Language & Positioning Upgrade ✅
 - [x] Rename: Score Breakdown → Signal Strength Analysis

@@ -23,6 +23,8 @@ import {
   computeCognitiveRiskMap,
   computeTrajectoryProjection,
   buildRecruiterSimulation,
+  computePracticeIntelligence,
+  computeEvidenceContext,
 } from './scoring/engine';
 import { generatePersonalizedStudyPlan } from './scoring/studyplan';
 
@@ -89,7 +91,13 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
   const riskBand = computeRiskBand(score);
 
   // Step 6: Compute diagnostic intelligence (Phase 7b)
-  const diagnosticIntelligence = computeDiagnosticIntelligence(llmAnalysis, score, prepPreferences);
+  const diagnosticIntelligence = computeDiagnosticIntelligence(
+    llmAnalysis,
+    score,
+    extractedResume,
+    extractedJD,
+    prepPreferences
+  );
 
   // Step 7: Generate personalized study plan if preferences provided
   const personalizedStudyPlan = prepPreferences
@@ -121,16 +129,31 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
 function computeDiagnosticIntelligence(
   llmAnalysis: LLMAnalysis,
   score: number,
+  extractedResume: ExtractedResume,
+  extractedJD: ExtractedJD,
   prepPreferences?: PrepPreferences
 ): DiagnosticIntelligence {
   // Extract personalized coaching if available
   const coaching = llmAnalysis.personalizedCoaching;
 
+  // Compute evidence context (cross-references resume/JD data with scores)
+  const evidenceContext = computeEvidenceContext(llmAnalysis, extractedResume, extractedJD);
+
   // Compute archetype profile (with personalized tips if available)
-  const archetypeProfile = classifyArchetype(llmAnalysis, coaching?.archetypeTips);
+  const archetypeProfile = classifyArchetype(
+    llmAnalysis,
+    coaching?.archetypeTips,
+    extractedResume,
+    extractedJD
+  );
 
   // Compute round forecasts (with personalized focus if available)
-  const roundForecasts = computeRoundForecasts(llmAnalysis, coaching?.roundFocus);
+  const roundForecasts = computeRoundForecasts(
+    llmAnalysis,
+    coaching?.roundFocus,
+    extractedResume,
+    extractedJD
+  );
 
   // Compute cognitive risk map
   const cognitiveRiskMap = computeCognitiveRiskMap(llmAnalysis);
@@ -143,12 +166,21 @@ function computeDiagnosticIntelligence(
     ? buildRecruiterSimulation(llmAnalysis.recruiterSignals)
     : buildDefaultRecruiterSimulation(llmAnalysis, score);
 
+  // Compute practice intelligence (Phase 7c)
+  const practiceIntelligence = computePracticeIntelligence(
+    llmAnalysis,
+    extractedResume,
+    extractedJD
+  );
+
   return {
     archetypeProfile,
     roundForecasts,
     cognitiveRiskMap,
     trajectoryProjection,
     recruiterSimulation,
+    practiceIntelligence,
+    evidenceContext,
     generatedAt: new Date().toISOString(),
     version: 'v0.1',
   };

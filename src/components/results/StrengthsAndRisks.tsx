@@ -1,11 +1,12 @@
 'use client';
 
-import type { ScoreBreakdown, RiskItem } from '@/types';
+import type { ScoreBreakdown, RiskItem, EvidenceContext } from '@/types';
 
 interface StrengthsAndRisksProps {
   scoreBreakdown?: ScoreBreakdown;
   risks: RiskItem[];
   maxItems?: number;
+  evidenceContext?: EvidenceContext;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -16,16 +17,40 @@ const CATEGORY_LABELS: Record<string, string> = {
   companyProxy: 'Good company culture fit',
 };
 
-export function StrengthsAndRisks({ scoreBreakdown, risks, maxItems = 4 }: StrengthsAndRisksProps) {
+// Maps ScoreBreakdown keys to EvidenceContext category keys
+const EVIDENCE_KEY_MAP: Record<string, keyof EvidenceContext['categoryEvidence']> = {
+  hardRequirementMatch: 'hardMatch',
+  evidenceDepth: 'evidenceDepth',
+  roundReadiness: 'roundReadiness',
+  resumeClarity: 'clarity',
+  companyProxy: 'companyProxy',
+};
+
+export function StrengthsAndRisks({
+  scoreBreakdown,
+  risks,
+  maxItems = 4,
+  evidenceContext,
+}: StrengthsAndRisksProps) {
   // Derive strengths from score breakdown - categories with score >= 70
-  const strengths: string[] = [];
+  const strengths: { label: string; evidence?: string }[] = [];
   if (scoreBreakdown) {
-    if (scoreBreakdown.hardRequirementMatch >= 70)
-      strengths.push(CATEGORY_LABELS.hardRequirementMatch);
-    if (scoreBreakdown.evidenceDepth >= 70) strengths.push(CATEGORY_LABELS.evidenceDepth);
-    if (scoreBreakdown.roundReadiness >= 70) strengths.push(CATEGORY_LABELS.roundReadiness);
-    if (scoreBreakdown.resumeClarity >= 70) strengths.push(CATEGORY_LABELS.resumeClarity);
-    if (scoreBreakdown.companyProxy >= 70) strengths.push(CATEGORY_LABELS.companyProxy);
+    const categories = [
+      { key: 'hardRequirementMatch', score: scoreBreakdown.hardRequirementMatch },
+      { key: 'evidenceDepth', score: scoreBreakdown.evidenceDepth },
+      { key: 'roundReadiness', score: scoreBreakdown.roundReadiness },
+      { key: 'resumeClarity', score: scoreBreakdown.resumeClarity },
+      { key: 'companyProxy', score: scoreBreakdown.companyProxy },
+    ];
+    for (const cat of categories) {
+      if (cat.score >= 70) {
+        const evidenceKey = EVIDENCE_KEY_MAP[cat.key];
+        strengths.push({
+          label: CATEGORY_LABELS[cat.key],
+          evidence: evidenceContext?.categoryEvidence[evidenceKey],
+        });
+      }
+    }
   }
 
   // Get top risks
@@ -75,7 +100,14 @@ export function StrengthsAndRisks({ scoreBreakdown, risks, maxItems = 4 }: Stren
                     d="M9 12l2 2 4-4"
                   />
                 </svg>
-                <span className="text-sm text-[var(--text-primary)]">{strength}</span>
+                <div>
+                  <span className="text-sm text-[var(--text-primary)]">{strength.label}</span>
+                  {strength.evidence && (
+                    <p className="mt-0.5 text-xs text-[var(--text-muted)] leading-relaxed">
+                      {strength.evidence}
+                    </p>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

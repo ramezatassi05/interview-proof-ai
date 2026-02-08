@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { runAnalysisPipeline } from '@/server/pipeline';
+import { grantCredits, GRANT_AMOUNTS } from '@/lib/credits';
 import type { RoundType } from '@/types';
 
 const AnalyzeReportSchema = z.object({
@@ -89,6 +90,20 @@ export async function POST(request: NextRequest) {
     if (runError) {
       console.error('Failed to store run:', runError);
       return NextResponse.json({ error: 'Failed to store analysis results' }, { status: 500 });
+    }
+
+    // Grant upload bonus (non-blocking, idempotent via reportId)
+    try {
+      const serviceClient = await createServiceClient();
+      await grantCredits({
+        supabase: serviceClient,
+        userId: user.id,
+        amount: GRANT_AMOUNTS.UPLOAD_BONUS,
+        reason: 'upload',
+        uniqueKey: reportId,
+      });
+    } catch (grantError) {
+      console.error('Failed to grant upload bonus:', grantError);
     }
 
     // Return free tier results (score + top 3 risks)

@@ -1,4 +1,10 @@
-import type { LLMAnalysis, ArchetypeProfile, InterviewArchetypeType } from '@/types';
+import type {
+  LLMAnalysis,
+  ExtractedResume,
+  ExtractedJD,
+  ArchetypeProfile,
+  InterviewArchetypeType,
+} from '@/types';
 
 const ARCHETYPE_VERSION = 'v0.1';
 
@@ -70,10 +76,14 @@ const ARCHETYPE_DEFINITIONS: Record<
  *
  * @param analysis - The LLM analysis output
  * @param personalizedTips - Optional LLM-generated tips to override hardcoded defaults
+ * @param resume - Optional extracted resume data for evidence-backed descriptions
+ * @param jd - Optional extracted JD data for evidence-backed descriptions
  */
 export function classifyArchetype(
   analysis: LLMAnalysis,
-  personalizedTips?: string[]
+  personalizedTips?: string[],
+  resume?: ExtractedResume,
+  jd?: ExtractedJD
 ): ArchetypeProfile {
   const { categoryScores } = analysis;
   const { hardMatch, evidenceDepth, roundReadiness, clarity, companyProxy } = categoryScores;
@@ -157,11 +167,49 @@ export function classifyArchetype(
   const tips =
     personalizedTips && personalizedTips.length >= 3 ? personalizedTips : definition.coachingTips;
 
+  // Build evidence-backed description when extracted data is available
+  let description = definition.description;
+  if (resume && jd) {
+    const topSkills = resume.skills.slice(0, 3).join(', ');
+    const clarityPct = Math.round(clarity * 100);
+    const evidencePct = Math.round(evidenceDepth * 100);
+
+    const evidenceParts: string[] = [];
+    if (topSkills) {
+      evidenceParts.push(`Your skills in ${topSkills} are noted`);
+    }
+    if (archetype === 'technical_potential_low_polish' && clarityPct < 50) {
+      evidenceParts.push(
+        `but your resume clarity score (${clarityPct}%) suggests presentation gaps`
+      );
+    } else if (archetype === 'strong_theoretical_weak_execution' && evidencePct < 50) {
+      evidenceParts.push(
+        `but evidence depth (${evidencePct}%) suggests limited concrete demonstrations`
+      );
+    } else if (archetype === 'resume_strong_system_weak') {
+      evidenceParts.push(
+        `with strong clarity (${clarityPct}%) but round readiness at ${Math.round(roundReadiness * 100)}%`
+      );
+    } else if (archetype === 'balanced_but_unproven') {
+      evidenceParts.push(
+        `across ${resume.experiences.length} role${resume.experiences.length !== 1 ? 's' : ''} with no standout dimension`
+      );
+    } else if (archetype === 'high_ceiling_low_volume_practice') {
+      evidenceParts.push(
+        `matching ${jd.mustHave.length > 0 ? `JD requirements well (${Math.round(hardMatch * 100)}%)` : 'the role'} but practice gaps remain`
+      );
+    }
+
+    if (evidenceParts.length > 0) {
+      description = `${definition.description} ${evidenceParts.join(', ')}.`;
+    }
+  }
+
   return {
     archetype,
     confidence: Math.round(confidence * 100) / 100, // Round to 2 decimal places
     label: definition.label,
-    description: definition.description,
+    description,
     coachingTips: tips,
     version: ARCHETYPE_VERSION,
   };

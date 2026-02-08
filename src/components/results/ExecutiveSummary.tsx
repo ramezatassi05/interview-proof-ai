@@ -1,6 +1,6 @@
 'use client';
 
-import type { RiskBand, ScoreBreakdown } from '@/types';
+import type { RiskBand, ScoreBreakdown, EvidenceContext } from '@/types';
 import { RadialScoreIndicator } from '@/components/ui/RadialScoreIndicator';
 import { Badge, riskBandToVariant } from '@/components/ui/Badge';
 
@@ -10,6 +10,7 @@ interface ExecutiveSummaryProps {
   totalRisks: number;
   roundType: string;
   scoreBreakdown?: ScoreBreakdown;
+  evidenceContext?: EvidenceContext;
 }
 
 export function ExecutiveSummary({
@@ -18,6 +19,7 @@ export function ExecutiveSummary({
   totalRisks,
   roundType,
   scoreBreakdown,
+  evidenceContext,
 }: ExecutiveSummaryProps) {
   // Calculate pass probability based on score and risk band
   const getPassProbability = () => {
@@ -43,7 +45,13 @@ export function ExecutiveSummary({
 
     if (readinessScore >= 80) {
       if (totalRisks <= 2) {
-        return `Strong candidate profile for ${roundLabel} interview. Your experience aligns well with requirements - focus on practicing delivery.`;
+        const matchedCount = evidenceContext?.matchedMustHaves.length ?? 0;
+        const totalCount = matchedCount + (evidenceContext?.unmatchedMustHaves.length ?? 0);
+        const evidenceNote =
+          evidenceContext && totalCount > 0
+            ? `Your experience covers ${matchedCount} of ${totalCount} must-have requirements — focus on practicing delivery.`
+            : `Your experience aligns well with requirements - focus on practicing delivery.`;
+        return `Strong candidate profile for ${roundLabel} interview. ${evidenceNote}`;
       }
       return `Good readiness score, but address the ${totalRisks} identified risks to maximize your chances in the ${roundLabel} interview.`;
     }

@@ -1,4 +1,10 @@
-import type { LLMAnalysis, InterviewRoundForecasts, RoundForecastItem } from '@/types';
+import type {
+  LLMAnalysis,
+  ExtractedResume,
+  ExtractedJD,
+  InterviewRoundForecasts,
+  RoundForecastItem,
+} from '@/types';
 
 const FORECAST_VERSION = 'v0.1';
 
@@ -57,11 +63,24 @@ function computeRoundProbability(
 }
 
 /**
+ * Normalizes a string for fuzzy matching.
+ */
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim();
+}
+
+/**
  * Finds the primary strength and risk for a round type based on weights.
+ * When resume/JD data is provided, appends evidence counts.
  */
 function findStrengthAndRisk(
   categoryScores: LLMAnalysis['categoryScores'],
-  roundType: 'technical' | 'behavioral' | 'case'
+  roundType: 'technical' | 'behavioral' | 'case',
+  resume?: ExtractedResume,
+  jd?: ExtractedJD
 ): { strength: string; risk: string } {
   const weights = ROUND_WEIGHTS[roundType];
 
@@ -88,9 +107,44 @@ function findStrengthAndRisk(
     }
   }
 
+  let strengthLabel: string = DIMENSION_LABELS[strengthKey];
+  let riskLabel: string = DIMENSION_LABELS[riskKey];
+
+  // Append evidence counts when extracted data is available
+  if (resume && jd) {
+    const matchedMustHaves = jd.mustHave.filter((req) =>
+      resume.skills.some(
+        (s) => normalize(s).includes(normalize(req)) || normalize(req).includes(normalize(s))
+      )
+    );
+    const matchedNiceToHaves = jd.niceToHave.filter((req) =>
+      [...resume.skills, ...resume.recencySignals].some(
+        (s) => normalize(s).includes(normalize(req)) || normalize(req).includes(normalize(s))
+      )
+    );
+
+    if (strengthKey === 'hardMatch' && jd.mustHave.length > 0) {
+      strengthLabel = `${DIMENSION_LABELS.hardMatch} (${matchedMustHaves.length}/${jd.mustHave.length} must-haves)`;
+    } else if (strengthKey === 'companyProxy' && jd.niceToHave.length > 0) {
+      strengthLabel = `${DIMENSION_LABELS.companyProxy} (${matchedNiceToHaves.length}/${jd.niceToHave.length} nice-to-haves)`;
+    } else if (strengthKey === 'evidenceDepth' && resume.metrics.length > 0) {
+      strengthLabel = `${DIMENSION_LABELS.evidenceDepth} (${resume.metrics.length} quantified metrics)`;
+    }
+
+    if (riskKey === 'hardMatch' && jd.mustHave.length > 0) {
+      const unmatchedCount = jd.mustHave.length - matchedMustHaves.length;
+      riskLabel = `${DIMENSION_LABELS.hardMatch} (${unmatchedCount} unmatched must-have${unmatchedCount !== 1 ? 's' : ''})`;
+    } else if (riskKey === 'companyProxy' && jd.niceToHave.length > 0) {
+      const unmatchedNice = jd.niceToHave.length - matchedNiceToHaves.length;
+      riskLabel = `${DIMENSION_LABELS.companyProxy} (${unmatchedNice} unmatched nice-to-have${unmatchedNice !== 1 ? 's' : ''})`;
+    } else if (riskKey === 'evidenceDepth') {
+      riskLabel = `${DIMENSION_LABELS.evidenceDepth} (${resume.metrics.length} metric${resume.metrics.length !== 1 ? 's' : ''} found)`;
+    }
+  }
+
   return {
-    strength: DIMENSION_LABELS[strengthKey],
-    risk: DIMENSION_LABELS[riskKey],
+    strength: strengthLabel,
+    risk: riskLabel,
   };
 }
 
@@ -100,10 +154,14 @@ function findStrengthAndRisk(
  *
  * @param analysis - The LLM analysis output
  * @param personalizedFocus - Optional LLM-generated focus to override hardcoded defaults
+ * @param resume - Optional extracted resume data for evidence-backed labels
+ * @param jd - Optional extracted JD data for evidence-backed labels
  */
 export function computeRoundForecasts(
   analysis: LLMAnalysis,
-  personalizedFocus?: string
+  personalizedFocus?: string,
+  resume?: ExtractedResume,
+  jd?: ExtractedJD
 ): InterviewRoundForecasts {
   const { categoryScores } = analysis;
 
@@ -111,7 +169,7 @@ export function computeRoundForecasts(
 
   const forecasts: RoundForecastItem[] = roundTypes.map((roundType) => {
     const probability = computeRoundProbability(categoryScores, roundType);
-    const { strength, risk } = findStrengthAndRisk(categoryScores, roundType);
+    const { strength, risk } = findStrengthAndRisk(categoryScores, roundType, resume, jd);
 
     return {
       roundType,

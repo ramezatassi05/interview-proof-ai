@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 
     // Parse request body
     const body = await request.json();
-    const { bundleId } = body;
+    const { bundleId, referralCode } = body;
 
     if (!bundleId) {
       return NextResponse.json({ error: 'bundleId is required' }, { status: 400 });
@@ -54,10 +54,11 @@ export async function POST(request: Request) {
         bundle_id: bundle.id,
         credits: bundle.credits.toString(),
         type: 'credit_bundle',
+        referral_code: referralCode || '',
       },
       customer_email: user.email,
-      success_url: `${appUrl}/account?payment=success&credits=${bundle.credits}`,
-      cancel_url: `${appUrl}/account?payment=cancelled`,
+      success_url: `${appUrl}/wallet?payment=success&credits=${bundle.credits}`,
+      cancel_url: `${appUrl}/wallet?payment=cancelled`,
     });
 
     return NextResponse.json({

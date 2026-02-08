@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { CREDITS_PER_REPORT } from '@/lib/stripe';
+import { grantCredits, GRANT_AMOUNTS } from '@/lib/credits';
 
 const UnlockReportSchema = z.object({
   reportId: z.string().uuid(),
@@ -111,6 +112,28 @@ export async function POST(request: NextRequest) {
       console.error('Failed to unlock report:', updateError);
       // TODO: Consider rolling back the credit spend
       return NextResponse.json({ error: 'Failed to unlock report' }, { status: 500 });
+    }
+
+    // Grant first-unlock bonus if this is the user's first unlock (non-blocking)
+    try {
+      const { count } = await supabase
+        .from('reports')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('paid_unlocked', true);
+
+      if (count === 1) {
+        const serviceClient = await createServiceClient();
+        await grantCredits({
+          supabase: serviceClient,
+          userId: user.id,
+          amount: GRANT_AMOUNTS.FIRST_UNLOCK_BONUS,
+          reason: 'first_unlock',
+          uniqueKey: user.id,
+        });
+      }
+    } catch (grantError) {
+      console.error('Failed to grant first unlock bonus:', grantError);
     }
 
     return NextResponse.json({

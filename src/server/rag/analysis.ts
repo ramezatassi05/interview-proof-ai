@@ -196,6 +196,9 @@ Analyze the candidate's interview readiness and return a JSON object with:
 2. **rankedRisks** (10-15 items, ordered by severity):
    Each risk should identify a specific gap that could cause rejection.
    Reference rubric IDs and JD requirements that support this risk.
+   Each rationale MUST cite specific resume gaps or JD mismatches, not generic assessments.
+   - BAD: "Lack of relevant experience"
+   - GOOD: "Resume shows no Kubernetes experience, but JD lists it as must-have requirement #3"
 
 3. **interviewQuestions** (6-10 questions):
    Generate technical and job-relevant questions only, based on skill gaps and experience gaps identified. Each question should relate to the candidate's ability to perform the job role.
@@ -218,6 +221,12 @@ Analyze the candidate's interview readiness and return a JSON object with:
    - hiddenStrengths: 2-4 undervalued strengths a quick scan might miss
    - estimatedScreenTimeSeconds: How long a recruiter would spend (15-120 typical)
    - firstImpression: "proceed" (advance to screen), "maybe" (on fence), or "reject"
+
+   IMPORTANT: Each red flag and hidden strength MUST reference specific resume details or JD requirements.
+   - BAD: "Strong technical background"
+   - GOOD: "Strong React/TypeScript stack with 3 years of production experience matches JD's core requirement"
+   - BAD: "Lack of relevant experience"
+   - GOOD: "Resume shows no Kubernetes experience, but JD lists it as must-have requirement"
 
 6. **personalizedCoaching** (CRITICAL - candidate-specific actionable advice):
    Generate advice that directly references THIS candidate's specific resume and JD.

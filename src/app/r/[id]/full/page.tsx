@@ -23,6 +23,7 @@ import { RoundForecast } from '@/components/diagnostic/RoundForecast';
 import { CognitiveRadar } from '@/components/diagnostic/CognitiveRadar';
 import { TrajectoryChart } from '@/components/diagnostic/TrajectoryChart';
 import { RecruiterView } from '@/components/diagnostic/RecruiterView';
+import { PracticeIntelligencePanel } from '@/components/diagnostic/PracticeIntelligencePanel';
 import { PriorityActions } from '@/components/diagnostic/PriorityActions';
 
 type ReportData = GetReportResponse['data'];
@@ -163,6 +164,7 @@ export default function FullDiagnosticPage() {
         totalRisks={report.totalRisks ?? 0}
         roundType={report.roundType}
         scoreBreakdown={report.scoreBreakdown}
+        evidenceContext={report.diagnosticIntelligence?.evidenceContext}
       />
 
       {/* Priority Actions - High visibility "Start Here" section */}
@@ -178,6 +180,7 @@ export default function FullDiagnosticPage() {
           scoreBreakdown={report.scoreBreakdown}
           risks={report.allRisks ?? []}
           maxItems={4}
+          evidenceContext={report.diagnosticIntelligence?.evidenceContext}
         />
       </div>
 
@@ -325,6 +328,21 @@ export default function FullDiagnosticPage() {
           >
             Recruiter View
           </TabTrigger>
+          <TabTrigger
+            id="practice"
+            icon={
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                />
+              </svg>
+            }
+          >
+            Practice Intel
+          </TabTrigger>
         </TabList>
 
         <TabContent id="scores">
@@ -423,6 +441,16 @@ export default function FullDiagnosticPage() {
           ) : (
             <div className="text-center py-12 text-[var(--text-secondary)]">
               No recruiter simulation available
+            </div>
+          )}
+        </TabContent>
+
+        <TabContent id="practice">
+          {report.diagnosticIntelligence?.practiceIntelligence ? (
+            <PracticeIntelligencePanel data={report.diagnosticIntelligence.practiceIntelligence} />
+          ) : (
+            <div className="text-center py-12 text-[var(--text-secondary)]">
+              No practice intelligence available
             </div>
           )}
         </TabContent>

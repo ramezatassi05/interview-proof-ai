@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { getStripeClient, WEBHOOK_EVENTS } from '@/lib/stripe';
 import { createServiceClient } from '@/lib/supabase/server';
+import { grantCredits, lookupReferrerByCode, GRANT_AMOUNTS } from '@/lib/credits';
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -89,13 +90,43 @@ export async function POST(request: Request) {
         throw purchaseError;
       }
 
-      // For credit bundle purchases, we're done - no report to unlock
+      // For credit bundle purchases, process referral if present
       if (purchaseType === 'credit_bundle') {
         console.log('Successfully processed credit bundle purchase:', {
           userId,
           credits,
           eventId: event.id,
         });
+
+        // Process referral grants
+        const referralCode = session.metadata?.referral_code;
+        if (referralCode) {
+          try {
+            const referrerId = await lookupReferrerByCode(supabase, referralCode);
+            if (referrerId && referrerId !== userId) {
+              // Grant to referrer
+              await grantCredits({
+                supabase,
+                userId: referrerId,
+                amount: GRANT_AMOUNTS.REFERRAL_BONUS,
+                reason: 'referral',
+                uniqueKey: `${referrerId}:${userId}`,
+              });
+              // Grant to referred user
+              await grantCredits({
+                supabase,
+                userId,
+                amount: GRANT_AMOUNTS.REFERRAL_BONUS,
+                reason: 'referral',
+                uniqueKey: `${userId}:${referrerId}`,
+              });
+              console.log('Referral grants processed:', { referrerId, referredUserId: userId });
+            }
+          } catch (refError) {
+            console.error('Referral grant failed:', refError);
+          }
+        }
+
         return NextResponse.json({ received: true });
       }
 

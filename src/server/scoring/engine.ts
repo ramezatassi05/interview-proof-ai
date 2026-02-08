@@ -5,6 +5,8 @@ export { classifyArchetype } from './archetype';
 export { computeRoundForecasts } from './forecast';
 export { computeCognitiveRiskMap } from './cognitive';
 export { computeTrajectoryProjection } from './trajectory';
+export { computePracticeIntelligence } from './practice';
+export { computeEvidenceContext } from './evidence';
 
 const SCORING_VERSION = 'v0.1';
 
