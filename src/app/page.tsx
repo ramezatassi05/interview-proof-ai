@@ -9,6 +9,9 @@ import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
 import { Badge, riskBandToVariant } from '@/components/ui/Badge';
 import { RadialScoreIndicator } from '@/components/ui/RadialScoreIndicator';
+import { InterviewIntelligenceStats } from '@/components/landing/InterviewIntelligenceStats';
+import { BenefitsRisks } from '@/components/landing/BenefitsRisks';
+import { FAQ } from '@/components/landing/FAQ';
 
 interface LastReport {
   id: string;
@@ -17,6 +20,9 @@ interface LastReport {
   roundType: string;
   paidUnlocked: boolean;
   createdAt: string;
+  companyName: string | null;
+  top3Risks: { title: string; severity: string }[];
+  top3StudyPlan: { task: string; timeEstimateMinutes: number }[];
 }
 
 function timeAgo(dateStr: string): string {
@@ -54,6 +60,9 @@ export default function LandingPage() {
             roundType: r.roundType,
             paidUnlocked: r.paidUnlocked,
             createdAt: r.createdAt,
+            companyName: r.companyName ?? null,
+            top3Risks: r.top3Risks ?? [],
+            top3StudyPlan: r.top3StudyPlan ?? [],
           });
         }
       })
@@ -187,6 +196,13 @@ export default function LandingPage() {
         {/* Quick Value Cards */}
         <section className="border-b border-[var(--border-default)]">
           <Container className="py-10">
+            <h2 className="mb-5 text-lg font-semibold text-[var(--text-primary)]">
+              {lastReport
+                ? lastReport.companyName
+                  ? `Your last diagnostic for ${lastReport.companyName}`
+                  : 'Your last diagnostic'
+                : 'What You\u2019ll Get'}
+            </h2>
             <div className="grid gap-5 md:grid-cols-3">
               {/* Card 1: Hire-Zone Score */}
               <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5 card-hover">
@@ -219,18 +235,45 @@ export default function LandingPage() {
                   <Badge variant="high">Evidence-Backed</Badge>
                 </div>
                 <ul className="mt-3 space-y-2">
-                  <li className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
-                    <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-[var(--color-danger)]" />
-                    Missing system design depth
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
-                    <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-[var(--color-danger)]" />
-                    No CI/CD pipeline experience
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
-                    <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-[var(--color-warning)]" />
-                    Weak behavioral examples
-                  </li>
+                  {(lastReport?.top3Risks?.length ?? 0) > 0
+                    ? lastReport!.top3Risks.map((risk, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                        >
+                          <span
+                            className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
+                            style={{
+                              backgroundColor:
+                                risk.severity === 'critical' || risk.severity === 'high'
+                                  ? 'var(--color-danger)'
+                                  : risk.severity === 'medium'
+                                    ? 'var(--color-warning)'
+                                    : 'var(--color-success)',
+                            }}
+                          />
+                          {risk.title}
+                        </li>
+                      ))
+                    : [
+                        'Missing system design depth',
+                        'No CI/CD pipeline experience',
+                        'Weak behavioral examples',
+                      ].map((text, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                        >
+                          <span
+                            className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
+                            style={{
+                              backgroundColor:
+                                i < 2 ? 'var(--color-danger)' : 'var(--color-warning)',
+                            }}
+                          />
+                          {text}
+                        </li>
+                      ))}
                 </ul>
               </div>
 
@@ -241,28 +284,29 @@ export default function LandingPage() {
                   <Badge variant="accent">Prioritized</Badge>
                 </div>
                 <ul className="mt-3 space-y-2">
-                  <li className="flex items-center justify-between text-sm">
-                    <span className="text-[var(--text-secondary)]">
-                      Add metrics to project bullets
-                    </span>
-                    <span className="flex-shrink-0 rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs text-[var(--text-muted)]">
-                      20min
-                    </span>
-                  </li>
-                  <li className="flex items-center justify-between text-sm">
-                    <span className="text-[var(--text-secondary)]">Prepare 2 STAR stories</span>
-                    <span className="flex-shrink-0 rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs text-[var(--text-muted)]">
-                      30min
-                    </span>
-                  </li>
-                  <li className="flex items-center justify-between text-sm">
-                    <span className="text-[var(--text-secondary)]">
-                      Review system design basics
-                    </span>
-                    <span className="flex-shrink-0 rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs text-[var(--text-muted)]">
-                      45min
-                    </span>
-                  </li>
+                  {(lastReport?.top3StudyPlan?.length ?? 0) > 0
+                    ? lastReport!.top3StudyPlan.map((item, i) => (
+                        <li key={i} className="flex items-center justify-between text-sm">
+                          <span className="text-[var(--text-secondary)]">{item.task}</span>
+                          <span className="flex-shrink-0 rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs text-[var(--text-muted)]">
+                            {item.timeEstimateMinutes >= 60
+                              ? `${Math.floor(item.timeEstimateMinutes / 60)}hr ${item.timeEstimateMinutes % 60}min`
+                              : `${item.timeEstimateMinutes}min`}
+                          </span>
+                        </li>
+                      ))
+                    : [
+                        { task: 'Add metrics to project bullets', time: '20min' },
+                        { task: 'Prepare 2 STAR stories', time: '30min' },
+                        { task: 'Review system design basics', time: '45min' },
+                      ].map((item, i) => (
+                        <li key={i} className="flex items-center justify-between text-sm">
+                          <span className="text-[var(--text-secondary)]">{item.task}</span>
+                          <span className="flex-shrink-0 rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs text-[var(--text-muted)]">
+                            {item.time}
+                          </span>
+                        </li>
+                      ))}
                 </ul>
               </div>
             </div>
@@ -314,6 +358,18 @@ export default function LandingPage() {
             </div>
           </Container>
         </section>
+
+        {/* Benefits vs Risks */}
+        <BenefitsRisks />
+
+        {/* Section divider */}
+        <div className="section-divider" />
+
+        {/* Interview Intelligence Stats */}
+        <InterviewIntelligenceStats />
+
+        {/* FAQ */}
+        <FAQ />
 
         {/* Credibility Strip */}
         <section className="border-b border-[var(--border-default)] bg-[var(--bg-card)] backdrop-blur-sm">

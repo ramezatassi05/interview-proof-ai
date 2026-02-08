@@ -4,6 +4,7 @@ import type { TrajectoryProjection } from '@/types';
 
 interface TrajectoryChartProps {
   projection: TrajectoryProjection;
+  companyName?: string;
 }
 
 function getPotentialColor(potential: 'low' | 'medium' | 'high'): {
@@ -27,7 +28,7 @@ function getScoreColor(score: number): string {
   return 'text-red-400';
 }
 
-export function TrajectoryChart({ projection }: TrajectoryChartProps) {
+export function TrajectoryChart({ projection, companyName }: TrajectoryChartProps) {
   const { currentScore, day3Projection, day7Projection, day14Projection, improvementPotential } =
     projection;
   const potentialColors = getPotentialColor(improvementPotential);
@@ -65,7 +66,7 @@ export function TrajectoryChart({ projection }: TrajectoryChartProps) {
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h3 className="text-lg font-semibold text-[var(--text-primary)]">
-            Interview Prep Trajectory
+            {companyName ? `${companyName} Interview Prep Trajectory` : 'Interview Prep Trajectory'}
           </h3>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
             Estimated score improvement with focused daily prep

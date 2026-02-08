@@ -2,9 +2,10 @@ import type { LLMAnalysis } from '@/types';
 
 interface InterviewQuestionsProps {
   questions: LLMAnalysis['interviewQuestions'];
+  companyName?: string;
 }
 
-export function InterviewQuestions({ questions }: InterviewQuestionsProps) {
+export function InterviewQuestions({ questions, companyName }: InterviewQuestionsProps) {
   if (questions.length === 0) {
     return null;
   }
@@ -26,7 +27,9 @@ export function InterviewQuestions({ questions }: InterviewQuestionsProps) {
           />
         </svg>
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-          Interview Questions to Expect
+          {companyName
+            ? `${companyName} Interview Questions to Expect`
+            : 'Interview Questions to Expect'}
           <span className="ml-2 text-sm font-normal text-[var(--text-muted)]">
             ({questions.length})
           </span>

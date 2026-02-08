@@ -263,6 +263,38 @@ export interface EvidenceContext {
   strongestMetrics: string[];
 }
 
+// Hire Zone Analysis
+export type HireZoneStatus = 'below' | 'in_zone' | 'above';
+
+export interface HireZoneCategoryGap {
+  category: string;
+  label: string;
+  currentScore: number;
+  targetScore: number;
+  gapPoints: number;
+  priority: 'critical' | 'high' | 'medium';
+}
+
+export interface HireZoneAction {
+  action: string;
+  category: string;
+  estimatedImpact: string;
+}
+
+export interface HireZoneAnalysis {
+  hireZoneMin: number;
+  hireZoneMax: number;
+  currentScore: number;
+  gap: number;
+  percentile: number;
+  status: HireZoneStatus;
+  categoryGaps: HireZoneCategoryGap[];
+  topActions: HireZoneAction[];
+  roundType: string;
+  industryAverage: number;
+  version: string;
+}
+
 // Combined Diagnostic Intelligence Output
 export interface DiagnosticIntelligence {
   archetypeProfile: ArchetypeProfile;
@@ -272,6 +304,7 @@ export interface DiagnosticIntelligence {
   recruiterSimulation: RecruiterSimulation;
   practiceIntelligence?: PracticeIntelligence;
   evidenceContext?: EvidenceContext;
+  hireZoneAnalysis?: HireZoneAnalysis;
   generatedAt: string;
   version: string;
 }
@@ -432,4 +465,16 @@ export interface PersonalizedStudyPlan {
   totalHours: number;
   dailyPlans: DailyPlan[];
   version: string;
+}
+
+// ============================================
+// Interview Insights Types
+// ============================================
+
+export interface AggregateInsightStats {
+  totalAnalyses: number;
+  avgReadinessScore: number;
+  riskBandDistribution: { band: string; count: number; percentage: number }[];
+  roundTypeDistribution: { roundType: string; count: number; percentage: number }[];
+  avgScoreByRound: { roundType: string; avgScore: number }[];
 }

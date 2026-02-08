@@ -22,6 +22,7 @@ interface ReportSummary {
   paidUnlocked: boolean;
   readinessScore: number | null;
   riskBand: RiskBand | null;
+  companyName: string | null;
 }
 
 interface AccountData {
@@ -183,10 +184,11 @@ export default function AccountPage() {
                         <div className="flex items-center gap-4">
                           <div>
                             <p className="font-medium text-[var(--text-primary)]">
-                              {report.roundType.charAt(0).toUpperCase() + report.roundType.slice(1)}{' '}
+                              {report.companyName ? `${report.companyName} ` : ''}
+                              {report.roundType.charAt(0).toUpperCase() +
+                                report.roundType.slice(1)}{' '}
                               Interview
-                            </p>
-                            <p className="text-sm text-[var(--text-secondary)]">
+                              {' · '}
                               {new Date(report.createdAt).toLocaleDateString()}
                             </p>
                           </div>

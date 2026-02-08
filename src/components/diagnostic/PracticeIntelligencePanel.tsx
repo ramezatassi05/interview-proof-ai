@@ -16,6 +16,7 @@ import type {
 
 interface PracticeIntelligencePanelProps {
   data: PracticeIntelligence;
+  companyName?: string;
 }
 
 // ============================================
@@ -96,14 +97,22 @@ function ExpandableInfo({ title, children }: { title: string; children: React.Re
 // 1. Practice Sync Section
 // ============================================
 
-function PracticeSyncSection({ data }: { data: PracticeSyncIntelligence }) {
+function PracticeSyncSection({
+  data,
+  companyName,
+}: {
+  data: PracticeSyncIntelligence;
+  companyName?: string;
+}) {
   const codingBadge = getLevelBadge(data.codingExposure.level);
   const mockBadge = getLevelBadge(data.mockReadiness.level);
 
   return (
     <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Practice Sync</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+          {companyName ? `${companyName} Practice Sync` : 'Practice Sync'}
+        </h3>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
           Coding exposure and mock interview readiness assessment
         </p>
@@ -219,14 +228,20 @@ const PRESSURE_DIM_LABELS: Record<keyof PressureHandlingIndex['dimensions'], str
   communicationUnderStress: 'Communication Under Stress',
 };
 
-function PressureIndexSection({ data }: { data: PressureHandlingIndex }) {
+function PressureIndexSection({
+  data,
+  companyName,
+}: {
+  data: PressureHandlingIndex;
+  companyName?: string;
+}) {
   const bandConfig = getPressureBandConfig(data.band);
 
   return (
     <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">
-          Pressure Handling Index
+          {companyName ? `${companyName} Pressure Handling Index` : 'Pressure Handling Index'}
         </h3>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
           How well you handle interview pressure across key dimensions
@@ -351,13 +366,21 @@ const MOMENTUM_SIGNAL_LABELS: Record<keyof ConsistencyMomentumScore['signals'], 
   progressionClarity: 'Progression Clarity',
 };
 
-function ConsistencyMomentumSection({ data }: { data: ConsistencyMomentumScore }) {
+function ConsistencyMomentumSection({
+  data,
+  companyName,
+}: {
+  data: ConsistencyMomentumScore;
+  companyName?: string;
+}) {
   const bandConfig = getMomentumBandConfig(data.band);
 
   return (
     <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Consistency & Momentum</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+          {companyName ? `${companyName} Consistency & Momentum` : 'Consistency & Momentum'}
+        </h3>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
           Preparation consistency and career progression signals
         </p>
@@ -502,11 +525,19 @@ function getPriorityColor(priority: PracticePrescription['priority']): {
   }
 }
 
-function PracticeRxSection({ data }: { data: PrecisionPracticeRx }) {
+function PracticeRxSection({
+  data,
+  companyName,
+}: {
+  data: PrecisionPracticeRx;
+  companyName?: string;
+}) {
   return (
     <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Practice Rx</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+          {companyName ? `${companyName} Practice Rx` : 'Practice Rx'}
+        </h3>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
           Targeted practice prescriptions based on your identified gaps
         </p>
@@ -601,13 +632,13 @@ function PracticeRxSection({ data }: { data: PrecisionPracticeRx }) {
 // Main Component
 // ============================================
 
-export function PracticeIntelligencePanel({ data }: PracticeIntelligencePanelProps) {
+export function PracticeIntelligencePanel({ data, companyName }: PracticeIntelligencePanelProps) {
   return (
     <div className="space-y-6">
-      <PracticeSyncSection data={data.practiceSync} />
-      <PressureIndexSection data={data.pressureIndex} />
-      <ConsistencyMomentumSection data={data.consistencyMomentum} />
-      <PracticeRxSection data={data.practiceRx} />
+      <PracticeSyncSection data={data.practiceSync} companyName={companyName} />
+      <PressureIndexSection data={data.pressureIndex} companyName={companyName} />
+      <ConsistencyMomentumSection data={data.consistencyMomentum} companyName={companyName} />
+      <PracticeRxSection data={data.practiceRx} companyName={companyName} />
 
       {/* Version tag */}
       <div className="pt-2">

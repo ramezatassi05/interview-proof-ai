@@ -128,11 +128,14 @@ export default function ResultsPage() {
         <Container size="md">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">
-              Your Interview Diagnostic
+              {report.extractedJD?.companyName
+                ? `Your ${report.extractedJD.companyName} Interview Diagnostic`
+                : 'Your Interview Diagnostic'}
             </h1>
             <p className="mt-2 text-[var(--text-secondary)]">
               {report.roundType.charAt(0).toUpperCase() + report.roundType.slice(1)} interview
               analysis
+              {report.extractedJD?.companyName ? ` for ${report.extractedJD.companyName}` : ''}
             </p>
           </div>
 
@@ -151,7 +154,11 @@ export default function ResultsPage() {
                 <div className="lg:col-span-2">
                   <RiskList
                     risks={report.top3Risks}
-                    title="Top 3 Rejection Risks"
+                    title={
+                      report.extractedJD?.companyName
+                        ? `Top 3 ${report.extractedJD.companyName} Rejection Risks`
+                        : 'Top 3 Rejection Risks'
+                    }
                     showEvidence={false}
                   />
                 </div>

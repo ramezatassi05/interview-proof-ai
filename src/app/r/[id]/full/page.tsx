@@ -19,12 +19,11 @@ import { InterviewQuestions } from '@/components/diagnostic/InterviewQuestions';
 import { StudyPlan } from '@/components/diagnostic/StudyPlan';
 import { ScoreBreakdown } from '@/components/diagnostic/ScoreBreakdown';
 import { ArchetypeCard } from '@/components/diagnostic/ArchetypeCard';
-import { RoundForecast } from '@/components/diagnostic/RoundForecast';
 import { CognitiveRadar } from '@/components/diagnostic/CognitiveRadar';
-import { TrajectoryChart } from '@/components/diagnostic/TrajectoryChart';
 import { RecruiterView } from '@/components/diagnostic/RecruiterView';
 import { PracticeIntelligencePanel } from '@/components/diagnostic/PracticeIntelligencePanel';
 import { PriorityActions } from '@/components/diagnostic/PriorityActions';
+import { HireZoneChart } from '@/components/diagnostic/HireZoneChart';
 
 type ReportData = GetReportResponse['data'];
 
@@ -121,7 +120,9 @@ export default function FullDiagnosticPage() {
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">
-            Readiness Intelligence Report
+            {report.extractedJD?.companyName
+              ? `${report.extractedJD.companyName} Readiness Intelligence Report`
+              : 'Readiness Intelligence Report'}
           </h1>
           <p className="mt-2 text-[var(--text-secondary)]">
             {report.roundType.charAt(0).toUpperCase() + report.roundType.slice(1)} interview
@@ -172,7 +173,10 @@ export default function FullDiagnosticPage() {
       {/* Priority Actions - High visibility "Start Here" section */}
       {report.personalizedCoaching?.priorityActions && (
         <div className="mt-8">
-          <PriorityActions actions={report.personalizedCoaching.priorityActions} />
+          <PriorityActions
+            actions={report.personalizedCoaching.priorityActions}
+            companyName={report.extractedJD?.companyName}
+          />
         </div>
       )}
 
@@ -203,6 +207,21 @@ export default function FullDiagnosticPage() {
             }
           >
             Signal Strength
+          </TabTrigger>
+          <TabTrigger
+            id="hirezone"
+            icon={
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
+              </svg>
+            }
+          >
+            Hire Zone
           </TabTrigger>
           <TabTrigger
             id="risks"
@@ -265,21 +284,6 @@ export default function FullDiagnosticPage() {
             Coaching
           </TabTrigger>
           <TabTrigger
-            id="forecast"
-            icon={
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5"
-                />
-              </svg>
-            }
-          >
-            Round Forecast
-          </TabTrigger>
-          <TabTrigger
             id="cognitive"
             icon={
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -293,21 +297,6 @@ export default function FullDiagnosticPage() {
             }
           >
             Cognitive Map
-          </TabTrigger>
-          <TabTrigger
-            id="trajectory"
-            icon={
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                />
-              </svg>
-            }
-          >
-            Trajectory
           </TabTrigger>
           <TabTrigger
             id="recruiter"
@@ -349,10 +338,26 @@ export default function FullDiagnosticPage() {
 
         <TabContent id="scores">
           {report.scoreBreakdown ? (
-            <ScoreBreakdown breakdown={report.scoreBreakdown} />
+            <ScoreBreakdown
+              breakdown={report.scoreBreakdown}
+              companyName={report.extractedJD?.companyName}
+            />
           ) : (
             <div className="text-center py-12 text-[var(--text-secondary)]">
               No signal strength data available
+            </div>
+          )}
+        </TabContent>
+
+        <TabContent id="hirezone">
+          {report.diagnosticIntelligence?.hireZoneAnalysis ? (
+            <HireZoneChart
+              hireZone={report.diagnosticIntelligence.hireZoneAnalysis}
+              companyName={report.extractedJD?.companyName}
+            />
+          ) : (
+            <div className="text-center py-12 text-[var(--text-secondary)]">
+              No hire zone analysis available
             </div>
           )}
         </TabContent>
@@ -361,7 +366,7 @@ export default function FullDiagnosticPage() {
           {report.allRisks && report.allRisks.length > 0 ? (
             <RiskList
               risks={report.allRisks}
-              title={`All Recruiter Red Flags (${report.allRisks.length})`}
+              title={`${report.extractedJD?.companyName ? `${report.extractedJD.companyName} ` : ''}All Recruiter Red Flags (${report.allRisks.length})`}
               showEvidence
             />
           ) : (
@@ -373,7 +378,10 @@ export default function FullDiagnosticPage() {
 
         <TabContent id="questions">
           {report.interviewQuestions && report.interviewQuestions.length > 0 ? (
-            <InterviewQuestions questions={report.interviewQuestions} />
+            <InterviewQuestions
+              questions={report.interviewQuestions}
+              companyName={report.extractedJD?.companyName}
+            />
           ) : (
             <div className="text-center py-12 text-[var(--text-secondary)]">
               No interview questions generated
@@ -386,6 +394,7 @@ export default function FullDiagnosticPage() {
             <StudyPlan
               tasks={report.studyPlan}
               personalizedStudyPlan={report.personalizedStudyPlan}
+              companyName={report.extractedJD?.companyName}
             />
           ) : (
             <div className="text-center py-12 text-[var(--text-secondary)]">
@@ -407,22 +416,12 @@ export default function FullDiagnosticPage() {
           )}
         </TabContent>
 
-        <TabContent id="forecast">
-          {report.diagnosticIntelligence?.roundForecasts ? (
-            <RoundForecast
-              forecasts={report.diagnosticIntelligence.roundForecasts}
-              userRoundType={report.roundType}
-            />
-          ) : (
-            <div className="text-center py-12 text-[var(--text-secondary)]">
-              No round forecast available
-            </div>
-          )}
-        </TabContent>
-
         <TabContent id="cognitive">
           {report.diagnosticIntelligence?.cognitiveRiskMap ? (
-            <CognitiveRadar riskMap={report.diagnosticIntelligence.cognitiveRiskMap} />
+            <CognitiveRadar
+              riskMap={report.diagnosticIntelligence.cognitiveRiskMap}
+              companyName={report.extractedJD?.companyName}
+            />
           ) : (
             <div className="text-center py-12 text-[var(--text-secondary)]">
               No cognitive risk map available
@@ -430,19 +429,12 @@ export default function FullDiagnosticPage() {
           )}
         </TabContent>
 
-        <TabContent id="trajectory">
-          {report.diagnosticIntelligence?.trajectoryProjection ? (
-            <TrajectoryChart projection={report.diagnosticIntelligence.trajectoryProjection} />
-          ) : (
-            <div className="text-center py-12 text-[var(--text-secondary)]">
-              No trajectory projection available
-            </div>
-          )}
-        </TabContent>
-
         <TabContent id="recruiter">
           {report.diagnosticIntelligence?.recruiterSimulation ? (
-            <RecruiterView simulation={report.diagnosticIntelligence.recruiterSimulation} />
+            <RecruiterView
+              simulation={report.diagnosticIntelligence.recruiterSimulation}
+              companyName={report.extractedJD?.companyName}
+            />
           ) : (
             <div className="text-center py-12 text-[var(--text-secondary)]">
               No recruiter simulation available
@@ -452,7 +444,10 @@ export default function FullDiagnosticPage() {
 
         <TabContent id="practice">
           {report.diagnosticIntelligence?.practiceIntelligence ? (
-            <PracticeIntelligencePanel data={report.diagnosticIntelligence.practiceIntelligence} />
+            <PracticeIntelligencePanel
+              data={report.diagnosticIntelligence.practiceIntelligence}
+              companyName={report.extractedJD?.companyName}
+            />
           ) : (
             <div className="text-center py-12 text-[var(--text-secondary)]">
               No practice intelligence available

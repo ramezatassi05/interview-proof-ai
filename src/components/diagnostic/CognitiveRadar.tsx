@@ -5,6 +5,7 @@ import type { CognitiveRiskMap } from '@/types';
 
 interface CognitiveRadarProps {
   riskMap: CognitiveRiskMap;
+  companyName?: string;
 }
 
 // Dimension display configuration
@@ -103,7 +104,7 @@ function getScoreColor(value: number): string {
   return 'text-red-400';
 }
 
-export function CognitiveRadar({ riskMap }: CognitiveRadarProps) {
+export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
   const [expandedDimension, setExpandedDimension] = useState<
     keyof CognitiveRiskMap['dimensions'] | null
   >(null);
@@ -149,7 +150,7 @@ export function CognitiveRadar({ riskMap }: CognitiveRadarProps) {
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">
-          Interview Skills Profile
+          {companyName ? `${companyName} Interview Skills Profile` : 'Interview Skills Profile'}
         </h3>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
           How your resume signals map to key interview competencies

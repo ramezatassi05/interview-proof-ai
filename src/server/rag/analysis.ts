@@ -188,10 +188,30 @@ When generating the study plan:
 ## Your Task
 When a company name is known, reference it by name in coaching tips, recruiter signals, and risk rationales (e.g., "for your Amazon interview" not "for this interview").
 
+## Critical: Skill Inference from Seniority and Context
+Before assessing gaps, apply the following skill inference rule:
+
+When a candidate has senior-level roles (senior engineer, staff engineer, tech lead, principal, etc.) at established companies, you MUST assume they possess standard industry practices — even if not explicitly listed:
+- Version control (Git), pull requests, code reviews
+- CI/CD pipelines, automated testing, unit testing
+- Agile/Scrum methodologies
+- Basic monitoring, logging, and debugging
+- REST API design and consumption
+- Technical documentation
+
+**How to apply this:**
+1. Cross-reference experience (roles, companies, tenure) with JD seniority signals to gauge caliber.
+2. If a JD requirement is a FUNDAMENTAL skill any competent professional at this seniority level would possess, treat it as MATCHED — do not flag it as a gap.
+3. If a JD requirement is a SPECIALIZED skill (specific frameworks, niche tools, domain knowledge), evaluate normally — only explicit evidence counts.
+4. In rankedRisks, do NOT create entries for skills obviously implied by seniority.
+5. In categoryScores.hardMatch, credit inferred fundamental skills the same as explicit ones.
+
+**The test:** "Would a hiring manager seriously question whether this candidate knows [skill]?" If no, it is inferred and should not reduce scores or appear as a risk.
+
 Analyze the candidate's interview readiness and return a JSON object with:
 
 1. **categoryScores** (0-1 for each):
-   - hardMatch: How well skills/experience match must-have requirements
+   - hardMatch: How well skills/experience match must-have requirements (credit both explicitly listed AND inferred fundamental skills per the Skill Inference rules above)
    - evidenceDepth: Quality of metrics, ownership, and concrete achievements
    - roundReadiness: Preparation level for ${roundType} interview specifically
    - clarity: Resume communication quality and structure
@@ -201,8 +221,11 @@ Analyze the candidate's interview readiness and return a JSON object with:
    Each risk should identify a specific gap that could cause rejection.
    Reference rubric IDs and JD requirements that support this risk.
    Each rationale MUST cite specific resume gaps or JD mismatches, not generic assessments.
+   IMPORTANT: Do NOT flag fundamental/standard skills as risks when clearly implied by seniority (see Skill Inference rules above). Only flag GENUINE gaps in specialized or non-obvious skills.
    - BAD: "Lack of relevant experience"
+   - BAD: "Resume does not mention pull requests" (when candidate is a senior engineer — this is an implied skill)
    - GOOD: "Resume shows no Kubernetes experience, but JD lists it as must-have requirement #3"
+   - GOOD: "Despite 8 years of backend experience, resume shows no evidence of distributed systems design, which the JD emphasizes for this staff-level role"
 
 3. **interviewQuestions** (6-10 questions):
    Generate technical and job-relevant questions only, based on skill gaps and experience gaps identified. Each question should relate to the candidate's ability to perform the job role.

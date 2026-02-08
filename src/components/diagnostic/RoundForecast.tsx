@@ -6,6 +6,7 @@ import type { InterviewRoundForecasts, RoundForecastItem } from '@/types';
 interface RoundForecastProps {
   forecasts: InterviewRoundForecasts;
   userRoundType?: string;
+  companyName?: string;
 }
 
 // Round type display names and colors
@@ -162,7 +163,7 @@ function ForecastBar({ forecast, isUserRound }: ForecastBarProps) {
   );
 }
 
-export function RoundForecast({ forecasts, userRoundType }: RoundForecastProps) {
+export function RoundForecast({ forecasts, userRoundType, companyName }: RoundForecastProps) {
   // Sort forecasts: user's round first, then by probability (lowest first)
   const sortedForecasts = [...forecasts.forecasts].sort((a, b) => {
     // User's selected round always first
@@ -177,7 +178,7 @@ export function RoundForecast({ forecasts, userRoundType }: RoundForecastProps) 
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">
-          Interview Round Forecast
+          {companyName ? `${companyName} Interview Round Forecast` : 'Interview Round Forecast'}
         </h3>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
           How prepared you are for each interview stage based on your resume signals

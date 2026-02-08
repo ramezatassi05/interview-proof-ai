@@ -50,6 +50,11 @@ Return a JSON object with this exact structure:
 
 Guidelines:
 - Extract ALL skills mentioned (technical, tools, frameworks, languages)
+- ALSO infer standard industry skills that are obviously implied by the candidate's roles, seniority, and companies — even if not explicitly listed. For example:
+  - A senior software engineer at any reputable tech company almost certainly uses version control (Git), pull requests, code reviews, CI/CD, agile methodologies, and unit testing daily — include these even if not spelled out.
+  - A backend engineer working with microservices almost certainly has experience with REST APIs, logging, monitoring, and deployment pipelines.
+  - A tech lead or staff engineer almost certainly has experience with architecture decisions, mentoring, and cross-team collaboration.
+  - Only infer skills that are STANDARD PRACTICE for the role and seniority level. Do NOT infer specialized tools or frameworks (e.g., do not infer Kubernetes, Terraform, or specific cloud providers unless the resume provides direct evidence).
 - For experiences, extract concrete achievements, not just responsibilities
 - Metrics should include specific numbers, percentages, or quantified impact
 - Recency signals indicate how current the candidate's experience is

@@ -5,6 +5,7 @@ import type { RecruiterSimulation, FirstImpression } from '@/types';
 
 interface RecruiterViewProps {
   simulation: RecruiterSimulation;
+  companyName?: string;
 }
 
 function getImpressionConfig(impression: FirstImpression): {
@@ -84,7 +85,7 @@ function getScreenTimeLabel(seconds: number): { label: string; color: string } {
   return { label: 'Deep Review', color: 'text-blue-400' };
 }
 
-export function RecruiterView({ simulation }: RecruiterViewProps) {
+export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
   const impressionConfig = getImpressionConfig(simulation.firstImpression);
   const screenTimeInfo = getScreenTimeLabel(simulation.estimatedScreenTimeSeconds);
 
@@ -93,7 +94,7 @@ export function RecruiterView({ simulation }: RecruiterViewProps) {
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">
-          Recruiter First Impression
+          {companyName ? `${companyName} Recruiter First Impression` : 'Recruiter First Impression'}
         </h3>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
           Simulated recruiter perspective on initial resume scan

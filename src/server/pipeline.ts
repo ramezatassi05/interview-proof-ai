@@ -4,6 +4,7 @@ import type {
   RoundType,
   LLMAnalysis,
   RiskBand,
+  ScoreBreakdown,
   DiagnosticIntelligence,
   PrepPreferences,
   PersonalizedStudyPlan,
@@ -25,6 +26,7 @@ import {
   buildRecruiterSimulation,
   computePracticeIntelligence,
   computeEvidenceContext,
+  computeHireZoneAnalysis,
 } from './scoring/engine';
 import { generatePersonalizedStudyPlan } from './scoring/studyplan';
 
@@ -96,6 +98,8 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     score,
     extractedResume,
     extractedJD,
+    roundType,
+    breakdown,
     prepPreferences
   );
 
@@ -131,6 +135,8 @@ function computeDiagnosticIntelligence(
   score: number,
   extractedResume: ExtractedResume,
   extractedJD: ExtractedJD,
+  roundType: RoundType,
+  scoreBreakdown: ScoreBreakdown,
   prepPreferences?: PrepPreferences
 ): DiagnosticIntelligence {
   // Extract personalized coaching if available
@@ -173,6 +179,9 @@ function computeDiagnosticIntelligence(
     extractedJD
   );
 
+  // Compute hire zone analysis
+  const hireZoneAnalysis = computeHireZoneAnalysis(llmAnalysis, score, roundType, scoreBreakdown);
+
   return {
     archetypeProfile,
     roundForecasts,
@@ -181,6 +190,7 @@ function computeDiagnosticIntelligence(
     recruiterSimulation,
     practiceIntelligence,
     evidenceContext,
+    hireZoneAnalysis,
     generatedAt: new Date().toISOString(),
     version: 'v0.1',
   };

@@ -35,7 +35,10 @@ export async function GET() {
         runs (
           readiness_score,
           risk_band,
-          run_index
+          run_index,
+          extracted_jd_json,
+          ranked_risks_json,
+          llm_analysis_json
         )
       `
       )
@@ -53,6 +56,16 @@ export async function GET() {
         ? report.runs.sort((a, b) => b.run_index - a.run_index)[0]
         : null;
 
+      const extractedJD = latestRun?.extracted_jd_json as Record<string, unknown> | null;
+
+      const rankedRisks = Array.isArray(latestRun?.ranked_risks_json)
+        ? (latestRun.ranked_risks_json as { title: string; severity: string }[])
+        : [];
+      const llmAnalysis = latestRun?.llm_analysis_json as Record<string, unknown> | null;
+      const studyPlan = Array.isArray(llmAnalysis?.studyPlan)
+        ? (llmAnalysis.studyPlan as { task: string; timeEstimateMinutes: number }[])
+        : [];
+
       return {
         id: report.id,
         roundType: report.round_type,
@@ -60,6 +73,11 @@ export async function GET() {
         paidUnlocked: report.paid_unlocked,
         readinessScore: latestRun?.readiness_score ?? null,
         riskBand: latestRun?.risk_band ?? null,
+        companyName: (extractedJD?.companyName as string) ?? null,
+        top3Risks: rankedRisks.slice(0, 3).map((r) => ({ title: r.title, severity: r.severity })),
+        top3StudyPlan: studyPlan
+          .slice(0, 3)
+          .map((s) => ({ task: s.task, timeEstimateMinutes: s.timeEstimateMinutes })),
       };
     });
 

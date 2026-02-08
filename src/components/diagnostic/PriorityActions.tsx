@@ -4,9 +4,10 @@ import type { PriorityAction } from '@/types';
 
 interface PriorityActionsProps {
   actions: PriorityAction[];
+  companyName?: string;
 }
 
-export function PriorityActions({ actions }: PriorityActionsProps) {
+export function PriorityActions({ actions, companyName }: PriorityActionsProps) {
   if (!actions || actions.length === 0) {
     return null;
   }
@@ -31,7 +32,9 @@ export function PriorityActions({ actions }: PriorityActionsProps) {
           </svg>
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Start Here</h3>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+            {companyName ? `${companyName} — Start Here` : 'Start Here'}
+          </h3>
           <p className="text-sm text-[var(--text-muted)]">
             Your top {actions.length} priority actions based on your specific gaps
           </p>

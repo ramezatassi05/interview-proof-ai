@@ -6,6 +6,7 @@ import { Collapsible } from '@/components/ui/Collapsible';
 
 interface ScoreBreakdownProps {
   breakdown: ScoreBreakdownType;
+  companyName?: string;
 }
 
 const CATEGORY_CONFIG: Record<string, { label: string; description: string; details: string }> = {
@@ -41,7 +42,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; description: string; deta
   },
 };
 
-export function ScoreBreakdown({ breakdown }: ScoreBreakdownProps) {
+export function ScoreBreakdown({ breakdown, companyName }: ScoreBreakdownProps) {
   const categories = [
     {
       key: 'hardRequirementMatch',
@@ -88,7 +89,7 @@ export function ScoreBreakdown({ breakdown }: ScoreBreakdownProps) {
             />
           </svg>
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-            Signal Strength Analysis
+            {companyName ? `${companyName} Signal Strength Analysis` : 'Signal Strength Analysis'}
           </h2>
         </div>
         <span className="text-xs text-[var(--text-muted)] bg-[var(--bg-elevated)] px-2 py-1 rounded">

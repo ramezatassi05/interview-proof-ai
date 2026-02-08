@@ -7,6 +7,7 @@ export { computeCognitiveRiskMap } from './cognitive';
 export { computeTrajectoryProjection } from './trajectory';
 export { computePracticeIntelligence } from './practice';
 export { computeEvidenceContext } from './evidence';
+export { computeHireZoneAnalysis } from './hirezone';
 
 const SCORING_VERSION = 'v0.1';
 

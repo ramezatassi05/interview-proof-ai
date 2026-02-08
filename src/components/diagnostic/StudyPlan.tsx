@@ -7,6 +7,7 @@ import { formatHoursMinutes } from '@/lib/format';
 interface StudyPlanProps {
   tasks: LLMAnalysis['studyPlan'];
   personalizedStudyPlan?: PersonalizedStudyPlan;
+  companyName?: string;
 }
 
 // Storage key for persistence
@@ -36,7 +37,7 @@ function saveCompletedTasks(tasks: Set<string>) {
   }
 }
 
-export function StudyPlan({ tasks, personalizedStudyPlan }: StudyPlanProps) {
+export function StudyPlan({ tasks, personalizedStudyPlan, companyName }: StudyPlanProps) {
   // Initialize state with localStorage value (runs only on client)
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(() => loadCompletedTasks());
   const [openDays, setOpenDays] = useState<Set<number>>(new Set([1])); // Day 1 open by default
@@ -50,6 +51,7 @@ export function StudyPlan({ tasks, personalizedStudyPlan }: StudyPlanProps) {
         setCompletedTasks={setCompletedTasks}
         openDays={openDays}
         setOpenDays={setOpenDays}
+        companyName={companyName}
       />
     );
   }
@@ -60,6 +62,7 @@ export function StudyPlan({ tasks, personalizedStudyPlan }: StudyPlanProps) {
       tasks={tasks}
       completedTasks={completedTasks}
       setCompletedTasks={setCompletedTasks}
+      companyName={companyName}
     />
   );
 }
@@ -71,12 +74,14 @@ function PersonalizedPlanView({
   setCompletedTasks,
   openDays,
   setOpenDays,
+  companyName,
 }: {
   plan: PersonalizedStudyPlan;
   completedTasks: Set<string>;
   setCompletedTasks: React.Dispatch<React.SetStateAction<Set<string>>>;
   openDays: Set<number>;
   setOpenDays: React.Dispatch<React.SetStateAction<Set<number>>>;
+  companyName?: string;
 }) {
   const totalTasks = plan.dailyPlans.reduce((sum, d) => sum + d.tasks.length, 0);
   const completedCount = plan.dailyPlans.reduce(
@@ -129,7 +134,9 @@ function PersonalizedPlanView({
             />
           </svg>
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-            Your {plan.totalDays}-Day Execution Roadmap
+            {companyName
+              ? `Your ${companyName} ${plan.totalDays}-Day Execution Roadmap`
+              : `Your ${plan.totalDays}-Day Execution Roadmap`}
           </h2>
         </div>
         <div className="flex items-center gap-4 text-sm">
@@ -423,10 +430,12 @@ function LegacyPlanView({
   tasks,
   completedTasks,
   setCompletedTasks,
+  companyName,
 }: {
   tasks: LLMAnalysis['studyPlan'];
   completedTasks: Set<string>;
   setCompletedTasks: React.Dispatch<React.SetStateAction<Set<string>>>;
+  companyName?: string;
 }) {
   if (tasks.length === 0) {
     return null;
@@ -489,7 +498,9 @@ function LegacyPlanView({
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
             />
           </svg>
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Execution Roadmap</h2>
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+            {companyName ? `${companyName} Execution Roadmap` : 'Execution Roadmap'}
+          </h2>
         </div>
         <div className="flex items-center gap-4 text-sm">
           <span className="text-[var(--text-secondary)]">

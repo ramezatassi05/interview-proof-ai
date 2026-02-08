@@ -15,7 +15,7 @@ import { PdfUpload } from '@/components/ui/PdfUpload';
 import { Button } from '@/components/ui/Button';
 import { RoundSelector } from '@/components/upload/RoundSelector';
 import { PrepPreferencesForm } from '@/components/upload/PrepPreferencesForm';
-import { AnalysisProgress } from '@/components/upload/AnalysisProgress';
+import { AnalysisProgress, DidYouKnowCard } from '@/components/upload/AnalysisProgress';
 
 interface FormErrors {
   resumeText?: string;
@@ -135,17 +135,20 @@ export default function NewReportPage() {
       <main className="flex-1 py-12">
         <Container size="md">
           {isAnalyzing ? (
-            <Card variant="glass" className="mx-auto max-w-lg">
-              <CardHeader>
-                <CardTitle>Analyzing Your Readiness</CardTitle>
-                <CardDescription>
-                  We&apos;re running a comprehensive diagnostic on your profile
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AnalysisProgress isAnalyzing={isAnalyzing} />
-              </CardContent>
-            </Card>
+            <div className="mx-auto max-w-lg space-y-4">
+              <Card variant="glass">
+                <CardHeader>
+                  <CardTitle>Analyzing Your Readiness</CardTitle>
+                  <CardDescription>
+                    We&apos;re running a comprehensive diagnostic on your profile
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AnalysisProgress isAnalyzing={isAnalyzing} />
+                </CardContent>
+              </Card>
+              <DidYouKnowCard isAnalyzing={isAnalyzing} />
+            </div>
           ) : (
             <form onSubmit={handleSubmit}>
               {/* Header */}
