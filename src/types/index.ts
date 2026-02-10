@@ -169,6 +169,22 @@ export interface DeltaComparison {
 }
 
 // ============================================
+// Interactive Practice Questions Types
+// ============================================
+
+export interface QuestionFeedbackResponse {
+  feedback: string;
+  score: number; // 0-100
+  strengths: string[];
+  improvements: string[];
+}
+
+export interface BestAnswerResponse {
+  bestAnswer: string;
+  keyPoints: string[];
+}
+
+// ============================================
 // Phase 7b: Diagnostic Intelligence Types
 // ============================================
 

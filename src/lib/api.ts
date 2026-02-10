@@ -10,6 +10,8 @@ import type {
   PersonalizedCoaching,
   ExtractedResume,
   ExtractedJD,
+  QuestionFeedbackResponse,
+  BestAnswerResponse,
 } from '@/types';
 
 const API_BASE = '/api';
@@ -106,6 +108,20 @@ export interface CheckoutResponse {
   };
 }
 
+export interface QuestionFeedbackAPIResponse {
+  data: QuestionFeedbackResponse;
+}
+
+export interface BestAnswerAPIResponse {
+  data: BestAnswerResponse;
+}
+
+export interface GenerateQuestionsResponse {
+  data: {
+    questions: LLMAnalysis['interviewQuestions'];
+  };
+}
+
 class APIClient {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const res = await fetch(`${API_BASE}${endpoint}`, {
@@ -173,6 +189,36 @@ class APIClient {
     return this.request<CheckoutResponse>('/checkout', {
       method: 'POST',
       body: JSON.stringify({ reportId }),
+    });
+  }
+
+  async getAnswerFeedback(
+    reportId: string,
+    data: { questionIndex: number; questionText: string; userAnswer: string }
+  ): Promise<QuestionFeedbackAPIResponse> {
+    return this.request<QuestionFeedbackAPIResponse>(`/report/${reportId}/questions/feedback`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getBestAnswer(
+    reportId: string,
+    data: { questionIndex: number; questionText: string; why: string }
+  ): Promise<BestAnswerAPIResponse> {
+    return this.request<BestAnswerAPIResponse>(`/report/${reportId}/questions/best-answer`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async generateMoreQuestions(
+    reportId: string,
+    data: { existingQuestions: string[] }
+  ): Promise<GenerateQuestionsResponse> {
+    return this.request<GenerateQuestionsResponse>(`/report/${reportId}/questions/generate`, {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   }
 }

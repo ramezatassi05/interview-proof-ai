@@ -381,6 +381,7 @@ export default function FullDiagnosticPage() {
             <InterviewQuestions
               questions={report.interviewQuestions}
               companyName={report.extractedJD?.companyName}
+              reportId={reportId}
             />
           ) : (
             <div className="text-center py-12 text-[var(--text-secondary)]">

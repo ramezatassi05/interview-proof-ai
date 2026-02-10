@@ -227,8 +227,8 @@ Analyze the candidate's interview readiness and return a JSON object with:
    - GOOD: "Resume shows no Kubernetes experience, but JD lists it as must-have requirement #3"
    - GOOD: "Despite 8 years of backend experience, resume shows no evidence of distributed systems design, which the JD emphasizes for this staff-level role"
 
-3. **interviewQuestions** (6-10 questions):
-   Generate technical and job-relevant questions only, based on skill gaps and experience gaps identified. Each question should relate to the candidate's ability to perform the job role.
+3. **interviewQuestions** (100-120 questions):
+   Generate a diverse pool of technical and job-relevant questions based on skill gaps and experience gaps identified. Each question should relate to the candidate's ability to perform the job role. Include a mix of question types: technical deep-dives, behavioral/situational, case-based/problem-solving, and role-specific.
    IMPORTANT: Do NOT include any questions about citizenship, nationality, immigration status, age, religion, marital status, family planning, disability, or any other protected characteristics. These are illegal to ask in interviews and not relevant to technical assessment.
 
 4. **studyPlan** (${prepPreferences ? '8-12' : '5-8'} items):
