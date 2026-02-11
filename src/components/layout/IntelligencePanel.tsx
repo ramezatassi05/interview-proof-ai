@@ -55,6 +55,9 @@ export function IntelligencePanel({ activeTab, reportData }: IntelligencePanelPr
       {/* Study Tab Content */}
       {activeTab === 'study' && <StudyIntelligence reportData={reportData} />}
 
+      {/* Coaching Tab Content */}
+      {activeTab === 'archetype' && <CoachingIntelligence reportData={reportData} />}
+
       {/* Quick Actions - Always visible */}
       <QuickActions reportData={reportData} />
     </div>
@@ -275,6 +278,78 @@ function StudyIntelligence({ reportData }: { reportData: ReportData }) {
           {tasks[0]?.task ?? 'No tasks available'}
         </p>
       </div>
+    </div>
+  );
+}
+
+function CoachingIntelligence({ reportData }: { reportData: ReportData }) {
+  const archetype = reportData.diagnosticIntelligence?.archetypeProfile;
+  const trajectory = reportData.diagnosticIntelligence?.trajectoryProjection;
+  const forecasts = reportData.diagnosticIntelligence?.roundForecasts;
+
+  if (!archetype) {
+    return (
+      <div className="rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
+        <p className="text-xs text-[var(--text-muted)]">No coaching data available</p>
+      </div>
+    );
+  }
+
+  const confidencePct = Math.round(archetype.confidence * 100);
+
+  return (
+    <div className="space-y-4">
+      {/* Archetype card */}
+      <div className="rounded-lg bg-amber-500/5 border border-amber-500/30 p-4">
+        <span className="text-xs font-medium text-amber-400">Candidate Archetype</span>
+        <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{archetype.label}</p>
+        <div className="mt-2 flex items-center justify-between">
+          <span className="text-xs text-[var(--text-muted)]">Confidence</span>
+          <span className="text-xs font-medium text-amber-400">{confidencePct}%</span>
+        </div>
+        <div className="mt-1 h-1.5 w-full rounded-full bg-amber-500/10">
+          <div
+            className="h-full rounded-full bg-amber-500"
+            style={{ width: `${confidencePct}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Improvement potential */}
+      {trajectory && (
+        <div className="rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
+          <span className="text-xs font-medium text-[var(--text-muted)]">14-Day Potential</span>
+          <div className="mt-2 flex items-center gap-2">
+            <svg
+              className="h-4 w-4 text-emerald-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+              />
+            </svg>
+            <span className="text-sm font-medium text-emerald-400">
+              +{trajectory.day14Projection.score - trajectory.currentScore} points
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-[var(--text-secondary)]">
+            {trajectory.currentScore} → {trajectory.day14Projection.score} projected
+          </p>
+        </div>
+      )}
+
+      {/* Recommended focus */}
+      {forecasts && (
+        <div className="rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
+          <span className="text-xs font-medium text-[var(--text-muted)]">Recommended Focus</span>
+          <p className="mt-1 text-sm text-[var(--text-primary)]">{forecasts.recommendedFocus}</p>
+        </div>
+      )}
     </div>
   );
 }

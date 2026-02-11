@@ -78,7 +78,14 @@ export function PriorityActions({ actions, companyName }: PriorityActionsProps) 
                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    <p className="text-sm text-blue-300">{action.resource}</p>
+                    <a
+                      href={`https://www.google.com/search?q=${encodeURIComponent(action.resource)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-300 hover:text-blue-200 underline underline-offset-2"
+                    >
+                      {action.resource}
+                    </a>
                   </div>
                 )}
               </div>

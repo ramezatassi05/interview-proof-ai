@@ -14,6 +14,9 @@ const FeedbackSchema = z.object({
   score: z.number().min(0).max(100),
   strengths: z.array(z.string()).min(1).max(5),
   improvements: z.array(z.string()).min(1).max(5),
+  strengthQuotes: z.array(z.string()).optional(),
+  improvementQuotes: z.array(z.string()).optional(),
+  tips: z.array(z.string()).min(1).max(4).optional(),
 });
 
 const BestAnswerSchema = z.object({
@@ -85,8 +88,15 @@ Evaluate this answer and return JSON:
   "feedback": "2-3 sentence overall assessment of the answer quality",
   "score": <0-100 score>,
   "strengths": ["specific things the answer did well"],
-  "improvements": ["specific actionable improvements with examples"]
+  "improvements": ["specific actionable improvements with examples"],
+  "strengthQuotes": ["verbatim quote from the answer for each strength"],
+  "improvementQuotes": ["verbatim quote from the answer for each improvement"],
+  "tips": ["specific, actionable tip for improving this answer on a retry"]
 }
+
+IMPORTANT for quotes: Each entry in strengthQuotes/improvementQuotes must be a VERBATIM substring copied exactly from the candidate's answer, corresponding to the same array index. If a feedback item is about something MISSING from the answer (not present in the text), use an empty string "" for that quote.
+
+For "tips", give 2-3 specific, actionable suggestions the candidate can apply RIGHT NOW if they try this question again. Each tip should tell them exactly what to say or include — not generic advice. Frame them as encouraging coaching ("Try opening with...", "Next time, mention...", "A stronger version would include...").
 
 Score guide: 0-30 = weak/off-topic, 31-60 = partial/needs work, 61-80 = good/solid, 81-100 = excellent/comprehensive.
 Be specific — reference the actual content of their answer, not generic advice.`,

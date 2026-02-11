@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { api } from '@/lib/api';
+import { splitTextWithHighlight } from '@/lib/highlight';
 import type {
   LLMAnalysis,
   QuestionFeedbackResponse,
@@ -121,6 +122,55 @@ function saveState(reportId: string, state: PersistedState) {
   }
 }
 
+// ── Highlight types & component ──────────────────────────────
+
+interface ActiveHighlight {
+  type: 'strength' | 'improvement';
+  index: number;
+}
+
+function HighlightedAnswer({
+  answer,
+  feedback,
+  activeHighlight,
+}: {
+  answer: string;
+  feedback?: QuestionFeedbackResponse;
+  activeHighlight: ActiveHighlight | null;
+}) {
+  if (!activeHighlight || !feedback) {
+    return <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">{answer}</p>;
+  }
+
+  const { type, index } = activeHighlight;
+  const quotes = type === 'strength' ? feedback.strengthQuotes : feedback.improvementQuotes;
+  const quote = quotes?.[index] ?? '';
+
+  if (!quote) {
+    return <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">{answer}</p>;
+  }
+
+  const segments = splitTextWithHighlight(answer, quote);
+  const bgClass =
+    type === 'strength'
+      ? 'bg-[var(--color-success)]/20 rounded-sm'
+      : 'bg-[var(--color-warning)]/20 rounded-sm';
+
+  return (
+    <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">
+      {segments.map((seg, i) =>
+        seg.highlighted ? (
+          <mark key={i} className={`${bgClass} text-inherit`}>
+            {seg.text}
+          </mark>
+        ) : (
+          <span key={i}>{seg.text}</span>
+        )
+      )}
+    </p>
+  );
+}
+
 // ── Saved Answers View ───────────────────────────────────────
 
 function SavedAnswersView({
@@ -131,6 +181,10 @@ function SavedAnswersView({
   onDelete: (index: number) => void;
 }) {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const [savedHighlight, setSavedHighlight] = useState<{
+    savedIdx: number;
+    highlight: ActiveHighlight;
+  } | null>(null);
 
   if (savedAnswers.length === 0) {
     return (
@@ -180,7 +234,10 @@ function SavedAnswersView({
             className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden"
           >
             <button
-              onClick={() => setExpandedIdx(isExpanded ? null : realIdx)}
+              onClick={() => {
+                setExpandedIdx(isExpanded ? null : realIdx);
+                setSavedHighlight(null);
+              }}
               className="flex w-full items-center gap-3 p-4 text-left"
             >
               {/* Score badge */}
@@ -248,9 +305,15 @@ function SavedAnswersView({
                   <span className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
                     Your Answer
                   </span>
-                  <p className="mt-2 text-sm text-[var(--text-secondary)] whitespace-pre-wrap">
-                    {sa.answer}
-                  </p>
+                  <div className="mt-2">
+                    <HighlightedAnswer
+                      answer={sa.answer}
+                      feedback={sa.feedback}
+                      activeHighlight={
+                        savedHighlight?.savedIdx === realIdx ? savedHighlight.highlight : null
+                      }
+                    />
+                  </div>
                 </div>
 
                 {/* Feedback */}
@@ -276,7 +339,32 @@ function SavedAnswersView({
                           {sa.feedback.strengths.map((s, i) => (
                             <li
                               key={i}
-                              className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                              className={`flex items-start gap-2 text-sm text-[var(--text-secondary)] rounded-md px-1.5 py-0.5 -mx-1.5 transition-colors cursor-pointer ${
+                                savedHighlight?.savedIdx === realIdx &&
+                                savedHighlight.highlight.type === 'strength' &&
+                                savedHighlight.highlight.index === i
+                                  ? 'bg-[var(--color-success)]/10'
+                                  : 'hover:bg-[var(--color-success)]/5'
+                              }`}
+                              onMouseEnter={() =>
+                                setSavedHighlight({
+                                  savedIdx: realIdx,
+                                  highlight: { type: 'strength', index: i },
+                                })
+                              }
+                              onMouseLeave={() => setSavedHighlight(null)}
+                              onClick={() =>
+                                setSavedHighlight((prev) =>
+                                  prev?.savedIdx === realIdx &&
+                                  prev.highlight.type === 'strength' &&
+                                  prev.highlight.index === i
+                                    ? null
+                                    : {
+                                        savedIdx: realIdx,
+                                        highlight: { type: 'strength', index: i },
+                                      }
+                                )
+                              }
                             >
                               <span className="mt-0.5 text-[var(--color-success)]">+</span>
                               {s}
@@ -294,10 +382,67 @@ function SavedAnswersView({
                           {sa.feedback.improvements.map((imp, i) => (
                             <li
                               key={i}
-                              className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                              className={`flex items-start gap-2 text-sm text-[var(--text-secondary)] rounded-md px-1.5 py-0.5 -mx-1.5 transition-colors cursor-pointer ${
+                                savedHighlight?.savedIdx === realIdx &&
+                                savedHighlight.highlight.type === 'improvement' &&
+                                savedHighlight.highlight.index === i
+                                  ? 'bg-[var(--color-warning)]/10'
+                                  : 'hover:bg-[var(--color-warning)]/5'
+                              }`}
+                              onMouseEnter={() =>
+                                setSavedHighlight({
+                                  savedIdx: realIdx,
+                                  highlight: { type: 'improvement', index: i },
+                                })
+                              }
+                              onMouseLeave={() => setSavedHighlight(null)}
+                              onClick={() =>
+                                setSavedHighlight((prev) =>
+                                  prev?.savedIdx === realIdx &&
+                                  prev.highlight.type === 'improvement' &&
+                                  prev.highlight.index === i
+                                    ? null
+                                    : {
+                                        savedIdx: realIdx,
+                                        highlight: { type: 'improvement', index: i },
+                                      }
+                                )
+                              }
                             >
                               <span className="mt-0.5 text-[var(--color-warning)]">-</span>
                               {imp}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {sa.feedback.tips && sa.feedback.tips.length > 0 && (
+                      <div>
+                        <span className="text-xs font-medium text-[var(--accent-primary)]">
+                          Tips for Next Time
+                        </span>
+                        <ul className="mt-1 space-y-1">
+                          {sa.feedback.tips.map((tip, i) => (
+                            <li
+                              key={i}
+                              className="flex items-start gap-2 text-sm text-[var(--text-secondary)] px-1.5 py-0.5 -mx-1.5"
+                            >
+                              <span className="mt-0.5 text-[var(--accent-primary)]">
+                                <svg
+                                  className="h-3.5 w-3.5"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                                  />
+                                </svg>
+                              </span>
+                              {tip}
                             </li>
                           ))}
                         </ul>
@@ -356,6 +501,7 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
   const [loadingBackfill, setLoadingBackfill] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [activeView, setActiveView] = useState<'practice' | 'saved'>('practice');
+  const [activeHighlight, setActiveHighlight] = useState<ActiveHighlight | null>(null);
 
   // Persist state changes
   useEffect(() => {
@@ -759,7 +905,10 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
                 >
                   {/* Collapsed header — always visible */}
                   <button
-                    onClick={() => setExpandedIndex(isExpanded ? null : displayPos)}
+                    onClick={() => {
+                      setExpandedIndex(isExpanded ? null : displayPos);
+                      setActiveHighlight(null);
+                    }}
                     className="flex w-full items-start gap-4 p-5 text-left"
                   >
                     <div
@@ -917,9 +1066,11 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
                                 Improve Answer
                               </button>
                             </div>
-                            <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">
-                              {state.answers[poolIndex]}
-                            </p>
+                            <HighlightedAnswer
+                              answer={state.answers[poolIndex]}
+                              feedback={feedbackData}
+                              activeHighlight={activeHighlight}
+                            />
                           </div>
                         </div>
                       )}
@@ -976,7 +1127,23 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
                                 {feedbackData.strengths.map((s, i) => (
                                   <li
                                     key={i}
-                                    className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                                    className={`flex items-start gap-2 text-sm text-[var(--text-secondary)] rounded-md px-1.5 py-0.5 -mx-1.5 transition-colors cursor-pointer ${
+                                      activeHighlight?.type === 'strength' &&
+                                      activeHighlight.index === i
+                                        ? 'bg-[var(--color-success)]/10'
+                                        : 'hover:bg-[var(--color-success)]/5'
+                                    }`}
+                                    onMouseEnter={() =>
+                                      setActiveHighlight({ type: 'strength', index: i })
+                                    }
+                                    onMouseLeave={() => setActiveHighlight(null)}
+                                    onClick={() =>
+                                      setActiveHighlight((prev) =>
+                                        prev?.type === 'strength' && prev.index === i
+                                          ? null
+                                          : { type: 'strength', index: i }
+                                      )
+                                    }
                                   >
                                     <span className="mt-0.5 text-[var(--color-success)]">+</span>
                                     {s}
@@ -994,7 +1161,23 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
                                 {feedbackData.improvements.map((imp, i) => (
                                   <li
                                     key={i}
-                                    className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                                    className={`flex items-start gap-2 text-sm text-[var(--text-secondary)] rounded-md px-1.5 py-0.5 -mx-1.5 transition-colors cursor-pointer ${
+                                      activeHighlight?.type === 'improvement' &&
+                                      activeHighlight.index === i
+                                        ? 'bg-[var(--color-warning)]/10'
+                                        : 'hover:bg-[var(--color-warning)]/5'
+                                    }`}
+                                    onMouseEnter={() =>
+                                      setActiveHighlight({ type: 'improvement', index: i })
+                                    }
+                                    onMouseLeave={() => setActiveHighlight(null)}
+                                    onClick={() =>
+                                      setActiveHighlight((prev) =>
+                                        prev?.type === 'improvement' && prev.index === i
+                                          ? null
+                                          : { type: 'improvement', index: i }
+                                      )
+                                    }
                                   >
                                     <span className="mt-0.5 text-[var(--color-warning)]">-</span>
                                     {imp}
@@ -1002,6 +1185,60 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
                                 ))}
                               </ul>
                             </div>
+                          )}
+                          {feedbackData.tips && feedbackData.tips.length > 0 && (
+                            <div>
+                              <span className="text-xs font-medium text-[var(--accent-primary)]">
+                                Tips for Next Time
+                              </span>
+                              <ul className="mt-1 space-y-1">
+                                {feedbackData.tips.map((tip, i) => (
+                                  <li
+                                    key={i}
+                                    className="flex items-start gap-2 text-sm text-[var(--text-secondary)] px-1.5 py-0.5 -mx-1.5"
+                                  >
+                                    <span className="mt-0.5 text-[var(--accent-primary)]">
+                                      <svg
+                                        className="h-3.5 w-3.5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                                        />
+                                      </svg>
+                                    </span>
+                                    {tip}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {/* Try Again button */}
+                          {!isEditing && (
+                            <button
+                              onClick={() => handleImproveAnswer(poolIndex)}
+                              className="flex items-center gap-1.5 rounded-lg border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 px-4 py-2 text-sm font-medium text-[var(--accent-primary)] transition-all hover:bg-[var(--accent-primary)]/10"
+                            >
+                              <svg
+                                className="h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                />
+                              </svg>
+                              Try Again
+                            </button>
                           )}
                         </div>
                       )}

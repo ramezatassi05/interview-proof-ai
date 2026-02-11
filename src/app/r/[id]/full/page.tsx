@@ -18,7 +18,7 @@ import { RiskList } from '@/components/results/RiskList';
 import { InterviewQuestions } from '@/components/diagnostic/InterviewQuestions';
 import { StudyPlan } from '@/components/diagnostic/StudyPlan';
 import { ScoreBreakdown } from '@/components/diagnostic/ScoreBreakdown';
-import { ArchetypeCard } from '@/components/diagnostic/ArchetypeCard';
+import { CoachingHub } from '@/components/diagnostic/CoachingHub';
 import { CognitiveRadar } from '@/components/diagnostic/CognitiveRadar';
 import { RecruiterView } from '@/components/diagnostic/RecruiterView';
 import { PracticeIntelligencePanel } from '@/components/diagnostic/PracticeIntelligencePanel';
@@ -406,13 +406,18 @@ export default function FullDiagnosticPage() {
 
         <TabContent id="archetype">
           {report.diagnosticIntelligence?.archetypeProfile ? (
-            <ArchetypeCard
-              profile={report.diagnosticIntelligence.archetypeProfile}
+            <CoachingHub
+              archetypeProfile={report.diagnosticIntelligence.archetypeProfile}
+              roundForecasts={report.diagnosticIntelligence.roundForecasts}
+              trajectoryProjection={report.diagnosticIntelligence.trajectoryProjection}
+              evidenceContext={report.diagnosticIntelligence.evidenceContext}
+              personalizedCoaching={report.personalizedCoaching}
+              userRoundType={report.roundType}
               companyName={report.extractedJD?.companyName}
             />
           ) : (
             <div className="text-center py-12 text-[var(--text-secondary)]">
-              No archetype profile available
+              No coaching data available
             </div>
           )}
         </TabContent>

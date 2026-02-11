@@ -1,0 +1,419 @@
+'use client';
+
+import { useState } from 'react';
+import type {
+  ArchetypeProfile,
+  InterviewRoundForecasts,
+  TrajectoryProjection,
+  EvidenceContext,
+  PersonalizedCoaching,
+} from '@/types';
+import { RoundForecast } from './RoundForecast';
+
+interface CoachingHubProps {
+  archetypeProfile: ArchetypeProfile;
+  roundForecasts?: InterviewRoundForecasts;
+  trajectoryProjection?: TrajectoryProjection;
+  evidenceContext?: EvidenceContext;
+  personalizedCoaching?: PersonalizedCoaching;
+  userRoundType?: string;
+  companyName?: string;
+}
+
+// ── Section 1: Candidate Profile ──────────────────────────────────────
+
+function CandidateProfile({
+  profile,
+  companyName,
+}: {
+  profile: ArchetypeProfile;
+  companyName?: string;
+}) {
+  const confidencePct = Math.round(profile.confidence * 100);
+
+  return (
+    <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-6">
+      <div className="flex items-start gap-4">
+        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400">
+          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-amber-400 uppercase tracking-wide mb-1">
+            Your Candidate Profile
+          </p>
+          <h3 className="text-xl font-bold text-[var(--text-primary)]">{profile.label}</h3>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+            {profile.description}
+          </p>
+
+          {/* Confidence bar */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs text-[var(--text-muted)]">Classification confidence</span>
+              <span className="text-xs font-medium text-amber-400">{confidencePct}%</span>
+            </div>
+            <div className="h-2 w-full rounded-full bg-amber-500/10">
+              <div
+                className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                style={{ width: `${confidencePct}%` }}
+              />
+            </div>
+          </div>
+
+          {companyName && (
+            <p className="mt-3 text-xs text-[var(--text-muted)]">
+              Classified based on your {companyName} interview analysis
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Section 3: Improvement Trajectory ─────────────────────────────────
+
+function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjection }) {
+  const [expandedDay, setExpandedDay] = useState<string | null>(null);
+
+  const milestones = [
+    {
+      key: 'day3',
+      label: 'Day 3',
+      ...trajectory.day3Projection,
+    },
+    {
+      key: 'day7',
+      label: 'Day 7',
+      ...trajectory.day7Projection,
+    },
+    {
+      key: 'day14',
+      label: 'Day 14',
+      ...trajectory.day14Projection,
+    },
+  ];
+
+  const totalImprovement = trajectory.day14Projection.score - trajectory.currentScore;
+
+  const potentialColors: Record<string, { text: string; bg: string }> = {
+    high: { text: 'text-emerald-400', bg: 'bg-emerald-500/15' },
+    medium: { text: 'text-amber-400', bg: 'bg-amber-500/15' },
+    low: { text: 'text-[var(--text-muted)]', bg: 'bg-[var(--bg-elevated)]' },
+  };
+
+  const potentialStyle = potentialColors[trajectory.improvementPotential] ?? potentialColors.medium;
+
+  return (
+    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Improvement Trajectory</h3>
+        <span
+          className={`text-xs font-medium px-2.5 py-1 rounded-full ${potentialStyle.bg} ${potentialStyle.text}`}
+        >
+          {trajectory.improvementPotential} potential
+        </span>
+      </div>
+      <p className="text-sm text-[var(--text-muted)] mb-6">
+        Projected score growth with consistent preparation
+      </p>
+
+      {/* Current score anchor */}
+      <div className="flex items-center gap-3 mb-5">
+        <span className="text-sm text-[var(--text-muted)]">Current</span>
+        <div className="flex-1 h-px bg-[var(--border-default)]" />
+        <span className="text-2xl font-bold text-[var(--text-primary)]">
+          {trajectory.currentScore}
+        </span>
+      </div>
+
+      {/* Timeline milestones */}
+      <div className="grid grid-cols-3 gap-3">
+        {milestones.map((m) => {
+          const delta = m.score - trajectory.currentScore;
+          const isExpanded = expandedDay === m.key;
+
+          return (
+            <button
+              key={m.key}
+              onClick={() => setExpandedDay(isExpanded ? null : m.key)}
+              className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4 text-left hover:border-emerald-500/40 transition-colors"
+            >
+              <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">
+                {m.label}
+              </span>
+              <p className="mt-1 text-xl font-bold text-[var(--text-primary)]">{m.score}</p>
+              {delta > 0 && (
+                <span className="text-sm font-medium text-emerald-400">+{delta} pts</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Expanded assumptions */}
+      {expandedDay && (
+        <div className="mt-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4">
+          <p className="text-xs font-medium text-[var(--text-muted)] mb-2">
+            {milestones.find((m) => m.key === expandedDay)?.label} assumptions
+          </p>
+          <ul className="space-y-1.5">
+            {milestones
+              .find((m) => m.key === expandedDay)
+              ?.assumptions.map((a, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                  <span className="text-[var(--text-muted)] mt-0.5">-</span>
+                  {a}
+                </li>
+              ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Summary */}
+      {totalImprovement > 0 && (
+        <div className="mt-5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-4 text-center">
+          <span className="text-sm text-[var(--text-secondary)]">
+            <span className="font-semibold text-emerald-400">+{totalImprovement} points</span>{' '}
+            projected improvement over 14 days
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Section 4: Personalized Action Plan ───────────────────────────────
+
+function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roundFocus?: string }) {
+  const [showAll, setShowAll] = useState(false);
+
+  const visibleTips = showAll ? coachingTips : coachingTips.slice(0, 2);
+
+  return (
+    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
+        Personalized Action Plan
+      </h3>
+      <p className="text-sm text-[var(--text-muted)] mb-5">
+        Targeted actions based on your candidate archetype
+      </p>
+
+      <div className="space-y-3">
+        {visibleTips.map((tip, index) => (
+          <div
+            key={index}
+            className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4"
+          >
+            <div className="flex items-start gap-3">
+              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-xs font-semibold text-amber-400">
+                {index + 1}
+              </span>
+              <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{tip}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {coachingTips.length > 2 && (
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="mt-3 flex items-center gap-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+        >
+          <svg
+            className={`h-4 w-4 transition-transform ${showAll ? 'rotate-90' : ''}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+          {showAll ? 'Show less' : `Show ${coachingTips.length - 2} more`}
+        </button>
+      )}
+
+      {roundFocus && (
+        <div className="mt-5 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+          <div className="flex items-start gap-3">
+            <svg
+              className="h-5 w-5 text-amber-400 mt-0.5 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+            <div>
+              <span className="text-sm font-medium text-amber-400">Round-Specific Focus</span>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">{roundFocus}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Section 5: Evidence Snapshot ───────────────────────────────────────
+
+function EvidenceSnapshot({ evidence }: { evidence: EvidenceContext }) {
+  return (
+    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
+        Your Evidence Snapshot
+      </h3>
+      <p className="text-sm text-[var(--text-muted)] mb-5">
+        What your resume already proves to recruiters
+      </p>
+
+      {/* Two-column: met vs unmet requirements */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Requirements met */}
+        {evidence.matchedMustHaves.length > 0 && (
+          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
+            <p className="text-xs font-medium text-emerald-400 uppercase tracking-wide mb-3">
+              Requirements You Meet
+            </p>
+            <ul className="space-y-2">
+              {evidence.matchedMustHaves.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                  <svg
+                    className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Requirements to address */}
+        {evidence.unmatchedMustHaves.length > 0 && (
+          <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+            <p className="text-xs font-medium text-amber-400 uppercase tracking-wide mb-3">
+              Requirements to Address
+            </p>
+            <ul className="space-y-2">
+              {evidence.unmatchedMustHaves.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                  <svg
+                    className="h-4 w-4 text-amber-400 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01"
+                    />
+                  </svg>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* Bonus qualifications */}
+      {evidence.matchedNiceToHaves.length > 0 && (
+        <div className="mt-4">
+          <p className="text-xs font-medium text-[var(--text-muted)] mb-2">Bonus Qualifications</p>
+          <div className="flex flex-wrap gap-2">
+            {evidence.matchedNiceToHaves.map((item, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Strongest metrics */}
+      {evidence.strongestMetrics.length > 0 && (
+        <div className="mt-5">
+          <p className="text-xs font-medium text-[var(--text-muted)] mb-3">
+            Your Strongest Evidence
+          </p>
+          <div className="space-y-2">
+            {evidence.strongestMetrics.map((metric, i) => (
+              <div
+                key={i}
+                className="border-l-2 border-emerald-500/50 pl-3 py-1 text-sm text-[var(--text-secondary)]"
+              >
+                {metric}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main CoachingHub ──────────────────────────────────────────────────
+
+export function CoachingHub({
+  archetypeProfile,
+  roundForecasts,
+  trajectoryProjection,
+  evidenceContext,
+  personalizedCoaching,
+  userRoundType,
+  companyName,
+}: CoachingHubProps) {
+  return (
+    <div className="space-y-6">
+      {/* Section 1: Candidate Profile */}
+      <CandidateProfile profile={archetypeProfile} companyName={companyName} />
+
+      {/* Section 2: Round Forecast (reuses existing component) */}
+      {roundForecasts && (
+        <RoundForecast
+          forecasts={roundForecasts}
+          userRoundType={userRoundType}
+          companyName={companyName}
+        />
+      )}
+
+      {/* Section 3: Improvement Trajectory */}
+      {trajectoryProjection && <ImprovementTrajectory trajectory={trajectoryProjection} />}
+
+      {/* Section 4: Personalized Action Plan */}
+      <ActionPlan
+        coachingTips={archetypeProfile.coachingTips}
+        roundFocus={personalizedCoaching?.roundFocus}
+      />
+
+      {/* Section 5: Evidence Snapshot */}
+      {evidenceContext && <EvidenceSnapshot evidence={evidenceContext} />}
+    </div>
+  );
+}

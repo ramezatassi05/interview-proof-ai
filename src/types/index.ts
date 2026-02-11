@@ -177,6 +177,9 @@ export interface QuestionFeedbackResponse {
   score: number; // 0-100
   strengths: string[];
   improvements: string[];
+  strengthQuotes?: string[]; // parallel to strengths — verbatim quote from the user's answer
+  improvementQuotes?: string[]; // parallel to improvements — verbatim quote from the user's answer
+  tips?: string[]; // actionable suggestions for the next attempt
 }
 
 export interface BestAnswerResponse {
