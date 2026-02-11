@@ -6,7 +6,7 @@ import type { RoundType } from '@/types';
 const PrepPreferencesSchema = z.object({
   timeline: z.enum(['1day', '3days', '1week', '2weeks', '4weeks_plus']),
   dailyHours: z.number().min(0.5).max(6),
-  experienceLevel: z.enum(['entry', 'mid', 'senior', 'staff_plus']),
+  experienceLevel: z.enum(['intern', 'entry', 'mid']),
   focusAreas: z
     .array(
       z.enum([

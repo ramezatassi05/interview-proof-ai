@@ -2,11 +2,61 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { api } from '@/lib/api';
-import type { LLMAnalysis, QuestionFeedbackResponse, BestAnswerResponse } from '@/types';
+import type {
+  LLMAnalysis,
+  QuestionFeedbackResponse,
+  BestAnswerResponse,
+  SavedAnswer,
+} from '@/types';
 
 const DISPLAY_COUNT = 8;
 const STORAGE_PREFIX = 'iq-practice-';
 const MIN_POOL_SIZE = 100;
+
+// ── Utility helpers ──────────────────────────────────────────
+
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function formatRelativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+function buildSavedAnswer(
+  poolIndex: number,
+  allQuestions: LLMAnalysis['interviewQuestions'],
+  answers: Record<number, string>,
+  feedback: Record<number, QuestionFeedbackResponse>,
+  bestAnswers: Record<number, BestAnswerResponse>
+): SavedAnswer {
+  return {
+    poolIndex,
+    question: allQuestions[poolIndex],
+    answer: answers[poolIndex],
+    feedback: feedback[poolIndex],
+    bestAnswer: bestAnswers[poolIndex],
+    savedAt: new Date().toISOString(),
+  };
+}
+
+// ── Types & persistence ──────────────────────────────────────
 
 interface InterviewQuestionsProps {
   questions: LLMAnalysis['interviewQuestions'];
@@ -21,6 +71,7 @@ interface PersistedState {
   bestAnswers: Record<number, BestAnswerResponse>;
   submittedIndices: number[];
   allQuestions: LLMAnalysis['interviewQuestions'];
+  savedAnswers: SavedAnswer[];
 }
 
 function loadState(
@@ -38,6 +89,8 @@ function loadState(
       if (initialQuestions.length > parsed.allQuestions.length) {
         parsed.allQuestions = initialQuestions;
       }
+      // Migration guard for savedAnswers
+      if (!parsed.savedAnswers) parsed.savedAnswers = [];
       return parsed;
     }
   } catch {
@@ -55,6 +108,7 @@ function defaultState(questions: LLMAnalysis['interviewQuestions']): PersistedSt
     bestAnswers: {},
     submittedIndices: [],
     allQuestions: questions,
+    savedAnswers: [],
   };
 }
 
@@ -67,6 +121,231 @@ function saveState(reportId: string, state: PersistedState) {
   }
 }
 
+// ── Saved Answers View ───────────────────────────────────────
+
+function SavedAnswersView({
+  savedAnswers,
+  onDelete,
+}: {
+  savedAnswers: SavedAnswer[];
+  onDelete: (index: number) => void;
+}) {
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+
+  if (savedAnswers.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <svg
+          className="h-12 w-12 text-[var(--text-muted)] mb-4 opacity-40"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+          />
+        </svg>
+        <p className="text-sm text-[var(--text-muted)]">No saved answers yet.</p>
+        <p className="mt-1 text-xs text-[var(--text-muted)] opacity-70">
+          When you refresh an answered question, it will be archived here.
+        </p>
+      </div>
+    );
+  }
+
+  // Most recent first
+  const sorted = [...savedAnswers].reverse();
+
+  return (
+    <div className="space-y-3">
+      {sorted.map((sa, reverseIdx) => {
+        const realIdx = savedAnswers.length - 1 - reverseIdx;
+        const isExpanded = expandedIdx === realIdx;
+        const score = sa.feedback?.score;
+        const scoreBg =
+          score !== undefined
+            ? score >= 80
+              ? 'bg-[var(--color-success)]/20 text-[var(--color-success)]'
+              : score >= 60
+                ? 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]'
+                : 'bg-[var(--color-danger)]/20 text-[var(--color-danger)]'
+            : 'bg-[var(--bg-elevated)] text-[var(--text-muted)]';
+
+        return (
+          <div
+            key={`saved-${realIdx}`}
+            className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden"
+          >
+            <button
+              onClick={() => setExpandedIdx(isExpanded ? null : realIdx)}
+              className="flex w-full items-center gap-3 p-4 text-left"
+            >
+              {/* Score badge */}
+              <span
+                className={`flex-shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${scoreBg}`}
+              >
+                {score !== undefined ? `${score}` : '—'}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[var(--text-primary)] truncate">
+                  {sa.question.question}
+                </p>
+                <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                  Saved {formatRelativeTime(sa.savedAt)}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Delete */}
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(realIdx);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.stopPropagation();
+                      onDelete(realIdx);
+                    }
+                  }}
+                  className="p-1 text-[var(--text-muted)] hover:text-[var(--color-danger)] transition-colors"
+                  title="Delete saved answer"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </span>
+                {/* Chevron */}
+                <svg
+                  className={`h-5 w-5 text-[var(--text-muted)] transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            </button>
+
+            {isExpanded && (
+              <div className="border-t border-[var(--border-default)] p-4 space-y-4">
+                {/* Answer */}
+                <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3">
+                  <span className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
+                    Your Answer
+                  </span>
+                  <p className="mt-2 text-sm text-[var(--text-secondary)] whitespace-pre-wrap">
+                    {sa.answer}
+                  </p>
+                </div>
+
+                {/* Feedback */}
+                {sa.feedback && (
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-primary)] p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
+                        AI Feedback
+                      </span>
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${scoreBg}`}
+                      >
+                        {sa.feedback.score}/100
+                      </span>
+                    </div>
+                    <p className="text-sm text-[var(--text-secondary)]">{sa.feedback.feedback}</p>
+                    {sa.feedback.strengths.length > 0 && (
+                      <div>
+                        <span className="text-xs font-medium text-[var(--color-success)]">
+                          Strengths
+                        </span>
+                        <ul className="mt-1 space-y-1">
+                          {sa.feedback.strengths.map((s, i) => (
+                            <li
+                              key={i}
+                              className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                            >
+                              <span className="mt-0.5 text-[var(--color-success)]">+</span>
+                              {s}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {sa.feedback.improvements.length > 0 && (
+                      <div>
+                        <span className="text-xs font-medium text-[var(--color-warning)]">
+                          Improvements
+                        </span>
+                        <ul className="mt-1 space-y-1">
+                          {sa.feedback.improvements.map((imp, i) => (
+                            <li
+                              key={i}
+                              className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                            >
+                              <span className="mt-0.5 text-[var(--color-warning)]">-</span>
+                              {imp}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Best answer */}
+                {sa.bestAnswer && (
+                  <div className="rounded-lg border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 p-4 space-y-3">
+                    <span className="text-xs font-medium uppercase tracking-wider text-[var(--accent-primary)]">
+                      Ideal Answer
+                    </span>
+                    <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">
+                      {sa.bestAnswer.bestAnswer}
+                    </p>
+                    {sa.bestAnswer.keyPoints.length > 0 && (
+                      <div>
+                        <span className="text-xs font-medium text-[var(--accent-primary)]">
+                          Key Points
+                        </span>
+                        <ul className="mt-1 space-y-1">
+                          {sa.bestAnswer.keyPoints.map((kp, i) => (
+                            <li
+                              key={i}
+                              className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                            >
+                              <span className="mt-0.5 text-[var(--accent-primary)]">*</span>
+                              {kp}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Main component ───────────────────────────────────────────
+
 export function InterviewQuestions({ questions, companyName, reportId }: InterviewQuestionsProps) {
   const [state, setState] = useState<PersistedState>(() => loadState(reportId, questions));
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
@@ -76,6 +355,7 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
   const [loadingRefresh, setLoadingRefresh] = useState(false);
   const [loadingBackfill, setLoadingBackfill] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [activeView, setActiveView] = useState<'practice' | 'saved'>('practice');
 
   // Persist state changes
   useEffect(() => {
@@ -126,12 +406,15 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
     state.displayedIndices.includes(i)
   ).length;
 
+  // FIX: Random selection instead of sequential scan
   const getUnusedIndex = useCallback((): number | null => {
     const usedSet = new Set(state.displayedIndices);
+    const unused: number[] = [];
     for (let i = 0; i < state.allQuestions.length; i++) {
-      if (!usedSet.has(i)) return i;
+      if (!usedSet.has(i)) unused.push(i);
     }
-    return null;
+    if (unused.length === 0) return null;
+    return pickRandom(unused);
   }, [state.displayedIndices, state.allQuestions.length]);
 
   const handleSubmitAnswer = useCallback(
@@ -195,24 +478,39 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
     [state.bestAnswers, state.allQuestions, reportId]
   );
 
+  // FIX: Allow refreshing answered questions (auto-archive) + random replacement
   const handleRefreshSingle = useCallback(
     (displayPos: number) => {
       const currentPoolIndex = state.displayedIndices[displayPos];
-      // Don't refresh if already answered
-      if (state.submittedIndices.includes(currentPoolIndex)) return;
-
       const newIndex = getUnusedIndex();
-      if (newIndex === null) return; // pool exhausted, handled below
+      if (newIndex === null) return; // pool exhausted
 
       setState((prev) => {
+        const newState = { ...prev };
+
+        // If the question was answered, archive it to savedAnswers
+        if (prev.submittedIndices.includes(currentPoolIndex)) {
+          const saved = buildSavedAnswer(
+            currentPoolIndex,
+            prev.allQuestions,
+            prev.answers,
+            prev.feedback,
+            prev.bestAnswers
+          );
+          newState.savedAnswers = [...prev.savedAnswers, saved];
+          newState.submittedIndices = prev.submittedIndices.filter((i) => i !== currentPoolIndex);
+        }
+
         const newDisplayed = [...prev.displayedIndices];
         newDisplayed[displayPos] = newIndex;
-        return { ...prev, displayedIndices: newDisplayed };
+        newState.displayedIndices = newDisplayed;
+        return newState;
       });
     },
-    [state.displayedIndices, state.submittedIndices, getUnusedIndex]
+    [state.displayedIndices, getUnusedIndex]
   );
 
+  // FIX: Shuffle unused indices + archive all answered + replace ALL displayed
   const handleRefreshAll = useCallback(async () => {
     // Collect unused indices
     const usedSet = new Set(state.displayedIndices);
@@ -222,7 +520,7 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
     }
 
     // If not enough unused questions, generate more
-    if (unusedIndices.length < DISPLAY_COUNT - answeredCount) {
+    if (unusedIndices.length < DISPLAY_COUNT) {
       setLoadingRefresh(true);
       try {
         const allQTexts = state.allQuestions.map((q) => q.question);
@@ -246,32 +544,67 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
       }
     }
 
-    // Now swap unanswered displayed questions
-    let unusedPtr = 0;
+    // Shuffle unused indices and replace ALL displayed questions
     setState((prev) => {
-      const newDisplayed = [...prev.displayedIndices];
       // Recalculate unused since state may have changed
-      const currentUsed = new Set(newDisplayed);
+      const currentUsed = new Set(prev.displayedIndices);
       const currentUnused: number[] = [];
       for (let i = 0; i < prev.allQuestions.length; i++) {
         if (!currentUsed.has(i)) currentUnused.push(i);
       }
-      unusedPtr = 0;
-      for (let pos = 0; pos < newDisplayed.length; pos++) {
-        const poolIdx = newDisplayed[pos];
-        if (!prev.submittedIndices.includes(poolIdx) && unusedPtr < currentUnused.length) {
-          newDisplayed[pos] = currentUnused[unusedPtr++];
+      const shuffled = shuffleArray(currentUnused);
+
+      // Archive all answered questions
+      const newSaved = [...prev.savedAnswers];
+      for (const poolIdx of prev.displayedIndices) {
+        if (prev.submittedIndices.includes(poolIdx)) {
+          newSaved.push(
+            buildSavedAnswer(
+              poolIdx,
+              prev.allQuestions,
+              prev.answers,
+              prev.feedback,
+              prev.bestAnswers
+            )
+          );
         }
       }
-      return { ...prev, displayedIndices: newDisplayed };
+
+      // Replace all displayed questions
+      const newDisplayed = [...prev.displayedIndices];
+      let ptr = 0;
+      for (let pos = 0; pos < newDisplayed.length; pos++) {
+        if (ptr < shuffled.length) {
+          newDisplayed[pos] = shuffled[ptr++];
+        }
+      }
+
+      // Clean up submittedIndices for archived questions
+      const archivedSet = new Set(
+        prev.displayedIndices.filter((i) => prev.submittedIndices.includes(i))
+      );
+      const newSubmitted = prev.submittedIndices.filter((i) => !archivedSet.has(i));
+
+      return {
+        ...prev,
+        displayedIndices: newDisplayed,
+        submittedIndices: newSubmitted,
+        savedAnswers: newSaved,
+      };
     });
     setExpandedIndex(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- submittedIndices needed to filter answered questions
-  }, [state.displayedIndices, state.allQuestions, state.submittedIndices, answeredCount, reportId]);
+  }, [state.displayedIndices, state.allQuestions, reportId]);
 
   const handleImproveAnswer = useCallback((poolIndex: number) => {
     setEditingIndex(poolIndex);
     setDraftAnswers((prev) => ({ ...prev }));
+  }, []);
+
+  const handleDeleteSavedAnswer = useCallback((index: number) => {
+    setState((prev) => ({
+      ...prev,
+      savedAnswers: prev.savedAnswers.filter((_, i) => i !== index),
+    }));
   }, []);
 
   if (state.allQuestions.length === 0) {
@@ -317,126 +650,186 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
             </span>
           </div>
 
-          {/* Refresh All */}
-          <button
-            onClick={handleRefreshAll}
-            disabled={loadingRefresh}
-            className="flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] px-3 py-1.5 text-sm text-[var(--text-secondary)] transition-all hover:border-[var(--border-accent)] hover:text-[var(--text-primary)] disabled:opacity-50"
-          >
-            <svg
-              className={`h-4 w-4 ${loadingRefresh ? 'animate-spin' : ''}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {/* Refresh All — only show in practice view */}
+          {activeView === 'practice' && (
+            <button
+              onClick={handleRefreshAll}
+              disabled={loadingRefresh}
+              className="flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] px-3 py-1.5 text-sm text-[var(--text-secondary)] transition-all hover:border-[var(--border-accent)] hover:text-[var(--text-primary)] disabled:opacity-50"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-            {loadingRefresh ? 'Loading...' : 'Refresh All'}
-          </button>
+              <svg
+                className={`h-4 w-4 ${loadingRefresh ? 'animate-spin' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              {loadingRefresh ? 'Loading...' : 'Refresh All'}
+            </button>
+          )}
         </div>
       </div>
 
-      <p className="mb-4 text-sm text-[var(--text-muted)]">
-        Practice answering these questions, then get AI feedback on your responses. Pool:{' '}
-        {state.allQuestions.length} questions.
-        {loadingBackfill && (
-          <span className="ml-2 inline-flex items-center gap-1 text-[var(--accent-primary)]">
-            <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-            Loading more questions...
-          </span>
-        )}
-      </p>
+      {/* Sub-nav toggle */}
+      <div className="mb-4 flex items-center rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-1 w-fit">
+        <button
+          onClick={() => setActiveView('practice')}
+          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-all ${
+            activeView === 'practice'
+              ? 'bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+          }`}
+        >
+          Practice
+        </button>
+        <button
+          onClick={() => setActiveView('saved')}
+          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-all flex items-center gap-1.5 ${
+            activeView === 'saved'
+              ? 'bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+          }`}
+        >
+          Saved Answers
+          {state.savedAnswers.length > 0 && (
+            <span className="rounded-full bg-[var(--accent-primary)]/20 px-1.5 py-0.5 text-xs font-semibold text-[var(--accent-primary)]">
+              {state.savedAnswers.length}
+            </span>
+          )}
+        </button>
+      </div>
 
-      {/* Question Cards */}
-      <div className="space-y-4">
-        {state.displayedIndices.map((poolIndex, displayPos) => {
-          const q = state.allQuestions[poolIndex];
-          if (!q) return null;
+      {/* Saved Answers view */}
+      {activeView === 'saved' && (
+        <SavedAnswersView savedAnswers={state.savedAnswers} onDelete={handleDeleteSavedAnswer} />
+      )}
 
-          const isExpanded = expandedIndex === displayPos;
-          const isSubmitted = state.submittedIndices.includes(poolIndex);
-          const isEditing = editingIndex === poolIndex;
-          const feedbackData = state.feedback[poolIndex];
-          const bestAnswerData = state.bestAnswers[poolIndex];
-          const isFeedbackLoading = loadingFeedback[poolIndex];
-          const isBestAnswerLoading = loadingBestAnswer[poolIndex];
+      {/* Practice view */}
+      {activeView === 'practice' && (
+        <>
+          <p className="mb-4 text-sm text-[var(--text-muted)]">
+            Practice answering these questions, then get AI feedback on your responses. Pool:{' '}
+            {state.allQuestions.length} questions.
+            {loadingBackfill && (
+              <span className="ml-2 inline-flex items-center gap-1 text-[var(--accent-primary)]">
+                <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+                Loading more questions...
+              </span>
+            )}
+          </p>
 
-          return (
-            <div
-              key={`${poolIndex}-${displayPos}`}
-              className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden transition-all"
-            >
-              {/* Collapsed header — always visible */}
-              <button
-                onClick={() => setExpandedIndex(isExpanded ? null : displayPos)}
-                className="flex w-full items-start gap-4 p-5 text-left"
-              >
+          {/* Question Cards */}
+          <div className="space-y-4">
+            {state.displayedIndices.map((poolIndex, displayPos) => {
+              const q = state.allQuestions[poolIndex];
+              if (!q) return null;
+
+              const isExpanded = expandedIndex === displayPos;
+              const isSubmitted = state.submittedIndices.includes(poolIndex);
+              const isEditing = editingIndex === poolIndex;
+              const feedbackData = state.feedback[poolIndex];
+              const bestAnswerData = state.bestAnswers[poolIndex];
+              const isFeedbackLoading = loadingFeedback[poolIndex];
+              const isBestAnswerLoading = loadingBestAnswer[poolIndex];
+
+              return (
                 <div
-                  className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold ${
-                    isSubmitted
-                      ? 'bg-[var(--color-success)]/20 text-[var(--color-success)]'
-                      : 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]'
-                  }`}
+                  key={`${poolIndex}-${displayPos}`}
+                  className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden transition-all"
                 >
-                  {isSubmitted ? (
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  ) : (
-                    displayPos + 1
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-semibold text-[var(--text-primary)]">
-                    {q.question}
-                  </h3>
-                  <p className="mt-1 text-sm text-[var(--text-muted)]">{q.why}</p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {/* Refresh single question */}
-                  {!isSubmitted && (
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRefreshSingle(displayPos);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                  {/* Collapsed header — always visible */}
+                  <button
+                    onClick={() => setExpandedIndex(isExpanded ? null : displayPos)}
+                    className="flex w-full items-start gap-4 p-5 text-left"
+                  >
+                    <div
+                      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold ${
+                        isSubmitted
+                          ? 'bg-[var(--color-success)]/20 text-[var(--color-success)]'
+                          : 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]'
+                      }`}
+                    >
+                      {isSubmitted ? (
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      ) : (
+                        displayPos + 1
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-semibold text-[var(--text-primary)]">
+                        {q.question}
+                      </h3>
+                      <p className="mt-1 text-sm text-[var(--text-muted)]">{q.why}</p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {/* Refresh single question — always visible */}
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
                           e.stopPropagation();
                           handleRefreshSingle(displayPos);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.stopPropagation();
+                            handleRefreshSingle(displayPos);
+                          }
+                        }}
+                        className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                        title={
+                          isSubmitted ? 'Archive & swap question' : 'Swap for a different question'
                         }
-                      }}
-                      className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-                      title="Swap for a different question"
-                    >
+                      >
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
+                        </svg>
+                      </span>
+                      {/* Expand/collapse chevron */}
                       <svg
-                        className="h-4 w-4"
+                        className={`h-5 w-5 text-[var(--text-muted)] transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -445,255 +838,241 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </span>
-                  )}
-                  {/* Expand/collapse chevron */}
-                  <svg
-                    className={`h-5 w-5 text-[var(--text-muted)] transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
-              </button>
+                    </div>
+                  </button>
 
-              {/* Expanded content */}
-              {isExpanded && (
-                <div className="border-t border-[var(--border-default)] p-5 space-y-4">
-                  {/* Answer area — show textarea if not submitted or editing */}
-                  {(!isSubmitted || isEditing) && (
-                    <div className="space-y-3">
-                      <textarea
-                        className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] resize-y"
-                        rows={4}
-                        placeholder="Type your answer here..."
-                        value={
-                          draftAnswers[poolIndex] !== undefined
-                            ? draftAnswers[poolIndex]
-                            : (state.answers[poolIndex] ?? '')
-                        }
-                        onChange={(e) =>
-                          setDraftAnswers((prev) => ({
-                            ...prev,
-                            [poolIndex]: e.target.value,
-                          }))
-                        }
-                      />
-                      <div className="flex items-center gap-3">
+                  {/* Expanded content */}
+                  {isExpanded && (
+                    <div className="border-t border-[var(--border-default)] p-5 space-y-4">
+                      {/* Answer area — show textarea if not submitted or editing */}
+                      {(!isSubmitted || isEditing) && (
+                        <div className="space-y-3">
+                          <textarea
+                            className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] resize-y"
+                            rows={4}
+                            placeholder="Type your answer here..."
+                            value={
+                              draftAnswers[poolIndex] !== undefined
+                                ? draftAnswers[poolIndex]
+                                : (state.answers[poolIndex] ?? '')
+                            }
+                            onChange={(e) =>
+                              setDraftAnswers((prev) => ({
+                                ...prev,
+                                [poolIndex]: e.target.value,
+                              }))
+                            }
+                          />
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => handleSubmitAnswer(poolIndex)}
+                              disabled={
+                                isFeedbackLoading ||
+                                !(draftAnswers[poolIndex] || state.answers[poolIndex])?.trim()
+                              }
+                              className="rounded-lg bg-[var(--accent-primary)] px-4 py-2 text-sm font-medium text-white transition-all hover:opacity-90 disabled:opacity-50"
+                            >
+                              {isFeedbackLoading
+                                ? 'Analyzing...'
+                                : isEditing
+                                  ? 'Resubmit Answer'
+                                  : 'Submit Answer'}
+                            </button>
+                            {!isSubmitted && !bestAnswerData && (
+                              <button
+                                onClick={() => handleRevealBestAnswer(poolIndex)}
+                                disabled={isBestAnswerLoading}
+                                className="rounded-lg border border-[var(--border-default)] px-4 py-2 text-sm text-[var(--text-secondary)] transition-all hover:border-[var(--border-accent)] hover:text-[var(--text-primary)] disabled:opacity-50"
+                              >
+                                {isBestAnswerLoading ? 'Generating...' : 'Reveal Best Answer'}
+                              </button>
+                            )}
+                            {isEditing && (
+                              <button
+                                onClick={() => setEditingIndex(null)}
+                                className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Submitted answer display (when not editing) */}
+                      {isSubmitted && !isEditing && (
+                        <div className="space-y-3">
+                          <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
+                                Your Answer
+                              </span>
+                              <button
+                                onClick={() => handleImproveAnswer(poolIndex)}
+                                className="text-xs text-[var(--accent-primary)] hover:underline"
+                              >
+                                Improve Answer
+                              </button>
+                            </div>
+                            <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">
+                              {state.answers[poolIndex]}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Feedback section */}
+                      {isFeedbackLoading && (
+                        <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+                          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                            />
+                          </svg>
+                          Analyzing your answer...
+                        </div>
+                      )}
+
+                      {feedbackData && !isFeedbackLoading && (
+                        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-primary)] p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
+                              AI Feedback
+                            </span>
+                            <span
+                              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                feedbackData.score >= 80
+                                  ? 'bg-[var(--color-success)]/20 text-[var(--color-success)]'
+                                  : feedbackData.score >= 60
+                                    ? 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]'
+                                    : 'bg-[var(--color-danger)]/20 text-[var(--color-danger)]'
+                              }`}
+                            >
+                              {feedbackData.score}/100
+                            </span>
+                          </div>
+                          <p className="text-sm text-[var(--text-secondary)]">
+                            {feedbackData.feedback}
+                          </p>
+                          {feedbackData.strengths.length > 0 && (
+                            <div>
+                              <span className="text-xs font-medium text-[var(--color-success)]">
+                                Strengths
+                              </span>
+                              <ul className="mt-1 space-y-1">
+                                {feedbackData.strengths.map((s, i) => (
+                                  <li
+                                    key={i}
+                                    className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                                  >
+                                    <span className="mt-0.5 text-[var(--color-success)]">+</span>
+                                    {s}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {feedbackData.improvements.length > 0 && (
+                            <div>
+                              <span className="text-xs font-medium text-[var(--color-warning)]">
+                                Improvements
+                              </span>
+                              <ul className="mt-1 space-y-1">
+                                {feedbackData.improvements.map((imp, i) => (
+                                  <li
+                                    key={i}
+                                    className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                                  >
+                                    <span className="mt-0.5 text-[var(--color-warning)]">-</span>
+                                    {imp}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Best answer section */}
+                      {isSubmitted && !bestAnswerData && !isBestAnswerLoading && (
                         <button
-                          onClick={() => handleSubmitAnswer(poolIndex)}
-                          disabled={
-                            isFeedbackLoading ||
-                            !(draftAnswers[poolIndex] || state.answers[poolIndex])?.trim()
-                          }
-                          className="rounded-lg bg-[var(--accent-primary)] px-4 py-2 text-sm font-medium text-white transition-all hover:opacity-90 disabled:opacity-50"
+                          onClick={() => handleRevealBestAnswer(poolIndex)}
+                          className="rounded-lg border border-dashed border-[var(--border-default)] px-4 py-2 text-sm text-[var(--text-muted)] transition-all hover:border-[var(--border-accent)] hover:text-[var(--text-primary)]"
                         >
-                          {isFeedbackLoading
-                            ? 'Analyzing...'
-                            : isEditing
-                              ? 'Resubmit Answer'
-                              : 'Submit Answer'}
+                          Reveal Best Answer
                         </button>
-                        {!isSubmitted && !bestAnswerData && (
-                          <button
-                            onClick={() => handleRevealBestAnswer(poolIndex)}
-                            disabled={isBestAnswerLoading}
-                            className="rounded-lg border border-[var(--border-default)] px-4 py-2 text-sm text-[var(--text-secondary)] transition-all hover:border-[var(--border-accent)] hover:text-[var(--text-primary)] disabled:opacity-50"
-                          >
-                            {isBestAnswerLoading ? 'Generating...' : 'Reveal Best Answer'}
-                          </button>
-                        )}
-                        {isEditing && (
-                          <button
-                            onClick={() => setEditingIndex(null)}
-                            className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                          >
-                            Cancel
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                      )}
 
-                  {/* Submitted answer display (when not editing) */}
-                  {isSubmitted && !isEditing && (
-                    <div className="space-y-3">
-                      <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
-                            Your Answer
-                          </span>
-                          <button
-                            onClick={() => handleImproveAnswer(poolIndex)}
-                            className="text-xs text-[var(--accent-primary)] hover:underline"
-                          >
-                            Improve Answer
-                          </button>
-                        </div>
-                        <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">
-                          {state.answers[poolIndex]}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Feedback section */}
-                  {isFeedbackLoading && (
-                    <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
-                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                        />
-                      </svg>
-                      Analyzing your answer...
-                    </div>
-                  )}
-
-                  {feedbackData && !isFeedbackLoading && (
-                    <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-primary)] p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
-                          AI Feedback
-                        </span>
-                        <span
-                          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                            feedbackData.score >= 80
-                              ? 'bg-[var(--color-success)]/20 text-[var(--color-success)]'
-                              : feedbackData.score >= 60
-                                ? 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]'
-                                : 'bg-[var(--color-danger)]/20 text-[var(--color-danger)]'
-                          }`}
-                        >
-                          {feedbackData.score}/100
-                        </span>
-                      </div>
-                      <p className="text-sm text-[var(--text-secondary)]">
-                        {feedbackData.feedback}
-                      </p>
-                      {feedbackData.strengths.length > 0 && (
-                        <div>
-                          <span className="text-xs font-medium text-[var(--color-success)]">
-                            Strengths
-                          </span>
-                          <ul className="mt-1 space-y-1">
-                            {feedbackData.strengths.map((s, i) => (
-                              <li
-                                key={i}
-                                className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
-                              >
-                                <span className="mt-0.5 text-[var(--color-success)]">+</span>
-                                {s}
-                              </li>
-                            ))}
-                          </ul>
+                      {isBestAnswerLoading && (
+                        <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+                          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                            />
+                          </svg>
+                          Generating ideal answer...
                         </div>
                       )}
-                      {feedbackData.improvements.length > 0 && (
-                        <div>
-                          <span className="text-xs font-medium text-[var(--color-warning)]">
-                            Improvements
+
+                      {bestAnswerData && (
+                        <div className="rounded-lg border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 p-4 space-y-3">
+                          <span className="text-xs font-medium uppercase tracking-wider text-[var(--accent-primary)]">
+                            Ideal Answer
                           </span>
-                          <ul className="mt-1 space-y-1">
-                            {feedbackData.improvements.map((imp, i) => (
-                              <li
-                                key={i}
-                                className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
-                              >
-                                <span className="mt-0.5 text-[var(--color-warning)]">-</span>
-                                {imp}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Best answer section */}
-                  {isSubmitted && !bestAnswerData && !isBestAnswerLoading && (
-                    <button
-                      onClick={() => handleRevealBestAnswer(poolIndex)}
-                      className="rounded-lg border border-dashed border-[var(--border-default)] px-4 py-2 text-sm text-[var(--text-muted)] transition-all hover:border-[var(--border-accent)] hover:text-[var(--text-primary)]"
-                    >
-                      Reveal Best Answer
-                    </button>
-                  )}
-
-                  {isBestAnswerLoading && (
-                    <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
-                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                        />
-                      </svg>
-                      Generating ideal answer...
-                    </div>
-                  )}
-
-                  {bestAnswerData && (
-                    <div className="rounded-lg border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 p-4 space-y-3">
-                      <span className="text-xs font-medium uppercase tracking-wider text-[var(--accent-primary)]">
-                        Ideal Answer
-                      </span>
-                      <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">
-                        {bestAnswerData.bestAnswer}
-                      </p>
-                      {bestAnswerData.keyPoints.length > 0 && (
-                        <div>
-                          <span className="text-xs font-medium text-[var(--accent-primary)]">
-                            Key Points
-                          </span>
-                          <ul className="mt-1 space-y-1">
-                            {bestAnswerData.keyPoints.map((kp, i) => (
-                              <li
-                                key={i}
-                                className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
-                              >
-                                <span className="mt-0.5 text-[var(--accent-primary)]">*</span>
-                                {kp}
-                              </li>
-                            ))}
-                          </ul>
+                          <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">
+                            {bestAnswerData.bestAnswer}
+                          </p>
+                          {bestAnswerData.keyPoints.length > 0 && (
+                            <div>
+                              <span className="text-xs font-medium text-[var(--accent-primary)]">
+                                Key Points
+                              </span>
+                              <ul className="mt-1 space-y-1">
+                                {bestAnswerData.keyPoints.map((kp, i) => (
+                                  <li
+                                    key={i}
+                                    className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                                  >
+                                    <span className="mt-0.5 text-[var(--accent-primary)]">*</span>
+                                    {kp}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
                   )}
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }

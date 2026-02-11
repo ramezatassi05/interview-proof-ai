@@ -99,10 +99,9 @@ function getTimelineDays(timeline: PrepPreferences['timeline']): number {
  */
 function getExperienceLabel(level: PrepPreferences['experienceLevel']): string {
   const mapping: Record<PrepPreferences['experienceLevel'], string> = {
+    intern: 'intern (student seeking internship)',
     entry: 'entry-level (0-2 years)',
     mid: 'mid-level (2-5 years)',
-    senior: 'senior (5-10 years)',
-    staff_plus: 'staff+ (10+ years)',
   };
   return mapping[level];
 }

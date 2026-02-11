@@ -20,18 +20,18 @@ const timelineOptions: TimelineOption[] = [
   { value: '4weeks_plus', label: '4+ Weeks', description: 'Full preparation', days: 28 },
 ];
 
-// Experience level options
-interface ExperienceOption {
+// Employment type for the two-step experience selector
+type EmploymentType = 'intern' | 'fulltime';
+
+interface FullTimeSubOption {
   value: ExperienceLevel;
   label: string;
   description: string;
 }
 
-const experienceOptions: ExperienceOption[] = [
-  { value: 'entry', label: 'Entry Level', description: '0-2 years' },
-  { value: 'mid', label: 'Mid Level', description: '2-5 years' },
-  { value: 'senior', label: 'Senior', description: '5-10 years' },
-  { value: 'staff_plus', label: 'Staff+', description: '10+ years' },
+const fullTimeSubOptions: FullTimeSubOption[] = [
+  { value: 'entry', label: 'Entry', description: '0-2 years' },
+  { value: 'mid', label: 'Mid', description: '2-5 years' },
 ];
 
 // Focus area options
@@ -131,7 +131,7 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
     onChange({
       timeline,
       dailyHours: value?.dailyHours ?? 2,
-      experienceLevel: value?.experienceLevel ?? 'mid',
+      experienceLevel: value?.experienceLevel ?? 'entry',
       focusAreas: value?.focusAreas ?? [],
       additionalContext: value?.additionalContext,
     });
@@ -142,7 +142,24 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
     onChange({ ...value, dailyHours });
   };
 
-  const handleExperienceChange = (experienceLevel: ExperienceLevel) => {
+  // Derive the current employment type from the stored experience level
+  const currentEmploymentType: EmploymentType | null = value
+    ? value.experienceLevel === 'intern'
+      ? 'intern'
+      : 'fulltime'
+    : null;
+
+  const handleEmploymentTypeChange = (type: EmploymentType) => {
+    if (!value) return;
+    if (type === 'intern') {
+      onChange({ ...value, experienceLevel: 'intern' });
+    } else {
+      // Default full-time sub-selection to entry
+      onChange({ ...value, experienceLevel: 'entry' });
+    }
+  };
+
+  const handleFullTimeSubChange = (experienceLevel: ExperienceLevel) => {
     if (!value) return;
     onChange({ ...value, experienceLevel });
   };
@@ -230,40 +247,103 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
         </div>
       )}
 
-      {/* Experience Level */}
+      {/* Employment Type */}
       {value && (
         <div>
           <label className="mb-3 block text-sm font-medium text-[var(--text-secondary)]">
-            Experience Level
+            I&apos;m looking for
           </label>
-          <div className="grid grid-cols-4 gap-2">
-            {experienceOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => handleExperienceChange(option.value)}
-                className={`
-                  rounded-xl border-2 p-3 text-center transition-all
-                  ${
-                    value.experienceLevel === option.value
-                      ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                      : 'border-[var(--border-default)] bg-[var(--bg-elevated)] hover:border-[var(--border-accent)]'
-                  }
-                `}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => handleEmploymentTypeChange('intern')}
+              className={`
+                rounded-xl border-2 p-4 text-center transition-all
+                ${
+                  currentEmploymentType === 'intern'
+                    ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                    : 'border-[var(--border-default)] bg-[var(--bg-elevated)] hover:border-[var(--border-accent)]'
+                }
+              `}
+            >
+              <div
+                className={`text-sm font-semibold ${
+                  currentEmploymentType === 'intern'
+                    ? 'text-[var(--accent-primary)]'
+                    : 'text-[var(--text-primary)]'
+                }`}
               >
-                <div
-                  className={`text-sm font-semibold ${
-                    value.experienceLevel === option.value
-                      ? 'text-[var(--accent-primary)]'
-                      : 'text-[var(--text-primary)]'
-                  }`}
-                >
-                  {option.label}
-                </div>
-                <div className="mt-0.5 text-xs text-[var(--text-muted)]">{option.description}</div>
-              </button>
-            ))}
+                Intern
+              </div>
+              <div className="mt-0.5 text-xs text-[var(--text-muted)]">
+                Student seeking an internship
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleEmploymentTypeChange('fulltime')}
+              className={`
+                rounded-xl border-2 p-4 text-center transition-all
+                ${
+                  currentEmploymentType === 'fulltime'
+                    ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                    : 'border-[var(--border-default)] bg-[var(--bg-elevated)] hover:border-[var(--border-accent)]'
+                }
+              `}
+            >
+              <div
+                className={`text-sm font-semibold ${
+                  currentEmploymentType === 'fulltime'
+                    ? 'text-[var(--accent-primary)]'
+                    : 'text-[var(--text-primary)]'
+                }`}
+              >
+                Full-Time
+              </div>
+              <div className="mt-0.5 text-xs text-[var(--text-muted)]">
+                Looking for a full-time offer
+              </div>
+            </button>
           </div>
+
+          {/* Full-Time sub-options */}
+          {currentEmploymentType === 'fulltime' && (
+            <div className="mt-3">
+              <label className="mb-2 block text-xs font-medium text-[var(--text-muted)]">
+                Experience level
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {fullTimeSubOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleFullTimeSubChange(option.value)}
+                    className={`
+                      rounded-lg border-2 p-2.5 text-center transition-all
+                      ${
+                        value.experienceLevel === option.value
+                          ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                          : 'border-[var(--border-default)] bg-[var(--bg-elevated)] hover:border-[var(--border-accent)]'
+                      }
+                    `}
+                  >
+                    <div
+                      className={`text-sm font-medium ${
+                        value.experienceLevel === option.value
+                          ? 'text-[var(--accent-primary)]'
+                          : 'text-[var(--text-primary)]'
+                      }`}
+                    >
+                      {option.label}
+                    </div>
+                    <div className="mt-0.5 text-xs text-[var(--text-muted)]">
+                      {option.description}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

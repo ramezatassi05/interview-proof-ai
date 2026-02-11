@@ -184,6 +184,15 @@ export interface BestAnswerResponse {
   keyPoints: string[];
 }
 
+export interface SavedAnswer {
+  poolIndex: number;
+  question: { question: string; mappedRiskId: string; why: string };
+  answer: string;
+  feedback?: QuestionFeedbackResponse;
+  bestAnswer?: BestAnswerResponse;
+  savedAt: string; // ISO timestamp
+}
+
 // ============================================
 // Phase 7b: Diagnostic Intelligence Types
 // ============================================
@@ -441,7 +450,7 @@ export interface PersonalizedCoaching {
 // ============================================
 
 export type InterviewTimeline = '1day' | '3days' | '1week' | '2weeks' | '4weeks_plus';
-export type ExperienceLevel = 'entry' | 'mid' | 'senior' | 'staff_plus';
+export type ExperienceLevel = 'intern' | 'entry' | 'mid';
 export type FocusArea =
   | 'technical_depth'
   | 'behavioral_stories'

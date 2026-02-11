@@ -127,13 +127,13 @@ export async function generateBestAnswer(
     try {
       const response = await openai.chat.completions.create({
         model: MODELS.extraction,
-        temperature: 0.3,
+        temperature: 0.4,
         response_format: { type: 'json_object' },
         messages: [
           {
             role: 'system',
             content:
-              'You are an expert interview coach. Generate the ideal answer a strong candidate would give. Return only valid JSON.',
+              'You are an expert interview coach. Generate the answer as if the candidate is speaking naturally in a live interview — conversational, confident, and concise. Not an essay. Return only valid JSON.',
           },
           {
             role: 'user',
@@ -144,17 +144,21 @@ Round type: ${roundType}
 Question: "${question}"
 Why they might ask this: "${why}"
 
-Generate the ideal answer this specific candidate should give, leveraging their actual experience and skills from the resume. Return JSON:
+Generate the ideal spoken answer this candidate should give in a live interview. Return JSON:
 {
-  "bestAnswer": "A complete, well-structured ideal answer (3-5 paragraphs) that uses specific details from the candidate's resume",
+  "bestAnswer": "The answer as the candidate would actually say it out loud — natural, conversational, and to the point",
   "keyPoints": ["key point the answer should hit", "another key point"]
 }
 
-The answer should:
+Rules for the answer:
+- Write it as SPOKEN WORDS, not a written essay. Use the candidate's natural voice.
+- Start with honest framing (e.g. "I haven't used X directly, but..." or "In my role at Y, I...")
+- Use short sentences. Break up points clearly — a brief intro, 2-3 concrete examples, and a short closer.
 - Reference specific projects, metrics, and experiences from the resume
-- Be structured appropriately for a ${roundType} interview
-- Demonstrate the skills the JD requires
-- Be realistic and authentic to the candidate's background`,
+- Keep it under 200 words — concise enough to say in ~90 seconds
+- No filler phrases like "I am eager to expand" or "I believe they are crucial" or "Furthermore"
+- End with a confident bridge, not a generic enthusiasm statement
+- Be structured appropriately for a ${roundType} interview`,
           },
         ],
       });
