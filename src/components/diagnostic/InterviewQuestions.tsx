@@ -185,6 +185,14 @@ function SavedAnswersView({
     savedIdx: number;
     highlight: ActiveHighlight;
   } | null>(null);
+  const [copiedSavedIdx, setCopiedSavedIdx] = useState<number | null>(null);
+
+  const handleCopySaved = useCallback((text: string, idx: number) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedSavedIdx(idx);
+      setTimeout(() => setCopiedSavedIdx(null), 1500);
+    });
+  }, []);
 
   if (savedAnswers.length === 0) {
     return (
@@ -255,6 +263,48 @@ function SavedAnswersView({
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Copy question */}
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopySaved(sa.question.question, realIdx);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.stopPropagation();
+                      handleCopySaved(sa.question.question, realIdx);
+                    }
+                  }}
+                  className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  title="Copy question"
+                >
+                  {copiedSavedIdx === realIdx ? (
+                    <svg
+                      className="h-4 w-4 text-[var(--color-success)]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  ) : (
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                  )}
+                </span>
                 {/* Delete */}
                 <span
                   role="button"
@@ -502,6 +552,14 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [activeView, setActiveView] = useState<'practice' | 'saved'>('practice');
   const [activeHighlight, setActiveHighlight] = useState<ActiveHighlight | null>(null);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  const handleCopyQuestion = useCallback((text: string, poolIndex: number) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedIndex(poolIndex);
+      setTimeout(() => setCopiedIndex(null), 1500);
+    });
+  }, []);
 
   // Persist state changes
   useEffect(() => {
@@ -943,6 +1001,53 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
                       <p className="mt-1 text-sm text-[var(--text-muted)]">{q.why}</p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
+                      {/* Copy question */}
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyQuestion(q.question, poolIndex);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.stopPropagation();
+                            handleCopyQuestion(q.question, poolIndex);
+                          }
+                        }}
+                        className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                        title="Copy question"
+                      >
+                        {copiedIndex === poolIndex ? (
+                          <svg
+                            className="h-4 w-4 text-[var(--color-success)]"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        ) : (
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            />
+                          </svg>
+                        )}
+                      </span>
                       {/* Refresh single question — always visible */}
                       <span
                         role="button"
