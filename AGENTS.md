@@ -24,20 +24,23 @@ npx ts-node scripts/populate-embeddings.ts  # Populate vector embeddings
 ```
 src/
 ├── app/
-│   ├── api/report/   # API routes (create, analyze, [id], unlock, rerun)
-│   ├── api/credits/  # Credits history API
-│   ├── api/referral/ # Referral code + stats API
-│   ├── auth/         # Auth pages (login, callback)
-│   ├── new/          # Upload page
-│   ├── r/[id]/       # Results + full diagnostic pages
-│   ├── wallet/       # Credits wallet page
-│   └── page.tsx      # Landing page
+│   ├── api/report/          # API routes (create, analyze, [id], unlock, rerun, [id]/pdf)
+│   ├── api/report/[id]/questions/  # Practice question APIs (generate, feedback, best-answer)
+│   ├── api/credits/         # Credits history API
+│   ├── api/referral/        # Referral code + stats API
+│   ├── api/insights/        # Aggregate cross-user stats API
+│   ├── auth/                # Auth pages (login, callback)
+│   ├── new/                 # Upload page
+│   ├── r/[id]/              # Results + full diagnostic pages
+│   ├── wallet/              # Credits wallet page
+│   └── page.tsx             # Landing page (hero, HireZone preview, stats, FAQ)
 ├── components/
 │   ├── ui/           # Button, Card, Input, Textarea, Badge, Spinner, ProgressBar, Collapsible, ThemeToggle, Tabs, RadialScoreIndicator
 │   ├── layout/       # Header, Footer, Container, AppLayout, Sidebar, IntelligencePanel
-│   ├── upload/       # RoundSelector, AnalysisProgress
+│   ├── upload/       # RoundSelector, AnalysisProgress, PrepPreferencesForm
 │   ├── results/      # ScoreCard, RiskList, RiskItem, PaywallCTA, ExecutiveSummary, StrengthsAndRisks
-│   └── diagnostic/   # InterviewQuestions, StudyPlan, ScoreBreakdown, ArchetypeCard, RoundForecast, CognitiveRadar, TrajectoryChart, RecruiterView, PriorityActions, PracticeIntelligencePanel
+│   ├── diagnostic/   # InterviewQuestions, StudyPlan, ScoreBreakdown, ArchetypeCard, RoundForecast, CognitiveRadar, TrajectoryChart, RecruiterView, PriorityActions, PracticeIntelligencePanel, CoachingHub, HireZoneChart
+│   └── landing/      # BenefitsRisks, FAQ, InterviewIntelligenceStats
 ├── hooks/
 │   ├── useAuth.tsx   # Auth context and hook
 │   └── useTheme.tsx  # Theme context (dark/light mode)
@@ -45,15 +48,20 @@ src/
 │   ├── supabase/     # Supabase clients (client, server, middleware)
 │   ├── openai.ts     # OpenAI client + model constants
 │   ├── credits.ts    # Credit grant utility + referral helpers
-│   └── api.ts        # API client for frontend
+│   ├── api.ts        # API client for frontend
+│   ├── format.ts     # Duration formatting helpers
+│   ├── highlight.ts  # Text highlighting utilities (quote matching, split with highlight)
+│   └── insights.ts   # Interview insights data + fallback aggregate stats
 ├── server/
-│   ├── scoring/      # Deterministic scoring engine (v0.1)
+│   ├── scoring/      # Deterministic scoring engine (v0.1) — archetype, forecast, hirezone, evidence, practice
 │   ├── rag/          # Extraction, retrieval, LLM analysis
+│   ├── questions.ts  # LLM-powered question generation, answer feedback, best answer scripts
+│   ├── pdf/          # PDF template for report export
 │   └── pipeline.ts   # Full analysis pipeline orchestrator
 └── types/            # TypeScript interfaces
 
 supabase/
-├── migrations/       # SQL schema migrations (001, 002)
+├── migrations/       # SQL schema migrations (001–005)
 └── seed.sql          # Initial rubric + question data
 
 scripts/
@@ -103,9 +111,9 @@ scripts/
 - docs/TechDesign-InterviewProof-MVP.md
 
 ## 🔄 Current State
-**Last Updated:** February 3, 2026
-**Working On:** Phase 7 complete
-**Recently Completed:** Phase 7d (ProofCredits System) + Phase 7c (Practice Intelligence) + Phase 7b (Diagnostic Intelligence) + Phase 7a (UI Architecture) + Phase 7e (Terminology)
+**Last Updated:** February 11, 2026
+**Working On:** Phase 8 complete, ongoing bug fixes
+**Recently Completed:** Phase 8 (Interactive Practice, HireZone, Evidence, Coaching, Landing Page) + PDF download fix
 **Blocked By:** None
 
 ## 🚀 Roadmap
@@ -208,6 +216,48 @@ scripts/
 - [x] Rename: Risks → Recruiter Red Flags
 - [x] Rename: Study Plan → Execution Roadmap
 - [x] Rename: Pass Probability → Interview Conversion Likelihood
+
+### Phase 8: Interactive Practice, HireZone & Evidence ✅
+
+#### Phase 8a: Evidence & Scoring Enhancements ✅
+- [x] Evidence-backed claims with resume/JD data citations (evidence.ts)
+- [x] HireZone scoring — hire zone status, category gaps, percentile, improvement actions (hirezone.ts)
+- [x] Skill inference for strong candidates
+- [x] Format time durations as hours and minutes (format.ts)
+
+#### Phase 8b: Coaching & UI Redesign ✅
+- [x] Redesign Profile tab to Coaching Hub (CoachingHub.tsx)
+  - Archetype profile, improvement trajectory, action plan, evidence snapshot
+- [x] HireZone Chart visualization (HireZoneChart.tsx)
+  - Horizontal gauge, score vs hire zone range, category gap breakdown
+- [x] Integrate company name throughout diagnostic pages
+- [x] Text highlighting utilities for AI feedback (highlight.ts)
+
+#### Phase 8c: Interactive Interview Practice ✅
+- [x] Question generation API (POST /api/report/[id]/questions/generate)
+- [x] Answer feedback API with scoring (POST /api/report/[id]/questions/feedback)
+- [x] Best answer generation API (POST /api/report/[id]/questions/best-answer)
+- [x] Shuffled question pool (8 visible at a time) with auto-expansion
+- [x] Saved answers with localStorage persistence
+- [x] AI feedback with highlights, coaching tips, and encouragement
+- [x] Best answer scripts with key talking points
+- [x] Simplified experience level selection
+- [x] Copy-to-clipboard for practice questions and saved answers
+
+#### Phase 8d: Landing Page & Insights ✅
+- [x] Landing page redesign with hero, quick value cards, how-it-works flow
+- [x] BenefitsRisks comparison component
+- [x] FAQ accordion component
+- [x] InterviewIntelligenceStats — aggregate cross-user insights with mini-charts
+- [x] Insights API (GET /api/insights) with 5-minute cache TTL
+- [x] Aggregate insights Postgres function (005_aggregate_insights.sql)
+
+#### Phase 8e: Bug Fixes ✅
+- [x] Fix PDF download — externalize @react-pdf/renderer in next.config.ts
+- [x] Bypass paywall check in PDF API route (TEMP, matches full diagnostic page)
+
+### Phase 8 Tab Layout (Full Diagnostic Page)
+9 tabs: Signal Strength | Hire Zone | Red Flags | Questions | Execution Roadmap | Coaching | Cognitive Map | Recruiter View | Practice Intel
 
 ## 🔧 Key Architecture Decisions
 - **Scoring:** Deterministic weights in `src/server/scoring/engine.ts` (v0.1)
