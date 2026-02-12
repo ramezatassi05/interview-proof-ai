@@ -10,7 +10,7 @@ import type {
   CompanyDifficultyContext,
   CompanyTier,
 } from '@/types';
-import { RoundForecast } from './RoundForecast';
+import { RoundCoachingPanel } from './RoundCoachingPanel';
 
 interface CoachingHubProps {
   archetypeProfile: ArchetypeProfile;
@@ -566,9 +566,9 @@ export function CoachingHub({
       {/* Section 1: Candidate Profile */}
       <CandidateProfile profile={archetypeProfile} companyName={companyName} />
 
-      {/* Section 2: Round Forecast (reuses existing component) */}
+      {/* Section 2: Round-Specific Coaching (replaces old forecast bars) */}
       {roundForecasts && (
-        <RoundForecast
+        <RoundCoachingPanel
           forecasts={roundForecasts}
           userRoundType={userRoundType}
           companyName={companyName}

@@ -51,6 +51,7 @@ export interface LLMAnalysis {
   }[];
   recruiterSignals?: RecruiterSignals; // Optional for backwards compatibility
   personalizedCoaching?: PersonalizedCoaching; // LLM-generated specific advice
+  roundCoaching?: RoundCoaching; // Round-specific coaching content
 }
 
 export interface RiskItem {
@@ -225,9 +226,31 @@ export interface RoundForecastItem {
   primaryRisk: string;
 }
 
+// Round-Specific Coaching (replaces forecast bars in UI)
+export interface InterviewerQuestion {
+  question: string;
+  context: string;
+}
+
+export interface SampleResponse {
+  scenario: string;
+  response: string;
+  whyItWorks: string;
+}
+
+export interface RoundCoaching {
+  roundType: string;
+  coachingRecommendations: string[];
+  waysToStandOut: string[];
+  questionsToAskInterviewer: InterviewerQuestion[];
+  sampleResponses: SampleResponse[];
+  passionSignals: string[];
+}
+
 export interface InterviewRoundForecasts {
   forecasts: RoundForecastItem[];
   recommendedFocus: string;
+  roundCoaching?: RoundCoaching;
   version: string;
 }
 

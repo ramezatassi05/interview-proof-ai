@@ -7,7 +7,7 @@ import type {
   CompanyDifficultyContext,
 } from '@/types';
 
-const FORECAST_VERSION = 'v0.1';
+const FORECAST_VERSION = 'v0.2';
 
 // Weights for each round type (sum to 1.0)
 const ROUND_WEIGHTS = {
@@ -210,6 +210,7 @@ export function computeRoundForecasts(
   return {
     forecasts,
     recommendedFocus: focus,
+    roundCoaching: analysis.roundCoaching,
     version: FORECAST_VERSION,
   };
 }

@@ -35,6 +35,28 @@ const PersonalizedCoachingSchema = z.object({
     .max(4),
 });
 
+// Zod schema for round-specific coaching (Phase 8 — optional for backwards compat)
+const RoundCoachingSchema = z.object({
+  roundType: z.string(),
+  coachingRecommendations: z.array(z.string()).min(4).max(6),
+  waysToStandOut: z.array(z.string()).min(3).max(5),
+  questionsToAskInterviewer: z
+    .array(z.object({ question: z.string(), context: z.string() }))
+    .min(4)
+    .max(6),
+  sampleResponses: z
+    .array(
+      z.object({
+        scenario: z.string(),
+        response: z.string(),
+        whyItWorks: z.string(),
+      })
+    )
+    .min(3)
+    .max(4),
+  passionSignals: z.array(z.string()).min(3).max(5),
+});
+
 // Zod schema for LLM analysis output validation
 const LLMAnalysisSchema = z.object({
   categoryScores: z.object({
@@ -75,6 +97,7 @@ const LLMAnalysisSchema = z.object({
   ),
   recruiterSignals: RecruiterSignalsSchema,
   personalizedCoaching: PersonalizedCoachingSchema,
+  roundCoaching: RoundCoachingSchema.optional(),
 });
 
 interface AnalysisContext {
@@ -300,6 +323,43 @@ Analyze the candidate's interview readiness and return a JSON object with:
      - rationale: Why this matters for THIS candidate's specific gaps
      - resource: (optional) Specific resource, tool, or approach
 
+7. **roundCoaching** (CRITICAL — round-specific coaching for ${roundType} interview):
+   Generate in-depth coaching content specifically for the candidate's selected round type: "${roundType}".
+   Do NOT generate content for other round types — ONLY for "${roundType}".
+
+   All content MUST reference the candidate's actual resume details, the specific JD requirements, and the company by name (if known).
+   Think like a senior recruiter/career advisor giving insider tips to help this specific candidate stand out.
+
+   Fields:
+   - roundType: "${roundType}"
+   - coachingRecommendations: 4-6 specific, actionable tips for succeeding in a ${roundType} interview at this company.
+     Each tip should reference specific skills, projects, or gaps from the resume/JD.
+     - BAD: "Practice coding problems"
+     - GOOD: "Your distributed systems experience at [Company] is directly relevant to their microservices architecture — prepare a 2-minute walkthrough of how you designed the event-driven pipeline, focusing on trade-offs you made"
+
+   - waysToStandOut: 3-5 differentiation strategies unique to this candidate.
+     What can THEY specifically do that other candidates cannot? Reference their unique experiences.
+     - BAD: "Show enthusiasm"
+     - GOOD: "Your open-source contribution to [Project] directly relates to their tech stack — mention it proactively and offer to discuss the PR you authored"
+
+   - questionsToAskInterviewer: 4-6 impressive questions the candidate should ask their interviewer.
+     Each with { question, context } where context explains WHY this question impresses interviewers.
+     Questions should demonstrate the candidate did research and understands the role deeply.
+     - BAD: { question: "What's the team culture like?", context: "Shows interest" }
+     - GOOD: { question: "I noticed [Company] recently migrated to [Tech] — how has that changed the team's deployment workflow?", context: "Shows you researched their tech blog and understand infrastructure implications" }
+
+   - sampleResponses: 3-4 model answers showing passion and fit.
+     Each with { scenario, response, whyItWorks }. The scenario should be a likely ${roundType} question for this role.
+     The response should be what an ideal answer looks like, incorporating the candidate's ACTUAL experience.
+     - scenario: A realistic interview question for this role
+     - response: A strong sample answer weaving in the candidate's real experience
+     - whyItWorks: Why this answer is effective (what signals it sends to the interviewer)
+
+   - passionSignals: 3-5 specific ways the candidate can demonstrate genuine passion and fit during the interview.
+     These should be concrete actions, not vague platitudes.
+     - BAD: "Show you're passionate about the company"
+     - GOOD: "Mention how their recent launch of [Product Feature] aligns with the recommendation engine you built at [Previous Company] — this shows you follow their product updates and can contribute immediately"
+
 Return ONLY valid JSON matching this exact structure:
 {
   "categoryScores": {
@@ -361,6 +421,31 @@ Return ONLY valid JSON matching this exact structure:
         "rationale": "Why this matters for THIS candidate",
         "resource": "Optional specific resource or approach"
       }
+    ]
+  },
+  "roundCoaching": {
+    "roundType": "${roundType}",
+    "coachingRecommendations": [
+      "Specific coaching tip referencing resume/JD details..."
+    ],
+    "waysToStandOut": [
+      "Specific differentiation strategy for this candidate..."
+    ],
+    "questionsToAskInterviewer": [
+      {
+        "question": "Impressive question to ask the interviewer...",
+        "context": "Why this question works and what it signals..."
+      }
+    ],
+    "sampleResponses": [
+      {
+        "scenario": "Likely interview question for this role...",
+        "response": "Model answer using candidate's actual experience...",
+        "whyItWorks": "Why this answer is effective..."
+      }
+    ],
+    "passionSignals": [
+      "Specific way to demonstrate passion and fit..."
     ]
   }
 }`;

@@ -8,16 +8,17 @@ interface StudyPlanProps {
   tasks: LLMAnalysis['studyPlan'];
   personalizedStudyPlan?: PersonalizedStudyPlan;
   companyName?: string;
+  reportId: string;
 }
 
-// Storage key for persistence
-const STORAGE_KEY = 'interviewproof-completed-tasks';
+// Storage key prefix — each report gets its own key
+const STORAGE_PREFIX = 'interviewproof-completed-tasks-';
 
-// Load completed tasks from localStorage
-function loadCompletedTasks(): Set<string> {
+// Load completed tasks from localStorage (scoped to reportId)
+function loadCompletedTasks(reportId: string): Set<string> {
   if (typeof window === 'undefined') return new Set();
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(`${STORAGE_PREFIX}${reportId}`);
     if (stored) {
       return new Set(JSON.parse(stored));
     }
@@ -27,19 +28,21 @@ function loadCompletedTasks(): Set<string> {
   return new Set();
 }
 
-// Save completed tasks to localStorage
-function saveCompletedTasks(tasks: Set<string>) {
+// Save completed tasks to localStorage (scoped to reportId)
+function saveCompletedTasks(reportId: string, tasks: Set<string>) {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...tasks]));
+    localStorage.setItem(`${STORAGE_PREFIX}${reportId}`, JSON.stringify([...tasks]));
   } catch {
     // Ignore errors
   }
 }
 
-export function StudyPlan({ tasks, personalizedStudyPlan, companyName }: StudyPlanProps) {
-  // Initialize state with localStorage value (runs only on client)
-  const [completedTasks, setCompletedTasks] = useState<Set<string>>(() => loadCompletedTasks());
+export function StudyPlan({ tasks, personalizedStudyPlan, companyName, reportId }: StudyPlanProps) {
+  // Initialize state with localStorage value (runs only on client, scoped to reportId)
+  const [completedTasks, setCompletedTasks] = useState<Set<string>>(() =>
+    loadCompletedTasks(reportId)
+  );
   const [openDays, setOpenDays] = useState<Set<number>>(new Set([1])); // Day 1 open by default
 
   // If we have a personalized plan, use it
@@ -52,6 +55,7 @@ export function StudyPlan({ tasks, personalizedStudyPlan, companyName }: StudyPl
         openDays={openDays}
         setOpenDays={setOpenDays}
         companyName={companyName}
+        reportId={reportId}
       />
     );
   }
@@ -63,6 +67,7 @@ export function StudyPlan({ tasks, personalizedStudyPlan, companyName }: StudyPl
       completedTasks={completedTasks}
       setCompletedTasks={setCompletedTasks}
       companyName={companyName}
+      reportId={reportId}
     />
   );
 }
@@ -75,6 +80,7 @@ function PersonalizedPlanView({
   openDays,
   setOpenDays,
   companyName,
+  reportId,
 }: {
   plan: PersonalizedStudyPlan;
   completedTasks: Set<string>;
@@ -82,6 +88,7 @@ function PersonalizedPlanView({
   openDays: Set<number>;
   setOpenDays: React.Dispatch<React.SetStateAction<Set<number>>>;
   companyName?: string;
+  reportId: string;
 }) {
   const totalTasks = plan.dailyPlans.reduce((sum, d) => sum + d.tasks.length, 0);
   const completedCount = plan.dailyPlans.reduce(
@@ -98,7 +105,7 @@ function PersonalizedPlanView({
       newCompleted.add(taskId);
     }
     setCompletedTasks(newCompleted);
-    saveCompletedTasks(newCompleted);
+    saveCompletedTasks(reportId, newCompleted);
   };
 
   const toggleDay = (dayNumber: number) => {
@@ -431,11 +438,13 @@ function LegacyPlanView({
   completedTasks,
   setCompletedTasks,
   companyName,
+  reportId,
 }: {
   tasks: LLMAnalysis['studyPlan'];
   completedTasks: Set<string>;
   setCompletedTasks: React.Dispatch<React.SetStateAction<Set<string>>>;
   companyName?: string;
+  reportId: string;
 }) {
   if (tasks.length === 0) {
     return null;
@@ -459,7 +468,7 @@ function LegacyPlanView({
       newCompleted.add(taskId);
     }
     setCompletedTasks(newCompleted);
-    saveCompletedTasks(newCompleted);
+    saveCompletedTasks(reportId, newCompleted);
   };
 
   const getNumberStyle = (index: number, isCompleted: boolean) => {
