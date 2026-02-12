@@ -8,6 +8,7 @@ export { computeTrajectoryProjection } from './trajectory';
 export { computePracticeIntelligence } from './practice';
 export { computeEvidenceContext } from './evidence';
 export { computeHireZoneAnalysis } from './hirezone';
+export { computeCompanyDifficulty } from './company-difficulty';
 
 const SCORING_VERSION = 'v0.1';
 

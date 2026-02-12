@@ -7,6 +7,8 @@ import type {
   TrajectoryProjection,
   EvidenceContext,
   PersonalizedCoaching,
+  CompanyDifficultyContext,
+  CompanyTier,
 } from '@/types';
 import { RoundForecast } from './RoundForecast';
 
@@ -16,6 +18,7 @@ interface CoachingHubProps {
   trajectoryProjection?: TrajectoryProjection;
   evidenceContext?: EvidenceContext;
   personalizedCoaching?: PersonalizedCoaching;
+  companyDifficulty?: CompanyDifficultyContext;
   userRoundType?: string;
   companyName?: string;
 }
@@ -378,6 +381,174 @@ function EvidenceSnapshot({ evidence }: { evidence: EvidenceContext }) {
   );
 }
 
+// ── Section 6: Ways to Stand Out ─────────────────────────────────────
+
+const TIER_BADGE_COLORS: Record<CompanyTier, { bg: string; text: string; border: string }> = {
+  FAANG_PLUS: { bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/30' },
+  BIG_TECH: { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/30' },
+  TOP_FINANCE: {
+    bg: 'bg-emerald-500/15',
+    text: 'text-emerald-400',
+    border: 'border-emerald-500/30',
+  },
+  UNICORN: { bg: 'bg-pink-500/15', text: 'text-pink-400', border: 'border-pink-500/30' },
+  GROWTH: { bg: 'bg-cyan-500/15', text: 'text-cyan-400', border: 'border-cyan-500/30' },
+  STANDARD: { bg: 'bg-gray-500/15', text: 'text-gray-400', border: 'border-gray-500/30' },
+};
+
+const TIER_LABELS: Record<CompanyTier, string> = {
+  FAANG_PLUS: 'FAANG+',
+  BIG_TECH: 'Big Tech',
+  TOP_FINANCE: 'Top Finance',
+  UNICORN: 'Unicorn',
+  GROWTH: 'Growth',
+  STANDARD: 'Standard',
+};
+
+const COMPETITION_LABELS: Record<string, { label: string; color: string }> = {
+  extreme: { label: 'Extreme', color: 'text-red-400' },
+  very_high: { label: 'Very High', color: 'text-orange-400' },
+  high: { label: 'High', color: 'text-amber-400' },
+  moderate: { label: 'Moderate', color: 'text-emerald-400' },
+};
+
+function WaysToStandOut({ difficulty }: { difficulty: CompanyDifficultyContext }) {
+  const [showAll, setShowAll] = useState(false);
+  const badgeColor = TIER_BADGE_COLORS[difficulty.tier];
+  const competitionMeta =
+    COMPETITION_LABELS[difficulty.competitionLevel] ?? COMPETITION_LABELS.moderate;
+
+  const visibleStrategies = showAll
+    ? difficulty.differentiationStrategies
+    : difficulty.differentiationStrategies.slice(0, 3);
+
+  return (
+    <div className={`rounded-xl border ${badgeColor.border} bg-[var(--bg-card)] p-6`}>
+      {/* Header with tier badge */}
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Ways to Stand Out</h3>
+        <span
+          className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badgeColor.bg} ${badgeColor.text}`}
+        >
+          {TIER_LABELS[difficulty.tier]}
+        </span>
+      </div>
+      <p className="text-sm text-[var(--text-muted)] mb-5">
+        How to differentiate yourself for {difficulty.companyName}
+      </p>
+
+      {/* Competition context panel */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="rounded-lg bg-[var(--bg-elevated)] p-3 text-center">
+          <p className="text-xs text-[var(--text-muted)] mb-1">Competition</p>
+          <p className={`text-sm font-semibold ${competitionMeta.color}`}>
+            {competitionMeta.label}
+          </p>
+        </div>
+        <div className="rounded-lg bg-[var(--bg-elevated)] p-3 text-center">
+          <p className="text-xs text-[var(--text-muted)] mb-1">Accept Rate</p>
+          <p className="text-sm font-semibold text-[var(--text-primary)]">
+            {difficulty.acceptanceRateEstimate}
+          </p>
+        </div>
+        <div className="rounded-lg bg-[var(--bg-elevated)] p-3 text-center">
+          <p className="text-xs text-[var(--text-muted)] mb-1">Difficulty</p>
+          <p className="text-sm font-semibold text-[var(--text-primary)]">
+            {difficulty.difficultyScore}/150
+          </p>
+        </div>
+      </div>
+
+      {/* Interview bar description */}
+      <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4 mb-5">
+        <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-2">
+          Interview Bar
+        </p>
+        <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+          {difficulty.interviewBarDescription}
+        </p>
+      </div>
+
+      {/* Intern warning callout */}
+      {difficulty.isIntern && (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 mb-5">
+          <div className="flex items-start gap-3">
+            <svg
+              className="h-5 w-5 text-amber-400 mt-0.5 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+            <div>
+              <span className="text-sm font-medium text-amber-400">Intern Competition Warning</span>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                Intern positions at {difficulty.companyName} are extremely competitive with limited
+                slots. Focus on demonstrating learning velocity, relevant coursework, and personal
+                projects that show initiative beyond classroom requirements.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Differentiation strategies */}
+      {difficulty.differentiationStrategies.length > 0 && (
+        <>
+          <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-3">
+            Differentiation Strategies
+          </p>
+          <div className="space-y-2.5">
+            {visibleStrategies.map((strategy, index) => (
+              <div
+                key={index}
+                className="flex items-start gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3"
+              >
+                <span
+                  className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold ${badgeColor.bg} ${badgeColor.text}`}
+                >
+                  {index + 1}
+                </span>
+                <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{strategy}</p>
+              </div>
+            ))}
+          </div>
+
+          {difficulty.differentiationStrategies.length > 3 && (
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="mt-3 flex items-center gap-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              <svg
+                className={`h-4 w-4 transition-transform ${showAll ? 'rotate-90' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+              {showAll
+                ? 'Show less'
+                : `Show ${difficulty.differentiationStrategies.length - 3} more`}
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Main CoachingHub ──────────────────────────────────────────────────
 
 export function CoachingHub({
@@ -386,6 +557,7 @@ export function CoachingHub({
   trajectoryProjection,
   evidenceContext,
   personalizedCoaching,
+  companyDifficulty,
   userRoundType,
   companyName,
 }: CoachingHubProps) {
@@ -414,6 +586,11 @@ export function CoachingHub({
 
       {/* Section 5: Evidence Snapshot */}
       {evidenceContext && <EvidenceSnapshot evidence={evidenceContext} />}
+
+      {/* Section 6: Ways to Stand Out (only for non-STANDARD companies) */}
+      {companyDifficulty && companyDifficulty.tier !== 'STANDARD' && (
+        <WaysToStandOut difficulty={companyDifficulty} />
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import type {
   HireZoneStatus,
   HireZoneCategoryGap,
   HireZoneAction,
+  CompanyDifficultyContext,
 } from '@/types';
 
 const HIRE_ZONE_VERSION = 'v0.1';
@@ -94,10 +95,22 @@ export function computeHireZoneAnalysis(
   analysis: LLMAnalysis,
   score: number,
   roundType: RoundType,
-  scoreBreakdown: ScoreBreakdown
+  scoreBreakdown: ScoreBreakdown,
+  companyDifficulty?: CompanyDifficultyContext
 ): HireZoneAnalysis {
-  const thresholds = HIRE_ZONE_THRESHOLDS[roundType];
+  const baseThresholds = HIRE_ZONE_THRESHOLDS[roundType];
   const targets = CATEGORY_TARGETS[roundType];
+
+  // Scale thresholds for harder companies
+  const factor =
+    companyDifficulty && companyDifficulty.tier !== 'STANDARD'
+      ? companyDifficulty.adjustmentFactor
+      : 1.0;
+  const thresholds = {
+    min: Math.min(95, Math.round(baseThresholds.min * factor)),
+    max: Math.min(100, Math.round(baseThresholds.max * factor)),
+    industryAvg: baseThresholds.industryAvg, // unchanged — baseline reference
+  };
 
   // Determine status
   let status: HireZoneStatus;

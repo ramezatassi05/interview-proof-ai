@@ -323,6 +323,29 @@ export interface HireZoneAnalysis {
   version: string;
 }
 
+// Company Difficulty Context
+export type CompanyTier =
+  | 'FAANG_PLUS'
+  | 'BIG_TECH'
+  | 'TOP_FINANCE'
+  | 'UNICORN'
+  | 'GROWTH'
+  | 'STANDARD';
+export type CompetitionLevel = 'extreme' | 'very_high' | 'high' | 'moderate';
+
+export interface CompanyDifficultyContext {
+  companyName: string;
+  tier: CompanyTier;
+  difficultyScore: number; // 100-150 scale (100 = baseline)
+  isIntern: boolean;
+  acceptanceRateEstimate: string; // e.g., "1-3%"
+  competitionLevel: CompetitionLevel;
+  interviewBarDescription: string;
+  adjustmentFactor: number; // 1.0-1.5 multiplier
+  differentiationStrategies: string[];
+  version: string;
+}
+
 // Combined Diagnostic Intelligence Output
 export interface DiagnosticIntelligence {
   archetypeProfile: ArchetypeProfile;
@@ -333,6 +356,7 @@ export interface DiagnosticIntelligence {
   practiceIntelligence?: PracticeIntelligence;
   evidenceContext?: EvidenceContext;
   hireZoneAnalysis?: HireZoneAnalysis;
+  companyDifficulty?: CompanyDifficultyContext;
   generatedAt: string;
   version: string;
 }

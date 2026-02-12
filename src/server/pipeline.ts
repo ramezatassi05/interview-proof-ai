@@ -27,6 +27,7 @@ import {
   computePracticeIntelligence,
   computeEvidenceContext,
   computeHireZoneAnalysis,
+  computeCompanyDifficulty,
 } from './scoring/engine';
 import { generatePersonalizedStudyPlan } from './scoring/studyplan';
 
@@ -142,6 +143,14 @@ function computeDiagnosticIntelligence(
   // Extract personalized coaching if available
   const coaching = llmAnalysis.personalizedCoaching;
 
+  // Compute company difficulty first (other modules may depend on it)
+  const companyDifficulty = computeCompanyDifficulty(
+    extractedJD.companyName,
+    prepPreferences?.experienceLevel ?? 'mid',
+    extractedJD,
+    extractedResume
+  );
+
   // Compute evidence context (cross-references resume/JD data with scores)
   const evidenceContext = computeEvidenceContext(llmAnalysis, extractedResume, extractedJD);
 
@@ -158,7 +167,8 @@ function computeDiagnosticIntelligence(
     llmAnalysis,
     coaching?.roundFocus,
     extractedResume,
-    extractedJD
+    extractedJD,
+    companyDifficulty
   );
 
   // Compute cognitive risk map
@@ -180,7 +190,13 @@ function computeDiagnosticIntelligence(
   );
 
   // Compute hire zone analysis
-  const hireZoneAnalysis = computeHireZoneAnalysis(llmAnalysis, score, roundType, scoreBreakdown);
+  const hireZoneAnalysis = computeHireZoneAnalysis(
+    llmAnalysis,
+    score,
+    roundType,
+    scoreBreakdown,
+    companyDifficulty
+  );
 
   return {
     archetypeProfile,
@@ -191,6 +207,7 @@ function computeDiagnosticIntelligence(
     practiceIntelligence,
     evidenceContext,
     hireZoneAnalysis,
+    companyDifficulty: companyDifficulty.tier !== 'STANDARD' ? companyDifficulty : undefined,
     generatedAt: new Date().toISOString(),
     version: 'v0.1',
   };

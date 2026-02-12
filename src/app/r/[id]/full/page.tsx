@@ -412,6 +412,7 @@ export default function FullDiagnosticPage() {
               trajectoryProjection={report.diagnosticIntelligence.trajectoryProjection}
               evidenceContext={report.diagnosticIntelligence.evidenceContext}
               personalizedCoaching={report.personalizedCoaching}
+              companyDifficulty={report.diagnosticIntelligence.companyDifficulty}
               userRoundType={report.roundType}
               companyName={report.extractedJD?.companyName}
             />

@@ -12,8 +12,8 @@ import type {
 const FeedbackSchema = z.object({
   feedback: z.string(),
   score: z.number().min(0).max(100),
-  strengths: z.array(z.string()).min(1).max(5),
-  improvements: z.array(z.string()).min(1).max(5),
+  strengths: z.array(z.string()).max(5),
+  improvements: z.array(z.string()).max(5),
   strengthQuotes: z.array(z.string()).optional(),
   improvementQuotes: z.array(z.string()).optional(),
   tips: z.array(z.string()).min(1).max(4).optional(),
@@ -107,7 +107,15 @@ Be specific — reference the actual content of their answer, not generic advice
       const content = response.choices[0]?.message?.content;
       if (!content) throw new Error('Empty response from LLM');
 
-      return FeedbackSchema.parse(JSON.parse(content));
+      const parsed = FeedbackSchema.parse(JSON.parse(content));
+      // Ensure at least one entry for strengths/improvements so the UI always has something to show
+      if (parsed.strengths.length === 0) {
+        parsed.strengths = ['Attempted the question'];
+      }
+      if (parsed.improvements.length === 0) {
+        parsed.improvements = ['Provide more detail and specificity in your answer'];
+      }
+      return parsed;
     } catch (error) {
       if (attempt === retries) {
         console.error('Answer feedback generation failed:', error);

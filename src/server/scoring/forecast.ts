@@ -4,6 +4,7 @@ import type {
   ExtractedJD,
   InterviewRoundForecasts,
   RoundForecastItem,
+  CompanyDifficultyContext,
 } from '@/types';
 
 const FORECAST_VERSION = 'v0.1';
@@ -44,19 +45,27 @@ const DIMENSION_LABELS = {
 
 /**
  * Computes pass probability for a specific round type.
+ * When adjustmentFactor > 1.0 (harder company), applies exponential dampening
+ * which naturally compresses higher probabilities more (e.g., 0.8^1.3 ≈ 0.74).
  */
 function computeRoundProbability(
   categoryScores: LLMAnalysis['categoryScores'],
-  roundType: 'technical' | 'behavioral' | 'case'
+  roundType: 'technical' | 'behavioral' | 'case',
+  adjustmentFactor: number = 1.0
 ): number {
   const weights = ROUND_WEIGHTS[roundType];
 
-  const probability =
+  let probability =
     categoryScores.hardMatch * weights.hardMatch +
     categoryScores.evidenceDepth * weights.evidenceDepth +
     categoryScores.roundReadiness * weights.roundReadiness +
     categoryScores.clarity * weights.clarity +
     categoryScores.companyProxy * weights.companyProxy;
+
+  // Apply exponential dampening for harder companies
+  if (adjustmentFactor > 1.0) {
+    probability = Math.pow(probability, adjustmentFactor);
+  }
 
   // Clamp to 0-1 range and round to 2 decimal places
   return Math.round(Math.max(0, Math.min(1, probability)) * 100) / 100;
@@ -161,14 +170,16 @@ export function computeRoundForecasts(
   analysis: LLMAnalysis,
   personalizedFocus?: string,
   resume?: ExtractedResume,
-  jd?: ExtractedJD
+  jd?: ExtractedJD,
+  companyDifficulty?: CompanyDifficultyContext
 ): InterviewRoundForecasts {
   const { categoryScores } = analysis;
+  const adjustmentFactor = companyDifficulty?.adjustmentFactor ?? 1.0;
 
   const roundTypes: ('technical' | 'behavioral' | 'case')[] = ['technical', 'behavioral', 'case'];
 
   const forecasts: RoundForecastItem[] = roundTypes.map((roundType) => {
-    const probability = computeRoundProbability(categoryScores, roundType);
+    const probability = computeRoundProbability(categoryScores, roundType, adjustmentFactor);
     const { strength, risk } = findStrengthAndRisk(categoryScores, roundType, resume, jd);
 
     return {

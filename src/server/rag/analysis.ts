@@ -6,8 +6,10 @@ import type {
   RoundType,
   LLMAnalysis,
   PrepPreferences,
+  CompanyDifficultyContext,
 } from '@/types';
 import type { RubricChunk, QuestionArchetype } from './retrieval';
+import { computeCompanyDifficulty } from '@/server/scoring/company-difficulty';
 
 // Zod schema for recruiter signals (new in Phase 7b)
 const RecruiterSignalsSchema = z.object({
@@ -128,7 +130,8 @@ function buildAnalysisPrompt(
   jdData: ExtractedJD,
   roundType: RoundType,
   context: AnalysisContext,
-  prepPreferences?: PrepPreferences
+  prepPreferences?: PrepPreferences,
+  companyDifficulty?: CompanyDifficultyContext
 ): string {
   const rubricText = context.rubricChunks.map((c) => `[${c.id}] ${c.chunkText}`).join('\n\n');
 
@@ -181,6 +184,24 @@ When generating the study plan:
 - Prioritize tasks that address: ${getFocusAreaLabels(prepPreferences.focusAreas).join(', ')}
 - Include description, category, and priority level for each task
 - Total time should fit within ${Math.round(getTimelineDays(prepPreferences.timeline) * prepPreferences.dailyHours * 60)} minutes
+`
+    : ''
+}
+${
+  companyDifficulty && companyDifficulty.tier !== 'STANDARD'
+    ? `## Company Difficulty Context
+- Company: ${companyDifficulty.companyName}
+- Tier: ${companyDifficulty.tier} (Difficulty Score: ${companyDifficulty.difficultyScore}/150)
+- Competition Level: ${companyDifficulty.competitionLevel}
+- Acceptance Rate: ${companyDifficulty.acceptanceRateEstimate}
+- Interview Bar: ${companyDifficulty.interviewBarDescription}
+${companyDifficulty.isIntern ? '- INTERN CANDIDATE: Apply intern-level calibration — competition is fiercer for limited intern slots.\n' : ''}
+CALIBRATION INSTRUCTIONS for ${companyDifficulty.tier} companies:
+- Be MORE CRITICAL with all scores — a "good" candidate at a standard company may only be "average" at ${companyDifficulty.companyName}.
+- categoryScores should reflect the HIGHER BAR of this company's interview process.
+- rankedRisks should include at least one risk about company-specific expectations (e.g., leadership principles, culture fit, domain expertise).
+- At least one priorityAction must focus on company-specific differentiation strategies.
+- Reference ${companyDifficulty.companyName} by name in coaching tips and risk rationales.
 `
     : ''
 }
@@ -361,7 +382,23 @@ export async function performAnalysis(
   retries = 2
 ): Promise<LLMAnalysis> {
   const openai = getOpenAIClient();
-  const prompt = buildAnalysisPrompt(resumeData, jdData, roundType, context, prepPreferences);
+
+  // Compute company difficulty for prompt calibration
+  const companyDifficulty = computeCompanyDifficulty(
+    jdData.companyName,
+    prepPreferences?.experienceLevel ?? 'mid',
+    jdData,
+    resumeData
+  );
+
+  const prompt = buildAnalysisPrompt(
+    resumeData,
+    jdData,
+    roundType,
+    context,
+    prepPreferences,
+    companyDifficulty
+  );
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
