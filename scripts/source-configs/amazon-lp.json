@@ -1,0 +1,25 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "web",
+        "url": "https://www.amazon.jobs/content/en/how-we-hire/working-at-amazon",
+        "paths": []
+      },
+      {
+        "type": "web",
+        "url": "https://www.levels.fyi/blog/amazon-leadership-principles-interview",
+        "paths": []
+      }
+    ],
+    "output_dir": "output/amazon-lp"
+  },
+  "interviewProof": {
+    "sourceId": "amazon-lp",
+    "sourceName": "Amazon Leadership Principles",
+    "defaultDomain": "swe",
+    "defaultRoundTypes": ["behavioral", "technical"],
+    "companyName": "Amazon",
+    "qualityScore": 0.9
+  }
+}

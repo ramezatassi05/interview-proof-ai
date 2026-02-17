@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "echo \"No tests yet\"",
     "prepare": "husky",
-    "populate-embeddings": "npx tsx scripts/populate-embeddings.ts"
+    "populate-embeddings": "npx tsx scripts/populate-embeddings.ts",
+    "ingest-knowledge": "npx tsx scripts/ingest-knowledge.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

@@ -1,0 +1,25 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "web",
+        "url": "https://www.wallstreetprep.com/knowledge/finance-interview-questions/",
+        "paths": []
+      },
+      {
+        "type": "web",
+        "url": "https://www.mergersandinquisitions.com/investment-banking-interview-questions-and-answers/",
+        "paths": []
+      }
+    ],
+    "output_dir": "output/finance-interview"
+  },
+  "interviewProof": {
+    "sourceId": "finance-interview",
+    "sourceName": "Finance Interview Prep",
+    "defaultDomain": "finance",
+    "defaultRoundTypes": ["technical", "case", "finance"],
+    "companyName": null,
+    "qualityScore": 0.85
+  }
+}

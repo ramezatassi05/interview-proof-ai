@@ -12,7 +12,6 @@ import type {
 
 const DISPLAY_COUNT = 8;
 const STORAGE_PREFIX = 'iq-practice-';
-const MIN_POOL_SIZE = 100;
 
 // ── Utility helpers ──────────────────────────────────────────
 
@@ -548,7 +547,6 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
   const [loadingFeedback, setLoadingFeedback] = useState<Record<number, boolean>>({});
   const [loadingBestAnswer, setLoadingBestAnswer] = useState<Record<number, boolean>>({});
   const [loadingRefresh, setLoadingRefresh] = useState(false);
-  const [loadingBackfill, setLoadingBackfill] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [activeView, setActiveView] = useState<'practice' | 'saved'>('practice');
   const [activeHighlight, setActiveHighlight] = useState<ActiveHighlight | null>(null);
@@ -565,46 +563,6 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
   useEffect(() => {
     saveState(reportId, state);
   }, [reportId, state]);
-
-  // Auto-expand pool for existing reports with fewer than MIN_POOL_SIZE questions
-  useEffect(() => {
-    let cancelled = false;
-    async function backfill() {
-      // Read current count from state ref via setState to avoid stale closure
-      let currentQuestions: LLMAnalysis['interviewQuestions'] = [];
-      setState((prev) => {
-        currentQuestions = prev.allQuestions;
-        return prev;
-      });
-
-      if (currentQuestions.length >= MIN_POOL_SIZE) return;
-      setLoadingBackfill(true);
-      try {
-        while (currentQuestions.length < MIN_POOL_SIZE && !cancelled) {
-          const allQTexts = currentQuestions.map((q) => q.question);
-          const res = await api.generateMoreQuestions(reportId, {
-            existingQuestions: allQTexts,
-          });
-          if (cancelled) return;
-          const newQuestions = res.data.questions;
-          if (newQuestions.length === 0) break; // safety: no questions returned
-          setState((prev) => {
-            const updated = [...prev.allQuestions, ...newQuestions];
-            currentQuestions = updated;
-            return { ...prev, allQuestions: updated };
-          });
-        }
-      } catch (err) {
-        console.error('Failed to backfill questions:', err);
-      } finally {
-        if (!cancelled) setLoadingBackfill(false);
-      }
-    }
-    backfill();
-    return () => {
-      cancelled = true;
-    };
-  }, [reportId]);
 
   const answeredCount = state.submittedIndices.filter((i) =>
     state.displayedIndices.includes(i)
@@ -920,26 +878,6 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
           <p className="mb-4 text-sm text-[var(--text-muted)]">
             Practice answering these questions, then get AI feedback on your responses. Pool:{' '}
             {state.allQuestions.length} questions.
-            {loadingBackfill && (
-              <span className="ml-2 inline-flex items-center gap-1 text-[var(--accent-primary)]">
-                <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-                Loading more questions...
-              </span>
-            )}
           </p>
 
           {/* Question Cards */}

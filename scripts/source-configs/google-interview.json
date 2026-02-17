@@ -1,0 +1,25 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "web",
+        "url": "https://www.levels.fyi/blog/google-software-engineer-interview",
+        "paths": []
+      },
+      {
+        "type": "web",
+        "url": "https://careers.google.com/how-we-hire/",
+        "paths": []
+      }
+    ],
+    "output_dir": "output/google-interview"
+  },
+  "interviewProof": {
+    "sourceId": "google-interview",
+    "sourceName": "Google Interview Prep",
+    "defaultDomain": "swe",
+    "defaultRoundTypes": ["technical", "behavioral"],
+    "companyName": "Google",
+    "qualityScore": 0.9
+  }
+}

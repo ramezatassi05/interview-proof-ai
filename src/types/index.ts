@@ -46,7 +46,7 @@ export interface LLMAnalysis {
     mappedRiskId: string;
     // Enhanced fields (optional for backwards compatibility)
     description?: string;
-    priority?: 'critical' | 'high' | 'medium';
+    priority?: 'critical' | 'high' | 'medium' | 'low';
     category?: 'technical' | 'behavioral' | 'practice' | 'review';
   }[];
   recruiterSignals?: RecruiterSignals; // Optional for backwards compatibility
@@ -521,7 +521,7 @@ export interface DetailedTask {
   task: string;
   description: string;
   timeEstimateMinutes: number;
-  priority: 'critical' | 'high' | 'medium';
+  priority: 'critical' | 'high' | 'medium' | 'low';
   mappedRiskId: string;
   category: 'technical' | 'behavioral' | 'practice' | 'review';
 }

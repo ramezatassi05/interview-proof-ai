@@ -1,0 +1,25 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "web",
+        "url": "https://www.preplounge.com/en/case-interview-basics",
+        "paths": []
+      },
+      {
+        "type": "web",
+        "url": "https://www.caseinterview.com/case-interview-frameworks",
+        "paths": []
+      }
+    ],
+    "output_dir": "output/case-interview"
+  },
+  "interviewProof": {
+    "sourceId": "case-interview",
+    "sourceName": "Case Interview Prep",
+    "defaultDomain": "general",
+    "defaultRoundTypes": ["case"],
+    "companyName": null,
+    "qualityScore": 0.8
+  }
+}

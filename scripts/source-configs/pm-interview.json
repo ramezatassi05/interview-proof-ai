@@ -1,0 +1,25 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "web",
+        "url": "https://www.tryexponent.com/questions?type=product",
+        "paths": []
+      },
+      {
+        "type": "web",
+        "url": "https://www.productmanagementexercises.com/interview-questions",
+        "paths": []
+      }
+    ],
+    "output_dir": "output/pm-interview"
+  },
+  "interviewProof": {
+    "sourceId": "pm-interview",
+    "sourceName": "Product Management Interview Prep",
+    "defaultDomain": "general",
+    "defaultRoundTypes": ["behavioral", "case"],
+    "companyName": null,
+    "qualityScore": 0.8
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "github",
+        "url": "https://github.com/jwasham/coding-interview-university",
+        "paths": ["README.md", "translations"]
+      }
+    ],
+    "output_dir": "output/coding-interview-university"
+  },
+  "interviewProof": {
+    "sourceId": "coding-interview-university",
+    "sourceName": "Coding Interview University",
+    "defaultDomain": "swe",
+    "defaultRoundTypes": ["technical"],
+    "companyName": null,
+    "qualityScore": 0.85
+  }
+}

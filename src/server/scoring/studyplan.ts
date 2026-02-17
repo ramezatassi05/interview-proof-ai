@@ -150,7 +150,7 @@ function convertToDetailedTasks(
  * Sorts tasks by priority and focus area relevance.
  */
 function sortTasksByPriority(tasks: DetailedTask[], focusAreas: FocusArea[]): DetailedTask[] {
-  const priorityOrder = { critical: 0, high: 1, medium: 2 };
+  const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
 
   // Get preferred categories from focus areas
   const preferredCategories = new Set(focusAreas.flatMap((area) => focusAreaToCategories(area)));

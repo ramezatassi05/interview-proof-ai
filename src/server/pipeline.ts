@@ -14,6 +14,7 @@ import {
   retrieveContext,
   summarizeResumeForRetrieval,
   summarizeJDForRetrieval,
+  inferDomain,
 } from './rag/retrieval';
 import { performAnalysis } from './rag/analysis';
 import {
@@ -30,6 +31,9 @@ import {
   computeCompanyDifficulty,
 } from './scoring/engine';
 import { generatePersonalizedStudyPlan } from './scoring/studyplan';
+import { generateMoreQuestions } from './questions';
+
+const TARGET_QUESTION_POOL = 100;
 
 export interface PipelineInput {
   resumeText: string;
@@ -74,8 +78,15 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
   );
   const jdSummary = summarizeJDForRetrieval(extractedJD.mustHave, extractedJD.keywords);
 
-  // Step 3: Retrieve relevant context
-  const retrievalResult = await retrieveContext(resumeSummary, jdSummary, roundType);
+  // Step 3: Retrieve relevant context (with company/domain filtering)
+  const retrievalResult = await retrieveContext(
+    resumeSummary,
+    jdSummary,
+    roundType,
+    8,
+    extractedJD.companyName ?? undefined,
+    inferDomain(jdSummary)
+  );
 
   // Step 4: Perform LLM analysis
   const llmAnalysis = await performAnalysis(
@@ -88,6 +99,25 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     },
     prepPreferences
   );
+
+  // Step 4b: Expand question pool to target size
+  try {
+    while (llmAnalysis.interviewQuestions.length < TARGET_QUESTION_POOL) {
+      const existingTexts = llmAnalysis.interviewQuestions.map((q) => q.question);
+      const remaining = TARGET_QUESTION_POOL - llmAnalysis.interviewQuestions.length;
+      const newQuestions = await generateMoreQuestions(
+        extractedResume,
+        extractedJD,
+        roundType,
+        existingTexts,
+        Math.min(remaining, 25)
+      );
+      if (newQuestions.length === 0) break;
+      llmAnalysis.interviewQuestions.push(...newQuestions);
+    }
+  } catch (err) {
+    console.error('Question backfill failed, continuing with existing pool:', err);
+  }
 
   // Step 5: Compute deterministic score
   const { score, breakdown } = computeReadinessScore(llmAnalysis);

@@ -1,0 +1,20 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "github",
+        "url": "https://github.com/donnemartin/system-design-primer",
+        "paths": ["solutions/system_design", "README.md"]
+      }
+    ],
+    "output_dir": "output/system-design-primer"
+  },
+  "interviewProof": {
+    "sourceId": "system-design-primer",
+    "sourceName": "System Design Primer",
+    "defaultDomain": "swe",
+    "defaultRoundTypes": ["technical"],
+    "companyName": null,
+    "qualityScore": 0.9
+  }
+}

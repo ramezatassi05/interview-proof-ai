@@ -1,0 +1,25 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "web",
+        "url": "https://www.themuse.com/advice/behavioral-interview-questions-answers-examples",
+        "paths": []
+      },
+      {
+        "type": "web",
+        "url": "https://www.indeed.com/career-advice/interviewing/most-common-behavioral-interview-questions-and-answers",
+        "paths": []
+      }
+    ],
+    "output_dir": "output/behavioral-questions"
+  },
+  "interviewProof": {
+    "sourceId": "behavioral-questions",
+    "sourceName": "Behavioral Interview Questions",
+    "defaultDomain": "general",
+    "defaultRoundTypes": ["behavioral"],
+    "companyName": null,
+    "qualityScore": 0.85
+  }
+}

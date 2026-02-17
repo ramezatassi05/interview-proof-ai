@@ -1,0 +1,25 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "github",
+        "url": "https://github.com/alexeygrigorev/data-science-interviews",
+        "paths": ["theory.md", "technical.md"]
+      },
+      {
+        "type": "web",
+        "url": "https://www.interviewquery.com/p/data-science-interview-questions",
+        "paths": []
+      }
+    ],
+    "output_dir": "output/data-science-interview"
+  },
+  "interviewProof": {
+    "sourceId": "data-science-interview",
+    "sourceName": "Data Science Interview Prep",
+    "defaultDomain": "ds",
+    "defaultRoundTypes": ["technical", "case"],
+    "companyName": null,
+    "qualityScore": 0.85
+  }
+}

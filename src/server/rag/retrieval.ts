@@ -64,18 +64,23 @@ ${resumeSummary}`;
 async function retrieveRubricChunks(
   embedding: number[],
   roundType: RoundType,
-  topK: number
+  topK: number,
+  domain?: string,
+  companyName?: string
 ): Promise<RubricChunk[]> {
   const supabase = await createServiceClient();
 
-  // Use pgvector cosine similarity search
-  // Note: Supabase RPC function would be more efficient for production
-  const { data, error } = await supabase.rpc('match_rubric_chunks', {
+  // Use pgvector cosine similarity search with optional domain/company filtering
+  const rpcParams: Record<string, unknown> = {
     query_embedding: embedding,
     match_threshold: 0.5,
     match_count: topK,
     filter_round_type: roundType,
-  });
+  };
+  if (domain) rpcParams.filter_domain = domain;
+  if (companyName) rpcParams.filter_company = companyName;
+
+  const { data, error } = await supabase.rpc('match_rubric_chunks', rpcParams);
 
   if (error) {
     console.error('Rubric retrieval error:', error);
@@ -120,16 +125,22 @@ async function retrieveRubricChunks(
 async function retrieveQuestionArchetypes(
   embedding: number[],
   roundType: RoundType,
-  topK: number
+  topK: number,
+  domain?: string,
+  companyName?: string
 ): Promise<QuestionArchetype[]> {
   const supabase = await createServiceClient();
 
-  const { data, error } = await supabase.rpc('match_question_archetypes', {
+  const rpcParams: Record<string, unknown> = {
     query_embedding: embedding,
     match_threshold: 0.5,
     match_count: topK,
     filter_round_type: roundType,
-  });
+  };
+  if (domain) rpcParams.filter_domain = domain;
+  if (companyName) rpcParams.filter_company = companyName;
+
+  const { data, error } = await supabase.rpc('match_question_archetypes', rpcParams);
 
   if (error) {
     console.error('Question retrieval error:', error);
@@ -173,6 +184,7 @@ async function retrieveQuestionArchetypes(
  * - Resume evidence summary
  * - JD requirements summary
  * - Interview round type
+ * - Optional company name and domain for filtered retrieval
  *
  * Uses pgvector for semantic similarity search.
  */
@@ -180,7 +192,9 @@ export async function retrieveContext(
   resumeSummary: string,
   jdSummary: string,
   roundType: RoundType,
-  topK: number = 8
+  topK: number = 8,
+  companyName?: string,
+  domain?: string
 ): Promise<RetrievalResult> {
   // Build combined query for embedding
   const query = buildRetrievalQuery(resumeSummary, jdSummary, roundType);
@@ -188,11 +202,26 @@ export async function retrieveContext(
   // Create embedding for the query
   const embedding = await createEmbedding(query);
 
-  // Retrieve in parallel
-  const [rubricChunks, questionArchetypes] = await Promise.all([
-    retrieveRubricChunks(embedding, roundType, topK),
-    retrieveQuestionArchetypes(embedding, roundType, topK),
+  // Over-fetch to allow source diversity filtering
+  const fetchK = topK * 2;
+
+  // Retrieve in parallel with domain/company filtering
+  const [rubricChunksRaw, questionArchetypesRaw] = await Promise.all([
+    retrieveRubricChunks(embedding, roundType, fetchK, domain, companyName),
+    retrieveQuestionArchetypes(embedding, roundType, fetchK, domain, companyName),
   ]);
+
+  // Apply source diversity — cap any single source at 40% of results
+  const rubricChunks = ensureSourceDiversity(
+    rubricChunksRaw,
+    topK,
+    (c) => ((c.metadata as Record<string, unknown>)?.source_name as string) ?? 'unknown'
+  );
+  const questionArchetypes = ensureSourceDiversity(
+    questionArchetypesRaw,
+    topK,
+    (q) => q.domain ?? 'unknown'
+  );
 
   // Collect all context IDs for auditability
   const contextIds = [...rubricChunks.map((c) => c.id), ...questionArchetypes.map((q) => q.id)];
@@ -202,6 +231,92 @@ export async function retrieveContext(
     questionArchetypes,
     contextIds,
   };
+}
+
+/**
+ * Ensures source diversity by capping any single source at 40% of results.
+ * Fills remaining slots with next-best matches from other sources.
+ * Uses a key extractor to get the source name from different item types.
+ */
+function ensureSourceDiversity<T>(items: T[], limit: number, getSource: (item: T) => string): T[] {
+  if (items.length <= limit) return items;
+
+  const maxPerSource = Math.ceil(limit * 0.4);
+  const sourceCounts = new Map<string, number>();
+  const result: T[] = [];
+
+  for (const item of items) {
+    if (result.length >= limit) break;
+
+    const sourceName = getSource(item);
+    const count = sourceCounts.get(sourceName) || 0;
+
+    if (count < maxPerSource) {
+      result.push(item);
+      sourceCounts.set(sourceName, count + 1);
+    }
+  }
+
+  // If we haven't filled all slots (due to diversity cap), backfill
+  if (result.length < limit) {
+    const resultSet = new Set(result);
+    for (const item of items) {
+      if (result.length >= limit) break;
+      if (!resultSet.has(item)) {
+        result.push(item);
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Infers domain from JD summary using keyword matching.
+ * Returns a domain_type value or undefined for general/unknown.
+ */
+export function inferDomain(jdSummary: string): string | undefined {
+  const lower = jdSummary.toLowerCase();
+
+  const dsKeywords = [
+    'machine learning',
+    'data science',
+    'pandas',
+    'tensorflow',
+    'pytorch',
+    'scikit-learn',
+    'deep learning',
+    'nlp',
+    'natural language',
+    'computer vision',
+    'statistical model',
+    'data engineer',
+    'spark',
+    'hadoop',
+    'jupyter',
+  ];
+
+  const financeKeywords = [
+    'quantitative',
+    'trading',
+    'risk management',
+    'portfolio',
+    'derivatives',
+    'fixed income',
+    'bloomberg',
+    'financial model',
+    'valuation',
+    'investment banking',
+    'hedge fund',
+    'asset management',
+  ];
+
+  const dsScore = dsKeywords.filter((kw) => lower.includes(kw)).length;
+  const financeScore = financeKeywords.filter((kw) => lower.includes(kw)).length;
+
+  if (dsScore >= 2) return 'ds';
+  if (financeScore >= 2) return 'finance';
+  return undefined;
 }
 
 /**

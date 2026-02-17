@@ -38,11 +38,11 @@ const PersonalizedCoachingSchema = z.object({
 // Zod schema for round-specific coaching (Phase 8 — optional for backwards compat)
 const RoundCoachingSchema = z.object({
   roundType: z.string(),
-  coachingRecommendations: z.array(z.string()).min(4).max(6),
-  waysToStandOut: z.array(z.string()).min(3).max(5),
+  coachingRecommendations: z.array(z.string()).min(2).max(6),
+  waysToStandOut: z.array(z.string()).min(2).max(5),
   questionsToAskInterviewer: z
     .array(z.object({ question: z.string(), context: z.string() }))
-    .min(4)
+    .min(2)
     .max(6),
   sampleResponses: z
     .array(
@@ -52,9 +52,9 @@ const RoundCoachingSchema = z.object({
         whyItWorks: z.string(),
       })
     )
-    .min(3)
+    .min(2)
     .max(4),
-  passionSignals: z.array(z.string()).min(3).max(5),
+  passionSignals: z.array(z.string()).min(2).max(5),
 });
 
 // Zod schema for LLM analysis output validation
@@ -91,7 +91,7 @@ const LLMAnalysisSchema = z.object({
       mappedRiskId: z.string(),
       // Enhanced fields (optional for backwards compatibility)
       description: z.string().optional(),
-      priority: z.enum(['critical', 'high', 'medium']).optional(),
+      priority: z.enum(['critical', 'high', 'medium', 'low']).optional(),
       category: z.enum(['technical', 'behavioral', 'practice', 'review']).optional(),
     })
   ),
@@ -280,7 +280,7 @@ Analyze the candidate's interview readiness and return a JSON object with:
        ? `
    For each task, also include:
    - description: A 1-2 sentence explanation of what to do and why
-   - priority: "critical" | "high" | "medium" based on impact
+   - priority: "critical" | "high" | "medium" | "low" based on impact
    - category: "technical" | "behavioral" | "practice" | "review"`
        : ''
    }

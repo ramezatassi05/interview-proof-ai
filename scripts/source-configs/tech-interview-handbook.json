@@ -1,0 +1,26 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "github",
+        "url": "https://github.com/yangshun/tech-interview-handbook",
+        "paths": [
+          "contents/algorithms",
+          "contents/coding-interview",
+          "contents/system-design",
+          "contents/behavioral-interview",
+          "contents/resume"
+        ]
+      }
+    ],
+    "output_dir": "output/tech-interview-handbook"
+  },
+  "interviewProof": {
+    "sourceId": "tech-interview-handbook",
+    "sourceName": "Tech Interview Handbook",
+    "defaultDomain": "swe",
+    "defaultRoundTypes": ["technical", "behavioral"],
+    "companyName": null,
+    "qualityScore": 0.95
+  }
+}

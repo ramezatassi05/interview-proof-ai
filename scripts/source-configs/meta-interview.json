@@ -1,0 +1,25 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "web",
+        "url": "https://www.levels.fyi/blog/meta-software-engineer-interview",
+        "paths": []
+      },
+      {
+        "type": "web",
+        "url": "https://www.metacareers.com/life/",
+        "paths": []
+      }
+    ],
+    "output_dir": "output/meta-interview"
+  },
+  "interviewProof": {
+    "sourceId": "meta-interview",
+    "sourceName": "Meta Interview Prep",
+    "defaultDomain": "swe",
+    "defaultRoundTypes": ["technical", "behavioral"],
+    "companyName": "Meta",
+    "qualityScore": 0.9
+  }
+}
