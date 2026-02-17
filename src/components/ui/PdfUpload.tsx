@@ -4,11 +4,12 @@ import { useCallback, useState, useRef } from 'react';
 
 interface PdfUploadProps {
   onTextExtracted: (text: string) => void;
+  onManualEntry?: () => void;
   error?: string;
   disabled?: boolean;
 }
 
-export function PdfUpload({ onTextExtracted, error, disabled }: PdfUploadProps) {
+export function PdfUpload({ onTextExtracted, onManualEntry, error, disabled }: PdfUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -221,6 +222,18 @@ export function PdfUpload({ onTextExtracted, error, disabled }: PdfUploadProps) 
       )}
 
       {displayError && <p className="mt-2 text-xs text-[var(--color-danger)]">{displayError}</p>}
+
+      {onManualEntry && (
+        <p className="mt-2 text-center text-xs text-[var(--text-muted)]">
+          <button
+            type="button"
+            onClick={onManualEntry}
+            className="text-[var(--accent-primary)] hover:underline"
+          >
+            Or paste your resume text instead
+          </button>
+        </p>
+      )}
     </div>
   );
 }

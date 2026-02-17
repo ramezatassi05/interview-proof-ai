@@ -43,6 +43,7 @@ export default function NewReportPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [manualResume, setManualResume] = useState(false);
 
   // Redirect to login if not authenticated
   if (!authLoading && !user) {
@@ -54,7 +55,9 @@ export default function NewReportPage() {
     const newErrors: FormErrors = {};
 
     if (resumeText.trim().length < 50) {
-      newErrors.resumeText = 'Please upload a resume PDF';
+      newErrors.resumeText = manualResume
+        ? 'Resume text must be at least 50 characters'
+        : 'Please upload a resume PDF';
     }
 
     if (jobDescriptionText.trim().length < 50) {
@@ -222,14 +225,41 @@ export default function NewReportPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Resume</CardTitle>
-                    <CardDescription>Upload your resume as a PDF</CardDescription>
+                    <CardDescription>Upload your resume as a PDF or paste the text</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <PdfUpload
-                      onTextExtracted={setResumeText}
-                      error={errors.resumeText}
-                      disabled={isLoading}
-                    />
+                    {manualResume ? (
+                      <div>
+                        <Textarea
+                          value={resumeText}
+                          onChange={(e) => setResumeText(e.target.value)}
+                          placeholder="Paste your resume text here..."
+                          rows={10}
+                          showCount
+                          error={errors.resumeText}
+                          disabled={isLoading}
+                        />
+                        <p className="mt-2 text-center text-xs text-[var(--text-muted)]">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setManualResume(false);
+                              setResumeText('');
+                            }}
+                            className="text-[var(--accent-primary)] hover:underline"
+                          >
+                            Or upload a PDF instead
+                          </button>
+                        </p>
+                      </div>
+                    ) : (
+                      <PdfUpload
+                        onTextExtracted={setResumeText}
+                        onManualEntry={() => setManualResume(true)}
+                        error={errors.resumeText}
+                        disabled={isLoading}
+                      />
+                    )}
                   </CardContent>
                 </Card>
 

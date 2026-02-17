@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
     if (!text) {
       return NextResponse.json(
         {
-          error: 'Could not extract text from PDF. Please ensure the PDF contains selectable text.',
+          error:
+            'No readable text found in this PDF. It may be a scanned image. Try re-saving it with OCR enabled, or paste your resume text instead.',
         },
         { status: 400 }
       );
@@ -43,6 +44,25 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('PDF parse error:', error);
-    return NextResponse.json({ error: 'Failed to parse PDF' }, { status: 500 });
+
+    const message = error instanceof Error ? error.message.toLowerCase() : '';
+
+    if (message.includes('encrypt') || message.includes('password')) {
+      return NextResponse.json(
+        {
+          error:
+            'This PDF is password-protected. Please remove the password and re-upload, or paste your resume text instead.',
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        error:
+          "Your PDF couldn't be read. It may be corrupted or in an unsupported format. Try re-saving it as a new PDF, or paste your resume text instead.",
+      },
+      { status: 500 }
+    );
   }
 }
