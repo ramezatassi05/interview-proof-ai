@@ -18,10 +18,10 @@ const ARCHETYPE_DEFINITIONS: Record<
     description:
       'Strong technical foundation but communication and presentation need work. Your skills are there, but interviewers may not see them clearly.',
     coachingTips: [
-      'Practice explaining complex concepts in simple terms',
-      'Use the STAR method for behavioral questions',
-      'Record yourself answering questions and review for clarity',
-      'Focus on structuring answers with clear beginning, middle, and end',
+      "Pick your strongest project and rehearse a 2-minute explanation using: Context → Challenge → Your Approach → Result → What You'd Do Differently",
+      'Record yourself answering your top 3 likely interview questions, then watch back at 1.5x speed — note every filler word and vague phrase, and redo each one',
+      'For each technical skill on your resume, prepare one concrete "proof story" with a specific metric or outcome you can cite in 30 seconds',
+      'Structure every answer as: one-sentence thesis → supporting detail → so-what impact — practice until this framework feels natural',
     ],
   },
   strong_theoretical_weak_execution: {
@@ -29,10 +29,10 @@ const ARCHETYPE_DEFINITIONS: Record<
     description:
       'Good conceptual understanding but lacking concrete examples and demonstrable experience. Interviewers will want to see more "show" than "tell".',
     coachingTips: [
-      'Prepare 5-7 detailed project stories with specific metrics',
-      'Practice live coding with someone watching',
-      'Build side projects that demonstrate applied skills',
-      'Quantify your impact wherever possible',
+      "Take your best theoretical knowledge area and write a concrete walkthrough of how you'd apply it to a real problem from your past work — this becomes your go-to interview story",
+      'For each resume bullet that says "worked on" or "contributed to", rewrite it as "I specifically did X which resulted in Y" — then rehearse those versions aloud',
+      'Pick one small project you can build in a weekend that demonstrates your strongest skill with measurable output (e.g., a load test, a deployed API, a data pipeline)',
+      'Quantify every achievement: if you don\'t have exact numbers, estimate conservatively and say "approximately" — vague impact is worse than approximate impact',
     ],
   },
   resume_strong_system_weak: {
@@ -40,10 +40,10 @@ const ARCHETYPE_DEFINITIONS: Record<
     description:
       'Impressive resume but may struggle with system design and architectural thinking. Great at individual contributions but needs to demonstrate bigger-picture thinking.',
     coachingTips: [
-      'Study system design fundamentals and common patterns',
-      'Practice whiteboard design sessions',
-      'Learn to think about scalability and trade-offs',
-      'Prepare to discuss how your work fits into larger systems',
+      "Pick the largest system you've worked on, diagram its architecture from memory, then identify 3 scaling bottlenecks and how you'd address them — this is your system design anchor story",
+      'For each project on your resume, prepare a 1-minute answer to "how would you scale this 10x?" covering data, compute, and network layers',
+      'Practice drawing system diagrams while talking — start with boxes for major components, then add data flow arrows and label the trade-offs at each boundary',
+      'Prepare to discuss one real trade-off you made (e.g., consistency vs. availability, monolith vs. microservice) with the reasoning behind your choice',
     ],
   },
   balanced_but_unproven: {
@@ -51,10 +51,10 @@ const ARCHETYPE_DEFINITIONS: Record<
     description:
       'Solid across all dimensions but no standout strengths. May need to differentiate yourself more clearly to stand out from other candidates.',
     coachingTips: [
-      'Identify and develop a signature strength area',
-      'Prepare memorable stories that showcase unique contributions',
-      'Find ways to demonstrate passion and initiative',
-      'Consider what makes your perspective unique',
+      'Review your resume and pick the one project where you had the most ownership — prepare a deep 5-minute narrative around the decisions you made and trade-offs you navigated',
+      'Identify one skill where you can credibly claim top-10% expertise and prepare a "signature story" that proves it with specifics no other candidate would have',
+      'For your top 3 experiences, prepare answers to "what would you do differently?" — this shows self-awareness that balanced candidates often lack',
+      'Create a 30-second "unique value pitch" that answers: what can you do that most candidates at your level cannot? Lead with this in your intro',
     ],
   },
   high_ceiling_low_volume_practice: {
@@ -62,10 +62,10 @@ const ARCHETYPE_DEFINITIONS: Record<
     description:
       'Clear potential for excellence but needs more interview practice. Natural ability is evident but execution under pressure may be inconsistent.',
     coachingTips: [
-      'Schedule at least 10 mock interviews before your target',
-      'Practice under time pressure regularly',
-      'Seek feedback on communication style and presence',
-      'Build interview muscle memory through repetition',
+      'Record yourself answering 3 questions from your weakest area, review them same-day, and redo each one — self-correction builds faster than volume alone',
+      'Do 3 timed practice sessions this week: set a phone timer for the actual interview length and practice answering without pausing or restarting',
+      'After each practice answer, write down the one thing you\'d change — accumulate these into a personal "anti-pattern" list to review before the real interview',
+      'Practice your opening 90 seconds (self-intro + why this role) until you can deliver it smoothly without thinking — first impressions are disproportionately weighted',
     ],
   },
 };

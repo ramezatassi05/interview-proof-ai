@@ -54,23 +54,28 @@ const CATEGORY_TARGETS: Record<RoundType, Record<string, { target: number; label
 // One improvement action per category with estimated impact
 const IMPROVEMENT_ACTIONS: Record<string, { action: string; impact: string }> = {
   hardRequirementMatch: {
-    action: 'Add missing JD keywords and required skills to your resume with concrete examples',
+    action:
+      'For each must-have JD skill missing from your resume, add a bullet with a concrete example of adjacent experience — e.g., if the JD says "Kubernetes" and you used Docker Compose, write "orchestrated containerized services" and prepare to discuss the migration path',
     impact: '+5-8 pts',
   },
   evidenceDepth: {
-    action: 'Quantify achievements with metrics (revenue, users, performance improvements)',
+    action:
+      'Pick your top 5 resume bullets and add a specific metric to each — if you don\'t have exact numbers, estimate conservatively (e.g., "reduced latency by ~30%" or "served ~10K daily users")',
     impact: '+4-7 pts',
   },
   roundReadiness: {
-    action: 'Practice mock interviews focused on your specific round type',
+    action:
+      'Do 3 timed practice sessions targeting your weakest question category, recording yourself and reviewing for filler words, vague answers, and missing structure',
     impact: '+6-10 pts',
   },
   resumeClarity: {
-    action: 'Restructure bullet points using action verb + context + measurable result format',
+    action:
+      'Rewrite your top 5 bullets using: [Action verb] + [what you built/did] + [measurable result] — then read each aloud to check it takes under 10 seconds',
     impact: '+3-5 pts',
   },
   companyProxy: {
-    action: 'Research company tech stack and culture, tailor resume language accordingly',
+    action:
+      'Find 3 recent engineering blog posts or talks from the company, identify patterns in how they describe their technical challenges, and mirror that language in your resume',
     impact: '+3-6 pts',
   },
 };
