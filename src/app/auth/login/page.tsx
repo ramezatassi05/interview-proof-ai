@@ -122,7 +122,7 @@ function LoginLoading() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-primary)]">
       <Container size="sm" className="flex flex-1 items-center justify-center py-12">
         <Suspense fallback={<LoginLoading />}>
           <LoginForm />

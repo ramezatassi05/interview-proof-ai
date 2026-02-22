@@ -123,7 +123,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={`
-          fixed inset-y-0 left-0 z-50 w-60 transform bg-[var(--bg-secondary)] border-r border-[var(--border-default)]
+          fixed inset-y-0 left-0 z-50 w-60 transform bg-[var(--bg-card)] shadow-warm
           transition-transform duration-300 ease-in-out
           lg:relative lg:translate-x-0 lg:z-0
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -132,7 +132,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Logo section for mobile */}
         <div className="flex h-16 items-center justify-between px-4 border-b border-[var(--border-default)] lg:hidden">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)]">
               <svg
                 className="h-5 w-5 text-white"
                 fill="none"

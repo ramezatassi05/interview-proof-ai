@@ -8,7 +8,7 @@ interface CreditsBalanceProps {
 
 export function CreditsBalance({ balance, size = 'md', onClick }: CreditsBalanceProps) {
   const baseClasses =
-    'inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] transition-all';
+    'inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-card)] shadow-warm transition-all';
   const sizeClasses = size === 'sm' ? 'px-2 py-1 text-xs' : 'px-3 py-1.5 text-sm';
   const interactiveClasses = onClick
     ? 'cursor-pointer hover:border-[var(--border-accent)] hover:bg-[var(--bg-card)]'
@@ -22,7 +22,7 @@ export function CreditsBalance({ balance, size = 'md', onClick }: CreditsBalance
       disabled={!onClick}
     >
       <svg
-        className={`${size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} text-[var(--text-secondary)]`}
+        className={`${size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} text-[var(--accent-primary)]`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"

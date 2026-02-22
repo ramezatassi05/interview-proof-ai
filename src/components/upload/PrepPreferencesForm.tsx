@@ -199,11 +199,11 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
               type="button"
               onClick={() => handleTimelineChange(option.value)}
               className={`
-                rounded-xl border-2 p-3 text-center transition-all
+                rounded-[20px] p-3 text-center transition-all shadow-warm
                 ${
                   value?.timeline === option.value
-                    ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                    : 'border-[var(--border-default)] bg-[var(--bg-elevated)] hover:border-[var(--border-accent)]'
+                    ? 'ring-2 ring-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                    : 'bg-[var(--bg-card)] hover:ring-2 hover:ring-[var(--accent-primary)]/30'
                 }
               `}
             >
@@ -258,11 +258,11 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
               type="button"
               onClick={() => handleEmploymentTypeChange('intern')}
               className={`
-                rounded-xl border-2 p-4 text-center transition-all
+                rounded-[20px] p-4 text-center transition-all shadow-warm
                 ${
                   currentEmploymentType === 'intern'
-                    ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                    : 'border-[var(--border-default)] bg-[var(--bg-elevated)] hover:border-[var(--border-accent)]'
+                    ? 'ring-2 ring-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                    : 'bg-[var(--bg-card)] hover:ring-2 hover:ring-[var(--accent-primary)]/30'
                 }
               `}
             >
@@ -283,11 +283,11 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
               type="button"
               onClick={() => handleEmploymentTypeChange('fulltime')}
               className={`
-                rounded-xl border-2 p-4 text-center transition-all
+                rounded-[20px] p-4 text-center transition-all shadow-warm
                 ${
                   currentEmploymentType === 'fulltime'
-                    ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                    : 'border-[var(--border-default)] bg-[var(--bg-elevated)] hover:border-[var(--border-accent)]'
+                    ? 'ring-2 ring-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                    : 'bg-[var(--bg-card)] hover:ring-2 hover:ring-[var(--accent-primary)]/30'
                 }
               `}
             >
@@ -319,11 +319,11 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
                     type="button"
                     onClick={() => handleFullTimeSubChange(option.value)}
                     className={`
-                      rounded-lg border-2 p-2.5 text-center transition-all
+                      rounded-[20px] p-2.5 text-center transition-all shadow-warm
                       ${
                         value.experienceLevel === option.value
-                          ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                          : 'border-[var(--border-default)] bg-[var(--bg-elevated)] hover:border-[var(--border-accent)]'
+                          ? 'ring-2 ring-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                          : 'bg-[var(--bg-card)] hover:ring-2 hover:ring-[var(--accent-primary)]/30'
                       }
                     `}
                   >
@@ -365,13 +365,13 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
                   onClick={() => handleFocusAreaToggle(option.value)}
                   disabled={isDisabled}
                   className={`
-                    rounded-xl border-2 p-3 text-left transition-all
+                    rounded-[20px] p-3 text-left transition-all shadow-warm
                     ${
                       isSelected
-                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                        ? 'ring-2 ring-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
                         : isDisabled
-                          ? 'border-[var(--border-default)] bg-[var(--bg-elevated)] opacity-50 cursor-not-allowed'
-                          : 'border-[var(--border-default)] bg-[var(--bg-elevated)] hover:border-[var(--border-accent)]'
+                          ? 'bg-[var(--bg-card)] opacity-50 cursor-not-allowed'
+                          : 'bg-[var(--bg-card)] hover:ring-2 hover:ring-[var(--accent-primary)]/30'
                     }
                   `}
                 >

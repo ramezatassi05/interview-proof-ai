@@ -39,7 +39,7 @@ export function ArchetypeCard({ profile, companyName }: ArchetypeCardProps) {
         {profile.coachingTips.map((tip, index) => (
           <div
             key={index}
-            className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5"
+            className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-5"
           >
             <div className="flex items-start gap-4">
               <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-sm font-semibold text-amber-400">

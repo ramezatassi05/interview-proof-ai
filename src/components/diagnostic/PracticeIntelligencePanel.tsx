@@ -108,7 +108,7 @@ function PracticeSyncSection({
   const mockBadge = getLevelBadge(data.mockReadiness.level);
 
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           {companyName ? `${companyName} Practice Sync` : 'Practice Sync'}
@@ -238,7 +238,7 @@ function PressureIndexSection({
   const bandConfig = getPressureBandConfig(data.band);
 
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           {companyName ? `${companyName} Pressure Handling Index` : 'Pressure Handling Index'}
@@ -376,7 +376,7 @@ function ConsistencyMomentumSection({
   const bandConfig = getMomentumBandConfig(data.band);
 
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           {companyName ? `${companyName} Consistency & Momentum` : 'Consistency & Momentum'}
@@ -421,7 +421,7 @@ function ConsistencyMomentumSection({
           {data.insights.map((insight, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3 text-sm"
+              className="flex items-start gap-2 rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-sm"
             >
               <svg
                 className="h-4 w-4 text-blue-400 flex-shrink-0 mt-0.5"
@@ -533,7 +533,7 @@ function PracticeRxSection({
   companyName?: string;
 }) {
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           {companyName ? `${companyName} Practice Rx` : 'Practice Rx'}

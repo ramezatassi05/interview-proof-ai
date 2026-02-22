@@ -41,7 +41,7 @@ export function AppLayout({
 
         {/* Right Intelligence Panel - Hidden on mobile/tablet */}
         {showIntelligencePanel && (
-          <aside className="hidden xl:block w-80 flex-shrink-0 border-l border-[var(--border-default)] bg-[var(--bg-secondary)]">
+          <aside className="hidden xl:block w-80 flex-shrink-0 bg-[var(--bg-card)] shadow-warm">
             <div className="sticky top-0 h-screen overflow-y-auto p-6">
               <IntelligencePanel activeTab={activeTab} reportData={reportData} />
             </div>

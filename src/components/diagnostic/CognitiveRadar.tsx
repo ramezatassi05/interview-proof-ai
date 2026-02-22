@@ -146,7 +146,7 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
   );
 
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">
@@ -276,7 +276,7 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
             return (
               <div
                 key={key}
-                className="border border-[var(--border-default)] rounded-lg overflow-hidden"
+                className="rounded-xl shadow-warm overflow-hidden"
               >
                 <button
                   onClick={() => setExpandedDimension(isExpanded ? null : key)}

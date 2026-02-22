@@ -90,7 +90,7 @@ export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
   const screenTimeInfo = getScreenTimeLabel(simulation.estimatedScreenTimeSeconds);
 
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">
@@ -117,7 +117,7 @@ export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
       </div>
 
       {/* Screen Time */}
-      <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4 mb-6">
+      <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <svg

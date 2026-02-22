@@ -118,7 +118,7 @@ export function PdfUpload({ onTextExtracted, onManualEntry, error, disabled }: P
       />
 
       {fileName ? (
-        <div className="flex items-center justify-between rounded-xl border border-[var(--color-success)]/30 bg-[var(--color-success-muted)] px-4 py-4">
+        <div className="flex items-center justify-between rounded-[20px] bg-[var(--color-success-muted)] shadow-warm px-4 py-4">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--color-success)]/20">
               <svg
@@ -163,9 +163,9 @@ export function PdfUpload({ onTextExtracted, onManualEntry, error, disabled }: P
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           className={`
-            flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-12 transition-all
-            ${isDragging ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10' : 'border-[var(--border-default)]'}
-            ${disabled || isUploading ? 'cursor-not-allowed opacity-50' : 'hover:border-[var(--accent-primary)] hover:bg-[var(--bg-elevated)]'}
+            flex cursor-pointer flex-col items-center justify-center rounded-[20px] border-2 border-dashed px-6 py-12 transition-all
+            ${isDragging ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10' : 'border-[var(--accent-primary)]/30'}
+            ${disabled || isUploading ? 'cursor-not-allowed opacity-50' : 'hover:border-[var(--accent-primary)] hover:bg-[var(--bg-card)]'}
             ${displayError ? 'border-[var(--color-danger)]' : ''}
           `}
         >

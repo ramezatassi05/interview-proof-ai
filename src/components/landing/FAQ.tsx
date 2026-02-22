@@ -63,7 +63,7 @@ function ChevronIcon({ open }: { open: boolean }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={`flex-shrink-0 text-[var(--text-muted)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+      className={`flex-shrink-0 text-[var(--accent-primary)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
     >
       <polyline points="6 9 12 15 18 9" />
     </svg>
@@ -74,7 +74,7 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="border-b border-[var(--border-default)]">
+    <section>
       <Container className="py-14">
         <div className="flex flex-col items-center text-center">
           <Badge variant="accent">FAQ</Badge>
@@ -92,7 +92,7 @@ export function FAQ() {
             return (
               <div
                 key={i}
-                className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)]"
+                className="rounded-[20px] bg-[var(--bg-card)] shadow-warm"
               >
                 <button
                   type="button"

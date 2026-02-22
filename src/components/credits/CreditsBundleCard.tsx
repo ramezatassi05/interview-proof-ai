@@ -29,11 +29,11 @@ export function CreditsBundleCard({
   return (
     <div
       className={`
-        relative flex flex-col rounded-xl border p-5 transition-all
+        relative flex flex-col rounded-[20px] p-5 transition-all shadow-warm
         ${
           popular
-            ? 'border-[var(--accent-primary)] bg-gradient-to-b from-[var(--accent-primary)]/10 to-transparent shadow-lg'
-            : 'border-[var(--border-default)] bg-[var(--bg-card)] hover:border-[var(--border-accent)]'
+            ? 'ring-2 ring-[var(--accent-primary)] bg-gradient-to-b from-[var(--accent-primary)]/10 to-transparent'
+            : 'bg-[var(--bg-card)] hover:ring-2 hover:ring-[var(--accent-primary)]/30'
         }
       `}
     >
@@ -83,11 +83,11 @@ export function CreditsBundleCard({
         onClick={onPurchase}
         disabled={loading}
         className={`
-          mt-5 w-full rounded-lg py-2.5 font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50
+          mt-5 w-full rounded-full py-2.5 font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50
           ${
             popular
-              ? 'bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white hover:opacity-90'
-              : 'border border-[var(--border-default)] bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10'
+              ? 'bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white hover:opacity-90 shadow-warm'
+              : 'bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:bg-[var(--accent-primary)]/10'
           }
         `}
       >

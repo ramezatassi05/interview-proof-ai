@@ -12,6 +12,9 @@ import { RadialScoreIndicator } from '@/components/ui/RadialScoreIndicator';
 import { InterviewIntelligenceStats } from '@/components/landing/InterviewIntelligenceStats';
 import { BenefitsRisks } from '@/components/landing/BenefitsRisks';
 import { FAQ } from '@/components/landing/FAQ';
+import { MorphingWaveDivider } from '@/components/svg/MorphingWaveDivider';
+import { BouncingCheckmark } from '@/components/svg/BouncingCheckmark';
+import { FriendlyFaceMascot } from '@/components/svg/FriendlyFaceMascot';
 
 interface LastReport {
   id: string;
@@ -75,8 +78,8 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section — split layout */}
-        <section className="relative overflow-hidden border-b border-[var(--border-default)]">
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)]" />
+        <section className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-primary)]" />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[var(--accent-primary)]/10 rounded-full blur-3xl" />
 
           <Container className="relative py-16">
@@ -117,7 +120,7 @@ export default function LandingPage() {
               <div className="mt-10 flex justify-center md:mt-0 md:flex-1">
                 {lastReport ? (
                   /* Returning user — real data */
-                  <div className="w-full max-w-xs rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6 backdrop-blur-sm">
+                  <div className="w-full max-w-xs rounded-[20px] bg-[var(--bg-card)] p-6 shadow-warm">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-[var(--text-secondary)]">
                         Your Last Diagnostic
@@ -191,10 +194,10 @@ export default function LandingPage() {
         </section>
 
         {/* Section divider */}
-        <div className="section-divider" />
+        <MorphingWaveDivider />
 
         {/* Quick Value Cards */}
-        <section className="border-b border-[var(--border-default)]">
+        <section>
           <Container className="py-10">
             <h2 className="mb-5 text-lg font-semibold text-[var(--text-primary)]">
               {lastReport
@@ -205,7 +208,7 @@ export default function LandingPage() {
             </h2>
             <div className="grid gap-5 md:grid-cols-3">
               {/* Card 1: Hire-Zone Score */}
-              <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5 card-hover">
+              <div className="rounded-[20px] bg-[var(--bg-card)] p-5 shadow-warm card-hover">
                 <div className="flex items-start justify-between">
                   <h3 className="text-sm font-semibold text-[var(--text-primary)]">
                     Your Hire-Zone Score
@@ -227,7 +230,7 @@ export default function LandingPage() {
               </div>
 
               {/* Card 2: Top Rejection Risks */}
-              <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5 card-hover">
+              <div className="rounded-[20px] bg-[var(--bg-card)] p-5 shadow-warm card-hover">
                 <div className="flex items-start justify-between">
                   <h3 className="text-sm font-semibold text-[var(--text-primary)]">
                     Top Rejection Risks
@@ -278,7 +281,7 @@ export default function LandingPage() {
               </div>
 
               {/* Card 3: Fastest Wins */}
-              <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5 card-hover">
+              <div className="rounded-[20px] bg-[var(--bg-card)] p-5 shadow-warm card-hover">
                 <div className="flex items-start justify-between">
                   <h3 className="text-sm font-semibold text-[var(--text-primary)]">Fastest Wins</h3>
                   <Badge variant="accent">Prioritized</Badge>
@@ -314,7 +317,7 @@ export default function LandingPage() {
         </section>
 
         {/* How It Works */}
-        <section className="border-b border-[var(--border-default)]">
+        <section>
           <Container className="py-14">
             <h2 className="text-center text-2xl font-bold text-[var(--text-primary)] sm:text-3xl">
               How It Works
@@ -363,7 +366,7 @@ export default function LandingPage() {
         <BenefitsRisks />
 
         {/* Section divider */}
-        <div className="section-divider" />
+        <MorphingWaveDivider />
 
         {/* Interview Intelligence Stats */}
         <InterviewIntelligenceStats />
@@ -372,7 +375,7 @@ export default function LandingPage() {
         <FAQ />
 
         {/* Credibility Strip */}
-        <section className="border-b border-[var(--border-default)] bg-[var(--bg-card)] backdrop-blur-sm">
+        <section className="bg-[var(--bg-card)] shadow-warm">
           <Container className="py-6">
             <div
               className="flex items-center justify-center gap-3 text-center"
@@ -404,6 +407,9 @@ export default function LandingPage() {
           <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--accent-primary)]/10 rounded-full blur-3xl" />
 
           <Container className="relative py-14 text-center">
+            <div className="flex justify-center mb-4">
+              <FriendlyFaceMascot size={64} />
+            </div>
             <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl">
               Ready to Find Your Gaps?
             </h2>

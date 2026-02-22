@@ -104,7 +104,7 @@ export function PaywallCTA({ reportId, totalRisks }: PaywallCTAProps) {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border-2 border-[var(--accent-primary)] bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-elevated)] to-[var(--accent-primary)]/10">
+    <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-elevated)] to-[var(--accent-primary)]/10 shadow-warm">
       {/* Glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/10" />
       <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--accent-primary)]/10 rounded-full blur-3xl" />

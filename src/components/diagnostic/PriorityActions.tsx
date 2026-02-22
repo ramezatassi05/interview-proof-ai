@@ -46,7 +46,7 @@ export function PriorityActions({ actions, companyName }: PriorityActionsProps) 
         {actions.map((action, index) => (
           <div
             key={index}
-            className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)] p-4"
+            className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4"
           >
             {/* Priority number and action */}
             <div className="flex items-start gap-3">

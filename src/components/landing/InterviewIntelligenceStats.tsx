@@ -172,7 +172,7 @@ export function InterviewIntelligenceStats() {
   if (!stats) return null;
 
   return (
-    <section className="border-b border-[var(--border-default)]">
+    <section>
       <Container className="py-14">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl">
@@ -185,7 +185,7 @@ export function InterviewIntelligenceStats() {
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
           {/* Card 1: Analyses Run */}
-          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
+          <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-5">
             <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
               Diagnostics Run
             </p>
@@ -199,7 +199,7 @@ export function InterviewIntelligenceStats() {
           </div>
 
           {/* Card 2: Avg Readiness Score */}
-          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
+          <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-5">
             <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
               Avg Readiness Score
             </p>
@@ -216,7 +216,7 @@ export function InterviewIntelligenceStats() {
           </div>
 
           {/* Card 3: Risk Distribution */}
-          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
+          <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-5">
             <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
               Risk Distribution
             </p>
@@ -237,7 +237,7 @@ export function InterviewIntelligenceStats() {
           </div>
 
           {/* Card 4: Score by Round */}
-          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
+          <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-5">
             <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
               Avg Score by Round
             </p>

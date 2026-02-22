@@ -115,7 +115,7 @@ function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjectio
   const potentialStyle = potentialColors[trajectory.improvementPotential] ?? potentialColors.medium;
 
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">Improvement Trajectory</h3>
         <span
@@ -147,7 +147,7 @@ function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjectio
             <button
               key={m.key}
               onClick={() => setExpandedDay(isExpanded ? null : m.key)}
-              className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4 text-left hover:border-emerald-500/40 transition-colors"
+              className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4 text-left hover:border-emerald-500/40 transition-colors"
             >
               <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">
                 {m.label}
@@ -163,7 +163,7 @@ function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjectio
 
       {/* Expanded assumptions */}
       {expandedDay && (
-        <div className="mt-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4">
+        <div className="mt-3 rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4">
           <p className="text-xs font-medium text-[var(--text-muted)] mb-2">
             {milestones.find((m) => m.key === expandedDay)?.label} assumptions
           </p>
@@ -201,7 +201,7 @@ function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roun
   const visibleTips = showAll ? coachingTips : coachingTips.slice(0, 2);
 
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
       <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
         Personalized Action Plan
       </h3>
@@ -213,7 +213,7 @@ function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roun
         {visibleTips.map((tip, index) => (
           <div
             key={index}
-            className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4"
+            className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4"
           >
             <div className="flex items-start gap-3">
               <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-xs font-semibold text-amber-400">
@@ -273,7 +273,7 @@ function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roun
 
 function EvidenceSnapshot({ evidence }: { evidence: EvidenceContext }) {
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
       <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
         Your Evidence Snapshot
       </h3>
@@ -460,7 +460,7 @@ function WaysToStandOut({ difficulty }: { difficulty: CompanyDifficultyContext }
       </div>
 
       {/* Interview bar description */}
-      <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4 mb-5">
+      <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4 mb-5">
         <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-2">
           Interview Bar
         </p>
@@ -508,7 +508,7 @@ function WaysToStandOut({ difficulty }: { difficulty: CompanyDifficultyContext }
             {visibleStrategies.map((strategy, index) => (
               <div
                 key={index}
-                className="flex items-start gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3"
+                className="flex items-start gap-3 rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3"
               >
                 <span
                   className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold ${badgeColor.bg} ${badgeColor.text}`}

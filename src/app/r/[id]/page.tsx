@@ -82,7 +82,7 @@ export default function ResultsPage() {
         <Header />
         <main className="flex flex-1 items-center justify-center">
           <Container size="sm">
-            <div className="rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] p-8 text-center">
+            <div className="rounded-[20px] bg-[var(--color-danger-muted)] p-8 text-center shadow-warm">
               <h2 className="text-lg font-semibold text-[var(--color-danger)]">Error</h2>
               <p className="mt-2 text-[var(--text-secondary)]">{error}</p>
               <Button variant="secondary" onClick={() => router.push('/new')} className="mt-4">
@@ -102,7 +102,7 @@ export default function ResultsPage() {
         <Header />
         <main className="flex flex-1 items-center justify-center">
           <Container size="sm">
-            <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-8 text-center">
+            <div className="rounded-[20px] bg-[var(--bg-card)] p-8 text-center shadow-warm">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 Analysis Not Complete
               </h2>

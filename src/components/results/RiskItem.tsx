@@ -54,7 +54,7 @@ export function RiskItem({ risk, index, showEvidence = false }: RiskItemProps) {
     <div
       className={`
         risk-signal
-        rounded-lg border border-[var(--border-default)] p-4
+        rounded-[20px] p-4 shadow-warm
         ${isCriticalOrHigh ? 'bg-[var(--color-danger-muted)]' : 'bg-[var(--bg-card)]'}
       `}
     >
@@ -75,7 +75,7 @@ export function RiskItem({ risk, index, showEvidence = false }: RiskItemProps) {
           <p className="mt-2 text-sm text-[var(--text-secondary)]">{risk.rationale}</p>
 
           {showEvidence && risk.missingEvidence && (
-            <div className="mt-3 rounded-md bg-[var(--bg-elevated)] p-3 border border-[var(--border-subtle)]">
+            <div className="mt-3 rounded-xl bg-[var(--bg-elevated)] p-3">
               <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-danger)]">
                 Missing Evidence
               </p>

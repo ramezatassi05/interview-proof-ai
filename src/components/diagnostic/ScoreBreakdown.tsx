@@ -97,7 +97,7 @@ export function ScoreBreakdown({ breakdown, companyName }: ScoreBreakdownProps) 
         </span>
       </div>
 
-      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+      <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
         <div className="space-y-1">
           {categories.map(({ key, score, weight }) => {
             const config = CATEGORY_CONFIG[key];

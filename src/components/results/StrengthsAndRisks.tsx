@@ -64,7 +64,7 @@ export function StrengthsAndRisks({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Strengths Column */}
-      <div className="rounded-xl border border-[var(--color-success)]/30 bg-[var(--color-success-muted)] p-5">
+      <div className="rounded-[20px] bg-[var(--color-success-muted)] p-5 shadow-warm">
         <div className="flex items-center gap-2 mb-4">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-success)]/20">
             <svg
@@ -119,7 +119,7 @@ export function StrengthsAndRisks({
       </div>
 
       {/* Risks Column */}
-      <div className="rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] p-5">
+      <div className="rounded-[20px] bg-[var(--color-danger-muted)] p-5 shadow-warm">
         <div className="flex items-center gap-2 mb-4">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-danger)]/20">
             <svg

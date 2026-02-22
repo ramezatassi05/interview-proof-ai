@@ -317,7 +317,7 @@ export default function NewReportPage() {
                 </Card>
 
                 {errors.submit && (
-                  <div className="rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] p-4">
+                  <div className="rounded-[20px] bg-[var(--color-danger-muted)] p-4 shadow-warm">
                     <p className="text-sm text-[var(--color-danger)]">{errors.submit}</p>
                   </div>
                 )}

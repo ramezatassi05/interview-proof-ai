@@ -62,7 +62,7 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
   const ticks = [0, 25, 50, 75, 100];
 
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
       {/* Header */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -207,19 +207,19 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
 
       {/* Key Metrics Row */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3 text-center">
+        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center">
           <p className="text-xs text-[var(--text-muted)]">Your Score</p>
           <p className="mt-1 text-xl font-bold text-[var(--text-primary)]">
             {hireZone.currentScore}
           </p>
         </div>
-        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3 text-center">
+        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center">
           <p className="text-xs text-[var(--text-muted)]">Hire Zone</p>
           <p className="mt-1 text-xl font-bold text-emerald-400">
             {hireZone.hireZoneMin}–{hireZone.hireZoneMax}
           </p>
         </div>
-        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3 text-center">
+        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center">
           <p className="text-xs text-[var(--text-muted)]">Gap</p>
           <p
             className={`mt-1 text-xl font-bold ${hireZone.gap > 0 ? 'text-amber-400' : 'text-emerald-400'}`}
@@ -227,7 +227,7 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
             {hireZone.gap > 0 ? `${hireZone.gap} pts` : 'None'}
           </p>
         </div>
-        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3 text-center">
+        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center">
           <p className="text-xs text-[var(--text-muted)]">Percentile</p>
           <p className="mt-1 text-xl font-bold text-[var(--text-primary)]">
             {hireZone.percentile}th
@@ -300,7 +300,7 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
             {hireZone.topActions.map((action, i) => (
               <li
                 key={i}
-                className="flex items-start gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3"
+                className="flex items-start gap-3 rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3"
               >
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)]/20 text-xs font-bold text-[var(--color-accent)]">
                   {i + 1}

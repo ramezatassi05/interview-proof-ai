@@ -95,9 +95,8 @@ export function MetricCard({
   return (
     <div
       className={`
-        rounded-xl border p-4
+        rounded-[20px] border-t-2 border-t-[var(--accent-primary)] p-4 shadow-warm
         ${styles.bg}
-        ${styles.border}
         ${className}
       `}
     >

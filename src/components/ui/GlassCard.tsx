@@ -35,8 +35,8 @@ export function GlassCard({
   return (
     <div
       className={`
-        rounded-xl
-        glass
+        rounded-[20px]
+        glass shadow-warm
         ${variantClasses[variant]}
         ${paddingStyles[padding]}
         ${hover ? 'card-hover cursor-pointer' : ''}

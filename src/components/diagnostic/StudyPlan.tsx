@@ -157,7 +157,7 @@ function PersonalizedPlanView({
       </div>
 
       {/* Overall Progress bar */}
-      <div className="mb-6 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
+      <div className="mb-6 rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-[var(--text-primary)]">Overall Progress</span>
           <span className="text-sm font-bold text-[var(--accent-primary)]">{progress}%</span>
@@ -522,7 +522,7 @@ function LegacyPlanView({
       </div>
 
       {/* Progress bar */}
-      <div className="mb-6 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
+      <div className="mb-6 rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-[var(--text-primary)]">Overall Progress</span>
           <span className="text-sm font-bold text-[var(--accent-primary)]">{progress}%</span>

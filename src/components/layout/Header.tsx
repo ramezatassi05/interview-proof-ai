@@ -18,7 +18,7 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
   const { balance, loading: creditsLoading, openPurchaseModal } = useCredits();
 
   return (
-    <header className="border-b border-[var(--border-default)] bg-[var(--bg-secondary)]">
+    <header className="bg-[var(--bg-card)] shadow-warm">
       <Container>
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
@@ -39,7 +39,7 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
               </button>
             )}
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] shadow-lg group-hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-shadow">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] shadow-warm group-hover:shadow-[0_0_20px_rgba(255,107,53,0.3)] transition-shadow">
                 <svg
                   className="h-5 w-5 text-white"
                   fill="none"

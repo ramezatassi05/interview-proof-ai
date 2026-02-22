@@ -20,7 +20,7 @@ const RISKS = [
 
 export function BenefitsRisks() {
   return (
-    <section className="border-b border-[var(--border-default)]">
+    <section>
       <Container className="py-14">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl">
@@ -33,7 +33,7 @@ export function BenefitsRisks() {
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
           {/* Benefits */}
-          <div className="rounded-xl border border-[var(--color-success)]/20 bg-[var(--bg-card)] p-6">
+          <div className="rounded-[20px] bg-[var(--bg-card)] p-6 shadow-warm">
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-success)]/15 text-[var(--color-success)]">
                 <svg
@@ -67,7 +67,7 @@ export function BenefitsRisks() {
           </div>
 
           {/* Risks */}
-          <div className="rounded-xl border border-[var(--color-danger)]/20 bg-[var(--bg-card)] p-6">
+          <div className="rounded-[20px] bg-[var(--bg-card)] p-6 shadow-warm">
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-danger)]/15 text-[var(--color-danger)]">
                 <svg

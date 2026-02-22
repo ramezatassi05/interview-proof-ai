@@ -174,7 +174,7 @@ export function RoundForecast({ forecasts, userRoundType, companyName }: RoundFo
   });
 
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">

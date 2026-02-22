@@ -26,7 +26,7 @@ export function Collapsible({
       >
         <div className="flex-1">{header}</div>
         <svg
-          className={`h-5 w-5 flex-shrink-0 text-[var(--text-muted)] transition-transform duration-200 ${
+          className={`h-5 w-5 flex-shrink-0 text-[var(--accent-primary)] transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
           }`}
           fill="none"

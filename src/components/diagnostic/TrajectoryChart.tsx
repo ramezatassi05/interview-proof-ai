@@ -61,7 +61,7 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
   const areaPath = `${linePath} L ${xScale(14)} ${yScale(0)} L ${xScale(0)} ${yScale(0)} Z`;
 
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
       {/* Header */}
       <div className="mb-6 flex items-start justify-between">
         <div>
@@ -165,7 +165,7 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
       {/* Projections detail */}
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
         {/* Day 3 */}
-        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4">
+        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-[var(--text-primary)]">Day 3</span>
             <span className={`text-lg font-bold ${getScoreColor(day3Projection.score)}`}>
@@ -191,7 +191,7 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
         </div>
 
         {/* Day 7 */}
-        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4">
+        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-[var(--text-primary)]">Day 7</span>
             <span className={`text-lg font-bold ${getScoreColor(day7Projection.score)}`}>
@@ -217,7 +217,7 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
         </div>
 
         {/* Day 14 */}
-        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4">
+        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-[var(--text-primary)]">Day 14</span>
             <span className={`text-lg font-bold ${getScoreColor(day14Projection.score)}`}>

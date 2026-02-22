@@ -188,7 +188,7 @@ export function AnalysisProgress({ isAnalyzing }: AnalysisProgressProps) {
 
       {/* Rotating insight card */}
       <div
-        className="overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)] p-4"
+        className="overflow-hidden rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4"
         style={{
           transform:
             insightSlide === 'exit'
@@ -259,7 +259,7 @@ export function DidYouKnowCard({ isAnalyzing }: DidYouKnowCardProps) {
 
   return (
     <div
-      className="overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)] p-4"
+      className="overflow-hidden rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4"
       style={{
         transform:
           factSlide === 'exit'

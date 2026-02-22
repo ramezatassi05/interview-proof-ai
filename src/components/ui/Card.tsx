@@ -19,10 +19,10 @@ const paddingStyles = {
 };
 
 const variantStyles: Record<CardVariant, string> = {
-  default: 'bg-[var(--bg-card)] border border-[var(--border-default)]',
-  elevated: 'bg-[var(--bg-elevated)] border border-[var(--border-default)] shadow-lg',
-  bordered: 'bg-[var(--bg-card)] border-2 border-[var(--border-accent)]',
-  glass: 'glass',
+  default: 'bg-[var(--bg-card)] shadow-warm',
+  elevated: 'bg-[var(--bg-elevated)] shadow-warm',
+  bordered: 'bg-[var(--bg-card)] border-2 border-[var(--border-accent)] shadow-warm',
+  glass: 'glass shadow-warm',
 };
 
 export function Card({
@@ -36,7 +36,7 @@ export function Card({
   return (
     <div
       className={`
-        rounded-xl
+        rounded-[20px]
         ${variantStyles[variant]}
         ${paddingStyles[padding]}
         ${hover ? 'card-hover cursor-pointer' : ''}

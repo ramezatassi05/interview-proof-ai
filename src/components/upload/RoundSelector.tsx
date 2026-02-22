@@ -92,11 +92,11 @@ export function RoundSelector({ value, onChange, error }: RoundSelectorProps) {
             type="button"
             onClick={() => onChange(option.value)}
             className={`
-              rounded-xl border-2 p-4 text-left transition-all
+              rounded-[20px] p-4 text-left transition-all shadow-warm
               ${
                 value === option.value
-                  ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                  : 'border-[var(--border-default)] bg-[var(--bg-elevated)] hover:border-[var(--border-accent)]'
+                  ? 'ring-2 ring-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                  : 'bg-[var(--bg-card)] hover:ring-2 hover:ring-[var(--accent-primary)]/30'
               }
             `}
           >

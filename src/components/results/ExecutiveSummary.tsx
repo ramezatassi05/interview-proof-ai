@@ -93,7 +93,7 @@ export function ExecutiveSummary({
   const technicalStrength = getTechnicalStrength();
 
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-elevated)] border border-[var(--border-default)] p-8 shadow-lg">
+    <div className="rounded-[20px] bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-elevated)] p-8 shadow-warm">
       {/* Header */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -137,7 +137,7 @@ export function ExecutiveSummary({
       </div>
 
       {/* Highlight Summary Box */}
-      <div className="mb-8 rounded-xl bg-gradient-to-r from-[var(--color-warning)]/20 via-[var(--color-warning)]/15 to-[var(--color-warning)]/10 border border-[var(--color-warning)]/30 p-5">
+      <div className="mb-8 rounded-[20px] bg-gradient-to-r from-[var(--color-warning)]/20 via-[var(--color-warning)]/15 to-[var(--color-warning)]/10 p-5 shadow-warm">
         <div className="flex items-start gap-3">
           <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-warning)]/20">
             <svg
@@ -164,7 +164,7 @@ export function ExecutiveSummary({
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-[var(--border-default)]">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-[var(--border-subtle)]">
         <MetricItem
           label="Red Flags"
           value={totalRisks.toString()}

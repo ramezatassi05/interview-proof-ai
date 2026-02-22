@@ -13,19 +13,19 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-[var(--text-primary)] text-[var(--bg-primary)] hover:opacity-90',
+  primary: 'bg-[var(--text-primary)] text-[var(--bg-primary)] hover:opacity-90 shadow-warm',
   secondary:
-    'border border-[var(--border-default)] bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:bg-[var(--bg-card)] hover:border-[var(--border-accent)]',
+    'border border-[var(--border-default)] bg-[var(--bg-card)] text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] hover:border-[var(--border-accent)] shadow-warm',
   ghost:
     'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]',
-  accent: 'btn-premium text-white hover:opacity-90',
+  accent: 'btn-premium text-white hover:opacity-90 shadow-warm',
   danger: 'bg-[var(--color-danger)] text-white hover:opacity-90',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-6 py-3 text-base',
+  sm: 'px-4 py-2 text-sm',
+  md: 'px-5 py-2.5 text-sm',
+  lg: 'px-8 py-3.5 text-base',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -49,7 +49,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={isDisabled}
         className={`
-          inline-flex items-center justify-center gap-2 rounded-lg font-medium
+          inline-flex items-center justify-center gap-2 rounded-full font-semibold
           transition-all duration-200 focus-visible:outline-none focus-visible:ring-2
           focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2
           focus-visible:ring-offset-[var(--bg-primary)]

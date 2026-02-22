@@ -48,8 +48,8 @@ export function TabList({ children, className = '' }: TabListProps) {
   return (
     <div
       className={`
-        flex gap-1 rounded-xl p-1.5
-        bg-[var(--bg-card)] border border-[var(--border-default)]
+        flex gap-1 rounded-full p-1.5
+        bg-[var(--bg-card)] shadow-warm
         overflow-x-auto
         ${className}
       `}
@@ -78,13 +78,13 @@ export function TabTrigger({ id, children, icon, className = '' }: TabTriggerPro
       aria-controls={`panel-${id}`}
       onClick={() => setActiveTab(id)}
       className={`
-        flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
+        flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium
         transition-all duration-200 whitespace-nowrap
-        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]
         ${
           isActive
-            ? 'bg-[var(--bg-elevated)] text-[var(--text-primary)] shadow-sm border border-[var(--border-accent)]'
-            : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]/50'
+            ? 'bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white shadow-warm'
+            : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]'
         }
         ${className}
       `}

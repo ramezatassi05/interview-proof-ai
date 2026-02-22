@@ -52,7 +52,7 @@ export function CreditsPurchaseModal({ isOpen, onClose }: CreditsPurchaseModalPr
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl animate-fade-in rounded-2xl border border-[var(--border-default)] bg-[var(--bg-secondary)] p-6 shadow-2xl">
+      <div className="relative w-full max-w-2xl animate-fade-in rounded-[20px] bg-[var(--bg-card)] p-6 shadow-warm">
         {/* Close button */}
         <button
           onClick={onClose}
