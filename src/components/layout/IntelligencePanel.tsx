@@ -300,16 +300,16 @@ function CoachingIntelligence({ reportData }: { reportData: ReportData }) {
   return (
     <div className="space-y-4">
       {/* Archetype card */}
-      <div className="rounded-[20px] bg-amber-500/5 shadow-warm p-4">
-        <span className="text-xs font-medium text-amber-400">Candidate Archetype</span>
+      <div className="rounded-[20px] bg-[var(--accent-primary)]/5 shadow-warm p-4">
+        <span className="text-xs font-medium text-[var(--accent-primary)]">Candidate Archetype</span>
         <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{archetype.label}</p>
         <div className="mt-2 flex items-center justify-between">
           <span className="text-xs text-[var(--text-muted)]">Confidence</span>
-          <span className="text-xs font-medium text-amber-400">{confidencePct}%</span>
+          <span className="text-xs font-medium text-[var(--accent-primary)]">{confidencePct}%</span>
         </div>
-        <div className="mt-1 h-1.5 w-full rounded-full bg-amber-500/10">
+        <div className="mt-1 h-1.5 w-full rounded-full bg-[var(--accent-primary)]/10">
           <div
-            className="h-full rounded-full bg-amber-500"
+            className="h-full rounded-full bg-[var(--accent-primary)]"
             style={{ width: `${confidencePct}%` }}
           />
         </div>
@@ -321,7 +321,7 @@ function CoachingIntelligence({ reportData }: { reportData: ReportData }) {
           <span className="text-xs font-medium text-[var(--text-muted)]">14-Day Potential</span>
           <div className="mt-2 flex items-center gap-2">
             <svg
-              className="h-4 w-4 text-emerald-400"
+              className="h-4 w-4 text-[var(--color-success)]"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -333,7 +333,7 @@ function CoachingIntelligence({ reportData }: { reportData: ReportData }) {
                 d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
               />
             </svg>
-            <span className="text-sm font-medium text-emerald-400">
+            <span className="text-sm font-medium text-[var(--color-success)]">
               +{trajectory.day14Projection.score - trajectory.currentScore} points
             </span>
           </div>

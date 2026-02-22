@@ -19,9 +19,9 @@ function getImpressionConfig(impression: FirstImpression): {
     case 'proceed':
       return {
         label: 'Likely to Proceed',
-        color: 'text-emerald-400',
-        bg: 'bg-emerald-500/10',
-        border: 'border-emerald-500/30',
+        color: 'text-[var(--color-success)]',
+        bg: 'bg-[var(--color-success-muted)]',
+        border: 'border-[var(--color-success)]/30',
         icon: (
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -36,9 +36,9 @@ function getImpressionConfig(impression: FirstImpression): {
     case 'maybe':
       return {
         label: 'On the Fence',
-        color: 'text-amber-400',
-        bg: 'bg-amber-500/10',
-        border: 'border-amber-500/30',
+        color: 'text-[var(--color-warning)]',
+        bg: 'bg-[var(--color-warning-muted)]',
+        border: 'border-[var(--color-warning)]/30',
         icon: (
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -53,9 +53,9 @@ function getImpressionConfig(impression: FirstImpression): {
     case 'reject':
       return {
         label: 'Risk of Rejection',
-        color: 'text-red-400',
-        bg: 'bg-red-500/10',
-        border: 'border-red-500/30',
+        color: 'text-[var(--color-danger)]',
+        bg: 'bg-[var(--color-danger-muted)]',
+        border: 'border-[var(--color-danger)]/30',
         icon: (
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -79,10 +79,10 @@ function formatScreenTime(seconds: number): string {
 }
 
 function getScreenTimeLabel(seconds: number): { label: string; color: string } {
-  if (seconds < 30) return { label: 'Very Quick Scan', color: 'text-red-400' };
-  if (seconds < 45) return { label: 'Standard Review', color: 'text-amber-400' };
-  if (seconds < 90) return { label: 'Engaged Review', color: 'text-emerald-400' };
-  return { label: 'Deep Review', color: 'text-blue-400' };
+  if (seconds < 30) return { label: 'Very Quick Scan', color: 'text-[var(--color-danger)]' };
+  if (seconds < 45) return { label: 'Standard Review', color: 'text-[var(--color-warning)]' };
+  if (seconds < 90) return { label: 'Engaged Review', color: 'text-[var(--color-success)]' };
+  return { label: 'Deep Review', color: 'text-[var(--color-info)]' };
 }
 
 export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
@@ -90,16 +90,18 @@ export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
   const screenTimeInfo = getScreenTimeLabel(simulation.estimatedScreenTimeSeconds);
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
+      {/* Warm gradient header */}
+      <div className="bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/5 px-6 pt-4 pb-2">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
           {companyName ? `${companyName} Recruiter First Impression` : 'Recruiter First Impression'}
         </h3>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
           Simulated recruiter perspective on initial resume scan
         </p>
       </div>
+
+      <div className="p-6">
 
       {/* First Impression Badge */}
       <div
@@ -117,7 +119,7 @@ export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
       </div>
 
       {/* Screen Time */}
-      <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4 mb-6">
+      <div className="rounded-[16px] bg-[var(--bg-elevated)] p-4 mb-6" style={{ borderLeft: '3px solid var(--accent-primary)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <svg
@@ -136,7 +138,7 @@ export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
             <span className="text-[var(--text-secondary)]">Estimated Screen Time</span>
           </div>
           <div className="text-right">
-            <span className="text-lg font-semibold text-[var(--text-primary)]">
+            <span className="text-lg font-semibold text-[var(--accent-primary)]">
               {formatScreenTime(simulation.estimatedScreenTimeSeconds)}
             </span>
             <span className={`block text-xs ${screenTimeInfo.color}`}>{screenTimeInfo.label}</span>
@@ -148,7 +150,7 @@ export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
       <div className="grid gap-6 md:grid-cols-2">
         {/* Red Flags */}
         <div>
-          <h4 className="text-sm font-medium text-red-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+          <h4 className="text-sm font-medium text-[var(--color-danger)] uppercase tracking-wide mb-3 flex items-center gap-2">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -164,9 +166,9 @@ export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
               {simulation.immediateRedFlags.map((flag, index) => (
                 <li
                   key={index}
-                  className="flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/5 p-3 text-sm"
+                  className="flex items-start gap-2 rounded-[16px] border border-[var(--color-danger)]/20 bg-[var(--color-danger-muted)] p-3 text-sm card-warm-hover"
                 >
-                  <span className="text-red-400 mt-0.5">-</span>
+                  <span className="text-[var(--color-danger)] mt-0.5">-</span>
                   <span className="text-[var(--text-secondary)]">{flag}</span>
                 </li>
               ))}
@@ -180,7 +182,7 @@ export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
 
         {/* Hidden Strengths */}
         <div>
-          <h4 className="text-sm font-medium text-emerald-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+          <h4 className="text-sm font-medium text-[var(--color-success)] uppercase tracking-wide mb-3 flex items-center gap-2">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -196,9 +198,9 @@ export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
               {simulation.hiddenStrengths.map((strength, index) => (
                 <li
                   key={index}
-                  className="flex items-start gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-sm"
+                  className="flex items-start gap-2 rounded-[16px] border border-[var(--color-success)]/20 bg-[var(--color-success-muted)] p-3 text-sm card-warm-hover"
                 >
-                  <span className="text-emerald-400 mt-0.5">+</span>
+                  <span className="text-[var(--color-success)] mt-0.5">+</span>
                   <span className="text-[var(--text-secondary)]">{strength}</span>
                 </li>
               ))}
@@ -216,6 +218,7 @@ export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
         <span className="text-xs text-[var(--text-muted)]">
           Simulation version {simulation.version}
         </span>
+      </div>
       </div>
     </div>
   );

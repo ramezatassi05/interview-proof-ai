@@ -12,17 +12,17 @@ function getStatusBadge(status: HireZoneAnalysis['status']) {
     case 'above':
       return {
         label: 'Above Zone',
-        className: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+        className: 'bg-[var(--color-success-muted)] text-[var(--color-success)] border-[var(--color-success)]/30',
       };
     case 'in_zone':
       return {
         label: 'In the Hire Zone',
-        className: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+        className: 'bg-[var(--color-success-muted)] text-[var(--color-success)] border-[var(--color-success)]/30',
       };
     case 'below':
       return {
         label: 'Below Zone',
-        className: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+        className: 'bg-[var(--color-warning-muted)] text-[var(--color-warning)] border-[var(--color-warning)]/30',
       };
   }
 }
@@ -30,11 +30,11 @@ function getStatusBadge(status: HireZoneAnalysis['status']) {
 function getPriorityColor(priority: 'critical' | 'high' | 'medium') {
   switch (priority) {
     case 'critical':
-      return 'bg-red-500/20 text-red-400 border-red-500/30';
+      return 'bg-[var(--color-danger-muted)] text-[var(--color-danger)] border-[var(--color-danger)]/30';
     case 'high':
-      return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+      return 'bg-[var(--color-warning-muted)] text-[var(--color-warning)] border-[var(--color-warning)]/30';
     case 'medium':
-      return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      return 'bg-[var(--color-info-muted)] text-[var(--color-info)] border-[var(--color-info)]/30';
   }
 }
 
@@ -62,26 +62,29 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
   const ticks = [0, 25, 50, 75, 100];
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
-      {/* Header */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">
-            {companyName ? `${companyName} Hire Zone Analysis` : 'Hire Zone Analysis'}
-          </h3>
-          <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            How your readiness compares to historically successful candidates
-          </p>
+    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
+      {/* Warm gradient header */}
+      <div className="bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/5 px-6 pt-4 pb-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
+              {companyName ? `${companyName} Hire Zone Analysis` : 'Hire Zone Analysis'}
+            </h3>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              How your readiness compares to historically successful candidates
+            </p>
+          </div>
+          <span
+            className={`inline-flex items-center self-start rounded-full border px-3 py-1 text-xs font-medium ${badge.className}`}
+          >
+            {badge.label}
+          </span>
         </div>
-        <span
-          className={`inline-flex items-center self-start rounded-full border px-3 py-1 text-xs font-medium ${badge.className}`}
-        >
-          {badge.label}
-        </span>
       </div>
 
+      <div className="p-6">
       {/* SVG Horizontal Gauge */}
-      <div className="flex justify-center overflow-x-auto">
+      <div className="bg-[var(--bg-elevated)] rounded-[16px] p-4 flex justify-center overflow-x-auto">
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           className="w-full max-w-[500px]"
@@ -140,7 +143,7 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
             x={(zoneMinX + zoneMaxX) / 2}
             y={barY - 6}
             textAnchor="middle"
-            className="text-[9px] font-medium fill-emerald-400"
+            className="text-[9px] font-medium fill-[var(--color-success)]"
           >
             Hire Zone
           </text>
@@ -207,27 +210,27 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
 
       {/* Key Metrics Row */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center">
+        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center card-warm-hover">
           <p className="text-xs text-[var(--text-muted)]">Your Score</p>
           <p className="mt-1 text-xl font-bold text-[var(--text-primary)]">
             {hireZone.currentScore}
           </p>
         </div>
-        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center">
+        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center card-warm-hover">
           <p className="text-xs text-[var(--text-muted)]">Hire Zone</p>
-          <p className="mt-1 text-xl font-bold text-emerald-400">
+          <p className="mt-1 text-xl font-bold text-[var(--color-success)]">
             {hireZone.hireZoneMin}–{hireZone.hireZoneMax}
           </p>
         </div>
-        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center">
+        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center card-warm-hover">
           <p className="text-xs text-[var(--text-muted)]">Gap</p>
           <p
-            className={`mt-1 text-xl font-bold ${hireZone.gap > 0 ? 'text-amber-400' : 'text-emerald-400'}`}
+            className={`mt-1 text-xl font-bold ${hireZone.gap > 0 ? 'text-[var(--color-warning)]' : 'text-[var(--color-success)]'}`}
           >
             {hireZone.gap > 0 ? `${hireZone.gap} pts` : 'None'}
           </p>
         </div>
-        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center">
+        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center card-warm-hover">
           <p className="text-xs text-[var(--text-muted)]">Percentile</p>
           <p className="mt-1 text-xl font-bold text-[var(--text-primary)]">
             {hireZone.percentile}th
@@ -279,7 +282,7 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
                   />
                   {/* Target score marker */}
                   <div
-                    className="absolute top-[-2px] h-3 w-0.5 bg-emerald-400"
+                    className="absolute top-[-2px] h-3 w-0.5 bg-[var(--color-success)]"
                     style={{ left: `${targetPct}%` }}
                     title={`Target: ${gap.targetScore}`}
                   />
@@ -311,7 +314,7 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
                     <span className="rounded bg-[var(--bg-primary)] px-2 py-0.5 text-[10px] text-[var(--text-muted)]">
                       {action.category}
                     </span>
-                    <span className="text-[10px] text-emerald-400 font-medium">
+                    <span className="text-[10px] text-[var(--color-success)] font-medium">
                       {action.estimatedImpact}
                     </span>
                   </div>
@@ -325,6 +328,7 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
       {/* Version tag */}
       <div className="mt-6 pt-4 border-t border-[var(--border-default)]">
         <span className="text-xs text-[var(--text-muted)]">Hire Zone model {hireZone.version}</span>
+      </div>
       </div>
     </div>
   );

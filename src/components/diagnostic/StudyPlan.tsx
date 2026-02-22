@@ -124,7 +124,7 @@ function PersonalizedPlanView({
   };
 
   return (
-    <div>
+    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden p-6">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-2">
           <svg
@@ -140,7 +140,7 @@ function PersonalizedPlanView({
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
             />
           </svg>
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
             {companyName
               ? `Your ${companyName} ${plan.totalDays}-Day Execution Roadmap`
               : `Your ${plan.totalDays}-Day Execution Roadmap`}
@@ -369,11 +369,11 @@ function TaskItem({
     <div
       onClick={onToggle}
       className={`
-        flex items-start gap-3 rounded-xl border p-3 cursor-pointer transition-all
+        flex items-start gap-3 rounded-[16px] border p-3 cursor-pointer transition-all card-warm-hover
         ${
           isCompleted
             ? 'bg-[var(--color-success-muted)] border-[var(--color-success)]/30'
-            : 'bg-[var(--bg-card)] border-[var(--border-default)] hover:border-[var(--border-accent)]'
+            : 'bg-[var(--bg-elevated)] border-[var(--border-default)] hover:border-[var(--border-accent)]'
         }
       `}
     >
@@ -491,7 +491,7 @@ function LegacyPlanView({
   };
 
   return (
-    <div>
+    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden p-6">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-2">
           <svg
@@ -507,7 +507,7 @@ function LegacyPlanView({
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
             />
           </svg>
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
             {companyName ? `${companyName} Execution Roadmap` : 'Execution Roadmap'}
           </h2>
         </div>

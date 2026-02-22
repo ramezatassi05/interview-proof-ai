@@ -14,9 +14,12 @@ export function ArchetypeCard({ profile, companyName }: ArchetypeCardProps) {
 
   return (
     <div className="space-y-4">
+      {/* Warm gradient header strip */}
+      <div className="rounded-t-[20px] bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] p-1" />
+
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
@@ -39,10 +42,11 @@ export function ArchetypeCard({ profile, companyName }: ArchetypeCardProps) {
         {profile.coachingTips.map((tip, index) => (
           <div
             key={index}
-            className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-5"
+            className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-5 card-warm-hover"
+            style={{ borderLeft: '3px solid var(--accent-primary)' }}
           >
             <div className="flex items-start gap-4">
-              <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-sm font-semibold text-amber-400">
+              <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[var(--accent-primary)]/10 text-sm font-semibold text-[var(--accent-primary)]">
                 {index + 1}
               </span>
               <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{tip}</p>

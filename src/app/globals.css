@@ -57,6 +57,16 @@
   --shadow-glow-accent: 0 0 30px rgba(255, 107, 53, 0.15);
   --shadow-glow-success: 0 0 20px rgba(46, 196, 182, 0.15);
   --shadow-glow-danger: 0 0 20px rgba(239, 68, 68, 0.15);
+  --color-tier-1: #a855f7;
+  --color-tier-1-muted: rgba(168, 85, 247, 0.08);
+  --color-tier-2: #3b82f6;
+  --color-tier-2-muted: rgba(59, 130, 246, 0.08);
+  --color-tier-3: #2ec4b6;
+  --color-tier-3-muted: rgba(46, 196, 182, 0.08);
+  --color-info: #3b82f6;
+  --color-info-muted: rgba(59, 130, 246, 0.08);
+  --shadow-warm: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --shadow-warm-hover: 0 8px 30px rgba(255, 107, 53, 0.12);
 }
 
 /* Dark theme */
@@ -86,6 +96,16 @@
   --shadow-glow-accent: 0 0 30px rgba(255, 107, 53, 0.25);
   --shadow-glow-success: 0 0 20px rgba(46, 196, 182, 0.25);
   --shadow-glow-danger: 0 0 20px rgba(239, 68, 68, 0.25);
+  --color-tier-1: #c084fc;
+  --color-tier-1-muted: rgba(192, 132, 252, 0.15);
+  --color-tier-2: #60a5fa;
+  --color-tier-2-muted: rgba(96, 165, 250, 0.15);
+  --color-tier-3: #2ec4b6;
+  --color-tier-3-muted: rgba(46, 196, 182, 0.15);
+  --color-info: #60a5fa;
+  --color-info-muted: rgba(96, 165, 250, 0.12);
+  --shadow-warm: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-warm-hover: 0 8px 30px rgba(255, 107, 53, 0.2);
 }
 
 body {
@@ -561,4 +581,29 @@ h1, h2, h3, h4, h5, h6 {
   .sidebar-mobile.open {
     transform: translateX(0);
   }
+}
+
+/* Card warm hover effect */
+.card-warm-hover {
+  transition: all 0.3s ease;
+}
+.card-warm-hover:hover {
+  box-shadow: var(--shadow-warm-hover);
+  border-color: var(--border-accent);
+}
+
+/* Section header with coral gradient underline */
+.section-header-warm {
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+.section-header-warm::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 2px;
 }

@@ -97,7 +97,7 @@ export function ScoreBreakdown({ breakdown, companyName }: ScoreBreakdownProps) 
         </span>
       </div>
 
-      <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
+      <div className="card-warm shadow-warm rounded-[20px] overflow-hidden p-6">
         <div className="space-y-1">
           {categories.map(({ key, score, weight }) => {
             const config = CATEGORY_CONFIG[key];
@@ -107,7 +107,7 @@ export function ScoreBreakdown({ breakdown, companyName }: ScoreBreakdownProps) 
               <Collapsible
                 key={key}
                 header={
-                  <div className="flex-1 py-3">
+                  <div className="flex-1 py-3 card-warm-hover rounded-[16px]">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-medium text-[var(--text-primary)]">
@@ -121,7 +121,7 @@ export function ScoreBreakdown({ breakdown, companyName }: ScoreBreakdownProps) 
                     <ProgressBar value={roundedScore} max={100} size="md" variant="auto" animated />
                   </div>
                 }
-                className="border-b border-[var(--border-default)] last:border-b-0"
+                className="border-b border-[var(--border-default)] last:border-b-0 section-divider"
               >
                 <div className="pb-4 pl-1">
                   <p className="text-sm text-[var(--text-secondary)] mb-2">{config.description}</p>

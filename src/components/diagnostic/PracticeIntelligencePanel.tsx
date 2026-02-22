@@ -24,15 +24,15 @@ interface PracticeIntelligencePanelProps {
 // ============================================
 
 function getScoreColor(value: number): string {
-  if (value >= 0.7) return 'text-emerald-400';
-  if (value >= 0.5) return 'text-amber-400';
-  return 'text-red-400';
+  if (value >= 0.7) return 'text-[var(--color-success)]';
+  if (value >= 0.5) return 'text-[var(--color-warning)]';
+  return 'text-[var(--color-danger)]';
 }
 
 function getScoreBarColor(value: number): string {
-  if (value >= 0.7) return 'bg-emerald-500';
-  if (value >= 0.5) return 'bg-amber-500';
-  return 'bg-red-500';
+  if (value >= 0.7) return 'bg-[var(--color-success)]';
+  if (value >= 0.5) return 'bg-[var(--color-warning)]';
+  return 'bg-[var(--color-danger)]';
 }
 
 function getLevelBadge(level: 'low' | 'moderate' | 'high'): { text: string; className: string } {
@@ -40,12 +40,12 @@ function getLevelBadge(level: 'low' | 'moderate' | 'high'): { text: string; clas
     case 'high':
       return {
         text: 'High',
-        className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+        className: 'bg-[var(--color-success-muted)] text-[var(--color-success)] border-[var(--color-success)]/30',
       };
     case 'moderate':
-      return { text: 'Moderate', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30' };
+      return { text: 'Moderate', className: 'bg-[var(--color-warning-muted)] text-[var(--color-warning)] border-[var(--color-warning)]/30' };
     case 'low':
-      return { text: 'Low', className: 'bg-red-500/15 text-red-400 border-red-500/30' };
+      return { text: 'Low', className: 'bg-[var(--color-danger-muted)] text-[var(--color-danger)] border-[var(--color-danger)]/30' };
   }
 }
 
@@ -108,12 +108,12 @@ function PracticeSyncSection({
   const mockBadge = getLevelBadge(data.mockReadiness.level);
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm text-gradient-warm">
           {companyName ? `${companyName} Practice Sync` : 'Practice Sync'}
         </h3>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+        <p className="mt-3 text-sm text-[var(--text-secondary)]">
           Coding exposure and mock interview readiness assessment
         </p>
       </div>
@@ -124,10 +124,10 @@ function PracticeSyncSection({
           <div
             className={`text-5xl font-bold ${
               data.overallPracticeReadiness >= 70
-                ? 'text-emerald-400'
+                ? 'text-[var(--color-success)]'
                 : data.overallPracticeReadiness >= 45
-                  ? 'text-amber-400'
-                  : 'text-red-400'
+                  ? 'text-[var(--color-warning)]'
+                  : 'text-[var(--color-danger)]'
             }`}
           >
             {data.overallPracticeReadiness}
@@ -179,7 +179,7 @@ function PracticeSyncSection({
       </div>
 
       {/* Recommendation */}
-      <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+      <div className="rounded-lg border border-[var(--color-info)]/20 bg-[var(--color-info-muted)] p-3">
         <p className="text-sm text-[var(--text-secondary)]">{data.recommendation}</p>
       </div>
 
@@ -210,14 +210,14 @@ function getPressureBandConfig(band: PressureBand): {
     case 'elite':
       return {
         label: 'Elite',
-        className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+        className: 'bg-[var(--color-success-muted)] text-[var(--color-success)] border-[var(--color-success)]/30',
       };
     case 'high':
-      return { label: 'High', className: 'bg-blue-500/15 text-blue-400 border-blue-500/30' };
+      return { label: 'High', className: 'bg-[var(--color-info-muted)] text-[var(--color-info)] border-[var(--color-info)]/30' };
     case 'moderate':
-      return { label: 'Moderate', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30' };
+      return { label: 'Moderate', className: 'bg-[var(--color-warning-muted)] text-[var(--color-warning)] border-[var(--color-warning)]/30' };
     case 'low':
-      return { label: 'Low', className: 'bg-red-500/15 text-red-400 border-red-500/30' };
+      return { label: 'Low', className: 'bg-[var(--color-danger-muted)] text-[var(--color-danger)] border-[var(--color-danger)]/30' };
   }
 }
 
@@ -238,12 +238,12 @@ function PressureIndexSection({
   const bandConfig = getPressureBandConfig(data.band);
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm text-gradient-warm">
           {companyName ? `${companyName} Pressure Handling Index` : 'Pressure Handling Index'}
         </h3>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+        <p className="mt-3 text-sm text-[var(--text-secondary)]">
           How well you handle interview pressure across key dimensions
         </p>
       </div>
@@ -253,12 +253,12 @@ function PressureIndexSection({
         <div
           className={`text-5xl font-bold ${
             data.score >= 80
-              ? 'text-emerald-400'
+              ? 'text-[var(--color-success)]'
               : data.score >= 60
-                ? 'text-blue-400'
+                ? 'text-[var(--color-info)]'
                 : data.score >= 40
-                  ? 'text-amber-400'
-                  : 'text-red-400'
+                  ? 'text-[var(--color-warning)]'
+                  : 'text-[var(--color-danger)]'
           }`}
         >
           {data.score}
@@ -279,14 +279,14 @@ function PressureIndexSection({
 
       {/* Weakest / Strongest insights */}
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3">
-          <span className="text-xs uppercase tracking-wide text-red-400">Weakest</span>
+        <div className="rounded-lg border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] p-3">
+          <span className="text-xs uppercase tracking-wide text-[var(--color-danger)]">Weakest</span>
           <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">
             {data.weakestDimension}
           </p>
         </div>
-        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
-          <span className="text-xs uppercase tracking-wide text-emerald-400">Strongest</span>
+        <div className="rounded-lg border border-[var(--color-success)]/30 bg-[var(--color-success-muted)] p-3">
+          <span className="text-xs uppercase tracking-wide text-[var(--color-success)]">Strongest</span>
           <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">
             {data.strongestDimension}
           </p>
@@ -294,10 +294,10 @@ function PressureIndexSection({
       </div>
 
       {/* Coaching note */}
-      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+      <div className="rounded-lg border border-[var(--color-warning)]/20 bg-[var(--color-warning-muted)] p-3">
         <div className="flex items-start gap-2">
           <svg
-            className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5"
+            className="h-4 w-4 text-[var(--color-warning)] flex-shrink-0 mt-0.5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -320,13 +320,13 @@ function PressureIndexSection({
           signals into four dimensions.
         </p>
         <p className="mt-2">
-          <strong>Time Constraint Resilience</strong> — ability to perform under time limits.
+          <strong>Time Constraint Resilience</strong> -- ability to perform under time limits.
           <br />
-          <strong>Ambiguity Tolerance</strong> — comfort with open-ended or unclear problems.
+          <strong>Ambiguity Tolerance</strong> -- comfort with open-ended or unclear problems.
           <br />
-          <strong>Technical Confidence</strong> — depth of technical foundation.
+          <strong>Technical Confidence</strong> -- depth of technical foundation.
           <br />
-          <strong>Communication Under Stress</strong> — clarity when pressure is on.
+          <strong>Communication Under Stress</strong> -- clarity when pressure is on.
         </p>
       </ExpandableInfo>
     </div>
@@ -345,17 +345,17 @@ function getMomentumBandConfig(band: MomentumBand): {
     case 'strong_momentum':
       return {
         label: 'Strong Momentum',
-        className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+        className: 'bg-[var(--color-success-muted)] text-[var(--color-success)] border-[var(--color-success)]/30',
       };
     case 'steady':
-      return { label: 'Steady', className: 'bg-blue-500/15 text-blue-400 border-blue-500/30' };
+      return { label: 'Steady', className: 'bg-[var(--color-info-muted)] text-[var(--color-info)] border-[var(--color-info)]/30' };
     case 'inconsistent':
       return {
         label: 'Inconsistent',
-        className: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+        className: 'bg-[var(--color-warning-muted)] text-[var(--color-warning)] border-[var(--color-warning)]/30',
       };
     case 'stalled':
-      return { label: 'Stalled', className: 'bg-red-500/15 text-red-400 border-red-500/30' };
+      return { label: 'Stalled', className: 'bg-[var(--color-danger-muted)] text-[var(--color-danger)] border-[var(--color-danger)]/30' };
   }
 }
 
@@ -376,12 +376,12 @@ function ConsistencyMomentumSection({
   const bandConfig = getMomentumBandConfig(data.band);
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm text-gradient-warm">
           {companyName ? `${companyName} Consistency & Momentum` : 'Consistency & Momentum'}
         </h3>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+        <p className="mt-3 text-sm text-[var(--text-secondary)]">
           Preparation consistency and career progression signals
         </p>
       </div>
@@ -391,12 +391,12 @@ function ConsistencyMomentumSection({
         <div
           className={`text-5xl font-bold ${
             data.score >= 75
-              ? 'text-emerald-400'
+              ? 'text-[var(--color-success)]'
               : data.score >= 55
-                ? 'text-blue-400'
+                ? 'text-[var(--color-info)]'
                 : data.score >= 35
-                  ? 'text-amber-400'
-                  : 'text-red-400'
+                  ? 'text-[var(--color-warning)]'
+                  : 'text-[var(--color-danger)]'
           }`}
         >
           {data.score}
@@ -424,7 +424,7 @@ function ConsistencyMomentumSection({
               className="flex items-start gap-2 rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-sm"
             >
               <svg
-                className="h-4 w-4 text-blue-400 flex-shrink-0 mt-0.5"
+                className="h-4 w-4 text-[var(--color-info)] flex-shrink-0 mt-0.5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -443,7 +443,7 @@ function ConsistencyMomentumSection({
       )}
 
       {/* Recommendation */}
-      <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+      <div className="rounded-lg border border-[var(--color-info)]/20 bg-[var(--color-info-muted)] p-3">
         <p className="text-sm text-[var(--text-secondary)]">{data.recommendation}</p>
       </div>
 
@@ -453,13 +453,13 @@ function ConsistencyMomentumSection({
           and career momentum. It considers four signals:
         </p>
         <p className="mt-2">
-          <strong>Skill Breadth</strong> — range of relevant skills demonstrated.
+          <strong>Skill Breadth</strong> -- range of relevant skills demonstrated.
           <br />
-          <strong>Evidence Recency</strong> — how recent and relevant your experience appears.
+          <strong>Evidence Recency</strong> -- how recent and relevant your experience appears.
           <br />
-          <strong>Depth vs Breadth</strong> — balance between deep expertise and broad coverage.
+          <strong>Depth vs Breadth</strong> -- balance between deep expertise and broad coverage.
           <br />
-          <strong>Progression Clarity</strong> — how clearly your career tells a growth story.
+          <strong>Progression Clarity</strong> -- how clearly your career tells a growth story.
         </p>
       </ExpandableInfo>
     </div>
@@ -475,21 +475,21 @@ function getPracticeTypeBadge(type: PracticeType): { label: string; className: s
     case 'coding':
       return {
         label: 'Coding',
-        className: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+        className: 'bg-[var(--color-tier-1-muted)] text-[var(--color-tier-1)] border-[var(--color-tier-1)]/30',
       };
     case 'mock_interview':
       return {
         label: 'Mock Interview',
-        className: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+        className: 'bg-[var(--color-info-muted)] text-[var(--color-info)] border-[var(--color-info)]/30',
       };
     case 'review':
-      return { label: 'Review', className: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30' };
+      return { label: 'Review', className: 'bg-[var(--color-success-muted)] text-[var(--color-success)] border-[var(--color-success)]/30' };
     case 'drill':
-      return { label: 'Drill', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30' };
+      return { label: 'Drill', className: 'bg-[var(--color-warning-muted)] text-[var(--color-warning)] border-[var(--color-warning)]/30' };
     case 'project':
       return {
         label: 'Design',
-        className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+        className: 'bg-[var(--color-success-muted)] text-[var(--color-success)] border-[var(--color-success)]/30',
       };
   }
 }
@@ -503,24 +503,24 @@ function getPriorityColor(priority: PracticePrescription['priority']): {
   switch (priority) {
     case 'critical':
       return {
-        border: 'border-red-500/30',
-        bg: 'bg-red-500/5',
-        text: 'text-red-400',
-        dot: 'bg-red-500',
+        border: 'border-[var(--color-danger)]/30',
+        bg: 'bg-[var(--color-danger-muted)]',
+        text: 'text-[var(--color-danger)]',
+        dot: 'bg-[var(--color-danger)]',
       };
     case 'high':
       return {
-        border: 'border-amber-500/30',
-        bg: 'bg-amber-500/5',
-        text: 'text-amber-400',
-        dot: 'bg-amber-500',
+        border: 'border-[var(--color-warning)]/30',
+        bg: 'bg-[var(--color-warning-muted)]',
+        text: 'text-[var(--color-warning)]',
+        dot: 'bg-[var(--color-warning)]',
       };
     case 'medium':
       return {
-        border: 'border-blue-500/30',
-        bg: 'bg-blue-500/5',
-        text: 'text-blue-400',
-        dot: 'bg-blue-500',
+        border: 'border-[var(--color-info)]/30',
+        bg: 'bg-[var(--color-info-muted)]',
+        text: 'text-[var(--color-info)]',
+        dot: 'bg-[var(--color-info)]',
       };
   }
 }
@@ -533,12 +533,12 @@ function PracticeRxSection({
   companyName?: string;
 }) {
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm text-gradient-warm">
           {companyName ? `${companyName} Practice Rx` : 'Practice Rx'}
         </h3>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+        <p className="mt-3 text-sm text-[var(--text-secondary)]">
           Targeted practice prescriptions based on your identified gaps
         </p>
       </div>
@@ -634,7 +634,7 @@ function PracticeRxSection({
 
 export function PracticeIntelligencePanel({ data, companyName }: PracticeIntelligencePanelProps) {
   return (
-    <div className="space-y-6">
+    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden p-6 space-y-6">
       <PracticeSyncSection data={data.practiceSync} companyName={companyName} />
       <PressureIndexSection data={data.pressureIndex} companyName={companyName} />
       <ConsistencyMomentumSection data={data.consistencyMomentum} companyName={companyName} />

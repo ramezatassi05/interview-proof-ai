@@ -13,18 +13,18 @@ interface RoundForecastProps {
 const ROUND_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
   technical: {
     label: 'Technical',
-    color: 'bg-blue-500',
-    bgColor: 'bg-blue-500/20',
+    color: 'bg-[var(--color-info)]',
+    bgColor: 'bg-[var(--color-info-muted)]',
   },
   behavioral: {
     label: 'Behavioral',
-    color: 'bg-purple-500',
-    bgColor: 'bg-purple-500/20',
+    color: 'bg-[var(--color-tier-1)]',
+    bgColor: 'bg-[var(--color-tier-1-muted)]',
   },
   case: {
     label: 'Case Study',
-    color: 'bg-amber-500',
-    bgColor: 'bg-amber-500/20',
+    color: 'bg-[var(--color-warning)]',
+    bgColor: 'bg-[var(--color-warning-muted)]',
   },
 };
 
@@ -59,10 +59,10 @@ function getProbabilityMeaning(probability: number): string {
 }
 
 function getProbabilityLabel(probability: number): { label: string; color: string } {
-  if (probability >= 0.7) return { label: 'Strong', color: 'text-emerald-400' };
-  if (probability >= 0.5) return { label: 'Moderate', color: 'text-amber-400' };
-  if (probability >= 0.3) return { label: 'At Risk', color: 'text-orange-400' };
-  return { label: 'Critical', color: 'text-red-400' };
+  if (probability >= 0.7) return { label: 'Strong', color: 'text-[var(--color-success)]' };
+  if (probability >= 0.5) return { label: 'Moderate', color: 'text-[var(--color-warning)]' };
+  if (probability >= 0.3) return { label: 'At Risk', color: 'text-[var(--accent-primary)]' };
+  return { label: 'Critical', color: 'text-[var(--color-danger)]' };
 }
 
 interface ForecastBarProps {
@@ -80,10 +80,10 @@ function ForecastBar({ forecast, isUserRound }: ForecastBarProps) {
 
   return (
     <div
-      className={`rounded-lg border bg-[var(--bg-elevated)] p-4 ${
+      className={`bg-[var(--bg-elevated)] rounded-[16px] p-4 card-warm-hover ${
         isUserRound
-          ? 'border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]/30'
-          : 'border-[var(--border-default)]'
+          ? 'border border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]/30'
+          : 'border border-[var(--border-default)]'
       }`}
     >
       {/* Header */}
@@ -110,7 +110,7 @@ function ForecastBar({ forecast, isUserRound }: ForecastBarProps) {
       {/* Progress bar */}
       <div className={`h-3 w-full rounded-full ${config.bgColor}`}>
         <div
-          className={`h-full rounded-full ${config.color} transition-all duration-500`}
+          className={`h-full rounded-full bg-[var(--accent-primary)] transition-all duration-500`}
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -119,11 +119,11 @@ function ForecastBar({ forecast, isUserRound }: ForecastBarProps) {
       <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-[var(--text-muted)]">Strength: </span>
-          <span className="text-emerald-400">{forecast.primaryStrength}</span>
+          <span className="text-[var(--color-success)]">{forecast.primaryStrength}</span>
         </div>
         <div>
           <span className="text-[var(--text-muted)]">Risk: </span>
-          <span className="text-red-400">{forecast.primaryRisk}</span>
+          <span className="text-[var(--color-danger)]">{forecast.primaryRisk}</span>
         </div>
       </div>
 
@@ -174,16 +174,18 @@ export function RoundForecast({ forecasts, userRoundType, companyName }: RoundFo
   });
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
+      {/* Warm gradient header */}
+      <div className="bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/5 px-6 pt-4 pb-2">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
           {companyName ? `${companyName} Interview Round Forecast` : 'Interview Round Forecast'}
         </h3>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
           How prepared you are for each interview stage based on your resume signals
         </p>
       </div>
+
+      <div className="p-6">
 
       {/* Forecast bars */}
       <div className="space-y-4">
@@ -226,6 +228,7 @@ export function RoundForecast({ forecasts, userRoundType, companyName }: RoundFo
         <span className="text-xs text-[var(--text-muted)]">
           Forecast version {forecasts.version}
         </span>
+      </div>
       </div>
     </div>
   );

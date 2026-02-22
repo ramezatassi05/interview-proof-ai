@@ -1,11 +1,17 @@
 'use client';
 
-export function FriendlyFaceMascot({ className = '' }: { className?: string }) {
+export function FriendlyFaceMascot({
+  className = '',
+  size,
+}: {
+  className?: string;
+  size?: number;
+}) {
   return (
     <svg
       className={className}
-      width="64"
-      height="64"
+      width={size ?? 64}
+      height={size ?? 64}
       viewBox="0 0 64 64"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

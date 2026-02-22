@@ -14,18 +14,18 @@ function getPotentialColor(potential: 'low' | 'medium' | 'high'): {
 } {
   switch (potential) {
     case 'high':
-      return { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' };
+      return { text: 'text-[var(--color-success)]', bg: 'bg-[var(--color-success-muted)]', border: 'border-[var(--color-success)]/30' };
     case 'medium':
-      return { text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/30' };
+      return { text: 'text-[var(--color-warning)]', bg: 'bg-[var(--color-warning-muted)]', border: 'border-[var(--color-warning)]/30' };
     case 'low':
-      return { text: 'text-slate-400', bg: 'bg-slate-500/10', border: 'border-slate-500/30' };
+      return { text: 'text-[var(--text-muted)]', bg: 'bg-[var(--bg-elevated)]', border: 'border-[var(--border-default)]' };
   }
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 70) return 'text-emerald-400';
-  if (score >= 50) return 'text-amber-400';
-  return 'text-red-400';
+  if (score >= 70) return 'text-[var(--color-success)]';
+  if (score >= 50) return 'text-[var(--color-warning)]';
+  return 'text-[var(--color-danger)]';
 }
 
 export function TrajectoryChart({ projection, companyName }: TrajectoryChartProps) {
@@ -61,26 +61,29 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
   const areaPath = `${linePath} L ${xScale(14)} ${yScale(0)} L ${xScale(0)} ${yScale(0)} Z`;
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
-      {/* Header */}
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">
-            {companyName ? `${companyName} Interview Prep Trajectory` : 'Interview Prep Trajectory'}
-          </h3>
-          <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Estimated score improvement with focused daily prep
-          </p>
+    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
+      {/* Warm gradient header */}
+      <div className="bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/5 px-6 pt-4 pb-3">
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
+              {companyName ? `${companyName} Interview Prep Trajectory` : 'Interview Prep Trajectory'}
+            </h3>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              Estimated score improvement with focused daily prep
+            </p>
+          </div>
+          <span
+            className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${potentialColors.bg} ${potentialColors.text} ${potentialColors.border} border`}
+          >
+            {improvementPotential.charAt(0).toUpperCase() + improvementPotential.slice(1)} Potential
+          </span>
         </div>
-        <span
-          className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${potentialColors.bg} ${potentialColors.text} ${potentialColors.border} border`}
-        >
-          {improvementPotential.charAt(0).toUpperCase() + improvementPotential.slice(1)} Potential
-        </span>
       </div>
 
+      <div className="p-6">
       {/* Chart */}
-      <div className="flex justify-center overflow-x-auto">
+      <div className="bg-[var(--bg-elevated)] rounded-[16px] p-4 flex justify-center overflow-x-auto">
         <svg width={chartWidth} height={chartHeight} className="overflow-visible">
           {/* Gradient definition */}
           <defs>
@@ -165,12 +168,12 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
       {/* Projections detail */}
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
         {/* Day 3 */}
-        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4">
+        <div className="bg-[var(--bg-card)] rounded-[16px] p-3 card-warm-hover shadow-warm">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-[var(--text-primary)]">Day 3</span>
             <span className={`text-lg font-bold ${getScoreColor(day3Projection.score)}`}>
               {day3Projection.score}
-              <span className="text-sm font-normal text-emerald-400 ml-1">
+              <span className="text-sm font-normal text-[var(--color-success)] ml-1">
                 (+{day3Projection.score - currentScore})
               </span>
             </span>
@@ -191,12 +194,12 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
         </div>
 
         {/* Day 7 */}
-        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4">
+        <div className="bg-[var(--bg-card)] rounded-[16px] p-3 card-warm-hover shadow-warm">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-[var(--text-primary)]">Day 7</span>
             <span className={`text-lg font-bold ${getScoreColor(day7Projection.score)}`}>
               {day7Projection.score}
-              <span className="text-sm font-normal text-emerald-400 ml-1">
+              <span className="text-sm font-normal text-[var(--color-success)] ml-1">
                 (+{day7Projection.score - currentScore})
               </span>
             </span>
@@ -217,12 +220,12 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
         </div>
 
         {/* Day 14 */}
-        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4">
+        <div className="bg-[var(--bg-card)] rounded-[16px] p-3 card-warm-hover shadow-warm">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-[var(--text-primary)]">Day 14</span>
             <span className={`text-lg font-bold ${getScoreColor(day14Projection.score)}`}>
               {day14Projection.score}
-              <span className="text-sm font-normal text-emerald-400 ml-1">
+              <span className="text-sm font-normal text-[var(--color-success)] ml-1">
                 (+{day14Projection.score - currentScore})
               </span>
             </span>
@@ -248,6 +251,7 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
         <span className="text-xs text-[var(--text-muted)]">
           Projection version {projection.version}
         </span>
+      </div>
       </div>
     </div>
   );

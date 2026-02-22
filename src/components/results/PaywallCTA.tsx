@@ -104,7 +104,7 @@ export function PaywallCTA({ reportId, totalRisks }: PaywallCTAProps) {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-elevated)] to-[var(--accent-primary)]/10 shadow-warm">
+    <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-elevated)] to-[var(--accent-primary)]/10 shadow-warm shadow-[0_0_40px_rgba(255,107,53,0.15)]">
       {/* Glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/10" />
       <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--accent-primary)]/10 rounded-full blur-3xl" />
@@ -157,7 +157,7 @@ export function PaywallCTA({ reportId, totalRisks }: PaywallCTAProps) {
                 onClick={handleUnlockWithCredits}
                 loading={loading}
                 glow
-                className="px-12"
+                className="px-12 glow-coral"
               >
                 Unlock with {CREDITS_PER_REPORT} Credits
               </Button>
@@ -168,7 +168,7 @@ export function PaywallCTA({ reportId, totalRisks }: PaywallCTAProps) {
             </>
           ) : (
             <>
-              <Button variant="accent" size="lg" onClick={handleBuyCredits} glow className="px-12">
+              <Button variant="accent" size="lg" onClick={handleBuyCredits} glow className="px-12 glow-coral">
                 Buy Credits to Unlock
               </Button>
               <p className="mt-3 text-sm text-[var(--text-secondary)]">

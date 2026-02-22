@@ -23,7 +23,7 @@ interface CoachingHubProps {
   companyName?: string;
 }
 
-// ── Section 1: Candidate Profile ──────────────────────────────────────
+// -- Section 1: Candidate Profile --
 
 function CandidateProfile({
   profile,
@@ -35,9 +35,9 @@ function CandidateProfile({
   const confidencePct = Math.round(profile.confidence * 100);
 
   return (
-    <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-6">
+    <div className="rounded-[20px] border border-[var(--border-accent)] bg-[var(--accent-primary)]/5 p-6 card-warm-hover">
       <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400">
+        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]">
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
@@ -48,7 +48,7 @@ function CandidateProfile({
           </svg>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-amber-400 uppercase tracking-wide mb-1">
+          <p className="text-xs font-medium text-[var(--accent-primary)] uppercase tracking-wide mb-1">
             Your Candidate Profile
           </p>
           <h3 className="text-xl font-bold text-[var(--text-primary)]">{profile.label}</h3>
@@ -60,11 +60,11 @@ function CandidateProfile({
           <div className="mt-4">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs text-[var(--text-muted)]">Classification confidence</span>
-              <span className="text-xs font-medium text-amber-400">{confidencePct}%</span>
+              <span className="text-xs font-medium text-[var(--accent-primary)]">{confidencePct}%</span>
             </div>
-            <div className="h-2 w-full rounded-full bg-amber-500/10">
+            <div className="h-2 w-full rounded-full bg-[var(--accent-primary)]/10">
               <div
-                className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                className="h-full rounded-full bg-[var(--accent-primary)] transition-all duration-500"
                 style={{ width: `${confidencePct}%` }}
               />
             </div>
@@ -81,7 +81,7 @@ function CandidateProfile({
   );
 }
 
-// ── Section 3: Improvement Trajectory ─────────────────────────────────
+// -- Section 3: Improvement Trajectory --
 
 function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjection }) {
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
@@ -107,17 +107,17 @@ function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjectio
   const totalImprovement = trajectory.day14Projection.score - trajectory.currentScore;
 
   const potentialColors: Record<string, { text: string; bg: string }> = {
-    high: { text: 'text-emerald-400', bg: 'bg-emerald-500/15' },
-    medium: { text: 'text-amber-400', bg: 'bg-amber-500/15' },
+    high: { text: 'text-[var(--color-success)]', bg: 'bg-[var(--color-success-muted)]' },
+    medium: { text: 'text-[var(--color-warning)]', bg: 'bg-[var(--color-warning-muted)]' },
     low: { text: 'text-[var(--text-muted)]', bg: 'bg-[var(--bg-elevated)]' },
   };
 
   const potentialStyle = potentialColors[trajectory.improvementPotential] ?? potentialColors.medium;
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
       <div className="flex items-center justify-between mb-1">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Improvement Trajectory</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">Improvement Trajectory</h3>
         <span
           className={`text-xs font-medium px-2.5 py-1 rounded-full ${potentialStyle.bg} ${potentialStyle.text}`}
         >
@@ -147,14 +147,14 @@ function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjectio
             <button
               key={m.key}
               onClick={() => setExpandedDay(isExpanded ? null : m.key)}
-              className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4 text-left hover:border-emerald-500/40 transition-colors"
+              className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4 text-left hover:border-[var(--color-success)]/40 transition-colors border border-transparent card-warm-hover"
             >
               <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">
                 {m.label}
               </span>
               <p className="mt-1 text-xl font-bold text-[var(--text-primary)]">{m.score}</p>
               {delta > 0 && (
-                <span className="text-sm font-medium text-emerald-400">+{delta} pts</span>
+                <span className="text-sm font-medium text-[var(--color-success)]">+{delta} pts</span>
               )}
             </button>
           );
@@ -182,9 +182,9 @@ function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjectio
 
       {/* Summary */}
       {totalImprovement > 0 && (
-        <div className="mt-5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-4 text-center">
+        <div className="mt-5 rounded-lg bg-[var(--color-success-muted)] border border-[var(--color-success)]/20 p-4 text-center">
           <span className="text-sm text-[var(--text-secondary)]">
-            <span className="font-semibold text-emerald-400">+{totalImprovement} points</span>{' '}
+            <span className="font-semibold text-[var(--color-success)]">+{totalImprovement} points</span>{' '}
             projected improvement over 14 days
           </span>
         </div>
@@ -193,7 +193,7 @@ function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjectio
   );
 }
 
-// ── Section 4: Personalized Action Plan ───────────────────────────────
+// -- Section 4: Personalized Action Plan --
 
 function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roundFocus?: string }) {
   const [showAll, setShowAll] = useState(false);
@@ -201,11 +201,11 @@ function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roun
   const visibleTips = showAll ? coachingTips : coachingTips.slice(0, 2);
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
-      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
+      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1 section-header-warm">
         Personalized Action Plan
       </h3>
-      <p className="text-sm text-[var(--text-muted)] mb-5">
+      <p className="text-sm text-[var(--text-muted)] mb-5 mt-3">
         Targeted actions based on your candidate archetype
       </p>
 
@@ -213,10 +213,11 @@ function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roun
         {visibleTips.map((tip, index) => (
           <div
             key={index}
-            className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4"
+            className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4 border-l-3 border-l-[var(--accent-primary)]"
+            style={{ borderLeft: '3px solid var(--accent-primary)' }}
           >
             <div className="flex items-start gap-3">
-              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-xs font-semibold text-amber-400">
+              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--accent-primary)]/15 text-xs font-semibold text-[var(--accent-primary)]">
                 {index + 1}
               </span>
               <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{tip}</p>
@@ -243,10 +244,10 @@ function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roun
       )}
 
       {roundFocus && (
-        <div className="mt-5 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+        <div className="mt-5 rounded-lg border border-[var(--color-warning)]/30 bg-[var(--color-warning-muted)] p-4">
           <div className="flex items-start gap-3">
             <svg
-              className="h-5 w-5 text-amber-400 mt-0.5 flex-shrink-0"
+              className="h-5 w-5 text-[var(--color-warning)] mt-0.5 flex-shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -259,7 +260,7 @@ function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roun
               />
             </svg>
             <div>
-              <span className="text-sm font-medium text-amber-400">Round-Specific Focus</span>
+              <span className="text-sm font-medium text-[var(--color-warning)]">Round-Specific Focus</span>
               <p className="mt-1 text-sm text-[var(--text-secondary)]">{roundFocus}</p>
             </div>
           </div>
@@ -269,15 +270,15 @@ function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roun
   );
 }
 
-// ── Section 5: Evidence Snapshot ───────────────────────────────────────
+// -- Section 5: Evidence Snapshot --
 
 function EvidenceSnapshot({ evidence }: { evidence: EvidenceContext }) {
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
-      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
+      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1 section-header-warm">
         Your Evidence Snapshot
       </h3>
-      <p className="text-sm text-[var(--text-muted)] mb-5">
+      <p className="text-sm text-[var(--text-muted)] mb-5 mt-3">
         What your resume already proves to recruiters
       </p>
 
@@ -285,15 +286,15 @@ function EvidenceSnapshot({ evidence }: { evidence: EvidenceContext }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Requirements met */}
         {evidence.matchedMustHaves.length > 0 && (
-          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
-            <p className="text-xs font-medium text-emerald-400 uppercase tracking-wide mb-3">
+          <div className="rounded-lg border border-[var(--color-success)]/20 bg-[var(--color-success-muted)] p-4">
+            <p className="text-xs font-medium text-[var(--color-success)] uppercase tracking-wide mb-3">
               Requirements You Meet
             </p>
             <ul className="space-y-2">
               {evidence.matchedMustHaves.map((item, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
                   <svg
-                    className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0"
+                    className="h-4 w-4 text-[var(--color-success)] mt-0.5 flex-shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -314,15 +315,15 @@ function EvidenceSnapshot({ evidence }: { evidence: EvidenceContext }) {
 
         {/* Requirements to address */}
         {evidence.unmatchedMustHaves.length > 0 && (
-          <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
-            <p className="text-xs font-medium text-amber-400 uppercase tracking-wide mb-3">
+          <div className="rounded-lg border border-[var(--color-warning)]/20 bg-[var(--color-warning-muted)] p-4">
+            <p className="text-xs font-medium text-[var(--color-warning)] uppercase tracking-wide mb-3">
               Requirements to Address
             </p>
             <ul className="space-y-2">
               {evidence.unmatchedMustHaves.map((item, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
                   <svg
-                    className="h-4 w-4 text-amber-400 mt-0.5 flex-shrink-0"
+                    className="h-4 w-4 text-[var(--color-warning)] mt-0.5 flex-shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -350,7 +351,7 @@ function EvidenceSnapshot({ evidence }: { evidence: EvidenceContext }) {
             {evidence.matchedNiceToHaves.map((item, i) => (
               <span
                 key={i}
-                className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-info-muted)] text-[var(--color-info)] border border-[var(--color-info)]/20"
               >
                 {item}
               </span>
@@ -369,7 +370,7 @@ function EvidenceSnapshot({ evidence }: { evidence: EvidenceContext }) {
             {evidence.strongestMetrics.map((metric, i) => (
               <div
                 key={i}
-                className="border-l-2 border-emerald-500/50 pl-3 py-1 text-sm text-[var(--text-secondary)]"
+                className="border-l-2 border-[var(--color-success)]/50 pl-3 py-1 text-sm text-[var(--text-secondary)]"
               >
                 {metric}
               </div>
@@ -381,19 +382,19 @@ function EvidenceSnapshot({ evidence }: { evidence: EvidenceContext }) {
   );
 }
 
-// ── Section 6: Ways to Stand Out ─────────────────────────────────────
+// -- Section 6: Ways to Stand Out --
 
 const TIER_BADGE_COLORS: Record<CompanyTier, { bg: string; text: string; border: string }> = {
-  FAANG_PLUS: { bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/30' },
-  BIG_TECH: { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/30' },
+  FAANG_PLUS: { bg: 'bg-[var(--color-tier-1-muted)]', text: 'text-[var(--color-tier-1)]', border: 'border-[var(--color-tier-1)]/30' },
+  BIG_TECH: { bg: 'bg-[var(--color-info-muted)]', text: 'text-[var(--color-info)]', border: 'border-[var(--color-info)]/30' },
   TOP_FINANCE: {
-    bg: 'bg-emerald-500/15',
-    text: 'text-emerald-400',
-    border: 'border-emerald-500/30',
+    bg: 'bg-[var(--color-success-muted)]',
+    text: 'text-[var(--color-success)]',
+    border: 'border-[var(--color-success)]/30',
   },
-  UNICORN: { bg: 'bg-pink-500/15', text: 'text-pink-400', border: 'border-pink-500/30' },
-  GROWTH: { bg: 'bg-cyan-500/15', text: 'text-cyan-400', border: 'border-cyan-500/30' },
-  STANDARD: { bg: 'bg-gray-500/15', text: 'text-gray-400', border: 'border-gray-500/30' },
+  UNICORN: { bg: 'bg-[var(--accent-primary)]/10', text: 'text-[var(--accent-primary)]', border: 'border-[var(--accent-primary)]/30' },
+  GROWTH: { bg: 'bg-[var(--color-success-muted)]', text: 'text-[var(--color-success)]', border: 'border-[var(--color-success)]/30' },
+  STANDARD: { bg: 'bg-[var(--bg-elevated)]', text: 'text-[var(--text-muted)]', border: 'border-[var(--border-default)]' },
 };
 
 const TIER_LABELS: Record<CompanyTier, string> = {
@@ -406,10 +407,10 @@ const TIER_LABELS: Record<CompanyTier, string> = {
 };
 
 const COMPETITION_LABELS: Record<string, { label: string; color: string }> = {
-  extreme: { label: 'Extreme', color: 'text-red-400' },
-  very_high: { label: 'Very High', color: 'text-orange-400' },
-  high: { label: 'High', color: 'text-amber-400' },
-  moderate: { label: 'Moderate', color: 'text-emerald-400' },
+  extreme: { label: 'Extreme', color: 'text-[var(--color-danger)]' },
+  very_high: { label: 'Very High', color: 'text-[var(--accent-primary)]' },
+  high: { label: 'High', color: 'text-[var(--color-warning)]' },
+  moderate: { label: 'Moderate', color: 'text-[var(--color-success)]' },
 };
 
 function WaysToStandOut({ difficulty }: { difficulty: CompanyDifficultyContext }) {
@@ -423,17 +424,17 @@ function WaysToStandOut({ difficulty }: { difficulty: CompanyDifficultyContext }
     : difficulty.differentiationStrategies.slice(0, 3);
 
   return (
-    <div className={`rounded-xl border ${badgeColor.border} bg-[var(--bg-card)] p-6`}>
+    <div className={`rounded-[20px] border ${badgeColor.border} bg-[var(--bg-card)] p-6 shadow-warm card-warm-hover`}>
       {/* Header with tier badge */}
       <div className="flex items-center justify-between mb-1">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Ways to Stand Out</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">Ways to Stand Out</h3>
         <span
           className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badgeColor.bg} ${badgeColor.text}`}
         >
           {TIER_LABELS[difficulty.tier]}
         </span>
       </div>
-      <p className="text-sm text-[var(--text-muted)] mb-5">
+      <p className="text-sm text-[var(--text-muted)] mb-5 mt-3">
         How to differentiate yourself for {difficulty.companyName}
       </p>
 
@@ -471,10 +472,10 @@ function WaysToStandOut({ difficulty }: { difficulty: CompanyDifficultyContext }
 
       {/* Intern warning callout */}
       {difficulty.isIntern && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 mb-5">
+        <div className="rounded-lg border border-[var(--color-warning)]/30 bg-[var(--color-warning-muted)] p-4 mb-5">
           <div className="flex items-start gap-3">
             <svg
-              className="h-5 w-5 text-amber-400 mt-0.5 flex-shrink-0"
+              className="h-5 w-5 text-[var(--color-warning)] mt-0.5 flex-shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -487,7 +488,7 @@ function WaysToStandOut({ difficulty }: { difficulty: CompanyDifficultyContext }
               />
             </svg>
             <div>
-              <span className="text-sm font-medium text-amber-400">Intern Competition Warning</span>
+              <span className="text-sm font-medium text-[var(--color-warning)]">Intern Competition Warning</span>
               <p className="mt-1 text-sm text-[var(--text-secondary)]">
                 Intern positions at {difficulty.companyName} are extremely competitive with limited
                 slots. Focus on demonstrating learning velocity, relevant coursework, and personal
@@ -549,7 +550,7 @@ function WaysToStandOut({ difficulty }: { difficulty: CompanyDifficultyContext }
   );
 }
 
-// ── Main CoachingHub ──────────────────────────────────────────────────
+// -- Main CoachingHub --
 
 export function CoachingHub({
   archetypeProfile,
@@ -562,7 +563,7 @@ export function CoachingHub({
   companyName,
 }: CoachingHubProps) {
   return (
-    <div className="space-y-6">
+    <div className="card-warm shadow-warm rounded-[20px] p-6 space-y-6">
       {/* Section 1: Candidate Profile */}
       <CandidateProfile profile={archetypeProfile} companyName={companyName} />
 

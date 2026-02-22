@@ -9,15 +9,15 @@ interface RoundCoachingPanelProps {
   companyName?: string;
 }
 
-// ── Coaching Recommendations ──────────────────────────────────────────
+// -- Coaching Recommendations --
 
 function CoachingRecommendations({ items }: { items: string[] }) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/15">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-info-muted)]">
           <svg
-            className="h-4 w-4 text-blue-400"
+            className="h-4 w-4 text-[var(--color-info)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -38,9 +38,9 @@ function CoachingRecommendations({ items }: { items: string[] }) {
         {items.map((tip, i) => (
           <div
             key={i}
-            className="flex items-start gap-3 rounded-lg border border-blue-500/15 bg-blue-500/5 p-4"
+            className="flex items-start gap-3 rounded-lg border border-[var(--color-info)]/15 bg-[var(--color-info-muted)] p-4"
           >
-            <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/20 text-xs font-bold text-blue-400">
+            <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-info)]/20 text-xs font-bold text-[var(--color-info)]">
               {i + 1}
             </span>
             <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{tip}</p>
@@ -51,15 +51,15 @@ function CoachingRecommendations({ items }: { items: string[] }) {
   );
 }
 
-// ── Ways to Stand Out ─────────────────────────────────────────────────
+// -- Ways to Stand Out --
 
 function StandOutStrategies({ items }: { items: string[] }) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/15">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-success-muted)]">
           <svg
-            className="h-4 w-4 text-emerald-400"
+            className="h-4 w-4 text-[var(--color-success)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -78,10 +78,10 @@ function StandOutStrategies({ items }: { items: string[] }) {
         {items.map((strategy, i) => (
           <div
             key={i}
-            className="flex items-start gap-3 rounded-lg border border-emerald-500/15 bg-emerald-500/5 p-3.5"
+            className="flex items-start gap-3 rounded-lg border border-[var(--color-success)]/15 bg-[var(--color-success-muted)] p-3.5"
           >
             <svg
-              className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0"
+              className="h-4 w-4 text-[var(--color-success)] mt-0.5 flex-shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -101,7 +101,7 @@ function StandOutStrategies({ items }: { items: string[] }) {
   );
 }
 
-// ── Questions to Ask Interviewer ──────────────────────────────────────
+// -- Questions to Ask Interviewer --
 
 function InterviewerQuestions({ items }: { items: { question: string; context: string }[] }) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
@@ -109,9 +109,9 @@ function InterviewerQuestions({ items }: { items: { question: string; context: s
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/15">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-tier-1-muted)]">
           <svg
-            className="h-4 w-4 text-purple-400"
+            className="h-4 w-4 text-[var(--color-tier-1)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -135,10 +135,10 @@ function InterviewerQuestions({ items }: { items: { question: string; context: s
             <button
               key={i}
               onClick={() => setExpandedIndex(isExpanded ? null : i)}
-              className="w-full text-left rounded-lg border border-purple-500/15 bg-purple-500/5 p-4 hover:border-purple-500/30 transition-colors"
+              className="w-full text-left rounded-lg border border-[var(--color-tier-1)]/15 bg-[var(--color-tier-1-muted)] p-4 hover:border-[var(--color-tier-1)]/30 transition-colors"
             >
               <div className="flex items-start gap-3">
-                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-purple-500/20 text-xs font-bold text-purple-400 mt-0.5">
+                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-tier-1)]/20 text-xs font-bold text-[var(--color-tier-1)] mt-0.5">
                   Q
                 </span>
                 <div className="flex-1 min-w-0">
@@ -146,8 +146,8 @@ function InterviewerQuestions({ items }: { items: { question: string; context: s
                     &ldquo;{item.question}&rdquo;
                   </p>
                   {isExpanded && (
-                    <div className="mt-3 pl-0 border-l-2 border-purple-500/30 pl-3">
-                      <p className="text-xs font-medium text-purple-400 mb-1">Why this impresses</p>
+                    <div className="mt-3 pl-0 border-l-2 border-[var(--color-tier-1)]/30 pl-3">
+                      <p className="text-xs font-medium text-[var(--color-tier-1)] mb-1">Why this impresses</p>
                       <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                         {item.context}
                       </p>
@@ -155,7 +155,7 @@ function InterviewerQuestions({ items }: { items: { question: string; context: s
                   )}
                 </div>
                 <svg
-                  className={`h-4 w-4 text-purple-400 mt-1 flex-shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                  className={`h-4 w-4 text-[var(--color-tier-1)] mt-1 flex-shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -176,7 +176,7 @@ function InterviewerQuestions({ items }: { items: { question: string; context: s
   );
 }
 
-// ── Sample Responses ──────────────────────────────────────────────────
+// -- Sample Responses --
 
 function SampleResponses({
   items,
@@ -188,9 +188,9 @@ function SampleResponses({
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/15">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-warning-muted)]">
           <svg
-            className="h-4 w-4 text-amber-400"
+            className="h-4 w-4 text-[var(--color-warning)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -214,17 +214,17 @@ function SampleResponses({
             <button
               key={i}
               onClick={() => setExpandedIndex(isExpanded ? null : i)}
-              className="w-full text-left rounded-lg border border-amber-500/15 bg-amber-500/5 p-4 hover:border-amber-500/30 transition-colors"
+              className="w-full text-left rounded-lg border border-[var(--color-warning)]/15 bg-[var(--color-warning-muted)] p-4 hover:border-[var(--color-warning)]/30 transition-colors"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-amber-400 mb-1.5">Scenario</p>
+                  <p className="text-xs font-medium text-[var(--color-warning)] mb-1.5">Scenario</p>
                   <p className="text-sm font-medium text-[var(--text-primary)] leading-relaxed">
                     {item.scenario}
                   </p>
                 </div>
                 <svg
-                  className={`h-4 w-4 text-amber-400 mt-1 flex-shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                  className={`h-4 w-4 text-[var(--color-warning)] mt-1 flex-shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -240,13 +240,13 @@ function SampleResponses({
               {isExpanded && (
                 <div className="mt-4 space-y-3">
                   <div className="rounded-lg bg-[var(--bg-elevated)] p-4 border border-[var(--border-default)]">
-                    <p className="text-xs font-medium text-emerald-400 mb-2">Sample Response</p>
+                    <p className="text-xs font-medium text-[var(--color-success)] mb-2">Sample Response</p>
                     <p className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line">
                       {item.response}
                     </p>
                   </div>
-                  <div className="border-l-2 border-amber-500/30 pl-3">
-                    <p className="text-xs font-medium text-amber-400 mb-1">Why This Works</p>
+                  <div className="border-l-2 border-[var(--color-warning)]/30 pl-3">
+                    <p className="text-xs font-medium text-[var(--color-warning)] mb-1">Why This Works</p>
                     <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                       {item.whyItWorks}
                     </p>
@@ -261,15 +261,15 @@ function SampleResponses({
   );
 }
 
-// ── Passion Signals ───────────────────────────────────────────────────
+// -- Passion Signals --
 
 function PassionSignals({ items }: { items: string[] }) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500/15">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-success-muted)]">
           <svg
-            className="h-4 w-4 text-cyan-400"
+            className="h-4 w-4 text-[var(--color-success)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -290,9 +290,9 @@ function PassionSignals({ items }: { items: string[] }) {
         {items.map((signal, i) => (
           <div
             key={i}
-            className="flex items-start gap-3 rounded-lg border border-cyan-500/15 bg-cyan-500/5 p-3.5"
+            className="flex items-start gap-3 rounded-lg border border-[var(--color-success)]/15 bg-[var(--color-success-muted)] p-3.5"
           >
-            <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-cyan-500/20 text-xs font-bold text-cyan-400 mt-0.5">
+            <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-success)]/20 text-xs font-bold text-[var(--color-success)] mt-0.5">
               {i + 1}
             </span>
             <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{signal}</p>
@@ -303,7 +303,7 @@ function PassionSignals({ items }: { items: string[] }) {
   );
 }
 
-// ── Fallback for old reports ──────────────────────────────────────────
+// -- Fallback for old reports --
 
 function FallbackFocus({ recommendedFocus }: { recommendedFocus: string }) {
   return (
@@ -331,7 +331,7 @@ function FallbackFocus({ recommendedFocus }: { recommendedFocus: string }) {
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────
+// -- Main Component --
 
 function CoachingContent({ coaching }: { coaching: RoundCoaching }) {
   const roundLabel =
@@ -380,13 +380,13 @@ export function RoundCoachingPanel({ forecasts, companyName }: RoundCoachingPane
   const coaching = forecasts.roundCoaching;
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
+    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
       {/* Header */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
           {companyName ? `${companyName} Interview Coaching` : 'Round-Specific Coaching'}
         </h3>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+        <p className="mt-3 text-sm text-[var(--text-secondary)]">
           Recruiter-level tips tailored to your resume, the job, and your interview round
         </p>
       </div>

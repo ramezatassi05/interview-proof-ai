@@ -136,7 +136,7 @@ export function AnalysisProgress({ isAnalyzing }: AnalysisProgressProps) {
   const currentInsight = SCORING_INSIGHTS[insightIndex];
 
   return (
-    <div className="space-y-6">
+    <div className="card-warm shadow-warm rounded-[20px] p-6 space-y-6">
       {/* Progress bar */}
       <div className="relative h-3 overflow-hidden rounded-full bg-[var(--track-bg)]">
         <div

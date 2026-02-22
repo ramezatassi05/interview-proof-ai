@@ -32,7 +32,7 @@ const DIMENSION_EXPLANATIONS: Record<
   },
   communicationClarity: {
     meaning: 'How clearly and concisely you express technical ideas',
-    interviewContext: 'Assessed in all rounds — interviewers evaluate clarity constantly',
+    interviewContext: 'Assessed in all rounds -- interviewers evaluate clarity constantly',
     lowScoreAction: 'Record yourself answering questions and review for filler words and structure',
   },
   technicalDepth: {
@@ -49,7 +49,7 @@ const DIMENSION_EXPLANATIONS: Record<
   problemStructuring: {
     meaning: 'Ability to organize approach to ambiguous or complex problems',
     interviewContext: 'Tested in case studies, system design, open-ended technical questions',
-    lowScoreAction: 'Practice the "clarify → structure → solve → verify" framework',
+    lowScoreAction: 'Practice the "clarify -> structure -> solve -> verify" framework',
   },
 };
 
@@ -99,9 +99,9 @@ function getLabelPositions(
 }
 
 function getScoreColor(value: number): string {
-  if (value >= 0.7) return 'text-emerald-400';
-  if (value >= 0.5) return 'text-amber-400';
-  return 'text-red-400';
+  if (value >= 0.7) return 'text-[var(--color-success)]';
+  if (value >= 0.5) return 'text-[var(--color-warning)]';
+  return 'text-[var(--color-danger)]';
 }
 
 export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
@@ -146,19 +146,20 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
   );
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
+      {/* Warm gradient header */}
+      <div className="bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/5 px-6 pt-4 pb-2">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
           {companyName ? `${companyName} Interview Skills Profile` : 'Interview Skills Profile'}
         </h3>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
           How your resume signals map to key interview competencies
         </p>
       </div>
 
+      <div className="p-6">
       {/* Radar Chart */}
-      <div className="flex justify-center">
+      <div className="bg-[var(--bg-elevated)] rounded-[20px] p-4 flex justify-center">
         <svg width={size} height={size} className="overflow-visible">
           {/* Background grid circles */}
           {gridLevels.map((level) => {
@@ -320,8 +321,8 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
                       </span>
                     </div>
                     {value < 0.6 && (
-                      <div className="mt-2 p-2 rounded bg-amber-500/10 border border-amber-500/20">
-                        <span className="text-amber-400 text-xs font-medium">Tip: </span>
+                      <div className="mt-2 p-2 rounded bg-[var(--color-warning-muted)] border border-[var(--color-warning)]/20">
+                        <span className="text-[var(--color-warning)] text-xs font-medium">Tip: </span>
                         <span className="text-[var(--text-secondary)] text-xs">
                           {explanation.lowScoreAction}
                         </span>
@@ -337,8 +338,8 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
 
       {/* Insights */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
-          <span className="text-xs uppercase tracking-wide text-emerald-400">Strongest</span>
+        <div className="rounded-lg border border-[var(--color-success)]/30 bg-[var(--color-success-muted)] p-3">
+          <span className="text-xs uppercase tracking-wide text-[var(--color-success)]">Strongest</span>
           <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">
             {riskMap.highestDimension}
           </p>
@@ -346,15 +347,15 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
             Your resume shows strong evidence in this area
           </p>
         </div>
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3">
-          <span className="text-xs uppercase tracking-wide text-red-400">Focus Area</span>
+        <div className="rounded-lg border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] p-3">
+          <span className="text-xs uppercase tracking-wide text-[var(--color-danger)]">Focus Area</span>
           <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">
             {riskMap.lowestDimension}
           </p>
-          <div className="mt-2 pt-2 border-t border-red-500/20">
+          <div className="mt-2 pt-2 border-t border-[var(--color-danger)]/20">
             <div className="flex items-start gap-1.5">
               <svg
-                className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5"
+                className="h-4 w-4 text-[var(--color-warning)] flex-shrink-0 mt-0.5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -379,6 +380,7 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
         <span className="text-xs text-[var(--text-muted)]">
           Assessment version {riskMap.version}
         </span>
+      </div>
       </div>
     </div>
   );

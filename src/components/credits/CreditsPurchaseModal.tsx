@@ -78,7 +78,7 @@ export function CreditsPurchaseModal({ isOpen, onClose }: CreditsPurchaseModalPr
 
         {/* Error message */}
         {error && (
-          <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-center text-sm text-red-400">
+          <div className="mb-4 rounded-lg border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] p-3 text-center text-sm text-[var(--color-danger)]">
             {error}
           </div>
         )}

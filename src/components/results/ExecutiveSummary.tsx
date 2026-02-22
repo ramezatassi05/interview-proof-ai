@@ -93,7 +93,11 @@ export function ExecutiveSummary({
   const technicalStrength = getTechnicalStrength();
 
   return (
-    <div className="rounded-[20px] bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-elevated)] p-8 shadow-warm">
+    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
+      {/* Coral highlight strip */}
+      <div className="h-1 w-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]" />
+
+      <div className="p-8">
       {/* Header */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -187,6 +191,7 @@ export function ExecutiveSummary({
           value={scoreBreakdown ? `${Math.round(scoreBreakdown.resumeClarity)}%` : '—'}
           variant={scoreBreakdown && scoreBreakdown.resumeClarity >= 70 ? 'success' : 'warning'}
         />
+      </div>
       </div>
     </div>
   );
