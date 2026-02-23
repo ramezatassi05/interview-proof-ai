@@ -23,6 +23,7 @@ export interface ExtractedJD {
   keywords: string[];
   senioritySignals: string[];
   companyName?: string;
+  companyContextKeywords?: string[];
 }
 
 // LLM Analysis output (strict JSON schema)
