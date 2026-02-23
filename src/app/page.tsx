@@ -14,7 +14,7 @@ import { BenefitsRisks } from '@/components/landing/BenefitsRisks';
 import { FAQ } from '@/components/landing/FAQ';
 import { MorphingWaveDivider } from '@/components/svg/MorphingWaveDivider';
 import { BouncingCheckmark } from '@/components/svg/BouncingCheckmark';
-import { FriendlyFaceMascot } from '@/components/svg/FriendlyFaceMascot';
+import { InsightOwlMascot } from '@/components/svg/InsightOwlMascot';
 
 interface LastReport {
   id: string;
@@ -408,7 +408,7 @@ export default function LandingPage() {
 
           <Container className="relative py-14 text-center">
             <div className="flex justify-center mb-4">
-              <FriendlyFaceMascot size={64} />
+              <InsightOwlMascot size={64} />
             </div>
             <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl">
               Ready to Find Your Gaps?
