@@ -7,9 +7,35 @@ import type {
   LLMAnalysis,
   PrepPreferences,
   CompanyDifficultyContext,
+  PriorEmploymentSignal,
 } from '@/types';
 import type { RubricChunk, QuestionArchetype } from './retrieval';
 import { computeCompanyDifficulty } from '@/server/scoring/company-difficulty';
+
+// Zod schema for recruiter internal notes
+const RecruiterInternalNotesSchema = z.object({
+  firstGlanceReaction: z.string(),
+  starredItem: z.string(),
+  internalConcerns: z.array(z.string()).min(2).max(4),
+  phoneScreenQuestions: z.array(z.string()).min(3).max(5),
+});
+
+// Zod schema for recruiter debrief summary
+const RecruiterDebriefSummarySchema = z.object({
+  oneLinerVerdict: z.string(),
+  advocateReasons: z.array(z.string()).min(2).max(3),
+  pushbackReasons: z.array(z.string()).min(2).max(3),
+  recommendationParagraph: z.string(),
+  comparativeNote: z.string(),
+});
+
+// Zod schema for candidate positioning
+const CandidatePositioningSchema = z.object({
+  estimatedPoolPercentile: z.number().min(0).max(100),
+  standoutDifferentiator: z.string(),
+  biggestLiability: z.string(),
+  advanceRationale: z.string(),
+});
 
 // Zod schema for recruiter signals (new in Phase 7b)
 const RecruiterSignalsSchema = z.object({
@@ -17,6 +43,9 @@ const RecruiterSignalsSchema = z.object({
   hiddenStrengths: z.array(z.string()),
   estimatedScreenTimeSeconds: z.number().min(5).max(300),
   firstImpression: z.enum(['proceed', 'maybe', 'reject']),
+  internalNotes: RecruiterInternalNotesSchema.optional(),
+  debriefSummary: RecruiterDebriefSummarySchema.optional(),
+  candidatePositioning: CandidatePositioningSchema.optional(),
 });
 
 // Zod schema for personalized coaching (LLM-generated specific advice)
@@ -28,10 +57,10 @@ const PersonalizedCoachingSchema = z.object({
       z.object({
         action: z.string(),
         rationale: z.string(),
-        resource: z.string().optional(),
+        resources: z.array(z.string()).max(5).optional(),
       })
     )
-    .min(2)
+    .min(1)
     .max(4),
 });
 
@@ -52,7 +81,7 @@ const RoundCoachingSchema = z.object({
         whyItWorks: z.string(),
       })
     )
-    .min(2)
+    .min(1)
     .max(4),
   passionSignals: z.array(z.string()).min(2).max(5),
 });
@@ -132,6 +161,20 @@ function getExperienceLabel(level: PrepPreferences['experienceLevel']): string {
 }
 
 /**
+ * Returns a study plan task count range scaled by timeline length.
+ */
+function getTaskCountRange(timeline: PrepPreferences['timeline']): string {
+  const ranges: Record<PrepPreferences['timeline'], string> = {
+    '1day': '5-8',
+    '3days': '8-12',
+    '1week': '15-20',
+    '2weeks': '20-28',
+    '4weeks_plus': '28-40',
+  };
+  return ranges[timeline];
+}
+
+/**
  * Gets focus area labels for display.
  */
 function getFocusAreaLabels(areas: PrepPreferences['focusAreas']): string[] {
@@ -154,7 +197,8 @@ function buildAnalysisPrompt(
   roundType: RoundType,
   context: AnalysisContext,
   prepPreferences?: PrepPreferences,
-  companyDifficulty?: CompanyDifficultyContext
+  companyDifficulty?: CompanyDifficultyContext,
+  priorEmployment?: PriorEmploymentSignal
 ): string {
   const rubricText = context.rubricChunks.map((c) => `[${c.id}] ${c.chunkText}`).join('\n\n');
 
@@ -228,7 +272,23 @@ CALIBRATION INSTRUCTIONS for ${companyDifficulty.tier} companies:
 `
     : ''
 }
-## Your Task
+${
+  priorEmployment?.detected
+    ? `## Prior Employment at Target Company
+The candidate has PREVIOUSLY WORKED at ${priorEmployment.companyName}:
+${priorEmployment.stints.map((s) => `- ${s.role} (${s.durationYears} years${s.isCurrent ? ', currently employed' : `, left ${s.yearsAgo} years ago`})`).join('\n')}
+Total time at company: ${priorEmployment.totalYearsAtCompany} years
+${priorEmployment.isInternalTransfer ? 'STATUS: Currently employed — this is an INTERNAL TRANSFER candidate.\n' : ''}
+CRITICAL IMPACT on your analysis:
+- companyProxy score should be SIGNIFICANTLY HIGHER (0.75-0.95) — they already know the culture, tools, and processes
+- recruiterSignals.hiddenStrengths MUST include their prior employment as a major advantage
+- recruiterSignals.firstImpression should lean toward "proceed" — returning employees are highly valued
+- personalizedCoaching should leverage their insider knowledge (suggest reaching out to former colleagues, referencing internal tools/processes they know)
+- roundCoaching should reference their familiarity with the company's interview style
+- Risks about "culture fit" or "company alignment" should be downgraded — they've already passed this test
+`
+    : ''
+}## Your Task
 When a company name is known, reference it by name in coaching tips, recruiter signals, and risk rationales (e.g., "for your Amazon interview" not "for this interview").
 
 ## Critical: Skill Inference from Seniority and Context
@@ -273,9 +333,19 @@ THE TEST: Would the candidate say "I already knew that" after reading your advic
 
 Analyze the candidate's interview readiness and return a JSON object with:
 
-1. **categoryScores** (0-1 for each):
-   - hardMatch: How well skills/experience match must-have requirements (credit both explicitly listed AND inferred fundamental skills per the Skill Inference rules above)
-   - evidenceDepth: Quality of metrics, ownership, and concrete achievements
+1. **categoryScores** (0-1 for each, USE THE FULL RANGE):
+   CALIBRATION: Use these anchors — do NOT default everything to 0.6-0.85:
+   - 0.0-0.2 = Almost no match / severe deficiency
+   - 0.2-0.4 = Significant gaps, would struggle
+   - 0.4-0.6 = Mixed — some evidence but notable weaknesses
+   - 0.6-0.75 = Good match with minor gaps
+   - 0.75-0.9 = Strong match, well-prepared
+   - 0.9-1.0 = Exceptional — near-perfect alignment
+
+   RULE: Each dimension MUST be independently assessed. If hardMatch is 0.8 but clarity is 0.45, that's correct — don't pull them together. Scores should differ by 0.15+ when the evidence differs.
+
+   - hardMatch: How well skills/experience match must-have requirements (credit both explicitly listed AND inferred fundamental skills per the Skill Inference rules above). For hardMatch: count matched_must_haves / total_must_haves. Below 50% coverage = below 0.5.
+   - evidenceDepth: Quality of metrics, ownership, and concrete achievements. For evidenceDepth: count quantified metrics. Fewer than 3 = below 0.6.
    - roundReadiness: Preparation level for ${roundType} interview specifically
    - clarity: Resume communication quality and structure
    - companyProxy: Match to implied company expectations
@@ -291,12 +361,25 @@ Analyze the candidate's interview readiness and return a JSON object with:
    - BAD: "Resume does not mention pull requests" (when candidate is a senior engineer — this is an implied skill)
    - GOOD: "Resume shows no Kubernetes experience, but JD lists it as must-have requirement #3"
    - GOOD: "Despite 8 years of backend experience, resume shows no evidence of distributed systems design, which the JD emphasizes for this staff-level role"
-
+${roundType === 'technical' ? `
+   ROUND-TYPE FILTER (TECHNICAL): This is a TECHNICAL interview. Only flag risks directly relevant to technical performance:
+   - Flag: Missing technical skills, frameworks, languages, system design gaps, algorithm weaknesses, architecture knowledge gaps
+   - Do NOT flag: Language/bilingual requirements, soft skills, communication style, cultural fit, behavioral competencies, certifications unrelated to technical depth
+   - If the JD mentions non-technical requirements (e.g. "bilingual", "leadership style"), SKIP them — they are irrelevant to a technical round assessment.
+` : roundType === 'behavioral' ? `
+   ROUND-TYPE FILTER (BEHAVIORAL): This is a BEHAVIORAL interview. Prioritize risks related to:
+   - Storytelling gaps, lack of STAR-format evidence, missing leadership examples, weak conflict resolution evidence, communication concerns
+   - De-prioritize: Specific technical framework gaps, algorithm knowledge, system design depth
+` : roundType === 'research' ? `
+   ROUND-TYPE FILTER (RESEARCH): This is a RESEARCH interview. Prioritize risks related to:
+   - Research methodology gaps, publication gaps, ML/AI depth, experimental design weaknesses, paper discussion readiness
+   - De-prioritize: Soft skills, cultural fit, non-research technical frameworks
+` : ''}
 3. **interviewQuestions** (100-120 questions):
    Generate a diverse pool of technical and job-relevant questions based on skill gaps and experience gaps identified. Each question should relate to the candidate's ability to perform the job role. Include a mix of question types: technical deep-dives, behavioral/situational, case-based/problem-solving, and role-specific.
    IMPORTANT: Do NOT include any questions about citizenship, nationality, immigration status, age, religion, marital status, family planning, disability, or any other protected characteristics. These are illegal to ask in interviews and not relevant to technical assessment.
 
-4. **studyPlan** (${prepPreferences ? '8-12' : '5-8'} items):
+4. **studyPlan** (${prepPreferences ? getTaskCountRange(prepPreferences.timeline) : '5-8'} items):
    Concrete prep tasks with time estimates, mapped to risk IDs.
    Study plan tasks must NEVER be "learn [JD requirement]". Instead they should be specific drills, projects, or exercises.
    - BAD: "Study distributed systems"
@@ -313,7 +396,8 @@ Analyze the candidate's interview readiness and return a JSON object with:
 5. **recruiterSignals** (recruiter perspective simulation):
    Simulate how a recruiter would perceive this candidate on first resume scan:
    - immediateRedFlags: 2-5 things that would make a recruiter hesitate
-   - hiddenStrengths: 2-4 undervalued strengths a quick scan might miss
+${roundType === 'technical' ? `     For this TECHNICAL round assessment, red flags should focus on technical gaps only — not language, cultural fit, or soft skills.
+` : ''}   - hiddenStrengths: 2-4 undervalued strengths a quick scan might miss
    - estimatedScreenTimeSeconds: How long a recruiter would spend (15-120 typical)
    - firstImpression: "proceed" (advance to screen), "maybe" (on fence), or "reject"
 
@@ -322,6 +406,25 @@ Analyze the candidate's interview readiness and return a JSON object with:
    - GOOD: "Strong React/TypeScript stack with 3 years of production experience matches JD's core requirement"
    - BAD: "Lack of relevant experience"
    - GOOD: "Resume shows no Kubernetes experience, but JD lists it as must-have requirement"
+
+   - **internalNotes** (recruiter's private notepad — what they'd actually scribble):
+     - firstGlanceReaction: The recruiter's 3-second internal monologue when they first open the resume. Write in first person, candid, e.g. "Hmm, solid React stack but where's the backend depth they need?"
+     - starredItem: The ONE thing on the resume they'd physically star or underline — the single most attention-grabbing detail.
+     - internalConcerns: 2-4 frank, candid concerns they'd note privately (franker and more blunt than red flags — internal talk, not client-facing).
+     - phoneScreenQuestions: 3-5 specific questions they'd want answered on a phone screen before advancing. These should probe the exact gaps or ambiguities in the resume.
+
+   - **debriefSummary** (30-second hallway conversation with the hiring manager):
+     - oneLinerVerdict: A single sentence the recruiter would use to summarize this candidate to the hiring manager.
+     - advocateReasons: 2-3 concise reasons to advance this candidate.
+     - pushbackReasons: 2-3 concise reasons to pass on this candidate.
+     - recommendationParagraph: A 3-5 sentence recommendation written in the style of an internal ATS note (Greenhouse/Lever style). Professional, balanced, data-driven.
+     - comparativeNote: How this candidate compares to a typical applicant pool for this role/level.
+
+   - **candidatePositioning** (where they sit in the pool):
+     - estimatedPoolPercentile: 0-100, where this candidate falls relative to a typical applicant pool for this role.
+     - standoutDifferentiator: The biggest competitive advantage this candidate has over others.
+     - biggestLiability: The single biggest reason a recruiter might pass.
+     - advanceRationale: A sentence explaining why they would or wouldn't advance this candidate.
 
 6. **personalizedCoaching** (CRITICAL - candidate-specific actionable advice):
    Generate advice that directly references THIS candidate's specific resume and JD.
@@ -348,7 +451,7 @@ Analyze the candidate's interview readiness and return a JSON object with:
      Each must have:
      - action: Specific, concrete task (not "practice more" but "solve 8 medium BFS/DFS problems")
      - rationale: Why this matters for THIS candidate's specific gaps
-     - resource: (optional) Specific resource, tool, or approach
+     - resources: (optional) Array of 2-5 specific resources with real URL links when possible (e.g., ["Coursera's Deep Learning Specialization - https://www.coursera.org/specializations/deep-learning", "3Blue1Brown Neural Networks playlist - https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"])
 
 7. **roundCoaching** (CRITICAL — round-specific coaching for ${roundType} interview):
    Generate in-depth coaching content specifically for the candidate's selected round type: "${roundType}".
@@ -432,7 +535,26 @@ Return ONLY valid JSON matching this exact structure:
     "immediateRedFlags": ["Red flag that would make recruiter hesitate"],
     "hiddenStrengths": ["Strength that quick scan might miss"],
     "estimatedScreenTimeSeconds": 45,
-    "firstImpression": "proceed|maybe|reject"
+    "firstImpression": "proceed|maybe|reject",
+    "internalNotes": {
+      "firstGlanceReaction": "First-person internal monologue on seeing the resume...",
+      "starredItem": "The one thing they'd physically star or underline...",
+      "internalConcerns": ["Frank internal concern 1", "Frank internal concern 2"],
+      "phoneScreenQuestions": ["Specific phone screen question 1", "Specific question 2", "Specific question 3"]
+    },
+    "debriefSummary": {
+      "oneLinerVerdict": "Single sentence summary for hiring manager...",
+      "advocateReasons": ["Reason to advance 1", "Reason to advance 2"],
+      "pushbackReasons": ["Reason to pass 1", "Reason to pass 2"],
+      "recommendationParagraph": "3-5 sentence ATS-style recommendation paragraph...",
+      "comparativeNote": "How candidate compares to typical applicant pool..."
+    },
+    "candidatePositioning": {
+      "estimatedPoolPercentile": 65,
+      "standoutDifferentiator": "Biggest competitive advantage...",
+      "biggestLiability": "Biggest reason to pass...",
+      "advanceRationale": "Why they would/wouldn't advance..."
+    }
   },
   "personalizedCoaching": {
     "archetypeTips": [
@@ -446,7 +568,10 @@ Return ONLY valid JSON matching this exact structure:
       {
         "action": "Specific action referencing their resume/JD",
         "rationale": "Why this matters for THIS candidate",
-        "resource": "Optional specific resource or approach"
+        "resources": [
+          "Coursera's Deep Learning Specialization - https://www.coursera.org/specializations/deep-learning",
+          "3Blue1Brown Neural Networks playlist - https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"
+        ]
       }
     ]
   },
@@ -491,7 +616,8 @@ export async function performAnalysis(
   roundType: RoundType,
   context: AnalysisContext,
   prepPreferences?: PrepPreferences,
-  retries = 2
+  retries = 2,
+  priorEmployment?: PriorEmploymentSignal
 ): Promise<LLMAnalysis> {
   const openai = getOpenAIClient();
 
@@ -509,14 +635,15 @@ export async function performAnalysis(
     roundType,
     context,
     prepPreferences,
-    companyDifficulty
+    companyDifficulty,
+    priorEmployment
   );
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const response = await openai.chat.completions.create({
         model: MODELS.reasoning,
-        temperature: 0.2, // Low temperature for consistency
+        temperature: 0.3, // Moderate temperature for wider score distribution
         response_format: { type: 'json_object' },
         messages: [
           {

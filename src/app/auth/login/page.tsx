@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -193,7 +194,10 @@ function LoginLoading() {
 export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-primary)]">
-      <Container size="sm" className="flex flex-1 items-center justify-center py-12">
+      <Container size="sm" className="flex flex-1 flex-col items-center justify-center py-12">
+        <div className="mb-4 flex justify-center" style={{ animation: 'owl-enter 0.6s ease-out' }}>
+          <InsightOwlWaving size={96} />
+        </div>
         <Suspense fallback={<LoginLoading />}>
           <LoginForm />
         </Suspense>

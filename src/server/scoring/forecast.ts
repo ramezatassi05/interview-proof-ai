@@ -32,6 +32,13 @@ const ROUND_WEIGHTS = {
     companyProxy: 0.2,
     evidenceDepth: 0,
   },
+  research: {
+    hardMatch: 0.35,
+    evidenceDepth: 0.35,
+    roundReadiness: 0.2,
+    clarity: 0.1,
+    companyProxy: 0,
+  },
 } as const;
 
 // Labels for identifying strengths/risks
@@ -50,7 +57,7 @@ const DIMENSION_LABELS = {
  */
 function computeRoundProbability(
   categoryScores: LLMAnalysis['categoryScores'],
-  roundType: 'technical' | 'behavioral' | 'case',
+  roundType: 'technical' | 'behavioral' | 'case' | 'research',
   adjustmentFactor: number = 1.0
 ): number {
   const weights = ROUND_WEIGHTS[roundType];
@@ -87,7 +94,7 @@ function normalize(s: string): string {
  */
 function findStrengthAndRisk(
   categoryScores: LLMAnalysis['categoryScores'],
-  roundType: 'technical' | 'behavioral' | 'case',
+  roundType: 'technical' | 'behavioral' | 'case' | 'research',
   resume?: ExtractedResume,
   jd?: ExtractedJD
 ): { strength: string; risk: string } {
@@ -176,7 +183,7 @@ export function computeRoundForecasts(
   const { categoryScores } = analysis;
   const adjustmentFactor = companyDifficulty?.adjustmentFactor ?? 1.0;
 
-  const roundTypes: ('technical' | 'behavioral' | 'case')[] = ['technical', 'behavioral', 'case'];
+  const roundTypes: ('technical' | 'behavioral' | 'case' | 'research')[] = ['technical', 'behavioral', 'case', 'research'];
 
   const forecasts: RoundForecastItem[] = roundTypes.map((roundType) => {
     const probability = computeRoundProbability(categoryScores, roundType, adjustmentFactor);
@@ -200,6 +207,7 @@ export function computeRoundForecasts(
     technical: 'Focus on technical fundamentals and coding practice',
     behavioral: 'Practice storytelling and refine your narrative',
     case: 'Study problem-solving frameworks and structured thinking',
+    research: 'Deepen ML fundamentals and practice paper discussions',
   };
 
   const focus =

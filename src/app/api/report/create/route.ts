@@ -25,7 +25,7 @@ const PrepPreferencesSchema = z.object({
 const CreateReportSchema = z.object({
   resumeText: z.string().min(50, 'Resume text too short'),
   jobDescriptionText: z.string().min(50, 'Job description too short'),
-  roundType: z.enum(['technical', 'behavioral', 'case', 'finance']),
+  roundType: z.enum(['technical', 'behavioral', 'case', 'finance', 'research']),
   prepPreferences: PrepPreferencesSchema.optional(),
 });
 

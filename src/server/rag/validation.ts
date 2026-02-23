@@ -1,4 +1,4 @@
-import type { LLMAnalysis, ExtractedJD } from '@/types';
+import type { LLMAnalysis, ExtractedJD, RoundType } from '@/types';
 
 const PARROT_PATTERN =
   /^(learn|study|get proficient in|practice|explore|develop|gain experience|complete a .* course|read about|familiarize|take a .* course|enroll in|brush up on|improve your|build expertise in|acquire knowledge)/i;
@@ -11,7 +11,8 @@ const PARROT_PATTERN =
  */
 export function validateAnalysisQuality(
   analysis: LLMAnalysis,
-  jd: ExtractedJD
+  jd: ExtractedJD,
+  roundType?: RoundType
 ): { analysis: LLMAnalysis; warnings: string[] } {
   const warnings: string[] = [];
 
@@ -80,9 +81,9 @@ export function validateAnalysisQuality(
         }
         return true;
       });
-    if (analysis.personalizedCoaching.priorityActions.length < 2) {
+    if (analysis.personalizedCoaching.priorityActions.length < 1) {
       analysis.personalizedCoaching.priorityActions = originalActions;
-      warnings.push('Priority actions filter would violate min(2), keeping originals');
+      warnings.push('Priority actions filter would violate min(1), keeping originals');
     }
   }
 
@@ -100,6 +101,50 @@ export function validateAnalysisQuality(
         );
         risk.severity = 'low';
       }
+    }
+  }
+
+  // Round-type-aware risk filtering
+  if (roundType) {
+    const NON_TECHNICAL_PATTERNS =
+      /\b(bilingual|french|spanish|language proficiency|cultural fit|soft skill|communication style|leadership style)\b/i;
+    const TECHNICAL_ONLY_PATTERNS =
+      /\b(algorithm|data structure|framework|library|coding|implementation|system design|api design|leetcode)\b/i;
+
+    const originalRiskCount = analysis.rankedRisks.length;
+
+    if (roundType === 'technical') {
+      analysis.rankedRisks = analysis.rankedRisks.filter((risk) => {
+        const text = `${risk.title} ${risk.rationale} ${risk.missingEvidence}`;
+        if (NON_TECHNICAL_PATTERNS.test(text)) {
+          warnings.push(`Filtered non-technical risk from technical round: "${risk.title}"`);
+          return false;
+        }
+        return true;
+      });
+    } else if (roundType === 'behavioral') {
+      analysis.rankedRisks = analysis.rankedRisks.filter((risk) => {
+        const text = `${risk.title} ${risk.rationale} ${risk.missingEvidence}`;
+        // Only filter if it's purely about technical gaps with no behavioral angle
+        if (TECHNICAL_ONLY_PATTERNS.test(text) && !NON_TECHNICAL_PATTERNS.test(text)) {
+          const lowerText = text.toLowerCase();
+          const hasBehavioralAngle =
+            /\b(team|collaborate|communicate|mentor|lead|conflict|stakeholder)\b/i.test(lowerText);
+          if (!hasBehavioralAngle) {
+            warnings.push(
+              `Filtered technical-only risk from behavioral round: "${risk.title}"`
+            );
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    if (analysis.rankedRisks.length < originalRiskCount) {
+      console.warn(
+        `[validation] Filtered ${originalRiskCount - analysis.rankedRisks.length} round-irrelevant risks for ${roundType} round`
+      );
     }
   }
 

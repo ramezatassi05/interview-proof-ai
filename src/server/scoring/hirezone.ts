@@ -17,6 +17,7 @@ const HIRE_ZONE_THRESHOLDS: Record<RoundType, { min: number; max: number; indust
   behavioral: { min: 72, max: 80, industryAvg: 58 },
   case: { min: 75, max: 82, industryAvg: 60 },
   finance: { min: 76, max: 83, industryAvg: 61 },
+  research: { min: 77, max: 84, industryAvg: 60 },
 };
 
 // Per-category target scores needed to reach the hire zone
@@ -48,6 +49,13 @@ const CATEGORY_TARGETS: Record<RoundType, Record<string, { target: number; label
     roundReadiness: { target: 78, label: 'Round Readiness' },
     resumeClarity: { target: 72, label: 'Resume Clarity' },
     companyProxy: { target: 67, label: 'Company Alignment' },
+  },
+  research: {
+    hardRequirementMatch: { target: 80, label: 'Hard Requirement Match' },
+    evidenceDepth: { target: 80, label: 'Evidence Depth' },
+    roundReadiness: { target: 76, label: 'Round Readiness' },
+    resumeClarity: { target: 72, label: 'Resume Clarity' },
+    companyProxy: { target: 65, label: 'Company Alignment' },
   },
 };
 

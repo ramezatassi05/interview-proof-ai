@@ -1,6 +1,6 @@
 'use client';
 
-import type { RiskBand, ScoreBreakdown, EvidenceContext } from '@/types';
+import type { RiskBand, ScoreBreakdown, EvidenceContext, PriorEmploymentSignal } from '@/types';
 import { RadialScoreIndicator } from '@/components/ui/RadialScoreIndicator';
 import { Badge, riskBandToVariant } from '@/components/ui/Badge';
 
@@ -12,6 +12,9 @@ interface ExecutiveSummaryProps {
   scoreBreakdown?: ScoreBreakdown;
   evidenceContext?: EvidenceContext;
   companyName?: string;
+  conversionLikelihood?: number;
+  technicalFit?: number;
+  priorEmploymentSignal?: PriorEmploymentSignal;
 }
 
 export function ExecutiveSummary({
@@ -22,17 +25,20 @@ export function ExecutiveSummary({
   scoreBreakdown,
   evidenceContext,
   companyName,
+  conversionLikelihood,
+  technicalFit,
+  priorEmploymentSignal,
 }: ExecutiveSummaryProps) {
-  // Calculate pass probability based on score and risk band
-  const getPassProbability = () => {
+  // Fallback: old client-side formula for existing reports without server-side scores
+  const getPassProbabilityFallback = () => {
     if (readinessScore >= 80) return Math.min(95, 75 + (readinessScore - 80));
     if (readinessScore >= 60) return 50 + (readinessScore - 60) * 1.25;
     if (readinessScore >= 40) return 25 + (readinessScore - 40) * 1.25;
     return Math.max(5, readinessScore * 0.625);
   };
 
-  // Calculate technical strength from breakdown
-  const getTechnicalStrength = () => {
+  // Fallback: old client-side formula for existing reports
+  const getTechnicalStrengthFallback = () => {
     if (!scoreBreakdown) return readinessScore;
     return Math.round(
       scoreBreakdown.hardRequirementMatch * 0.5 +
@@ -42,11 +48,26 @@ export function ExecutiveSummary({
   };
 
   // Generate highlight insight based on score and risk band
+  const ROUND_LABEL_MAP: Record<string, string> = {
+    technical: 'Technical',
+    behavioral: 'Behavioral',
+    case: 'Case',
+    finance: 'Finance',
+    research: 'Research / ML',
+  };
+
   const getHighlightInsight = () => {
-    const roundLabel = roundType.charAt(0).toUpperCase() + roundType.slice(1);
+    const roundLabel = ROUND_LABEL_MAP[roundType] ?? roundType.charAt(0).toUpperCase() + roundType.slice(1);
     const interviewLabel = companyName
       ? `${companyName} ${roundLabel} interview`
       : `${roundLabel} interview`;
+
+    // Prepend prior employment note when detected
+    const priorNote = priorEmploymentSignal?.detected
+      ? priorEmploymentSignal.isInternalTransfer
+        ? `Currently employed at ${priorEmploymentSignal.companyName} — internal transfer advantage detected. `
+        : `Prior experience at ${priorEmploymentSignal.companyName} detected — returning employee advantage applied. `
+      : '';
 
     if (readinessScore >= 80) {
       if (totalRisks <= 2) {
@@ -56,21 +77,21 @@ export function ExecutiveSummary({
           evidenceContext && totalCount > 0
             ? `Your experience covers ${matchedCount} of ${totalCount} must-have requirements — focus on practicing delivery.`
             : `Your experience aligns well with requirements - focus on practicing delivery.`;
-        return `Strong candidate profile for ${interviewLabel}. ${evidenceNote}`;
+        return `${priorNote}Strong candidate profile for ${interviewLabel}. ${evidenceNote}`;
       }
-      return `Good readiness score, but address the ${totalRisks} identified risks to maximize your chances in the ${interviewLabel}.`;
+      return `${priorNote}Good readiness score, but address the ${totalRisks} identified risks to maximize your chances in the ${interviewLabel}.`;
     }
 
     if (readinessScore >= 60) {
       const weakArea = scoreBreakdown ? getWeakestArea(scoreBreakdown) : 'key requirements';
-      return `Moderate readiness for ${interviewLabel}. Prioritize strengthening your ${weakArea} before the interview.`;
+      return `${priorNote}Moderate readiness for ${interviewLabel}. Prioritize strengthening your ${weakArea} before the interview.`;
     }
 
     if (readinessScore >= 40) {
-      return `Your profile needs work for this ${interviewLabel}. Review the study plan below and address high-priority risks first.`;
+      return `${priorNote}Your profile needs work for this ${interviewLabel}. Review the study plan below and address high-priority risks first.`;
     }
 
-    return `Significant gaps identified for this ${interviewLabel}. Consider gaining more relevant experience or targeting different roles.`;
+    return `${priorNote}Significant gaps identified for this ${interviewLabel}. Consider gaining more relevant experience or targeting different roles.`;
   };
 
   const getWeakestArea = (breakdown: ScoreBreakdown): string => {
@@ -89,8 +110,9 @@ export function ExecutiveSummary({
     return weakest.label;
   };
 
-  const passProbability = Math.round(getPassProbability());
-  const technicalStrength = getTechnicalStrength();
+  // Use server-side scores when available, fall back for old reports
+  const passProbability = conversionLikelihood ?? Math.round(getPassProbabilityFallback());
+  const technicalStrength = technicalFit ?? getTechnicalStrengthFallback();
 
   return (
     <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
@@ -104,7 +126,7 @@ export function ExecutiveSummary({
           <h2 className="text-xl font-bold text-[var(--text-primary)]">Executive Summary</h2>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
             {companyName ? `${companyName} ` : ''}
-            {roundType.charAt(0).toUpperCase() + roundType.slice(1)} Readiness Intelligence
+            {ROUND_LABEL_MAP[roundType] ?? roundType.charAt(0).toUpperCase() + roundType.slice(1)} Readiness Intelligence
           </p>
         </div>
         <Badge variant={riskBandToVariant(riskBand)} className="text-sm px-4 py-1">

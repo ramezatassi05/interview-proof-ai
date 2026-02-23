@@ -1,5 +1,5 @@
 // Database enums
-export type RoundType = 'technical' | 'behavioral' | 'case' | 'finance';
+export type RoundType = 'technical' | 'behavioral' | 'case' | 'finance' | 'research';
 export type RiskBand = 'Low' | 'Medium' | 'High';
 export type CreditType = 'purchase' | 'spend' | 'refund' | 'grant';
 
@@ -221,7 +221,7 @@ export interface ArchetypeProfile {
 
 // Interview Round Forecast
 export interface RoundForecastItem {
-  roundType: 'technical' | 'behavioral' | 'case';
+  roundType: 'technical' | 'behavioral' | 'case' | 'research';
   passProbability: number; // 0-1
   primaryStrength: string;
   primaryRisk: string;
@@ -288,6 +288,31 @@ export interface TrajectoryProjection {
   version: string;
 }
 
+// Recruiter Internal Notes (private recruiter notepad)
+export interface RecruiterInternalNotes {
+  firstGlanceReaction: string;
+  starredItem: string;
+  internalConcerns: string[];
+  phoneScreenQuestions: string[];
+}
+
+// Recruiter Debrief Summary (what they'd tell the hiring manager)
+export interface RecruiterDebriefSummary {
+  oneLinerVerdict: string;
+  advocateReasons: string[];
+  pushbackReasons: string[];
+  recommendationParagraph: string;
+  comparativeNote: string;
+}
+
+// Candidate Positioning (where the candidate sits in the pool)
+export interface CandidatePositioning {
+  estimatedPoolPercentile: number;
+  standoutDifferentiator: string;
+  biggestLiability: string;
+  advanceRationale: string;
+}
+
 // Recruiter Simulation
 export type FirstImpression = 'proceed' | 'maybe' | 'reject';
 
@@ -297,6 +322,9 @@ export interface RecruiterSimulation {
   estimatedScreenTimeSeconds: number;
   firstImpression: FirstImpression;
   recruiterNotes: string;
+  internalNotes?: RecruiterInternalNotes;
+  debriefSummary?: RecruiterDebriefSummary;
+  candidatePositioning?: CandidatePositioning;
   version: string;
 }
 
@@ -370,6 +398,29 @@ export interface CompanyDifficultyContext {
   version: string;
 }
 
+// Prior Employment Detection
+export interface PriorEmploymentStint {
+  role: string;
+  durationYears: number;
+  yearsAgo: number; // 0 = currently employed
+  isCurrent: boolean;
+}
+
+export interface PriorEmploymentSignal {
+  detected: boolean;
+  companyName: string;
+  stints: PriorEmploymentStint[];
+  totalYearsAtCompany: number;
+  mostRecentDepartureYearsAgo: number; // 0 = currently employed (internal transfer)
+  isInternalTransfer: boolean;
+  boosts: {
+    readinessBoost: number;
+    conversionBoost: number;
+    technicalFitBoost: number;
+  };
+  version: string;
+}
+
 // Combined Diagnostic Intelligence Output
 export interface DiagnosticIntelligence {
   archetypeProfile: ArchetypeProfile;
@@ -381,6 +432,12 @@ export interface DiagnosticIntelligence {
   evidenceContext?: EvidenceContext;
   hireZoneAnalysis?: HireZoneAnalysis;
   companyDifficulty?: CompanyDifficultyContext;
+  priorEmploymentSignal?: PriorEmploymentSignal;
+  executiveScores?: {
+    readinessScore: number;
+    conversionLikelihood: number;
+    technicalFit: number;
+  };
   generatedAt: string;
   version: string;
 }
@@ -481,13 +538,16 @@ export interface RecruiterSignals {
   hiddenStrengths: string[];
   estimatedScreenTimeSeconds: number;
   firstImpression: FirstImpression;
+  internalNotes?: RecruiterInternalNotes;
+  debriefSummary?: RecruiterDebriefSummary;
+  candidatePositioning?: CandidatePositioning;
 }
 
 // Personalized Coaching (LLM-generated specific advice)
 export interface PriorityAction {
   action: string;
   rationale: string;
-  resource?: string;
+  resources?: string[];
 }
 
 export interface PersonalizedCoaching {

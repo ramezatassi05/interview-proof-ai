@@ -76,7 +76,7 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
           <span
             className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${potentialColors.bg} ${potentialColors.text} ${potentialColors.border} border`}
           >
-            {improvementPotential.charAt(0).toUpperCase() + improvementPotential.slice(1)} Potential
+            {{ high: 'High Growth', medium: 'Steady Growth', low: 'Polish & Perfect' }[improvementPotential]}
           </span>
         </div>
       </div>

@@ -1,4 +1,12 @@
-import type { LLMAnalysis, ScoreBreakdown, RiskBand, RecruiterSimulation } from '@/types';
+import type {
+  LLMAnalysis,
+  ScoreBreakdown,
+  RiskBand,
+  RecruiterSimulation,
+  RecruiterInternalNotes,
+  RecruiterDebriefSummary,
+  CandidatePositioning,
+} from '@/types';
 
 // Re-export all scoring functions from submodules
 export { classifyArchetype } from './archetype';
@@ -9,8 +17,9 @@ export { computePracticeIntelligence } from './practice';
 export { computeEvidenceContext } from './evidence';
 export { computeHireZoneAnalysis } from './hirezone';
 export { computeCompanyDifficulty } from './company-difficulty';
+export { detectPriorEmployment } from './prior-employment';
 
-const SCORING_VERSION = 'v0.1';
+const SCORING_VERSION = 'v0.2';
 
 // Weights per PRD - deterministic scoring
 const WEIGHTS = {
@@ -24,8 +33,12 @@ const WEIGHTS = {
 /**
  * Computes the readiness score from LLM analysis output.
  * This is the deterministic scoring layer - LLM is analyst, this is authority.
+ * adjustmentFactor: company difficulty multiplier (1.0 = standard, up to 1.5 for FAANG+)
  */
-export function computeReadinessScore(analysis: LLMAnalysis): {
+export function computeReadinessScore(
+  analysis: LLMAnalysis,
+  adjustmentFactor: number = 1.0
+): {
   score: number;
   breakdown: ScoreBreakdown;
 } {
@@ -38,13 +51,19 @@ export function computeReadinessScore(analysis: LLMAnalysis): {
   const resumeClarity = categoryScores.clarity * 100;
   const companyProxy = categoryScores.companyProxy * 100;
 
-  const score = Math.round(
+  let score = Math.round(
     hardRequirementMatch * WEIGHTS.hardRequirementMatch +
       evidenceDepth * WEIGHTS.evidenceDepth +
       roundReadiness * WEIGHTS.roundReadiness +
       resumeClarity * WEIGHTS.resumeClarity +
       companyProxy * WEIGHTS.companyProxy
   );
+
+  // Apply company difficulty penalty
+  if (adjustmentFactor > 1.0) {
+    const penalty = (adjustmentFactor - 1.0) * 30; // 0-15 points for FAANG
+    score = Math.round(Math.max(0, Math.min(100, score - penalty)));
+  }
 
   const breakdown: ScoreBreakdown = {
     hardRequirementMatch,
@@ -57,6 +76,67 @@ export function computeReadinessScore(analysis: LLMAnalysis): {
   };
 
   return { score, breakdown };
+}
+
+/**
+ * Computes conversion likelihood using a sigmoid curve + company difficulty + risk severity.
+ * Replaces the old linear client-side formula.
+ */
+export function computeConversionLikelihood(
+  readinessScore: number,
+  analysis: LLMAnalysis,
+  adjustmentFactor: number = 1.0
+): number {
+  // S-curve — steep dropoff below 60, plateau above 85
+  const sigmoid = (x: number, mid: number, k: number) =>
+    100 / (1 + Math.exp(-k * (x - mid)));
+  let base = sigmoid(readinessScore, 60, 0.08);
+
+  // Company difficulty penalty (FAANG 1.4 => -20pts, Unicorn 1.2 => -10pts)
+  if (adjustmentFactor > 1.0) {
+    base -= (adjustmentFactor - 1.0) * 50;
+  }
+
+  // Risk severity penalty
+  const critical = analysis.rankedRisks.filter(r => r.severity === 'critical').length;
+  const high = analysis.rankedRisks.filter(r => r.severity === 'high').length;
+  base -= critical * 8 + high * 3;
+
+  // Recruiter signal
+  if (analysis.recruiterSignals?.firstImpression === 'reject') base -= 10;
+  else if (analysis.recruiterSignals?.firstImpression === 'proceed') base += 3;
+
+  return Math.round(Math.max(5, Math.min(95, base)));
+}
+
+/**
+ * Computes technical fit focused on hard skill alignment only.
+ * Excludes clarity and companyProxy — pure technical match.
+ */
+export function computeTechnicalFit(
+  analysis: LLMAnalysis,
+  adjustmentFactor: number = 1.0
+): number {
+  const { categoryScores } = analysis;
+
+  // Only technical dimensions — clarity/companyProxy excluded
+  let base =
+    categoryScores.hardMatch * 0.55 * 100 +
+    categoryScores.roundReadiness * 0.25 * 100 +
+    categoryScores.evidenceDepth * 0.20 * 100;
+
+  // Technical bar penalty for harder companies
+  if (adjustmentFactor > 1.0) {
+    base -= (adjustmentFactor - 1.0) * 20;
+  }
+
+  // Penalty for JD-linked critical/high risks (technical gaps)
+  const techRisks = analysis.rankedRisks.filter(
+    r => (r.severity === 'critical' || r.severity === 'high') && r.jdRefs.length > 0
+  );
+  base -= techRisks.length * 3;
+
+  return Math.round(Math.max(0, Math.min(100, base)));
 }
 
 /**
@@ -87,6 +167,9 @@ export function buildRecruiterSimulation(recruiterSignals: {
   hiddenStrengths: string[];
   estimatedScreenTimeSeconds: number;
   firstImpression: 'proceed' | 'maybe' | 'reject';
+  internalNotes?: RecruiterInternalNotes;
+  debriefSummary?: RecruiterDebriefSummary;
+  candidatePositioning?: CandidatePositioning;
 }): RecruiterSimulation {
   // Generate recruiter notes based on signals
   const notes = generateRecruiterNotes(recruiterSignals);
@@ -97,6 +180,9 @@ export function buildRecruiterSimulation(recruiterSignals: {
     estimatedScreenTimeSeconds: recruiterSignals.estimatedScreenTimeSeconds,
     firstImpression: recruiterSignals.firstImpression,
     recruiterNotes: notes,
+    internalNotes: recruiterSignals.internalNotes,
+    debriefSummary: recruiterSignals.debriefSummary,
+    candidatePositioning: recruiterSignals.candidatePositioning,
     version: SCORING_VERSION,
   };
 }

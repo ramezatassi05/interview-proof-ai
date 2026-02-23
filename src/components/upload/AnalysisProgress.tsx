@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { Spinner } from '@/components/ui/Spinner';
+import { InsightOwlThinking } from '@/components/svg/InsightOwlMascot';
 import { INTERVIEW_INSIGHTS, type InterviewInsight } from '@/lib/insights';
 
 const SCORING_INSIGHTS = INTERVIEW_INSIGHTS.filter((i) => i.category !== 'industry');
@@ -137,6 +138,11 @@ export function AnalysisProgress({ isAnalyzing }: AnalysisProgressProps) {
 
   return (
     <div className="card-warm shadow-warm rounded-[20px] p-6 space-y-6">
+      {/* Thinking owl */}
+      <div className="flex justify-center">
+        <InsightOwlThinking size={64} />
+      </div>
+
       {/* Progress bar */}
       <div className="relative h-3 overflow-hidden rounded-full bg-[var(--track-bg)]">
         <div
@@ -144,6 +150,13 @@ export function AnalysisProgress({ isAnalyzing }: AnalysisProgressProps) {
           style={{ width: `${progress}%` }}
         />
       </div>
+
+      {/* Estimated time */}
+      <p className="text-center text-xs text-[var(--text-muted)]">
+        {progress < 40
+          ? 'This usually takes about 60 seconds'
+          : 'Hang tight — wrapping up your analysis...'}
+      </p>
 
       {/* Steps */}
       <div className="space-y-3">

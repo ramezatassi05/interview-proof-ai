@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { ScoreCard } from '@/components/results/ScoreCard';
 import { RiskList } from '@/components/results/RiskList';
 import { PaywallCTA } from '@/components/results/PaywallCTA';
+import { InsightOwlCelebrating } from '@/components/svg/InsightOwlMascot';
 
 type ReportData = GetReportResponse['data'];
 
@@ -167,7 +168,13 @@ export default function ResultsPage() {
 
             {/* Paywall */}
             {!report.paidUnlocked && report.totalRisks && (
-              <PaywallCTA reportId={reportId} totalRisks={report.totalRisks - 3} />
+              <>
+                <div className="flex justify-center">
+                  <InsightOwlCelebrating size={72} />
+                </div>
+                <PaywallCTA reportId={reportId} totalRisks={report.totalRisks - 3} />
+              </>
+
             )}
           </div>
         </Container>

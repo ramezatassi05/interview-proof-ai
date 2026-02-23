@@ -13,8 +13,9 @@ import { InterviewIntelligenceStats } from '@/components/landing/InterviewIntell
 import { BenefitsRisks } from '@/components/landing/BenefitsRisks';
 import { FAQ } from '@/components/landing/FAQ';
 import { MorphingWaveDivider } from '@/components/svg/MorphingWaveDivider';
+import { OnboardingCarousel } from '@/components/landing/OnboardingCarousel';
 import { BouncingCheckmark } from '@/components/svg/BouncingCheckmark';
-import { InsightOwlMascot } from '@/components/svg/InsightOwlMascot';
+import { InsightOwlMascot, InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
 
 interface LastReport {
   id: string;
@@ -100,12 +101,12 @@ export default function LandingPage() {
 
                 <div className="mt-6 flex flex-wrap items-center gap-3">
                   <Link href={ctaHref}>
-                    <Button variant="accent" size="lg" glow disabled={loading}>
+                    <Button variant="accent" size="lg" glow>
                       Start Here
                     </Button>
                   </Link>
                   <Link href={ctaHref}>
-                    <Button variant="secondary" size="lg" disabled={loading}>
+                    <Button variant="secondary" size="lg">
                       See Recruiter View
                     </Button>
                   </Link>
@@ -168,6 +169,9 @@ export default function LandingPage() {
                 ) : (
                   /* New / anonymous visitor — mock preview */
                   <div className="relative flex flex-col items-center">
+                    <div className="mb-3" style={{ animation: 'owl-enter 0.6s ease-out' }}>
+                      <InsightOwlWaving size={72} />
+                    </div>
                     <div className="relative">
                       <RadialScoreIndicator score={73} size="lg" variant="warning" animated />
                       <div className="absolute -top-2 -right-2 rounded-full border border-[var(--color-warning)]/30 bg-[var(--color-warning-muted)] px-2 py-0.5 text-xs font-medium text-[var(--color-warning)]">
@@ -195,6 +199,9 @@ export default function LandingPage() {
 
         {/* Section divider */}
         <MorphingWaveDivider />
+
+        {/* Onboarding Carousel */}
+        <OnboardingCarousel />
 
         {/* Quick Value Cards */}
         <section>
@@ -408,7 +415,7 @@ export default function LandingPage() {
 
           <Container className="relative py-14 text-center">
             <div className="flex justify-center mb-4">
-              <InsightOwlMascot size={64} />
+              <InsightOwlMascot size={80} />
             </div>
             <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl">
               Ready to Find Your Gaps?
@@ -418,7 +425,7 @@ export default function LandingPage() {
             </p>
             <div className="mt-6">
               <Link href={ctaHref}>
-                <Button variant="accent" size="lg" glow disabled={loading}>
+                <Button variant="accent" size="lg" glow>
                   Start Here
                 </Button>
               </Link>

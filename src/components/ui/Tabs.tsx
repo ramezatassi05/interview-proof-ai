@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useRef, ReactNode } from 'react';
 
 interface TabsContextValue {
   activeTab: string;
@@ -48,9 +48,8 @@ export function TabList({ children, className = '' }: TabListProps) {
   return (
     <div
       className={`
-        flex gap-1 rounded-full p-1.5
+        flex flex-wrap justify-center gap-1.5 rounded-2xl p-2
         bg-[var(--bg-card)] shadow-warm
-        overflow-x-auto
         ${className}
       `}
       role="tablist"
@@ -70,13 +69,20 @@ interface TabTriggerProps {
 export function TabTrigger({ id, children, icon, className = '' }: TabTriggerProps) {
   const { activeTab, setActiveTab } = useTabsContext();
   const isActive = activeTab === id;
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const handleClick = () => {
+    setActiveTab(id);
+    buttonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
 
   return (
     <button
+      ref={buttonRef}
       role="tab"
       aria-selected={isActive}
       aria-controls={`panel-${id}`}
-      onClick={() => setActiveTab(id)}
+      onClick={handleClick}
       className={`
         flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium
         transition-all duration-200 whitespace-nowrap

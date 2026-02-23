@@ -8,6 +8,7 @@ import type {
   DiagnosticIntelligence,
   PrepPreferences,
   PersonalizedStudyPlan,
+  PriorEmploymentSignal,
 } from '@/types';
 import { extractResumeData, extractJDData } from './rag/extraction';
 import {
@@ -17,8 +18,11 @@ import {
   inferDomain,
 } from './rag/retrieval';
 import { performAnalysis } from './rag/analysis';
+import { validateAnalysisQuality } from './rag/validation';
 import {
   computeReadinessScore,
+  computeConversionLikelihood,
+  computeTechnicalFit,
   computeRiskBand,
   classifyArchetype,
   computeRoundForecasts,
@@ -29,6 +33,7 @@ import {
   computeEvidenceContext,
   computeHireZoneAnalysis,
   computeCompanyDifficulty,
+  detectPriorEmployment,
 } from './scoring/engine';
 import { generatePersonalizedStudyPlan } from './scoring/studyplan';
 import { generateMoreQuestions } from './questions';
@@ -70,6 +75,9 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     extractJDData(jobDescriptionText),
   ]);
 
+  // Step 1b: Detect prior employment at target company
+  const priorEmployment = detectPriorEmployment(extractedResume, extractedJD);
+
   // Step 2: Build summaries for retrieval
   const resumeSummary = summarizeResumeForRetrieval(
     extractedResume.skills,
@@ -97,8 +105,20 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
       rubricChunks: retrievalResult.rubricChunks,
       questionArchetypes: retrievalResult.questionArchetypes,
     },
-    prepPreferences
+    prepPreferences,
+    undefined,
+    priorEmployment.detected ? priorEmployment : undefined
   );
+
+  // Step 4a: Post-LLM validation (filter parroted content + round-irrelevant risks)
+  const { warnings: validationWarnings } = validateAnalysisQuality(
+    llmAnalysis,
+    extractedJD,
+    roundType
+  );
+  if (validationWarnings.length > 0) {
+    console.warn(`[pipeline] Validation applied ${validationWarnings.length} fix(es)`);
+  }
 
   // Step 4b: Expand question pool to target size
   try {
@@ -119,9 +139,26 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     console.error('Question backfill failed, continuing with existing pool:', err);
   }
 
-  // Step 5: Compute deterministic score
-  const { score, breakdown } = computeReadinessScore(llmAnalysis);
+  // Step 5: Compute deterministic score (with company difficulty adjustment)
+  const companyDifficulty = computeCompanyDifficulty(
+    extractedJD.companyName,
+    prepPreferences?.experienceLevel ?? 'mid',
+    extractedJD,
+    extractedResume
+  );
+  const { score: baseScore, breakdown } = computeReadinessScore(llmAnalysis, companyDifficulty.adjustmentFactor);
+  const score = priorEmployment.detected
+    ? Math.min(100, baseScore + priorEmployment.boosts.readinessBoost)
+    : baseScore;
   const riskBand = computeRiskBand(score);
+  const baseConversion = computeConversionLikelihood(score, llmAnalysis, companyDifficulty.adjustmentFactor);
+  const conversionLikelihood = priorEmployment.detected
+    ? Math.min(95, baseConversion + priorEmployment.boosts.conversionBoost)
+    : baseConversion;
+  const baseTechnicalFit = computeTechnicalFit(llmAnalysis, companyDifficulty.adjustmentFactor);
+  const technicalFit = priorEmployment.detected
+    ? Math.min(100, baseTechnicalFit + priorEmployment.boosts.technicalFitBoost)
+    : baseTechnicalFit;
 
   // Step 6: Compute diagnostic intelligence (Phase 7b)
   const diagnosticIntelligence = computeDiagnosticIntelligence(
@@ -131,7 +168,9 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     extractedJD,
     roundType,
     breakdown,
-    prepPreferences
+    prepPreferences,
+    { conversionLikelihood, technicalFit },
+    priorEmployment.detected ? priorEmployment : undefined
   );
 
   // Step 7: Generate personalized study plan if preferences provided
@@ -168,7 +207,9 @@ function computeDiagnosticIntelligence(
   extractedJD: ExtractedJD,
   roundType: RoundType,
   scoreBreakdown: ScoreBreakdown,
-  prepPreferences?: PrepPreferences
+  prepPreferences?: PrepPreferences,
+  executiveScoresInput?: { conversionLikelihood: number; technicalFit: number },
+  priorEmploymentSignal?: PriorEmploymentSignal
 ): DiagnosticIntelligence {
   // Extract personalized coaching if available
   const coaching = llmAnalysis.personalizedCoaching;
@@ -238,8 +279,16 @@ function computeDiagnosticIntelligence(
     evidenceContext,
     hireZoneAnalysis,
     companyDifficulty: companyDifficulty.tier !== 'STANDARD' ? companyDifficulty : undefined,
+    priorEmploymentSignal,
+    executiveScores: executiveScoresInput
+      ? {
+          readinessScore: score,
+          conversionLikelihood: executiveScoresInput.conversionLikelihood,
+          technicalFit: executiveScoresInput.technicalFit,
+        }
+      : undefined,
     generatedAt: new Date().toISOString(),
-    version: 'v0.1',
+    version: 'v0.2',
   };
 }
 
@@ -282,11 +331,72 @@ function buildDefaultRecruiterSimulation(
     firstImpression = 'reject';
   }
 
+  // Build synthetic internal notes from available data
+  const internalNotes = {
+    firstGlanceReaction: score >= 70
+      ? 'Solid profile at first glance — let me look closer at the details.'
+      : score >= 45
+        ? 'Decent on the surface but I need to dig deeper on a few things.'
+        : 'This one might be a stretch — let me see if there\'s something I\'m missing.',
+    starredItem: hiddenStrengths.length > 0
+      ? hiddenStrengths[0]
+      : 'No single standout item jumped off the page.',
+    internalConcerns: immediateRedFlags.slice(0, 3).length > 0
+      ? immediateRedFlags.slice(0, 3)
+      : ['No major concerns noted, but depth needs verification.', 'Would want to confirm hands-on experience in a screen.'],
+    phoneScreenQuestions: [
+      'Walk me through your most technically challenging project.',
+      'What drew you to this specific role?',
+      ...immediateRedFlags.slice(0, 2).map(flag => `Can you address: ${flag}?`),
+    ].slice(0, 4),
+  };
+
+  // Build synthetic debrief summary
+  const impressionLabel = firstImpression === 'proceed'
+    ? 'Worth advancing'
+    : firstImpression === 'maybe'
+      ? 'Borderline — depends on pool strength'
+      : 'Likely a pass unless pool is thin';
+  const debriefSummary = {
+    oneLinerVerdict: `${impressionLabel} — readiness score at ${score}/100.`,
+    advocateReasons: hiddenStrengths.slice(0, 2).length > 0
+      ? hiddenStrengths.slice(0, 2)
+      : ['Has relevant industry experience.', 'Resume is clearly structured.'],
+    pushbackReasons: immediateRedFlags.slice(0, 2).length > 0
+      ? immediateRedFlags.slice(0, 2)
+      : ['Limited evidence of impact metrics.', 'Some key requirements not clearly addressed.'],
+    recommendationParagraph: `Candidate scores ${score}/100 on readiness assessment. ${hiddenStrengths.length > 0 ? `Strengths include ${hiddenStrengths[0].toLowerCase()}.` : ''} ${immediateRedFlags.length > 0 ? `Primary concern: ${immediateRedFlags[0].toLowerCase()}.` : ''} ${firstImpression === 'proceed' ? 'Recommend advancing to phone screen.' : firstImpression === 'maybe' ? 'Consider for phone screen if pipeline allows.' : 'Suggest passing unless pool is thin.'}`,
+    comparativeNote: score >= 70
+      ? 'Above average relative to a typical applicant pool for this role.'
+      : score >= 45
+        ? 'In line with the middle of the pack for similar roles.'
+        : 'Below the typical bar for competitive applicant pools.',
+  };
+
+  // Build synthetic candidate positioning
+  const candidatePositioning = {
+    estimatedPoolPercentile: Math.min(100, Math.max(0, Math.round(score * 0.9 + 5))),
+    standoutDifferentiator: hiddenStrengths.length > 0
+      ? hiddenStrengths[0]
+      : 'No single standout differentiator identified.',
+    biggestLiability: immediateRedFlags.length > 0
+      ? immediateRedFlags[0]
+      : 'No critical liabilities identified.',
+    advanceRationale: firstImpression === 'proceed'
+      ? 'Strong enough profile to warrant a phone screen and deeper evaluation.'
+      : firstImpression === 'maybe'
+        ? 'On the fence — advancing would depend on the strength of the current pipeline.'
+        : 'Gaps are significant enough that advancing would be a stretch without stronger signal.',
+  };
+
   return buildRecruiterSimulation({
     immediateRedFlags,
     hiddenStrengths,
     estimatedScreenTimeSeconds,
     firstImpression,
+    internalNotes,
+    debriefSummary,
+    candidatePositioning,
   });
 }
 

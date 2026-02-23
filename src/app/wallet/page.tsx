@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingOverlay } from '@/components/ui/Spinner';
 import type { CreditLedgerEntry } from '@/types';
+import { InsightOwlReading, InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
 
 interface ReferralInfo {
   referralCode: string;
@@ -166,7 +167,34 @@ export default function WalletPage() {
           {/* Balance Overview */}
           <Card className="mb-6">
             <CardContent className="py-8">
-              <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
+              <div className="flex flex-col items-center gap-2">
+                {/* Owl mascot — always visible */}
+                <div style={{ animation: 'owl-enter-v2 0.7s ease-out' }}>
+                  <InsightOwlReading size={96} />
+                </div>
+                {/* Speech bubble */}
+                <div className="relative rounded-2xl bg-[var(--bg-elevated)] px-4 py-2 text-center text-sm font-medium text-[var(--text-secondary)]">
+                  <div
+                    className="absolute -top-2 left-1/2 -translate-x-1/2"
+                    style={{
+                      width: 0,
+                      height: 0,
+                      borderLeft: '6px solid transparent',
+                      borderRight: '6px solid transparent',
+                      borderBottom: '8px solid var(--bg-elevated)',
+                    }}
+                  />
+                  {balance === 0
+                    ? "Let's get you some credits!"
+                    : balance === 1
+                      ? 'You have 1 credit ready!'
+                      : balance <= 5
+                        ? `You have ${balance} credits. Use them wisely!`
+                        : `Nice stash! ${balance} credits ready to go.`}
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
                 <div className="text-center sm:text-left">
                   <p className="text-sm font-medium text-[var(--text-secondary)]">
                     Available Balance
@@ -330,9 +358,19 @@ export default function WalletPage() {
           {entries.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
+                <div className="mb-4 flex justify-center">
+                  <InsightOwlWaving size={96} />
+                </div>
                 <p className="text-[var(--text-secondary)]">
                   No transactions yet. Start by uploading your first analysis!
                 </p>
+                <Button
+                  variant="accent"
+                  className="mt-4"
+                  onClick={() => router.push('/new')}
+                >
+                  Upload Analysis
+                </Button>
               </CardContent>
             </Card>
           ) : (

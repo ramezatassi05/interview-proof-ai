@@ -26,6 +26,7 @@ const ROUND_LABELS: Record<string, string> = {
   behavioral: 'Behav',
   case: 'Case',
   finance: 'Fin',
+  research: 'Res',
 };
 
 /** SVG horizontal bar showing score marker vs hire zone range */

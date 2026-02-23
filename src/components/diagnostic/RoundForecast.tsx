@@ -26,6 +26,11 @@ const ROUND_CONFIG: Record<string, { label: string; color: string; bgColor: stri
     color: 'bg-[var(--color-warning)]',
     bgColor: 'bg-[var(--color-warning-muted)]',
   },
+  research: {
+    label: 'Research / ML',
+    color: 'bg-[var(--color-tier-2)]',
+    bgColor: 'bg-[var(--color-tier-2-muted)]',
+  },
 };
 
 // Educational context for each round type
@@ -47,6 +52,11 @@ const ROUND_EXPLANATIONS: Record<
     measures: 'Structured thinking, problem decomposition, business judgment',
     typicalQuestions: 'How would you approach..., Estimate the market size...',
     evaluatedBy: 'Your analytical clarity + ability to structure ambiguous problems',
+  },
+  research: {
+    measures: 'Research methodology, ML fundamentals, and depth of technical knowledge',
+    typicalQuestions: 'Walk me through a paper you read recently, Design an experiment for..., Explain the trade-offs between...',
+    evaluatedBy: 'Your depth of ML knowledge + evidence of research output and critical thinking',
   },
 };
 

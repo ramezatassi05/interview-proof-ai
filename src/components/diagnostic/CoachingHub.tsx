@@ -121,7 +121,7 @@ function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjectio
         <span
           className={`text-xs font-medium px-2.5 py-1 rounded-full ${potentialStyle.bg} ${potentialStyle.text}`}
         >
-          {trajectory.improvementPotential} potential
+          {{ high: 'High Growth', medium: 'Steady Growth', low: 'Polish & Perfect' }[trajectory.improvementPotential]}
         </span>
       </div>
       <p className="text-sm text-[var(--text-muted)] mb-6">

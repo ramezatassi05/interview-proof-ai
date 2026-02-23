@@ -74,6 +74,9 @@ export interface GetReportResponse {
     // Extracted data for evidence-backed claims
     extractedResume?: ExtractedResume;
     extractedJD?: ExtractedJD;
+    // Sharing
+    shareEnabled?: boolean;
+    shareUrl?: string;
   };
 }
 
@@ -119,6 +122,13 @@ export interface BestAnswerAPIResponse {
 export interface GenerateQuestionsResponse {
   data: {
     questions: LLMAnalysis['interviewQuestions'];
+  };
+}
+
+export interface ShareResponse {
+  data: {
+    shareEnabled: boolean;
+    shareUrl: string;
   };
 }
 
@@ -219,6 +229,13 @@ class APIClient {
     return this.request<GenerateQuestionsResponse>(`/report/${reportId}/questions/generate`, {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  }
+
+  async toggleShare(reportId: string, enabled: boolean): Promise<ShareResponse> {
+    return this.request<ShareResponse>(`/report/${reportId}/share`, {
+      method: 'POST',
+      body: JSON.stringify({ enabled }),
     });
   }
 }

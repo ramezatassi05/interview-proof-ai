@@ -16,7 +16,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch the report
+    // Fetch the report (include sharing columns)
     const { data: report, error: fetchError } = await supabase
       .from('reports')
       .select('*')
@@ -55,6 +55,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       });
     }
 
+    // Build share URL if token exists
+    const origin = request.headers.get('origin') || request.headers.get('host') || '';
+    const baseUrl = origin.startsWith('http') ? origin : `https://${origin}`;
+
     // Build response based on paid status
     const baseResponse = {
       reportId: report.id,
@@ -65,6 +69,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       readinessScore: latestRun.readiness_score,
       riskBand: latestRun.risk_band,
       runCount: runs.length,
+      shareEnabled: report.share_enabled || false,
+      shareUrl: report.share_token ? `${baseUrl}/s/${report.share_token}` : undefined,
     };
 
     // TEMP: Bypass paywall - always return full diagnostic
@@ -73,15 +79,31 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         ...baseResponse,
         paidUnlocked: true, // Override to unlock UI
         allRisks: latestRun.ranked_risks_json,
-        interviewQuestions: latestRun.llm_analysis_json.interviewQuestions,
-        studyPlan: latestRun.llm_analysis_json.studyPlan,
+        interviewQuestions: latestRun.llm_analysis_json?.interviewQuestions,
+        studyPlan: latestRun.llm_analysis_json?.studyPlan,
         scoreBreakdown: latestRun.score_breakdown_json,
         extractedResume: latestRun.extracted_resume_json,
         extractedJD: latestRun.extracted_jd_json,
         diagnosticIntelligence: latestRun.diagnostic_intelligence_json,
         prepPreferences: report.prep_preferences_json || undefined,
         personalizedStudyPlan: latestRun.personalized_study_plan_json || undefined,
-        personalizedCoaching: latestRun.llm_analysis_json?.personalizedCoaching || undefined,
+        personalizedCoaching: (() => {
+          const coaching = latestRun.llm_analysis_json?.personalizedCoaching;
+          if (!coaching) return undefined;
+          // Migrate old single-resource field to resources array
+          if (coaching.priorityActions) {
+            coaching.priorityActions = coaching.priorityActions.map(
+              (pa: { resource?: string; resources?: string[]; [key: string]: unknown }) => {
+                if (pa.resource && !pa.resources) {
+                  const { resource, ...rest } = pa;
+                  return { ...rest, resources: [resource] };
+                }
+                return pa;
+              }
+            );
+          }
+          return coaching;
+        })(),
       },
     });
   } catch (error) {

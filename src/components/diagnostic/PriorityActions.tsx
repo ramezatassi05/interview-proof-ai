@@ -7,6 +7,21 @@ interface PriorityActionsProps {
   companyName?: string;
 }
 
+function renderResource(resource: string) {
+  const urlRegex = /(https?:\/\/[^\s)]+)/g;
+  const parts = resource.split(urlRegex);
+
+  return parts.map((part, i) =>
+    urlRegex.test(part) ? (
+      <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">
+        {part}
+      </a>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
+
 export function PriorityActions({ actions, companyName }: PriorityActionsProps) {
   if (!actions || actions.length === 0) {
     return null;
@@ -62,30 +77,30 @@ export function PriorityActions({ actions, companyName }: PriorityActionsProps) 
                   {action.rationale}
                 </p>
 
-                {/* Resource (if provided) */}
-                {action.resource && (
-                  <div className="mt-3 flex items-start gap-2 rounded-md bg-[var(--color-info-muted)] px-3 py-2">
-                    <svg
-                      className="h-4 w-4 text-[var(--color-info)] mt-0.5 flex-shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <a
-                      href={`https://www.google.com/search?q=${encodeURIComponent(action.resource)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-[var(--color-info)] hover:opacity-80 underline underline-offset-2"
-                    >
-                      {action.resource}
-                    </a>
+                {/* Resources (if provided) */}
+                {action.resources && action.resources.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {action.resources.map((res, ri) => (
+                      <div key={ri} className="flex items-start gap-2 rounded-md bg-[var(--color-info-muted)] px-3 py-2">
+                        <svg
+                          className="h-4 w-4 text-[var(--color-info)] mt-0.5 flex-shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <span className="text-sm text-[var(--color-info)]">
+                          <span className="font-medium">Resource: </span>
+                          {renderResource(res)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
