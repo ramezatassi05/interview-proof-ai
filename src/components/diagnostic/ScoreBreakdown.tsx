@@ -121,7 +121,7 @@ export function ScoreBreakdown({ breakdown, companyName }: ScoreBreakdownProps) 
                     <ProgressBar value={roundedScore} max={100} size="md" variant="auto" animated />
                   </div>
                 }
-                className="border-b border-[var(--border-default)] last:border-b-0 section-divider"
+                className="border-b border-[var(--border-default)] last:border-b-0"
               >
                 <div className="pb-4 pl-1">
                   <p className="text-sm text-[var(--text-secondary)] mb-2">{config.description}</p>
