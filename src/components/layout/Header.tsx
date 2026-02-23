@@ -8,12 +8,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { CreditsBalance } from '@/components/ui/CreditsBalance';
 import { Container } from './Container';
 
-interface HeaderProps {
-  onMenuClick?: () => void;
-  showMenuButton?: boolean;
-}
-
-export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
+export function Header() {
   const { user, loading, signOut } = useAuth();
   const { balance, loading: creditsLoading, openPurchaseModal } = useCredits();
 
@@ -22,22 +17,6 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
       <Container>
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
-            {showMenuButton && (
-              <button
-                onClick={onMenuClick}
-                className="lg:hidden p-2 -ml-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                aria-label="Toggle menu"
-              >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
-            )}
             <Link href="/" className="flex items-center gap-2 group">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] shadow-warm group-hover:shadow-[0_0_20px_rgba(255,107,53,0.3)] transition-shadow">
                 <svg

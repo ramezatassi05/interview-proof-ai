@@ -12,6 +12,7 @@ interface ExecutiveSummaryProps {
   scoreBreakdown?: ScoreBreakdown;
   evidenceContext?: EvidenceContext;
   companyName?: string;
+  jobTitle?: string;
   conversionLikelihood?: number;
   technicalFit?: number;
   priorEmploymentSignal?: PriorEmploymentSignal;
@@ -25,6 +26,7 @@ export function ExecutiveSummary({
   scoreBreakdown,
   evidenceContext,
   companyName,
+  jobTitle,
   conversionLikelihood,
   technicalFit,
   priorEmploymentSignal,
@@ -125,7 +127,13 @@ export function ExecutiveSummary({
         <div>
           <h2 className="text-xl font-bold text-[var(--text-primary)]">Executive Summary</h2>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            {companyName ? `${companyName} ` : ''}
+            {companyName && jobTitle
+              ? `${companyName} — ${jobTitle} · `
+              : companyName
+                ? `${companyName} `
+                : jobTitle
+                  ? `${jobTitle} · `
+                  : ''}
             {ROUND_LABEL_MAP[roundType] ?? roundType.charAt(0).toUpperCase() + roundType.slice(1)} Readiness Intelligence
           </p>
         </div>

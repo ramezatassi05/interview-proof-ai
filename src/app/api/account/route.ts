@@ -44,7 +44,7 @@ export async function GET() {
       )
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-      .limit(10);
+      .limit(50);
 
     if (reportsError) {
       console.error('Failed to get reports:', reportsError);

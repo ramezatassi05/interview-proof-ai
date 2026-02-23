@@ -184,6 +184,7 @@ export default function FullDiagnosticPage() {
         scoreBreakdown={report.scoreBreakdown}
         evidenceContext={report.diagnosticIntelligence?.evidenceContext}
         companyName={report.extractedJD?.companyName}
+        jobTitle={report.extractedJD?.jobTitle}
         conversionLikelihood={report.diagnosticIntelligence?.executiveScores?.conversionLikelihood}
         technicalFit={report.diagnosticIntelligence?.executiveScores?.technicalFit}
         priorEmploymentSignal={report.diagnosticIntelligence?.priorEmploymentSignal}

@@ -26,15 +26,17 @@ interface TabsProps {
 
 export function Tabs({ defaultTab, children, className = '', onTabChange }: TabsProps) {
   const [activeTab, setActiveTab] = useState(defaultTab);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleSetActiveTab = (id: string) => {
     setActiveTab(id);
     onTabChange?.(id);
+    containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
     <TabsContext.Provider value={{ activeTab, setActiveTab: handleSetActiveTab }}>
-      <div className={className}>{children}</div>
+      <div ref={containerRef} className={className}>{children}</div>
     </TabsContext.Provider>
   );
 }

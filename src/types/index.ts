@@ -23,6 +23,7 @@ export interface ExtractedJD {
   keywords: string[];
   senioritySignals: string[];
   companyName?: string;
+  jobTitle?: string;
   companyContextKeywords?: string[];
 }
 

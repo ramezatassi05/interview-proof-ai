@@ -28,6 +28,11 @@ const ExtractedJDSchema = z.object({
     .nullable()
     .optional()
     .transform((v) => v ?? undefined),
+  jobTitle: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? undefined),
 });
 
 const RESUME_EXTRACTION_PROMPT = `You are an expert resume parser. Extract structured information from the following resume text.
@@ -73,7 +78,8 @@ Return a JSON object with this exact structure:
   "niceToHave": ["preferred skill 1", "preferred skill 2", ...],
   "keywords": ["keyword1", "keyword2", ...],
   "senioritySignals": ["years of experience", "leadership indicators", ...],
-  "companyName": "Company name if mentioned, or null"
+  "companyName": "Company name if mentioned, or null",
+  "jobTitle": "The specific job title/role if mentioned, or null"
 }
 
 Guidelines:
@@ -82,6 +88,7 @@ Guidelines:
 - keywords: Important technical terms, technologies, and domain concepts
 - senioritySignals: Indicators of expected experience level (years, titles, leadership)
 - companyName: The hiring company name if explicitly mentioned in the JD, otherwise null
+- jobTitle: The exact job title or role name from the JD (e.g. "Senior Software Engineer", "Product Manager"), otherwise null
 
 Return ONLY valid JSON, no other text.
 

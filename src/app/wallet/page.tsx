@@ -4,9 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
-import { Container } from '@/components/layout/Container';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -129,40 +127,28 @@ export default function WalletPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
-        <Header />
-        <main className="flex flex-1 items-center justify-center">
+      <AppLayout showIntelligencePanel={false}>
+        <div className="flex items-center justify-center py-24">
           <LoadingOverlay message="Loading wallet..." />
-        </main>
-        <Footer />
-      </div>
+        </div>
+      </AppLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
-        <Header />
-        <main className="flex flex-1 items-center justify-center">
-          <Container size="sm">
-            <div className="rounded-lg border border-[var(--color-danger)] border-opacity-30 bg-[var(--color-danger-muted)] p-8 text-center">
-              <h2 className="text-lg font-semibold text-[var(--color-danger)]">Error</h2>
-              <p className="mt-2 text-[var(--color-danger)]">{error}</p>
-            </div>
-          </Container>
-        </main>
-        <Footer />
-      </div>
+      <AppLayout showIntelligencePanel={false}>
+        <div className="rounded-lg border border-[var(--color-danger)] border-opacity-30 bg-[var(--color-danger-muted)] p-8 text-center">
+          <h2 className="text-lg font-semibold text-[var(--color-danger)]">Error</h2>
+          <p className="mt-2 text-[var(--color-danger)]">{error}</p>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
-      <Header />
-
-      <main className="flex-1 py-12">
-        <Container size="md">
-          <h1 className="mb-8 text-2xl font-bold text-[var(--text-primary)]">Credits Wallet</h1>
+    <AppLayout showIntelligencePanel={false}>
+      <h1 className="mb-8 text-2xl font-bold text-[var(--text-primary)]">Credits Wallet</h1>
 
           {/* Balance Overview */}
           <Card className="mb-6">
@@ -425,10 +411,6 @@ export default function WalletPage() {
               </CardContent>
             </Card>
           )}
-        </Container>
-      </main>
-
-      <Footer />
-    </div>
+    </AppLayout>
   );
 }

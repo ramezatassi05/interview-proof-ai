@@ -137,6 +137,7 @@ export default function ResultsPage() {
               {report.roundType.charAt(0).toUpperCase() + report.roundType.slice(1)} interview
               analysis
               {report.extractedJD?.companyName ? ` for ${report.extractedJD.companyName}` : ''}
+              {report.extractedJD?.jobTitle ? ` — ${report.extractedJD.jobTitle}` : ''}
             </p>
           </div>
 

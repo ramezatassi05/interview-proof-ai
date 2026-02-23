@@ -134,6 +134,7 @@ export default function SharedReportPage() {
             scoreBreakdown={report.scoreBreakdown}
             evidenceContext={report.diagnosticIntelligence?.evidenceContext}
             companyName={report.extractedJD?.companyName}
+            jobTitle={report.extractedJD?.jobTitle}
             conversionLikelihood={report.diagnosticIntelligence?.executiveScores?.conversionLikelihood}
             technicalFit={report.diagnosticIntelligence?.executiveScores?.technicalFit}
           />
