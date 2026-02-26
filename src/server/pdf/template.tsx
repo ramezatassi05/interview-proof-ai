@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   riskBandHigh: {
-    color: '#dc2626',
+    color: '#E05252',
   },
   riskBandMedium: {
     color: '#d97706',
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   severityCritical: {
-    backgroundColor: '#dc2626',
+    backgroundColor: '#E05252',
     color: '#ffffff',
   },
   severityHigh: {

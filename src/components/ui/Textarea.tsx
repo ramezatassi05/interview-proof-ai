@@ -34,8 +34,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           value={value}
           maxLength={maxLength}
           className={`
-            w-full rounded-xl border bg-[var(--bg-card)] px-4 py-3 text-sm text-[var(--text-primary)] shadow-warm
-            placeholder:text-[var(--text-muted)]
+            w-full rounded-xl border bg-[var(--bg-card)] px-4 py-3 text-sm text-[var(--text-primary)]            placeholder:text-[var(--text-muted)]
             focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)]
             disabled:cursor-not-allowed disabled:opacity-50
             ${error ? 'border-[var(--color-danger)] focus:ring-[var(--color-danger)]' : 'border-[var(--border-default)]'}

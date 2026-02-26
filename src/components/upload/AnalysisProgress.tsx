@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { Spinner } from '@/components/ui/Spinner';
-import { InsightOwlThinking } from '@/components/svg/InsightOwlMascot';
+import { InsightOwlReading } from '@/components/svg/InsightOwlMascot';
 import { INTERVIEW_INSIGHTS, type InterviewInsight } from '@/lib/insights';
 
 const SCORING_INSIGHTS = INTERVIEW_INSIGHTS.filter((i) => i.category !== 'industry');
@@ -10,10 +10,13 @@ const INDUSTRY_INSIGHTS = INTERVIEW_INSIGHTS.filter((i) => i.category === 'indus
 
 const ANALYSIS_STEPS = [
   { key: 'create', label: 'Creating report', duration: 2000 },
-  { key: 'extract', label: 'Parsing your documents', duration: 8000 },
+  { key: 'extract', label: 'Parsing your documents', duration: 6000 },
   { key: 'retrieve', label: 'Matching against rubrics', duration: 5000 },
-  { key: 'analyze', label: 'Running diagnostic analysis', duration: 20000 },
-  { key: 'score', label: 'Computing readiness score', duration: 5000 },
+  { key: 'analyze', label: 'Analyzing fit & gaps', duration: 15000 },
+  { key: 'questions', label: 'Generating interview questions', duration: 12000 },
+  { key: 'score', label: 'Scoring risk factors', duration: 8000 },
+  { key: 'diagnostic', label: 'Building diagnostic intelligence', duration: 6000 },
+  { key: 'finalize', label: 'Finalizing your report', duration: 6000 },
 ];
 
 const CATEGORY_LABELS: Record<InterviewInsight['category'], string> = {
@@ -77,7 +80,7 @@ export function AnalysisProgress({ isAnalyzing }: AnalysisProgressProps) {
     wasAnalyzingRef.current = isAnalyzing;
   }, [isAnalyzing]);
 
-  // Progress animation when analyzing
+  // Progress animation when analyzing — asymptotic ease-out curve
   useEffect(() => {
     if (!isAnalyzing) {
       return;
@@ -90,8 +93,19 @@ export function AnalysisProgress({ isAnalyzing }: AnalysisProgressProps) {
     const interval = setInterval(() => {
       elapsed += 100;
 
-      // Calculate overall progress
-      setProgress(Math.min((elapsed / totalDuration) * 100, 95));
+      // Two-phase asymptotic curve: fast start, gradual deceleration, never frozen
+      const t = Math.min(elapsed / totalDuration, 1);
+      let pct: number;
+      if (t <= 1) {
+        // Phase 1: power ease-out — (1 - (1-t)^2.5) * 92
+        pct = (1 - Math.pow(1 - t, 2.5)) * 92;
+      }
+      if (elapsed > totalDuration) {
+        // Phase 2: exponential approach toward 98%
+        const overtime = (elapsed - totalDuration) / 1000; // seconds past total
+        pct = 92 + 6 * (1 - Math.exp(-overtime / 10));
+      }
+      setProgress(pct!);
 
       // Calculate which step we're on
       let stepElapsed = 0;
@@ -137,25 +151,29 @@ export function AnalysisProgress({ isAnalyzing }: AnalysisProgressProps) {
   const currentInsight = SCORING_INSIGHTS[insightIndex];
 
   return (
-    <div className="card-warm shadow-warm rounded-[20px] p-6 space-y-6">
-      {/* Thinking owl */}
+    <div className="card-warm rounded-xl p-6 space-y-6">
+      {/* Analyzing indicator */}
       <div className="flex justify-center">
-        <InsightOwlThinking size={64} />
+        <InsightOwlReading size={64} />
       </div>
 
       {/* Progress bar */}
       <div className="relative h-3 overflow-hidden rounded-full bg-[var(--track-bg)]">
         <div
-          className="absolute left-0 top-0 h-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] transition-all duration-300"
+          className={`absolute left-0 top-0 h-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] transition-all duration-300${currentStep === ANALYSIS_STEPS.length - 1 ? ' animate-[progress-shimmer_2s_ease-in-out_infinite]' : ''}`}
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      {/* Estimated time */}
+      {/* Phased messaging */}
       <p className="text-center text-xs text-[var(--text-muted)]">
-        {progress < 40
-          ? 'This usually takes about 60 seconds'
-          : 'Hang tight — wrapping up your analysis...'}
+        {progress < 30
+          ? 'This usually takes about a minute'
+          : progress < 70
+            ? 'Crunching the numbers...'
+            : progress < 90
+              ? 'Almost there — finishing up your analysis'
+              : 'Wrapping up the final details...'}
       </p>
 
       {/* Steps */}
@@ -201,7 +219,7 @@ export function AnalysisProgress({ isAnalyzing }: AnalysisProgressProps) {
 
       {/* Rotating insight card */}
       <div
-        className="overflow-hidden rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4"
+        className="overflow-hidden rounded-xl bg-[var(--bg-card)] p-4"
         style={{
           transform:
             insightSlide === 'exit'
@@ -272,7 +290,7 @@ export function DidYouKnowCard({ isAnalyzing }: DidYouKnowCardProps) {
 
   return (
     <div
-      className="overflow-hidden rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4"
+      className="overflow-hidden rounded-xl bg-[var(--bg-card)] p-4"
       style={{
         transform:
           factSlide === 'exit'

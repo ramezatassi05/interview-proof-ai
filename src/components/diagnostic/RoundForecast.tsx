@@ -184,7 +184,7 @@ export function RoundForecast({ forecasts, userRoundType, companyName }: RoundFo
   });
 
   return (
-    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl overflow-hidden">
       {/* Warm gradient header */}
       <div className="bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/5 px-6 pt-4 pb-2">
         <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">

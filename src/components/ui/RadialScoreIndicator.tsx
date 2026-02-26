@@ -5,6 +5,8 @@ import { useEffect, useRef, useMemo, useCallback, useSyncExternalStore } from 'r
 type RadialSize = 'sm' | 'md' | 'lg' | 'xl';
 type RadialVariant = 'default' | 'success' | 'warning' | 'danger' | 'auto';
 
+type RadialDisplay = 'radial' | 'clean';
+
 interface RadialScoreIndicatorProps {
   score: number;
   size?: RadialSize;
@@ -13,6 +15,7 @@ interface RadialScoreIndicatorProps {
   animated?: boolean;
   variant?: RadialVariant;
   showPercentage?: boolean;
+  display?: RadialDisplay;
   className?: string;
 }
 
@@ -95,6 +98,7 @@ export function RadialScoreIndicator({
   animated = true,
   variant = 'auto',
   showPercentage = true,
+  display = 'radial',
   className = '',
 }: RadialScoreIndicatorProps) {
   const displayScore = useAnimatedValue(score, animated);
@@ -131,6 +135,25 @@ export function RadialScoreIndicator({
         return 'text-[var(--accent-primary)]';
     }
   }, [resolvedVariant]);
+
+  // Clean display mode — large monospace number + label, no SVG circle
+  if (display === 'clean') {
+    return (
+      <div className={`flex flex-col items-center ${className}`}>
+        <span className={`font-mono font-bold tabular-nums ${textColorClass}`} style={{ fontSize: config.width * 0.35 }}>
+          {displayScore}
+        </span>
+        {label && (
+          <p className="mt-1 text-[11px] font-mono uppercase tracking-wider text-[var(--text-muted)]">
+            {label}
+          </p>
+        )}
+        {sublabel && (
+          <p className="text-[10px] text-[var(--text-muted)]">{sublabel}</p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={`flex flex-col items-center ${className}`}>

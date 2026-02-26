@@ -107,8 +107,7 @@ export function RoundSelector({ value, onChange, error }: RoundSelectorProps) {
             type="button"
             onClick={() => onChange(option.value)}
             className={`
-              rounded-[20px] p-4 text-left transition-all shadow-warm
-              ${
+              rounded-xl p-4 text-left transition-all              ${
                 value === option.value
                   ? 'ring-2 ring-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
                   : 'bg-[var(--bg-card)] hover:ring-2 hover:ring-[var(--accent-primary)]/30'

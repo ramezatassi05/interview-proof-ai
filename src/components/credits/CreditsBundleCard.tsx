@@ -1,6 +1,7 @@
 'use client';
 
 import { CREDITS_PER_REPORT } from '@/lib/stripe';
+import { InsightOwlThinking } from '@/components/svg/InsightOwlMascot';
 
 interface CreditsBundleCardProps {
   name: string;
@@ -29,7 +30,7 @@ export function CreditsBundleCard({
   return (
     <div
       className={`
-        relative flex flex-col rounded-[20px] p-5 transition-all shadow-warm
+        relative flex flex-col rounded-xl p-5 transition-all overflow-visible
         ${
           popular
             ? 'ring-2 ring-[var(--accent-primary)] bg-gradient-to-b from-[var(--accent-primary)]/10 to-transparent'
@@ -37,6 +38,13 @@ export function CreditsBundleCard({
         }
       `}
     >
+      {/* Thinking owl on popular card */}
+      {popular && (
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2">
+          <InsightOwlThinking size={48} />
+        </div>
+      )}
+
       {/* Popular badge */}
       {popular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -83,10 +91,10 @@ export function CreditsBundleCard({
         onClick={onPurchase}
         disabled={loading}
         className={`
-          mt-5 w-full rounded-full py-2.5 font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50
+          mt-5 w-full rounded-lg py-2.5 font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50
           ${
             popular
-              ? 'bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white hover:opacity-90 shadow-warm'
+              ? 'bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white hover:opacity-90'
               : 'bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:bg-[var(--accent-primary)]/10'
           }
         `}

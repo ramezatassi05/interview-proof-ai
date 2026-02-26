@@ -382,7 +382,7 @@ export function RoundCoachingPanel({ forecasts, companyName }: RoundCoachingPane
   const coaching = forecasts.roundCoaching;
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
+    <div className="rounded-xl bg-[var(--bg-card)] p-6 card-warm-hover">
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">

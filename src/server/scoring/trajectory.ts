@@ -192,6 +192,9 @@ export function computeTrajectoryProjection(
       day7Projection: day7,
       day14Projection: day14,
       improvementPotential,
+      milestone1Day: day3Days,
+      milestone2Day: day7Days,
+      milestone3Day: day14Days,
       version: TRAJECTORY_VERSION,
     };
   }
@@ -208,6 +211,9 @@ export function computeTrajectoryProjection(
     day7Projection: day7,
     day14Projection: day14,
     improvementPotential,
+    milestone1Day: 3,
+    milestone2Day: 7,
+    milestone3Day: 14,
     version: TRAJECTORY_VERSION,
   };
 }

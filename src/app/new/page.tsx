@@ -176,7 +176,7 @@ export default function NewReportPage() {
                           currentStep > step.number
                             ? 'bg-[var(--color-success)] text-white'
                             : currentStep === step.number
-                              ? 'bg-[var(--accent-primary)] text-white glow-accent'
+                              ? 'bg-[var(--accent-primary)] text-white'
                               : 'bg-[var(--bg-elevated)] text-[var(--text-muted)]'
                         }
                       `}
@@ -317,13 +317,13 @@ export default function NewReportPage() {
                 </Card>
 
                 {errors.submit && (
-                  <div className="rounded-[20px] bg-[var(--color-danger-muted)] p-4 shadow-warm">
+                  <div className="rounded-xl bg-[var(--color-danger-muted)] p-4">
                     <p className="text-sm text-[var(--color-danger)]">{errors.submit}</p>
                   </div>
                 )}
 
                 <div className="flex justify-end">
-                  <Button variant="accent" type="submit" size="lg" loading={isLoading} glow>
+                  <Button variant="accent" type="submit" size="lg" loading={isLoading}>
                     Analyze My Readiness
                   </Button>
                 </div>

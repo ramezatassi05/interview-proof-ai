@@ -52,7 +52,7 @@ export function CreditsPurchaseModal({ isOpen, onClose }: CreditsPurchaseModalPr
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl animate-fade-in rounded-[20px] bg-[var(--bg-card)] p-6 shadow-warm">
+      <div className="relative w-full max-w-2xl animate-fade-in rounded-xl bg-[var(--bg-card)] p-6">
         {/* Close button */}
         <button
           onClick={onClose}
@@ -84,7 +84,7 @@ export function CreditsPurchaseModal({ isOpen, onClose }: CreditsPurchaseModalPr
         )}
 
         {/* Bundle cards */}
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 pt-14 sm:grid-cols-3">
           {CREDIT_BUNDLES.map((bundle) => (
             <CreditsBundleCard
               key={bundle.id}

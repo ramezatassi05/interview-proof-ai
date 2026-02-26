@@ -19,27 +19,27 @@ interface MetricCardProps {
 const variantStyles: Record<MetricVariant, { bg: string; border: string; valueColor: string }> = {
   default: {
     bg: 'bg-[var(--bg-card)]',
-    border: 'border-[var(--border-default)]',
+    border: 'border-l-[var(--accent-primary)]',
     valueColor: 'text-[var(--text-primary)]',
   },
   success: {
-    bg: 'bg-[var(--color-success-muted)]',
-    border: 'border-[var(--color-success)]/30',
+    bg: 'bg-[var(--bg-card)]',
+    border: 'border-l-[var(--color-success)]',
     valueColor: 'text-[var(--color-success)]',
   },
   danger: {
-    bg: 'bg-[var(--color-danger-muted)]',
-    border: 'border-[var(--color-danger)]/30',
+    bg: 'bg-[var(--bg-card)]',
+    border: 'border-l-[var(--color-danger)]',
     valueColor: 'text-[var(--color-danger)]',
   },
   warning: {
-    bg: 'bg-[var(--color-warning-muted)]',
-    border: 'border-[var(--color-warning)]/30',
+    bg: 'bg-[var(--bg-card)]',
+    border: 'border-l-[var(--color-warning)]',
     valueColor: 'text-[var(--color-warning)]',
   },
   accent: {
-    bg: 'bg-[var(--accent-primary)]/10',
-    border: 'border-[var(--accent-primary)]/30',
+    bg: 'bg-[var(--bg-card)]',
+    border: 'border-l-[var(--accent-primary)]',
     valueColor: 'text-[var(--accent-primary)]',
   },
 };
@@ -95,8 +95,9 @@ export function MetricCard({
   return (
     <div
       className={`
-        rounded-[20px] border-t-2 border-t-[var(--accent-primary)] p-4 shadow-warm
+        rounded-xl border border-[var(--border-default)] border-l-2 p-4
         ${styles.bg}
+        ${styles.border}
         ${className}
       `}
     >
@@ -104,7 +105,9 @@ export function MetricCard({
         <div className="flex-1">
           <p className="text-sm font-medium text-[var(--text-muted)]">{title}</p>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className={`text-2xl font-bold tabular-nums ${styles.valueColor}`}>{value}</span>
+            <span className={`font-mono text-2xl font-bold tabular-nums ${styles.valueColor}`}>
+              {value}
+            </span>
             {trend && (
               <span
                 className={`flex items-center gap-0.5 text-sm ${trendIcons[trend.direction].color}`}

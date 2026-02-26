@@ -199,7 +199,7 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
               type="button"
               onClick={() => handleTimelineChange(option.value)}
               className={`
-                rounded-[20px] p-3 text-center transition-all shadow-warm card-warm-hover
+                rounded-xl p-3 text-center transition-all card-warm-hover
                 ${
                   value?.timeline === option.value
                     ? 'ring-2 ring-[var(--accent-primary)] bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]'
@@ -258,7 +258,7 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
               type="button"
               onClick={() => handleEmploymentTypeChange('intern')}
               className={`
-                rounded-[20px] p-4 text-center transition-all shadow-warm card-warm-hover
+                rounded-xl p-4 text-center transition-all card-warm-hover
                 ${
                   currentEmploymentType === 'intern'
                     ? 'ring-2 ring-[var(--accent-primary)] bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]'
@@ -283,7 +283,7 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
               type="button"
               onClick={() => handleEmploymentTypeChange('fulltime')}
               className={`
-                rounded-[20px] p-4 text-center transition-all shadow-warm card-warm-hover
+                rounded-xl p-4 text-center transition-all card-warm-hover
                 ${
                   currentEmploymentType === 'fulltime'
                     ? 'ring-2 ring-[var(--accent-primary)] bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]'
@@ -319,7 +319,7 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
                     type="button"
                     onClick={() => handleFullTimeSubChange(option.value)}
                     className={`
-                      rounded-[20px] p-2.5 text-center transition-all shadow-warm card-warm-hover
+                      rounded-xl p-2.5 text-center transition-all card-warm-hover
                       ${
                         value.experienceLevel === option.value
                           ? 'ring-2 ring-[var(--accent-primary)] bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]'
@@ -365,7 +365,7 @@ export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesF
                   onClick={() => handleFocusAreaToggle(option.value)}
                   disabled={isDisabled}
                   className={`
-                    rounded-[20px] p-3 text-left transition-all shadow-warm card-warm-hover
+                    rounded-xl p-3 text-left transition-all card-warm-hover
                     ${
                       isSelected
                         ? 'ring-2 ring-[var(--accent-primary)] bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]'

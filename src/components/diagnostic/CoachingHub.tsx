@@ -35,7 +35,7 @@ function CandidateProfile({
   const confidencePct = Math.round(profile.confidence * 100);
 
   return (
-    <div className="rounded-[20px] border border-[var(--border-accent)] bg-[var(--accent-primary)]/5 p-6 card-warm-hover">
+    <div className="rounded-xl border border-[var(--border-accent)] bg-[var(--accent-primary)]/5 p-6 card-warm-hover">
       <div className="flex items-start gap-4">
         <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]">
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -86,20 +86,24 @@ function CandidateProfile({
 function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjection }) {
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
 
+  const m1 = trajectory.milestone1Day ?? 3;
+  const m2 = trajectory.milestone2Day ?? 7;
+  const m3 = trajectory.milestone3Day ?? 14;
+
   const milestones = [
     {
       key: 'day3',
-      label: 'Day 3',
+      label: `Day ${m1}`,
       ...trajectory.day3Projection,
     },
     {
       key: 'day7',
-      label: 'Day 7',
+      label: `Day ${m2}`,
       ...trajectory.day7Projection,
     },
     {
       key: 'day14',
-      label: 'Day 14',
+      label: `Day ${m3}`,
       ...trajectory.day14Projection,
     },
   ];
@@ -115,11 +119,11 @@ function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjectio
   const potentialStyle = potentialColors[trajectory.improvementPotential] ?? potentialColors.medium;
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
+    <div className="rounded-xl bg-[var(--bg-card)] p-6 card-warm-hover">
       <div className="flex items-center justify-between mb-1">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">Improvement Trajectory</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Improvement Trajectory</h3>
         <span
-          className={`text-xs font-medium px-2.5 py-1 rounded-full ${potentialStyle.bg} ${potentialStyle.text}`}
+          className={`text-xs font-medium px-2.5 py-1 rounded ${potentialStyle.bg} ${potentialStyle.text}`}
         >
           {{ high: 'High Growth', medium: 'Steady Growth', low: 'Polish & Perfect' }[trajectory.improvementPotential]}
         </span>
@@ -147,7 +151,7 @@ function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjectio
             <button
               key={m.key}
               onClick={() => setExpandedDay(isExpanded ? null : m.key)}
-              className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4 text-left hover:border-[var(--color-success)]/40 transition-colors border border-transparent card-warm-hover"
+              className="rounded-xl bg-[var(--bg-elevated)] p-4 text-left hover:border-[var(--color-success)]/40 transition-colors border border-transparent card-warm-hover"
             >
               <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">
                 {m.label}
@@ -163,7 +167,7 @@ function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjectio
 
       {/* Expanded assumptions */}
       {expandedDay && (
-        <div className="mt-3 rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4">
+        <div className="mt-3 rounded-xl bg-[var(--bg-elevated)] p-4">
           <p className="text-xs font-medium text-[var(--text-muted)] mb-2">
             {milestones.find((m) => m.key === expandedDay)?.label} assumptions
           </p>
@@ -185,7 +189,7 @@ function ImprovementTrajectory({ trajectory }: { trajectory: TrajectoryProjectio
         <div className="mt-5 rounded-lg bg-[var(--color-success-muted)] border border-[var(--color-success)]/20 p-4 text-center">
           <span className="text-sm text-[var(--text-secondary)]">
             <span className="font-semibold text-[var(--color-success)]">+{totalImprovement} points</span>{' '}
-            projected improvement over 14 days
+            projected improvement over {m3} days
           </span>
         </div>
       )}
@@ -201,8 +205,8 @@ function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roun
   const visibleTips = showAll ? coachingTips : coachingTips.slice(0, 2);
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
-      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1 section-header-warm">
+    <div className="rounded-xl bg-[var(--bg-card)] p-6 card-warm-hover">
+      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
         Personalized Action Plan
       </h3>
       <p className="text-sm text-[var(--text-muted)] mb-5 mt-3">
@@ -213,7 +217,7 @@ function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roun
         {visibleTips.map((tip, index) => (
           <div
             key={index}
-            className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4 border-l-3 border-l-[var(--accent-primary)]"
+            className="rounded-xl bg-[var(--bg-elevated)] p-4 border-l-3 border-l-[var(--accent-primary)]"
             style={{ borderLeft: '3px solid var(--accent-primary)' }}
           >
             <div className="flex items-start gap-3">
@@ -274,8 +278,8 @@ function ActionPlan({ coachingTips, roundFocus }: { coachingTips: string[]; roun
 
 function EvidenceSnapshot({ evidence }: { evidence: EvidenceContext }) {
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
-      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1 section-header-warm">
+    <div className="rounded-xl bg-[var(--bg-card)] p-6 card-warm-hover">
+      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
         Your Evidence Snapshot
       </h3>
       <p className="text-sm text-[var(--text-muted)] mb-5 mt-3">
@@ -351,7 +355,7 @@ function EvidenceSnapshot({ evidence }: { evidence: EvidenceContext }) {
             {evidence.matchedNiceToHaves.map((item, i) => (
               <span
                 key={i}
-                className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-info-muted)] text-[var(--color-info)] border border-[var(--color-info)]/20"
+                className="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium bg-[var(--color-info-muted)] text-[var(--color-info)] border border-[var(--color-info)]/20"
               >
                 {item}
               </span>
@@ -424,12 +428,12 @@ function WaysToStandOut({ difficulty }: { difficulty: CompanyDifficultyContext }
     : difficulty.differentiationStrategies.slice(0, 3);
 
   return (
-    <div className={`rounded-[20px] border ${badgeColor.border} bg-[var(--bg-card)] p-6 shadow-warm card-warm-hover`}>
+    <div className={`rounded-xl border ${badgeColor.border} bg-[var(--bg-card)] p-6 card-warm-hover`}>
       {/* Header with tier badge */}
       <div className="flex items-center justify-between mb-1">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">Ways to Stand Out</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Ways to Stand Out</h3>
         <span
-          className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badgeColor.bg} ${badgeColor.text}`}
+          className={`text-xs font-semibold px-2.5 py-1 rounded ${badgeColor.bg} ${badgeColor.text}`}
         >
           {TIER_LABELS[difficulty.tier]}
         </span>
@@ -461,7 +465,7 @@ function WaysToStandOut({ difficulty }: { difficulty: CompanyDifficultyContext }
       </div>
 
       {/* Interview bar description */}
-      <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-4 mb-5">
+      <div className="rounded-xl bg-[var(--bg-elevated)] p-4 mb-5">
         <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-2">
           Interview Bar
         </p>
@@ -509,7 +513,7 @@ function WaysToStandOut({ difficulty }: { difficulty: CompanyDifficultyContext }
             {visibleStrategies.map((strategy, index) => (
               <div
                 key={index}
-                className="flex items-start gap-3 rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3"
+                className="flex items-start gap-3 rounded-xl bg-[var(--bg-elevated)] p-3"
               >
                 <span
                   className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold ${badgeColor.bg} ${badgeColor.text}`}
@@ -563,7 +567,7 @@ export function CoachingHub({
   companyName,
 }: CoachingHubProps) {
   return (
-    <div className="card-warm shadow-warm rounded-[20px] p-6 space-y-6">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl p-6 space-y-6">
       {/* Section 1: Candidate Profile */}
       <CandidateProfile profile={archetypeProfile} companyName={companyName} />
 

@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
+import { InsightOwlWaving, InsightOwlCelebrating } from '@/components/svg/InsightOwlMascot';
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -82,21 +82,7 @@ function LoginForm() {
         {sent ? (
           <div className="text-center">
             <div className="mb-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-success-muted)]">
-                <svg
-                  className="h-8 w-8 text-[var(--color-success)]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
+              <InsightOwlCelebrating size={48} />
             </div>
             <h3 className="text-lg font-medium text-[var(--text-primary)]">Check your email</h3>
             <p className="mt-2 text-sm text-[var(--text-secondary)]">
@@ -195,8 +181,8 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-primary)]">
       <Container size="sm" className="flex flex-1 flex-col items-center justify-center py-12">
-        <div className="mb-4 flex justify-center" style={{ animation: 'owl-enter 0.6s ease-out' }}>
-          <InsightOwlWaving size={96} />
+        <div className="mb-4 flex justify-center">
+          <InsightOwlWaving size={64} />
         </div>
         <Suspense fallback={<LoginLoading />}>
           <LoginForm />

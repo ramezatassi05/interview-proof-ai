@@ -98,10 +98,8 @@ function getLabelPositions(
   });
 }
 
-function getScoreColor(value: number): string {
-  if (value >= 0.7) return 'text-[var(--color-success)]';
-  if (value >= 0.5) return 'text-[var(--color-warning)]';
-  return 'text-[var(--color-danger)]';
+function getScoreColor(): string {
+  return 'text-[var(--text-primary)]';
 }
 
 export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
@@ -146,10 +144,10 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
   );
 
   return (
-    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
-      {/* Warm gradient header */}
-      <div className="bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/5 px-6 pt-4 pb-2">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl overflow-hidden">
+      {/* Header */}
+      <div className="px-6 pt-4 pb-2 border-b border-[var(--border-default)]">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           {companyName ? `${companyName} Interview Skills Profile` : 'Interview Skills Profile'}
         </h3>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">
@@ -159,7 +157,7 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
 
       <div className="p-6">
       {/* Radar Chart */}
-      <div className="bg-[var(--bg-elevated)] rounded-[20px] p-4 flex justify-center">
+      <div className="bg-[var(--bg-elevated)] rounded-xl p-4 flex justify-center">
         <svg width={size} height={size} className="overflow-visible">
           {/* Background grid circles */}
           {gridLevels.map((level) => {
@@ -180,9 +178,9 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
                 key={level}
                 points={points.map((p) => `${p.x},${p.y}`).join(' ')}
                 fill="none"
-                stroke="var(--border-default)"
+                stroke="var(--accent-primary)"
                 strokeWidth="1"
-                opacity={0.5}
+                opacity={0.15}
               />
             );
           })}
@@ -195,18 +193,18 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
               y1={center}
               x2={point.x}
               y2={point.y}
-              stroke="var(--border-default)"
+              stroke="var(--accent-primary)"
               strokeWidth="1"
-              opacity={0.5}
+              opacity={0.15}
             />
           ))}
 
           {/* Data polygon */}
           <path
             d={dataPath}
-            fill="var(--color-accent)"
+            fill="var(--accent-primary)"
             fillOpacity={0.2}
-            stroke="var(--color-accent)"
+            stroke="var(--accent-primary)"
             strokeWidth="2"
           />
 
@@ -217,7 +215,7 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
               cx={point.x}
               cy={point.y}
               r="5"
-              fill="var(--color-accent)"
+              fill="var(--accent-primary)"
               stroke="var(--bg-card)"
               strokeWidth="2"
             />
@@ -250,7 +248,7 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
                   x={label.x}
                   y={label.y + 8}
                   textAnchor={textAnchor}
-                  className={`text-sm font-medium ${getScoreColor(value)}`}
+                  className={`text-sm font-mono font-medium ${getScoreColor()}`}
                 >
                   {Math.round(value * 100)}%
                 </text>
@@ -277,7 +275,7 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
             return (
               <div
                 key={key}
-                className="rounded-xl shadow-warm overflow-hidden"
+                className="rounded-xl overflow-hidden"
               >
                 <button
                   onClick={() => setExpandedDimension(isExpanded ? null : key)}
@@ -290,7 +288,7 @@ export function CognitiveRadar({ riskMap, companyName }: CognitiveRadarProps) {
                     <span className="text-[var(--text-secondary)]">{config.label}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`text-sm font-medium ${getScoreColor(value)}`}>
+                    <span className={`text-sm font-mono font-medium ${getScoreColor()}`}>
                       {Math.round(value * 100)}%
                     </span>
                     <svg

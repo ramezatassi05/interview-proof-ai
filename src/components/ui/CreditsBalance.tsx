@@ -8,7 +8,7 @@ interface CreditsBalanceProps {
 
 export function CreditsBalance({ balance, size = 'md', onClick }: CreditsBalanceProps) {
   const baseClasses =
-    'inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-card)] shadow-warm transition-all';
+    'inline-flex items-center gap-1.5 rounded-lg bg-[var(--bg-card)] transition-all';
   const sizeClasses = size === 'sm' ? 'px-2 py-1 text-xs' : 'px-3 py-1.5 text-sm';
   const interactiveClasses = onClick
     ? 'cursor-pointer hover:border-[var(--border-accent)] hover:bg-[var(--bg-card)]'

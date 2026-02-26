@@ -54,7 +54,7 @@ export function RiskItem({ risk, index, showEvidence = false }: RiskItemProps) {
     <div
       className={`
         risk-signal
-        rounded-[20px] p-4 shadow-warm
+        rounded-xl p-4
         ${isCriticalOrHigh ? 'bg-[var(--color-danger-muted)]' : 'bg-[var(--bg-card)]'}
       `}
     >

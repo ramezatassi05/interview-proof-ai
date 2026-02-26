@@ -62,12 +62,12 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
   const ticks = [0, 25, 50, 75, 100];
 
   return (
-    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
-      {/* Warm gradient header */}
-      <div className="bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/5 px-6 pt-4 pb-3">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl overflow-hidden">
+      {/* Header */}
+      <div className="px-6 pt-4 pb-3 border-b border-[var(--border-default)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">
               {companyName ? `${companyName} Hire Zone Analysis` : 'Hire Zone Analysis'}
             </h3>
             <p className="mt-1 text-sm text-[var(--text-secondary)]">
@@ -75,7 +75,7 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
             </p>
           </div>
           <span
-            className={`inline-flex items-center self-start rounded-full border px-3 py-1 text-xs font-medium ${badge.className}`}
+            className={`inline-flex items-center self-start rounded border px-3 py-1 text-xs font-medium ${badge.className}`}
           >
             {badge.label}
           </span>
@@ -90,41 +90,46 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
           className="w-full max-w-[500px]"
           preserveAspectRatio="xMidYMid meet"
         >
-          {/* Background bar — red zone (0-39) */}
+          {/* Background bar — below zone */}
           <rect
             x={barLeft}
             y={barY}
             width={scaleX(39) - barLeft}
             height={barHeight}
             rx={4}
-            fill="rgba(239, 68, 68, 0.25)"
+            fill="var(--accent-primary)"
+            opacity={0.08}
           />
-          {/* Amber zone (40 to hire zone min) */}
+          {/* Mid zone (40 to hire zone min) */}
           <rect
             x={scaleX(39)}
             y={barY}
             width={zoneMinX - scaleX(39)}
             height={barHeight}
-            fill="rgba(245, 158, 11, 0.25)"
+            fill="var(--accent-primary)"
+            opacity={0.12}
           />
-          {/* Green hire zone band */}
+          {/* Hire zone band */}
           <rect
             x={zoneMinX}
             y={barY}
             width={zoneMaxX - zoneMinX}
             height={barHeight}
-            fill="rgba(16, 185, 129, 0.3)"
-            stroke="rgba(16, 185, 129, 0.6)"
+            fill="var(--accent-primary)"
+            opacity={0.25}
+            stroke="var(--accent-primary)"
             strokeWidth={1.5}
+            strokeOpacity={0.5}
           />
-          {/* Light emerald above zone */}
+          {/* Above zone */}
           <rect
             x={zoneMaxX}
             y={barY}
             width={barRight - zoneMaxX}
             height={barHeight}
             rx={4}
-            fill="rgba(16, 185, 129, 0.12)"
+            fill="var(--accent-primary)"
+            opacity={0.08}
           />
           {/* Full bar border */}
           <rect
@@ -143,7 +148,7 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
             x={(zoneMinX + zoneMaxX) / 2}
             y={barY - 6}
             textAnchor="middle"
-            className="text-[9px] font-medium fill-[var(--color-success)]"
+            className="text-[9px] font-medium font-mono fill-[var(--accent-primary)]"
           >
             Hire Zone
           </text>
@@ -170,7 +175,7 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
           {/* User score triangle marker */}
           <polygon
             points={`${scoreX},${barY - 3} ${scoreX - 6},${barY - 13} ${scoreX + 6},${barY - 13}`}
-            fill={hireZone.status === 'below' ? 'rgb(245, 158, 11)' : 'rgb(16, 185, 129)'}
+            fill="var(--accent-primary)"
           />
           <text
             x={scoreX}
@@ -210,29 +215,29 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
 
       {/* Key Metrics Row */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center card-warm-hover">
+        <div className="rounded-xl bg-[var(--bg-elevated)] p-3 text-center card-warm-hover">
           <p className="text-xs text-[var(--text-muted)]">Your Score</p>
-          <p className="mt-1 text-xl font-bold text-[var(--text-primary)]">
+          <p className="mt-1 text-xl font-mono font-bold text-[var(--text-primary)]">
             {hireZone.currentScore}
           </p>
         </div>
-        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center card-warm-hover">
+        <div className="rounded-xl bg-[var(--bg-elevated)] p-3 text-center card-warm-hover">
           <p className="text-xs text-[var(--text-muted)]">Hire Zone</p>
-          <p className="mt-1 text-xl font-bold text-[var(--color-success)]">
+          <p className="mt-1 text-xl font-mono font-bold text-[var(--accent-primary)]">
             {hireZone.hireZoneMin}–{hireZone.hireZoneMax}
           </p>
         </div>
-        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center card-warm-hover">
+        <div className="rounded-xl bg-[var(--bg-elevated)] p-3 text-center card-warm-hover">
           <p className="text-xs text-[var(--text-muted)]">Gap</p>
           <p
-            className={`mt-1 text-xl font-bold ${hireZone.gap > 0 ? 'text-[var(--color-warning)]' : 'text-[var(--color-success)]'}`}
+            className={`mt-1 text-xl font-mono font-bold ${hireZone.gap > 0 ? 'text-[var(--color-warning)]' : 'text-[var(--color-success)]'}`}
           >
             {hireZone.gap > 0 ? `${hireZone.gap} pts` : 'None'}
           </p>
         </div>
-        <div className="rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-center card-warm-hover">
+        <div className="rounded-xl bg-[var(--bg-elevated)] p-3 text-center card-warm-hover">
           <p className="text-xs text-[var(--text-muted)]">Percentile</p>
-          <p className="mt-1 text-xl font-bold text-[var(--text-primary)]">
+          <p className="mt-1 text-xl font-mono font-bold text-[var(--text-primary)]">
             {hireZone.percentile}th
           </p>
         </div>
@@ -259,7 +264,7 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
                     </span>
                     {gap.gapPoints > 0 && (
                       <span
-                        className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${priorityColor}`}
+                        className={`inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-mono font-medium ${priorityColor}`}
                       >
                         -{gap.gapPoints}
                       </span>
@@ -272,12 +277,8 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
                     className="absolute inset-y-0 left-0 rounded-full"
                     style={{
                       width: `${currentPct}%`,
-                      backgroundColor:
-                        gap.gapPoints >= 15
-                          ? 'rgb(239, 68, 68)'
-                          : gap.gapPoints >= 8
-                            ? 'rgb(245, 158, 11)'
-                            : 'rgb(16, 185, 129)',
+                      backgroundColor: 'var(--accent-primary)',
+                      opacity: gap.gapPoints >= 15 ? 0.6 : gap.gapPoints >= 8 ? 0.8 : 1,
                     }}
                   />
                   {/* Target score marker */}
@@ -303,7 +304,7 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
             {hireZone.topActions.map((action, i) => (
               <li
                 key={i}
-                className="flex items-start gap-3 rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3"
+                className="flex items-start gap-3 rounded-xl bg-[var(--bg-elevated)] p-3"
               >
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)]/20 text-xs font-bold text-[var(--color-accent)]">
                   {i + 1}

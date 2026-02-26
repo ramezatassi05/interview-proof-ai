@@ -13,7 +13,9 @@ import { Button } from '@/components/ui/Button';
 import { ScoreCard } from '@/components/results/ScoreCard';
 import { RiskList } from '@/components/results/RiskList';
 import { PaywallCTA } from '@/components/results/PaywallCTA';
-import { InsightOwlCelebrating } from '@/components/svg/InsightOwlMascot';
+import { InsightOwlReading } from '@/components/svg/InsightOwlMascot';
+
+import { CompetencyHeatmap } from '@/components/diagnostic/CompetencyHeatmap';
 
 type ReportData = GetReportResponse['data'];
 
@@ -70,7 +72,10 @@ export default function ResultsPage() {
       <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
         <Header />
         <main className="flex flex-1 items-center justify-center">
-          <LoadingOverlay message="Loading your results..." />
+          <div className="flex flex-col items-center gap-4">
+            <InsightOwlReading size={48} />
+            <LoadingOverlay message="Loading your results..." />
+          </div>
         </main>
         <Footer />
       </div>
@@ -83,7 +88,7 @@ export default function ResultsPage() {
         <Header />
         <main className="flex flex-1 items-center justify-center">
           <Container size="sm">
-            <div className="rounded-[20px] bg-[var(--color-danger-muted)] p-8 text-center shadow-warm">
+            <div className="rounded-xl bg-[var(--color-danger-muted)] p-8 text-center">
               <h2 className="text-lg font-semibold text-[var(--color-danger)]">Error</h2>
               <p className="mt-2 text-[var(--text-secondary)]">{error}</p>
               <Button variant="secondary" onClick={() => router.push('/new')} className="mt-4">
@@ -103,7 +108,7 @@ export default function ResultsPage() {
         <Header />
         <main className="flex flex-1 items-center justify-center">
           <Container size="sm">
-            <div className="rounded-[20px] bg-[var(--bg-card)] p-8 text-center shadow-warm">
+            <div className="rounded-xl bg-[var(--bg-card)] p-8 text-center">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 Analysis Not Complete
               </h2>
@@ -167,14 +172,19 @@ export default function ResultsPage() {
               )}
             </div>
 
+            {/* Competency Heatmap Preview */}
+            {report.diagnosticIntelligence?.competencyHeatmap && (
+              <CompetencyHeatmap
+                heatmap={report.diagnosticIntelligence.competencyHeatmap}
+                companyName={report.extractedJD?.companyName}
+                previewMode
+                reportId={reportId}
+              />
+            )}
+
             {/* Paywall */}
             {!report.paidUnlocked && report.totalRisks && (
-              <>
-                <div className="flex justify-center">
-                  <InsightOwlCelebrating size={72} />
-                </div>
-                <PaywallCTA reportId={reportId} totalRisks={report.totalRisks - 3} />
-              </>
+              <PaywallCTA reportId={reportId} totalRisks={report.totalRisks - 3} />
 
             )}
           </div>

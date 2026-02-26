@@ -28,9 +28,9 @@ export function Badge({ children, variant = 'default', className = '', glow = fa
   return (
     <span
       className={`
-        inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+        inline-flex items-center rounded px-2.5 py-0.5 font-mono tracking-wide text-[11px] font-medium
         ${variantStyles[variant]}
-        ${glow ? 'shadow-[0_0_10px_rgba(255,107,53,0.3)]' : ''}
+        ${glow ? 'shadow-[0_0_10px_rgba(99,102,241,0.3)]' : ''}
         ${className}
       `}
     >
