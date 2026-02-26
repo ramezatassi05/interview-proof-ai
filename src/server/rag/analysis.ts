@@ -11,6 +11,11 @@ import type {
 } from '@/types';
 import type { RubricChunk, QuestionArchetype } from './retrieval';
 import { computeCompanyDifficulty } from '@/server/scoring/company-difficulty';
+import {
+  getRelevantResources,
+  getResourceSelectionRules,
+  formatResourcesForPrompt,
+} from '@/server/rag/resource-bank';
 
 // Zod schema for recruiter internal notes
 const RecruiterInternalNotesSchema = z.object({
@@ -60,8 +65,8 @@ const PersonalizedCoachingSchema = z.object({
         resources: z.array(z.string()).max(5).optional(),
       })
     )
-    .min(1)
-    .max(4),
+    .min(3)
+    .max(5),
 });
 
 // Zod schema for round-specific coaching (Phase 8 — optional for backwards compat)
@@ -447,11 +452,29 @@ ${roundType === 'technical' ? `     For this TECHNICAL round assessment, red fla
    - roundFocus: One specific focus statement for their weakest interview round
      Example: "Your behavioral stories mention teamwork but lack conflict resolution examples. Prepare 3 stories about technical disagreements using 'My Position → Their Position → Resolution → Outcome' format."
 
-   - priorityActions: Top 3 things to do before the interview
+   - priorityActions: Top 5 things to do before the interview
      Each must have:
      - action: Specific, concrete task (not "practice more" but "solve 8 medium BFS/DFS problems")
      - rationale: Why this matters for THIS candidate's specific gaps
-     - resources: (optional) Array of 2-5 specific resources with real URL links when possible (e.g., ["Coursera's Deep Learning Specialization - https://www.coursera.org/specializations/deep-learning", "3Blue1Brown Neural Networks playlist - https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"])
+     - resources: (optional) Array of 2-5 specific resources with real URL links when possible
+${(() => {
+  if (prepPreferences) {
+    const topicSeeds = [...jdData.mustHave, ...jdData.keywords];
+    const relevant = getRelevantResources(topicSeeds, prepPreferences.timeline, 15);
+    const rules = getResourceSelectionRules(prepPreferences.timeline);
+    const formattedResources = formatResourcesForPrompt(relevant);
+    return `  RESOURCE TIME RULES (candidate has ${getTimelineDays(prepPreferences.timeline)} days):
+  ${rules}
+  - NEVER suggest resources that take longer than the candidate's total prep window
+  - Prefer resources from this verified list when they match the topic:
+${formattedResources}
+  - If suggesting resources NOT in the list, only use well-known platforms (YouTube, LeetCode, Coursera, GitHub, MDN, freeCodeCamp)
+  - NEVER fabricate or guess URLs — if unsure of exact URL, provide the resource name without a link`;
+  } else {
+    return `  Prefer well-known platforms (YouTube, LeetCode, Coursera, GitHub, MDN).
+  NEVER fabricate URLs — if unsure of exact URL, provide the resource name without a link.`;
+  }
+})()}
 
 7. **roundCoaching** (CRITICAL — round-specific coaching for ${roundType} interview):
    Generate in-depth coaching content specifically for the candidate's selected round type: "${roundType}".

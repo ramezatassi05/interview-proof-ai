@@ -1,4 +1,134 @@
 import type { LLMAnalysis, ExtractedJD, RoundType } from '@/types';
+import { CURATED_URL_MAP, RESOURCE_BANK } from '@/server/rag/resource-bank';
+
+// Patterns for detecting suspicious/fabricated URLs
+const SUSPICIOUS_URL_PATTERNS = [
+  /localhost/i,
+  /127\.0\.0\.1/,
+  /example\.com/i,
+  /placeholder/i,
+  /your-?domain/i,
+  /test\.com/i,
+  /fake/i,
+  /sample\.com/i,
+];
+
+// Extremely long paths are often hallucinated
+const MAX_URL_PATH_LENGTH = 200;
+
+/**
+ * Extracts a URL from a resource string, if present.
+ * Resources can be formatted as "Title - https://url" or just "https://url".
+ */
+function extractUrl(resource: string): string | null {
+  const match = resource.match(/https?:\/\/[^\s,)]+/);
+  return match ? match[0] : null;
+}
+
+/**
+ * Checks if a URL looks suspicious / likely fabricated.
+ */
+function isSuspiciousUrl(url: string): boolean {
+  if (url.length > MAX_URL_PATH_LENGTH) return true;
+  return SUSPICIOUS_URL_PATTERNS.some((p) => p.test(url));
+}
+
+/**
+ * Attempts to find a curated resource matching a resource string by keyword overlap.
+ * Returns the curated resource if a strong match is found.
+ */
+function findCuratedMatch(resource: string): typeof RESOURCE_BANK[number] | null {
+  const lower = resource.toLowerCase();
+
+  // First: exact URL match against curated bank
+  const url = extractUrl(resource);
+  if (url) {
+    const exact = CURATED_URL_MAP.get(url);
+    if (exact) return exact;
+  }
+
+  // Second: keyword match against resource titles/platforms
+  let bestMatch: typeof RESOURCE_BANK[number] | null = null;
+  let bestScore = 0;
+
+  for (const curated of RESOURCE_BANK) {
+    let score = 0;
+    // Check if the resource string mentions the curated title
+    const titleWords = curated.title.toLowerCase().split(/\s+/);
+    const matchingWords = titleWords.filter((w) => w.length > 3 && lower.includes(w));
+    score += matchingWords.length;
+
+    // Check platform mention
+    if (lower.includes(curated.platform.toLowerCase())) {
+      score += 1;
+    }
+
+    // Need at least 2 signal matches to consider it a match
+    if (score >= 2 && score > bestScore) {
+      bestScore = score;
+      bestMatch = curated;
+    }
+  }
+
+  return bestMatch;
+}
+
+/**
+ * Validates and cleans resource arrays from priority actions.
+ * - Strips resources with suspicious/fabricated URLs
+ * - Swaps in verified curated URLs when a keyword match is found
+ */
+function validateResources(resources: string[] | undefined): {
+  cleaned: string[];
+  warnings: string[];
+} {
+  if (!resources || resources.length === 0) {
+    return { cleaned: [], warnings: [] };
+  }
+
+  const cleaned: string[] = [];
+  const warnings: string[] = [];
+
+  for (const resource of resources) {
+    const url = extractUrl(resource);
+
+    // If URL is present, check if it's suspicious
+    if (url && isSuspiciousUrl(url)) {
+      warnings.push(`Stripped suspicious URL from resource: "${resource}"`);
+      // Try to find a curated replacement
+      const match = findCuratedMatch(resource);
+      if (match) {
+        cleaned.push(`${match.title} - ${match.url}`);
+        warnings.push(`Replaced with curated: "${match.title}"`);
+      }
+      // Otherwise just drop this resource entirely
+      continue;
+    }
+
+    // If URL is present and matches curated bank exactly, keep as-is
+    if (url && CURATED_URL_MAP.has(url)) {
+      cleaned.push(resource);
+      continue;
+    }
+
+    // Try to find a curated match by keyword and swap in verified URL
+    const curatedMatch = findCuratedMatch(resource);
+    if (curatedMatch && url) {
+      // Has a URL that isn't in our bank — swap in the curated one
+      const cleanedResource = resource.replace(url, curatedMatch.url);
+      cleaned.push(cleanedResource);
+      warnings.push(
+        `Swapped unverified URL for curated match: "${curatedMatch.title}"`
+      );
+      continue;
+    }
+
+    // No URL or no curated match — keep as-is (resource name without link is fine)
+    cleaned.push(resource);
+  }
+
+  return { cleaned, warnings };
+}
 
 const PARROT_PATTERN =
   /^(learn|study|get proficient in|practice|explore|develop|gain experience|complete a .* course|read about|familiarize|take a .* course|enroll in|brush up on|improve your|build expertise in|acquire knowledge)/i;
@@ -81,9 +211,16 @@ export function validateAnalysisQuality(
         }
         return true;
       });
-    if (analysis.personalizedCoaching.priorityActions.length < 1) {
+    if (analysis.personalizedCoaching.priorityActions.length < 3) {
       analysis.personalizedCoaching.priorityActions = originalActions;
-      warnings.push('Priority actions filter would violate min(1), keeping originals');
+      warnings.push('Priority actions filter would violate min(3), keeping originals');
+    }
+
+    // Validate and clean resource URLs in priority actions
+    for (const pa of analysis.personalizedCoaching.priorityActions) {
+      const { cleaned, warnings: resourceWarnings } = validateResources(pa.resources);
+      pa.resources = cleaned.length > 0 ? cleaned : undefined;
+      warnings.push(...resourceWarnings);
     }
   }
 

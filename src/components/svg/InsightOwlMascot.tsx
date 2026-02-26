@@ -389,7 +389,7 @@ export function InsightOwlMascot({ className = '', size }: OwlProps) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
-      style={{ animation: 'owl-bob 4s ease-in-out infinite' }}
+      style={{ animation: 'owl-bob 4s ease-in-out infinite', transformOrigin: 'center bottom' }}
     >
       <OwlDefs id={id} />
       <circle cx="64" cy="64" r="56" fill="#6366F1" opacity="0.06" />
@@ -419,7 +419,7 @@ export function InsightOwlWaving({ className = '', size }: OwlProps) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
-      style={{ animation: 'owl-enter-v2 0.7s ease-out' }}
+      style={{ animation: 'owl-enter-v2 0.7s ease-out', transformOrigin: 'center bottom' }}
     >
       <OwlDefs id={id} />
       <OwlTail id={id} />
@@ -448,7 +448,7 @@ export function InsightOwlThinking({ className = '', size }: OwlProps) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
-      style={{ animation: 'owl-think-v2 4s ease-in-out infinite' }}
+      style={{ animation: 'owl-think-v2 4s ease-in-out infinite', transformOrigin: 'center bottom' }}
     >
       <OwlDefs id={id} />
       {/* Thought bubbles */}
@@ -481,7 +481,7 @@ export function InsightOwlCelebrating({ className = '', size }: OwlProps) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
-      style={{ animation: 'owl-celebrate-v2 2.5s ease-in-out infinite' }}
+      style={{ animation: 'owl-celebrate-v2 2.5s ease-in-out infinite', transformOrigin: 'center bottom' }}
     >
       <OwlDefs id={id} />
       {/* Sparkle stars */}
@@ -523,7 +523,7 @@ export function InsightOwlReading({ className = '', size }: OwlProps) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
-      style={{ animation: 'owl-perch-sway 6s ease-in-out infinite' }}
+      style={{ animation: 'owl-perch-sway 6s ease-in-out infinite', transformOrigin: 'center bottom' }}
     >
       <OwlDefs id={id} />
       <OwlTail id={id} />

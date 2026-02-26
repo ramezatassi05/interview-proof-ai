@@ -67,7 +67,7 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* 1. Hero Section */}
         <section className="relative dot-grid-bg">
-          <Container className="relative py-20 lg:py-28">
+          <Container className="relative py-14 lg:py-20">
             <div className="flex flex-col lg:flex-row lg:items-center lg:gap-16">
               {/* Left — text */}
               <div className="flex-1 lg:max-w-[55%]">
@@ -193,7 +193,7 @@ export default function LandingPage() {
         </section>
 
         {/* Scroll CTA */}
-        <div className="flex justify-center py-12">
+        <div className="flex justify-center py-4">
           <div className="animate-scroll-cta flex flex-col items-center gap-2 text-center">
             <p className="text-sm text-[var(--text-secondary)]">Scroll to discover more</p>
             <svg
