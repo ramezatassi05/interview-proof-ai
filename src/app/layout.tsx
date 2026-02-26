@@ -1,20 +1,26 @@
 import type { Metadata } from 'next';
-import { DM_Sans, Nunito_Sans } from 'next/font/google';
+import { Source_Serif_4, Source_Sans_3, Source_Code_Pro } from 'next/font/google';
 import { AuthProvider } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { CreditsWrapper } from '@/components/credits/CreditsWrapper';
 import './globals.css';
 
-const dmSans = DM_Sans({
-  variable: '--font-dm-sans',
+const sourceSerif = Source_Serif_4({
+  variable: '--font-serif',
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+});
+
+const sourceSans = Source_Sans_3({
+  variable: '--font-sans',
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
 });
 
-const nunitoSans = Nunito_Sans({
-  variable: '--font-nunito-sans',
+const sourceCode = Source_Code_Pro({
+  variable: '--font-mono',
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['400', '500', '600'],
 });
 
 export const metadata: Metadata = {
@@ -23,19 +29,39 @@ export const metadata: Metadata = {
     'Job-specific interview diagnostic that identifies rejection risks and prioritizes fixes.',
 };
 
+const themeScript = `
+(function(){
+  try {
+    var t = localStorage.getItem('theme');
+    if (t === 'light' || t === 'dark') {
+      document.documentElement.setAttribute('data-theme', t);
+    } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  } catch(e) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${dmSans.variable} ${nunitoSans.variable} antialiased`}>
-        <ThemeProvider>
-          <AuthProvider>
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className={`${sourceSerif.variable} ${sourceSans.variable} ${sourceCode.variable} antialiased`}>
+        <AuthProvider>
+          <ThemeProvider>
             <CreditsWrapper>{children}</CreditsWrapper>
-          </AuthProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -97,7 +97,7 @@ export function ScoreBreakdown({ breakdown, companyName }: ScoreBreakdownProps) 
         </span>
       </div>
 
-      <div className="card-warm shadow-warm rounded-[20px] overflow-hidden p-6">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl overflow-hidden p-6">
         <div className="space-y-1">
           {categories.map(({ key, score, weight }) => {
             const config = CATEGORY_CONFIG[key];
@@ -113,7 +113,7 @@ export function ScoreBreakdown({ breakdown, companyName }: ScoreBreakdownProps) 
                         <span className="text-sm font-medium text-[var(--text-primary)]">
                           {config.label}
                         </span>
-                        <span className="text-xs text-[var(--text-muted)] bg-[var(--bg-elevated)] px-2 py-0.5 rounded">
+                        <span className="text-xs font-mono text-[var(--text-muted)] bg-[var(--bg-elevated)] px-2 py-0.5 rounded">
                           {Math.round(weight * 100)}% weight
                         </span>
                       </div>

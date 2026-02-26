@@ -23,7 +23,7 @@ export function RiskList({
 
   if (risks.length === 0) {
     return (
-      <div className="rounded-[20px] bg-[var(--bg-card)] p-8 text-center shadow-warm">
+      <div className="rounded-xl bg-[var(--bg-card)] p-8 text-center">
         <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-muted)]">
           <svg
             className="h-6 w-6 text-[var(--color-success)]"

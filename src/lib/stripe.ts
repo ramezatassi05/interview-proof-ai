@@ -22,7 +22,7 @@ export const CREDITS_PER_REPORT = 5;
 export const CREDIT_PRODUCT = {
   name: 'InterviewProof Diagnostic Credit',
   description: 'Unlock full diagnostic report with all risks, questions, and study plan',
-  price: 1500, // $15.00 in cents
+  price: 1900, // $19.00 in cents
   credits: CREDITS_PER_REPORT, // Updated to match new pricing
 };
 
@@ -41,23 +41,23 @@ export const CREDIT_BUNDLES: CreditBundle[] = [
     id: 'starter',
     name: 'Starter',
     credits: 5,
-    price: 500, // $5.00
-    pricePerCredit: 1.0,
+    price: 900, // $9.00
+    pricePerCredit: 1.8,
   },
   {
     id: 'popular',
     name: 'Popular',
     credits: 20,
-    price: 900, // $9.00
-    pricePerCredit: 0.45,
+    price: 1300, // $13.00
+    pricePerCredit: 0.65,
     popular: true,
   },
   {
     id: 'pro',
     name: 'Pro',
     credits: 50,
-    price: 1900, // $19.00
-    pricePerCredit: 0.38,
+    price: 2300, // $23.00
+    pricePerCredit: 0.46,
   },
 ];
 

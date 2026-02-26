@@ -144,7 +144,7 @@ function PercentileBar({ percentile }: { percentile: number }) {
 function InternalNotesSection({ notes }: { notes: RecruiterInternalNotes }) {
   return (
     <div className="mt-8">
-      <h4 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wide mb-4 flex items-center gap-2">
+      <h4 className="text-sm font-mono font-semibold text-[var(--text-primary)] uppercase tracking-wide mb-4 flex items-center gap-2">
         <svg className="h-4 w-4 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
         </svg>
@@ -180,7 +180,7 @@ function InternalNotesSection({ notes }: { notes: RecruiterInternalNotes }) {
           {notes.internalConcerns.map((concern, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-warning)]/20 bg-[var(--color-warning-muted)] px-3 py-1.5 text-xs text-[var(--text-secondary)]"
+              className="inline-flex items-center gap-1.5 rounded border border-[var(--color-warning)]/20 bg-[var(--color-warning-muted)] px-3 py-1.5 text-xs text-[var(--text-secondary)]"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-warning)]" />
               {concern}
@@ -219,7 +219,7 @@ function DebriefSummarySection({ debrief, impression }: { debrief: RecruiterDebr
 
   return (
     <div className="mt-8">
-      <h4 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wide mb-4 flex items-center gap-2">
+      <h4 className="text-sm font-mono font-semibold text-[var(--text-primary)] uppercase tracking-wide mb-4 flex items-center gap-2">
         <svg className="h-4 w-4 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
         </svg>
@@ -245,7 +245,7 @@ function DebriefSummarySection({ debrief, impression }: { debrief: RecruiterDebr
             {debrief.advocateReasons.map((reason, i) => (
               <span
                 key={i}
-                className="block rounded-full border border-[var(--color-success)]/20 bg-[var(--color-success-muted)] px-3 py-1.5 text-xs text-[var(--text-secondary)]"
+                className="block rounded border border-[var(--color-success)]/20 bg-[var(--color-success-muted)] px-3 py-1.5 text-xs text-[var(--text-secondary)]"
               >
                 {reason}
               </span>
@@ -258,7 +258,7 @@ function DebriefSummarySection({ debrief, impression }: { debrief: RecruiterDebr
             {debrief.pushbackReasons.map((reason, i) => (
               <span
                 key={i}
-                className="block rounded-full border border-[var(--color-warning)]/20 bg-[var(--color-warning-muted)] px-3 py-1.5 text-xs text-[var(--text-secondary)]"
+                className="block rounded border border-[var(--color-warning)]/20 bg-[var(--color-warning-muted)] px-3 py-1.5 text-xs text-[var(--text-secondary)]"
               >
                 {reason}
               </span>
@@ -293,7 +293,7 @@ function DebriefSummarySection({ debrief, impression }: { debrief: RecruiterDebr
 function CandidatePositioningSection({ positioning }: { positioning: CandidatePositioning }) {
   return (
     <div className="mt-8">
-      <h4 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wide mb-4 flex items-center gap-2">
+      <h4 className="text-sm font-mono font-semibold text-[var(--text-primary)] uppercase tracking-wide mb-4 flex items-center gap-2">
         <svg className="h-4 w-4 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
@@ -333,10 +333,10 @@ export function RecruiterView({ simulation, companyName }: RecruiterViewProps) {
   const screenTimeInfo = getScreenTimeLabel(simulation.estimatedScreenTimeSeconds);
 
   return (
-    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
-      {/* Warm gradient header */}
-      <div className="bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/5 px-6 pt-4 pb-2">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl overflow-hidden">
+      {/* Header */}
+      <div className="px-6 pt-4 pb-2 border-b border-[var(--border-default)]">
+        <h3 className="text-lg font-mono font-semibold text-[var(--text-primary)]">
           {companyName ? `${companyName} Recruiter First Impression` : 'Recruiter First Impression'}
         </h3>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">

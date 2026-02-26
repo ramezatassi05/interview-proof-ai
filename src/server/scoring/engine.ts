@@ -18,6 +18,7 @@ export { computeEvidenceContext } from './evidence';
 export { computeHireZoneAnalysis } from './hirezone';
 export { computeCompanyDifficulty } from './company-difficulty';
 export { detectPriorEmployment } from './prior-employment';
+export { computeCompetencyHeatmap } from './competency-heatmap';
 
 const SCORING_VERSION = 'v0.2';
 

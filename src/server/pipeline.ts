@@ -34,6 +34,7 @@ import {
   computeHireZoneAnalysis,
   computeCompanyDifficulty,
   detectPriorEmployment,
+  computeCompetencyHeatmap,
 } from './scoring/engine';
 import { generatePersonalizedStudyPlan } from './scoring/studyplan';
 import { generateMoreQuestions } from './questions';
@@ -120,26 +121,28 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     console.warn(`[pipeline] Validation applied ${validationWarnings.length} fix(es)`);
   }
 
-  // Step 4b: Expand question pool to target size
-  try {
-    while (llmAnalysis.interviewQuestions.length < TARGET_QUESTION_POOL) {
-      const existingTexts = llmAnalysis.interviewQuestions.map((q) => q.question);
-      const remaining = TARGET_QUESTION_POOL - llmAnalysis.interviewQuestions.length;
-      const newQuestions = await generateMoreQuestions(
-        extractedResume,
-        extractedJD,
-        roundType,
-        existingTexts,
-        Math.min(remaining, 25)
-      );
-      if (newQuestions.length === 0) break;
-      llmAnalysis.interviewQuestions.push(...newQuestions);
+  // Step 4b: Expand question pool (async, runs in parallel with scoring)
+  const backfillPromise = (async () => {
+    try {
+      while (llmAnalysis.interviewQuestions.length < TARGET_QUESTION_POOL) {
+        const existingTexts = llmAnalysis.interviewQuestions.map((q) => q.question);
+        const remaining = TARGET_QUESTION_POOL - llmAnalysis.interviewQuestions.length;
+        const newQuestions = await generateMoreQuestions(
+          extractedResume,
+          extractedJD,
+          roundType,
+          existingTexts,
+          Math.min(remaining, 50)
+        );
+        if (newQuestions.length === 0) break;
+        llmAnalysis.interviewQuestions.push(...newQuestions);
+      }
+    } catch (err) {
+      console.error('Question backfill failed, continuing with existing pool:', err);
     }
-  } catch (err) {
-    console.error('Question backfill failed, continuing with existing pool:', err);
-  }
+  })();
 
-  // Step 5: Compute deterministic score (with company difficulty adjustment)
+  // Step 5: Compute deterministic score (runs immediately, no await needed)
   const companyDifficulty = computeCompanyDifficulty(
     extractedJD.companyName,
     prepPreferences?.experienceLevel ?? 'mid',
@@ -182,6 +185,9 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
         roundType
       )
     : undefined;
+
+  // Wait for question backfill to complete before returning
+  await backfillPromise;
 
   return {
     extractedResume,
@@ -269,6 +275,16 @@ function computeDiagnosticIntelligence(
     companyDifficulty
   );
 
+  // Compute competency heatmap
+  const competencyHeatmap = computeCompetencyHeatmap(
+    llmAnalysis,
+    scoreBreakdown,
+    extractedJD,
+    extractedResume,
+    roundType,
+    companyDifficulty.tier !== 'STANDARD' ? companyDifficulty : undefined
+  );
+
   return {
     archetypeProfile,
     roundForecasts,
@@ -278,6 +294,7 @@ function computeDiagnosticIntelligence(
     practiceIntelligence,
     evidenceContext,
     hireZoneAnalysis,
+    competencyHeatmap,
     companyDifficulty: companyDifficulty.tier !== 'STANDARD' ? companyDifficulty : undefined,
     priorEmploymentSignal,
     executiveScores: executiveScoresInput

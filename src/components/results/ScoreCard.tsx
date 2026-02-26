@@ -10,10 +10,10 @@ interface ScoreCardProps {
 
 export function ScoreCard({ score, riskBand, totalRisks }: ScoreCardProps) {
   return (
-    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
-      {/* Warm gradient header accent */}
-      <div className="h-1 w-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]" />
-      <div className="bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-elevated)] p-8">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl overflow-hidden">
+      {/* Top accent border */}
+      <div className="h-1 w-full bg-[var(--accent-primary)]" />
+      <div className="p-8">
       <div className="flex flex-col items-center">
         <p className="text-sm font-medium uppercase tracking-wider text-[var(--text-muted)] mb-4">
           Readiness Score

@@ -286,6 +286,9 @@ export interface TrajectoryProjection {
     assumptions: string[];
   };
   improvementPotential: 'low' | 'medium' | 'high';
+  milestone1Day?: number; // actual day for first milestone (default 3)
+  milestone2Day?: number; // actual day for second milestone (default 7)
+  milestone3Day?: number; // actual day for third milestone (default 14)
   version: string;
 }
 
@@ -376,6 +379,32 @@ export interface HireZoneAnalysis {
   version: string;
 }
 
+// Competency Heatmap
+export type CompetencyLevel = 'Beginner' | 'Intermediate' | 'High' | 'Expert';
+export type GapStatus = 'Critical' | 'Warning' | 'Pass';
+export type InferredSeniority = 'Intern' | 'Junior' | 'Mid-Level' | 'Senior' | 'Staff+' | 'Unknown';
+
+export interface CompetencyHeatmapEntry {
+  domain: string;
+  rawScore: number;               // 0-100
+  yourLevel: CompetencyLevel;
+  targetBenchmark: CompetencyLevel;
+  targetScore: number;            // numeric target for gap math
+  gapStatus: GapStatus;
+  gapPoints: number;              // max(0, target - raw)
+}
+
+export interface CompetencyHeatmapData {
+  entries: CompetencyHeatmapEntry[];
+  inferredSeniority: InferredSeniority;
+  seniorityLabel: string;         // e.g. "L6 / Senior Level"
+  totalDomains: number;
+  criticalGaps: number;
+  warningGaps: number;
+  passCount: number;
+  version: string;
+}
+
 // Company Difficulty Context
 export type CompanyTier =
   | 'FAANG_PLUS'
@@ -432,6 +461,7 @@ export interface DiagnosticIntelligence {
   practiceIntelligence?: PracticeIntelligence;
   evidenceContext?: EvidenceContext;
   hireZoneAnalysis?: HireZoneAnalysis;
+  competencyHeatmap?: CompetencyHeatmapData;
   companyDifficulty?: CompanyDifficultyContext;
   priorEmploymentSignal?: PriorEmploymentSignal;
   executiveScores?: {

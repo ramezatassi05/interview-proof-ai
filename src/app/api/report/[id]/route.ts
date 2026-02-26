@@ -73,37 +73,58 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       shareUrl: report.share_token ? `${baseUrl}/s/${report.share_token}` : undefined,
     };
 
-    // TEMP: Bypass paywall - always return full diagnostic
+    // Helper to migrate old coaching data
+    const migrateCoaching = () => {
+      const coaching = latestRun.llm_analysis_json?.personalizedCoaching;
+      if (!coaching) return undefined;
+      if (coaching.priorityActions) {
+        coaching.priorityActions = coaching.priorityActions.map(
+          (pa: { resource?: string; resources?: string[]; [key: string]: unknown }) => {
+            if (pa.resource && !pa.resources) {
+              const { resource, ...rest } = pa;
+              return { ...rest, resources: [resource] };
+            }
+            return pa;
+          }
+        );
+      }
+      return coaching;
+    };
+
+    const allRisks = Array.isArray(latestRun.ranked_risks_json)
+      ? latestRun.ranked_risks_json
+      : [];
+
+    if (report.paid_unlocked) {
+      // Full diagnostic for paid reports
+      return NextResponse.json({
+        data: {
+          ...baseResponse,
+          allRisks,
+          interviewQuestions: latestRun.llm_analysis_json?.interviewQuestions,
+          studyPlan: latestRun.llm_analysis_json?.studyPlan,
+          scoreBreakdown: latestRun.score_breakdown_json,
+          extractedResume: latestRun.extracted_resume_json,
+          extractedJD: latestRun.extracted_jd_json,
+          diagnosticIntelligence: latestRun.diagnostic_intelligence_json,
+          prepPreferences: report.prep_preferences_json || undefined,
+          personalizedStudyPlan: latestRun.personalized_study_plan_json || undefined,
+          personalizedCoaching: migrateCoaching(),
+        },
+      });
+    }
+
+    // Free tier: limited preview data
     return NextResponse.json({
       data: {
         ...baseResponse,
-        paidUnlocked: true, // Override to unlock UI
-        allRisks: latestRun.ranked_risks_json,
-        interviewQuestions: latestRun.llm_analysis_json?.interviewQuestions,
-        studyPlan: latestRun.llm_analysis_json?.studyPlan,
-        scoreBreakdown: latestRun.score_breakdown_json,
-        extractedResume: latestRun.extracted_resume_json,
+        top3Risks: allRisks.slice(0, 3),
+        totalRisks: allRisks.length,
         extractedJD: latestRun.extracted_jd_json,
-        diagnosticIntelligence: latestRun.diagnostic_intelligence_json,
-        prepPreferences: report.prep_preferences_json || undefined,
-        personalizedStudyPlan: latestRun.personalized_study_plan_json || undefined,
-        personalizedCoaching: (() => {
-          const coaching = latestRun.llm_analysis_json?.personalizedCoaching;
-          if (!coaching) return undefined;
-          // Migrate old single-resource field to resources array
-          if (coaching.priorityActions) {
-            coaching.priorityActions = coaching.priorityActions.map(
-              (pa: { resource?: string; resources?: string[]; [key: string]: unknown }) => {
-                if (pa.resource && !pa.resources) {
-                  const { resource, ...rest } = pa;
-                  return { ...rest, resources: [resource] };
-                }
-                return pa;
-              }
-            );
-          }
-          return coaching;
-        })(),
+        diagnosticIntelligence: latestRun.diagnostic_intelligence_json
+          ? { competencyHeatmap: latestRun.diagnostic_intelligence_json.competencyHeatmap }
+          : undefined,
+        paywallMessage: `Unlock the full diagnostic to see all ${allRisks.length} risks, interview questions, and your personalized study plan.`,
       },
     });
   } catch (error) {

@@ -6,6 +6,7 @@ import { useCredits } from '@/hooks/useCredits';
 import { api, APIRequestError } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { CREDITS_PER_REPORT } from '@/lib/stripe';
+import { InsightOwlThinking } from '@/components/svg/InsightOwlMascot';
 
 interface PaywallCTAProps {
   reportId: string;
@@ -104,15 +105,14 @@ export function PaywallCTA({ reportId, totalRisks }: PaywallCTAProps) {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-elevated)] to-[var(--accent-primary)]/10 shadow-warm shadow-[0_0_40px_rgba(255,107,53,0.15)]">
-      {/* Glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/10" />
-      <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--accent-primary)]/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-48 h-48 bg-[var(--accent-secondary)]/10 rounded-full blur-3xl" />
+    <div className="relative overflow-hidden rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)]">
 
       <div className="relative p-8">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--accent-primary)]/20 border border-[var(--accent-primary)]/30 mb-4">
+          <div className="mb-2">
+            <InsightOwlThinking size={56} />
+          </div>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)]/20 border border-[var(--accent-primary)]/30 mb-4">
             <svg
               className="h-4 w-4 text-[var(--accent-primary)]"
               fill="none"
@@ -133,7 +133,9 @@ export function PaywallCTA({ reportId, totalRisks }: PaywallCTAProps) {
 
           <h2 className="text-2xl font-bold text-[var(--text-primary)]">Unlock Full Analysis</h2>
           <p className="mt-2 text-[var(--text-secondary)]">
-            {totalRisks} more risk{totalRisks !== 1 ? 's' : ''} waiting to be uncovered
+            {totalRisks > 0
+              ? `${totalRisks} more risk${totalRisks !== 1 ? 's' : ''} waiting to be uncovered`
+              : 'Deep-dive insights, action plans & recruiter intelligence inside'}
           </p>
         </div>
 
@@ -156,8 +158,7 @@ export function PaywallCTA({ reportId, totalRisks }: PaywallCTAProps) {
                 size="lg"
                 onClick={handleUnlockWithCredits}
                 loading={loading}
-                glow
-                className="px-12 glow-coral"
+                className="px-12 rounded-lg bg-[var(--accent-primary)]"
               >
                 Unlock with {CREDITS_PER_REPORT} Credits
               </Button>
@@ -168,7 +169,7 @@ export function PaywallCTA({ reportId, totalRisks }: PaywallCTAProps) {
             </>
           ) : (
             <>
-              <Button variant="accent" size="lg" onClick={handleBuyCredits} glow className="px-12 glow-coral">
+              <Button variant="accent" size="lg" onClick={handleBuyCredits} className="px-12 rounded-lg bg-[var(--accent-primary)]">
                 Buy Credits to Unlock
               </Button>
               <p className="mt-3 text-sm text-[var(--text-secondary)]">

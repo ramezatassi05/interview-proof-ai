@@ -84,7 +84,7 @@ export function ShareModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md animate-fade-in rounded-[20px] bg-[var(--bg-card)] p-6 shadow-warm">
+      <div className="relative w-full max-w-md animate-fade-in rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
         {/* Close button */}
         <button
           onClick={onClose}

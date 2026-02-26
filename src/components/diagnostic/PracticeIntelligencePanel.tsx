@@ -108,9 +108,9 @@ function PracticeSyncSection({
   const mockBadge = getLevelBadge(data.mockReadiness.level);
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
+    <div className="rounded-xl bg-[var(--bg-card)] p-6 card-warm-hover">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm text-gradient-warm">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           {companyName ? `${companyName} Practice Sync` : 'Practice Sync'}
         </h3>
         <p className="mt-3 text-sm text-[var(--text-secondary)]">
@@ -140,7 +140,7 @@ function PracticeSyncSection({
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-sm font-medium text-[var(--text-primary)]">Coding Exposure</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full border ${codingBadge.className}`}>
+          <span className={`text-xs px-2 py-0.5 rounded border ${codingBadge.className}`}>
             {codingBadge.text}
           </span>
         </div>
@@ -161,7 +161,7 @@ function PracticeSyncSection({
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-sm font-medium text-[var(--text-primary)]">Mock Readiness</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full border ${mockBadge.className}`}>
+          <span className={`text-xs px-2 py-0.5 rounded border ${mockBadge.className}`}>
             {mockBadge.text}
           </span>
         </div>
@@ -238,9 +238,9 @@ function PressureIndexSection({
   const bandConfig = getPressureBandConfig(data.band);
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
+    <div className="rounded-xl bg-[var(--bg-card)] p-6 card-warm-hover">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm text-gradient-warm">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           {companyName ? `${companyName} Pressure Handling Index` : 'Pressure Handling Index'}
         </h3>
         <p className="mt-3 text-sm text-[var(--text-secondary)]">
@@ -263,7 +263,7 @@ function PressureIndexSection({
         >
           {data.score}
         </div>
-        <span className={`text-sm px-3 py-1 rounded-full border ${bandConfig.className}`}>
+        <span className={`text-sm px-3 py-1 rounded border ${bandConfig.className}`}>
           {bandConfig.label}
         </span>
       </div>
@@ -376,9 +376,9 @@ function ConsistencyMomentumSection({
   const bandConfig = getMomentumBandConfig(data.band);
 
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
+    <div className="rounded-xl bg-[var(--bg-card)] p-6 card-warm-hover">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm text-gradient-warm">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           {companyName ? `${companyName} Consistency & Momentum` : 'Consistency & Momentum'}
         </h3>
         <p className="mt-3 text-sm text-[var(--text-secondary)]">
@@ -401,7 +401,7 @@ function ConsistencyMomentumSection({
         >
           {data.score}
         </div>
-        <span className={`text-sm px-3 py-1 rounded-full border ${bandConfig.className}`}>
+        <span className={`text-sm px-3 py-1 rounded border ${bandConfig.className}`}>
           {bandConfig.label}
         </span>
       </div>
@@ -421,7 +421,7 @@ function ConsistencyMomentumSection({
           {data.insights.map((insight, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 rounded-xl bg-[var(--bg-elevated)] shadow-warm p-3 text-sm"
+              className="flex items-start gap-2 rounded-xl bg-[var(--bg-elevated)] p-3 text-sm"
             >
               <svg
                 className="h-4 w-4 text-[var(--color-info)] flex-shrink-0 mt-0.5"
@@ -533,9 +533,9 @@ function PracticeRxSection({
   companyName?: string;
 }) {
   return (
-    <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-6 card-warm-hover">
+    <div className="rounded-xl bg-[var(--bg-card)] p-6 card-warm-hover">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm text-gradient-warm">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           {companyName ? `${companyName} Practice Rx` : 'Practice Rx'}
         </h3>
         <p className="mt-3 text-sm text-[var(--text-secondary)]">
@@ -587,12 +587,12 @@ function PracticeRxSection({
 
                   <div className="flex flex-wrap gap-2 mb-2">
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full border ${typeBadge.className}`}
+                      className={`text-xs px-2 py-0.5 rounded border ${typeBadge.className}`}
                     >
                       {typeBadge.label}
                     </span>
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full border ${priorityConfig.border} ${priorityConfig.text}`}
+                      className={`text-xs px-2 py-0.5 rounded border ${priorityConfig.border} ${priorityConfig.text}`}
                     >
                       {rx.priority}
                     </span>
@@ -634,7 +634,7 @@ function PracticeRxSection({
 
 export function PracticeIntelligencePanel({ data, companyName }: PracticeIntelligencePanelProps) {
   return (
-    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden p-6 space-y-6">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl overflow-hidden p-6 space-y-6">
       <PracticeSyncSection data={data.practiceSync} companyName={companyName} />
       <PressureIndexSection data={data.pressureIndex} companyName={companyName} />
       <ConsistencyMomentumSection data={data.consistencyMomentum} companyName={companyName} />

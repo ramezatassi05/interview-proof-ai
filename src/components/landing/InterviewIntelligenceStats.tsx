@@ -41,25 +41,21 @@ function ScoreBar({ score }: { score: number }) {
 
   return (
     <svg width={barWidth} height={h} className="mt-2">
-      {/* Track */}
       <rect x={0} y={10} width={barWidth} height={4} rx={2} fill="var(--track-bg)" />
-      {/* Hire zone range */}
       <rect
         x={zoneStartX}
         y={8}
         width={zoneWidth}
         height={8}
         rx={3}
-        fill="var(--color-success)"
-        opacity={0.25}
+        fill="var(--accent-primary)"
+        opacity={0.2}
       />
-      {/* Score marker */}
       <circle cx={scoreX} cy={12} r={5} fill={scoreColor(score)} />
-      {/* Labels */}
-      <text x={0} y={h} fontSize={9} fill="var(--text-muted)">
+      <text x={0} y={h} fontSize={9} fill="var(--text-muted)" className="font-mono">
         0
       </text>
-      <text x={barWidth - 12} y={h} fontSize={9} fill="var(--text-muted)">
+      <text x={barWidth - 12} y={h} fontSize={9} fill="var(--text-muted)" className="font-mono">
         100
       </text>
     </svg>
@@ -93,7 +89,7 @@ function RiskBars({
               fill={RISK_COLORS[d.band] ?? 'var(--text-muted)'}
               opacity={0.8}
             />
-            <text x={maxWidth + 6} y={y + barHeight - 1} fontSize={10} fill="var(--text-secondary)">
+            <text x={maxWidth + 6} y={y + barHeight - 1} fontSize={10} fill="var(--text-secondary)" className="font-mono">
               {d.percentage}%
             </text>
           </g>
@@ -125,8 +121,8 @@ function RoundBars({ data }: { data: AggregateInsightStats['avgScoreByRound'] })
               width={barWidth}
               height={barH}
               rx={3}
-              fill={scoreColor(d.avgScore)}
-              opacity={0.8}
+              fill="var(--accent-primary)"
+              opacity={0.7}
             />
             <text
               x={x + barWidth / 2}
@@ -134,6 +130,7 @@ function RoundBars({ data }: { data: AggregateInsightStats['avgScoreByRound'] })
               fontSize={9}
               fill="var(--text-muted)"
               textAnchor="middle"
+              className="font-mono"
             >
               {ROUND_LABELS[d.roundType] ?? d.roundType}
             </text>
@@ -141,16 +138,6 @@ function RoundBars({ data }: { data: AggregateInsightStats['avgScoreByRound'] })
         );
       })}
     </svg>
-  );
-}
-
-/** Pulse dot for the "Analyses Run" card */
-function PulseDot() {
-  return (
-    <span className="relative mt-2 flex h-3 w-3">
-      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--accent-primary)] opacity-50" />
-      <span className="relative inline-flex h-3 w-3 rounded-full bg-[var(--accent-primary)]" />
-    </span>
   );
 }
 
@@ -165,18 +152,16 @@ export function InterviewIntelligenceStats() {
           setStats(json.data);
         }
       })
-      .catch(() => {
-        // No data available — section stays hidden
-      });
+      .catch(() => {});
   }, []);
 
   if (!stats) return null;
 
   return (
     <section>
-      <Container className="py-14">
+      <Container className="py-16">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl">
+          <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl tracking-tight">
             Interview Intelligence
           </h2>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -184,29 +169,25 @@ export function InterviewIntelligenceStats() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2">
           {/* Card 1: Analyses Run */}
-          <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-5">
-            <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
-              Diagnostics Run
-            </p>
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
+            <p className="section-label">Diagnostics Run</p>
             <div className="mt-2 flex items-center gap-3">
-              <span className="text-3xl font-bold text-[var(--text-primary)]">
+              <span className="font-mono text-3xl font-bold text-[var(--text-primary)]">
                 {formatNumber(stats.totalAnalyses)}
               </span>
-              <PulseDot />
+              <span className="h-2 w-2 rounded-full bg-[var(--color-success)]" />
             </div>
             <p className="mt-2 text-xs text-[var(--text-muted)]">and counting</p>
           </div>
 
           {/* Card 2: Avg Readiness Score */}
-          <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-5">
-            <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
-              Avg Readiness Score
-            </p>
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
+            <p className="section-label">Avg Readiness Score</p>
             <div className="mt-2 flex items-center gap-3">
               <span
-                className="text-3xl font-bold"
+                className="font-mono text-3xl font-bold"
                 style={{ color: scoreColor(stats.avgReadinessScore) }}
               >
                 {stats.avgReadinessScore}
@@ -217,10 +198,8 @@ export function InterviewIntelligenceStats() {
           </div>
 
           {/* Card 3: Risk Distribution */}
-          <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-5">
-            <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
-              Risk Distribution
-            </p>
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
+            <p className="section-label">Risk Distribution</p>
             <div className="mt-2 flex items-center gap-4">
               <div className="space-y-1">
                 {stats.riskBandDistribution.map((d) => (
@@ -238,15 +217,13 @@ export function InterviewIntelligenceStats() {
           </div>
 
           {/* Card 4: Score by Round */}
-          <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-5">
-            <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
-              Avg Score by Round
-            </p>
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
+            <p className="section-label">Avg Score by Round</p>
             <div className="mt-1 flex items-end gap-4">
               <RoundBars data={stats.avgScoreByRound} />
               <div className="space-y-0.5 pb-4">
                 {stats.avgScoreByRound.map((d) => (
-                  <div key={d.roundType} className="text-xs text-[var(--text-muted)]">
+                  <div key={d.roundType} className="font-mono text-xs text-[var(--text-muted)]">
                     {Math.round(d.avgScore)}
                   </div>
                 ))}

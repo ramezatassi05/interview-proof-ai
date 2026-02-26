@@ -33,6 +33,11 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
     projection;
   const potentialColors = getPotentialColor(improvementPotential);
 
+  // Dynamic milestone days (fallback to defaults for older reports)
+  const m1 = projection.milestone1Day ?? 3;
+  const m2 = projection.milestone2Day ?? 7;
+  const m3 = projection.milestone3Day ?? 14;
+
   // Chart dimensions
   const chartWidth = 400;
   const chartHeight = 200;
@@ -40,16 +45,16 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
   const innerWidth = chartWidth - padding.left - padding.right;
   const innerHeight = chartHeight - padding.top - padding.bottom;
 
-  // Data points (days 0, 3, 7, 14)
+  // Data points using actual milestone days
   const dataPoints = [
     { day: 0, score: currentScore, label: 'Now' },
-    { day: 3, score: day3Projection.score, label: 'Day 3' },
-    { day: 7, score: day7Projection.score, label: 'Day 7' },
-    { day: 14, score: day14Projection.score, label: 'Day 14' },
+    { day: m1, score: day3Projection.score, label: `Day ${m1}` },
+    { day: m2, score: day7Projection.score, label: `Day ${m2}` },
+    { day: m3, score: day14Projection.score, label: `Day ${m3}` },
   ];
 
-  // Scale functions (0-14 days)
-  const xScale = (day: number) => padding.left + (day / 14) * innerWidth;
+  // Scale functions (0 to milestone3Day)
+  const xScale = (day: number) => padding.left + (day / m3) * innerWidth;
   const yScale = (score: number) => padding.top + innerHeight - (score / 100) * innerHeight;
 
   // Generate line path
@@ -58,10 +63,10 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
     .join(' ');
 
   // Generate area path (for gradient fill)
-  const areaPath = `${linePath} L ${xScale(14)} ${yScale(0)} L ${xScale(0)} ${yScale(0)} Z`;
+  const areaPath = `${linePath} L ${xScale(m3)} ${yScale(0)} L ${xScale(0)} ${yScale(0)} Z`;
 
   return (
-    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl overflow-hidden">
       {/* Warm gradient header */}
       <div className="bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-secondary)]/5 px-6 pt-4 pb-3">
         <div className="flex items-start justify-between">
@@ -167,10 +172,10 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
 
       {/* Projections detail */}
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        {/* Day 3 */}
-        <div className="bg-[var(--bg-card)] rounded-[16px] p-3 card-warm-hover shadow-warm">
+        {/* Milestone 1 */}
+        <div className="bg-[var(--bg-card)] rounded-[16px] p-3 card-warm-hover">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[var(--text-primary)]">Day 3</span>
+            <span className="text-sm font-medium text-[var(--text-primary)]">Day {m1}</span>
             <span className={`text-lg font-bold ${getScoreColor(day3Projection.score)}`}>
               {day3Projection.score}
               <span className="text-sm font-normal text-[var(--color-success)] ml-1">
@@ -193,10 +198,10 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
           </div>
         </div>
 
-        {/* Day 7 */}
-        <div className="bg-[var(--bg-card)] rounded-[16px] p-3 card-warm-hover shadow-warm">
+        {/* Milestone 2 */}
+        <div className="bg-[var(--bg-card)] rounded-[16px] p-3 card-warm-hover">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[var(--text-primary)]">Day 7</span>
+            <span className="text-sm font-medium text-[var(--text-primary)]">Day {m2}</span>
             <span className={`text-lg font-bold ${getScoreColor(day7Projection.score)}`}>
               {day7Projection.score}
               <span className="text-sm font-normal text-[var(--color-success)] ml-1">
@@ -219,10 +224,10 @@ export function TrajectoryChart({ projection, companyName }: TrajectoryChartProp
           </div>
         </div>
 
-        {/* Day 14 */}
-        <div className="bg-[var(--bg-card)] rounded-[16px] p-3 card-warm-hover shadow-warm">
+        {/* Milestone 3 */}
+        <div className="bg-[var(--bg-card)] rounded-[16px] p-3 card-warm-hover">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[var(--text-primary)]">Day 14</span>
+            <span className="text-sm font-medium text-[var(--text-primary)]">Day {m3}</span>
             <span className={`text-lg font-bold ${getScoreColor(day14Projection.score)}`}>
               {day14Projection.score}
               <span className="text-sm font-normal text-[var(--color-success)] ml-1">

@@ -124,7 +124,7 @@ function PersonalizedPlanView({
   };
 
   return (
-    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden p-6">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl overflow-hidden p-6">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-2">
           <svg
@@ -140,7 +140,7 @@ function PersonalizedPlanView({
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
             />
           </svg>
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
             {companyName
               ? `Your ${companyName} ${plan.totalDays}-Day Execution Roadmap`
               : `Your ${plan.totalDays}-Day Execution Roadmap`}
@@ -157,7 +157,7 @@ function PersonalizedPlanView({
       </div>
 
       {/* Overall Progress bar */}
-      <div className="mb-6 rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+      <div className="mb-6 rounded-xl bg-[var(--bg-card)] p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-[var(--text-primary)]">Overall Progress</span>
           <span className="text-sm font-bold text-[var(--accent-primary)]">{progress}%</span>
@@ -491,7 +491,7 @@ function LegacyPlanView({
   };
 
   return (
-    <div className="card-warm shadow-warm rounded-[20px] overflow-hidden p-6">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl overflow-hidden p-6">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-2">
           <svg
@@ -507,7 +507,7 @@ function LegacyPlanView({
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
             />
           </svg>
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] section-header-warm">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
             {companyName ? `${companyName} Execution Roadmap` : 'Execution Roadmap'}
           </h2>
         </div>
@@ -522,7 +522,7 @@ function LegacyPlanView({
       </div>
 
       {/* Progress bar */}
-      <div className="mb-6 rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+      <div className="mb-6 rounded-xl bg-[var(--bg-card)] p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-[var(--text-primary)]">Overall Progress</span>
           <span className="text-sm font-bold text-[var(--accent-primary)]">{progress}%</span>

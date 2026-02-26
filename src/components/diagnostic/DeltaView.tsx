@@ -18,7 +18,7 @@ export function DeltaView({ delta }: DeltaViewProps) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[20px] border border-[var(--border-default)] bg-[var(--bg-card)] p-6 shadow-warm">
+      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
         <h2 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">
           Progress Since Last Run
         </h2>

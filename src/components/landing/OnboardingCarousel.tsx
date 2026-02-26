@@ -51,9 +51,9 @@ const SLIDES: Slide[] = [
   },
   {
     badge: 'Your Diagnostic',
-    title: 'Hire-Zone Score, Risk Map, Study Plan',
+    title: 'Score, Risk Map + Personalized Coaching',
     description:
-      'Get a score out of 100, top rejection risks with evidence, and a prioritized action plan.',
+      'Get your readiness score, top rejection risks, and a prioritized action plan — plus AI-generated interview questions, coaching, and tips built from your resume and the job.',
     accent: 'amber',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-10 w-10 sm:h-12 sm:w-12">
@@ -86,11 +86,9 @@ export function OnboardingCarousel() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Touch support
   const touchStartX = useRef(0);
   const touchDeltaX = useRef(0);
 
-  // Mouse drag support
   const [dragOffsetX, setDragOffsetX] = useState(0);
   const isDragging = useRef(false);
   const dragStartX = useRef(0);
@@ -113,10 +111,8 @@ export function OnboardingCarousel() {
         return;
       }
 
-      // Reset any drag offset before transitioning
       setDragOffsetX(0);
 
-      // 3-phase transition: exit → swap → enter
       setSlidePhase('exit');
       setTimeout(() => {
         setActiveIndex(next);
@@ -133,7 +129,6 @@ export function OnboardingCarousel() {
     [slidePhase, prefersReducedMotion]
   );
 
-  // Auto-advance timer + progress bar
   useEffect(() => {
     const tick = 50;
 
@@ -154,7 +149,6 @@ export function OnboardingCarousel() {
     };
   }, [activeIndex, slidePhase, goToSlide]);
 
-  // Pause on hover / focus
   const pause = useCallback(() => {
     isPaused.current = true;
   }, []);
@@ -162,7 +156,6 @@ export function OnboardingCarousel() {
     if (!isDragging.current) isPaused.current = false;
   }, []);
 
-  // Touch handlers
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
     touchDeltaX.current = 0;
@@ -177,15 +170,12 @@ export function OnboardingCarousel() {
     if (Math.abs(touchDeltaX.current) < threshold) return;
 
     if (touchDeltaX.current < -threshold) {
-      // Swipe left → next
       goToSlide((activeIndex + 1) % SLIDES.length);
     } else {
-      // Swipe right → prev
       goToSlide((activeIndex - 1 + SLIDES.length) % SLIDES.length);
     }
   }, [activeIndex, goToSlide]);
 
-  // Mouse drag handler
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (e.button !== 0 || slidePhase !== 'visible') return;
@@ -216,7 +206,6 @@ export function OnboardingCarousel() {
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
 
-        // Cancel any pending RAF from mousemove before resetting state
         cancelAnimationFrame(rafId.current);
 
         isDragging.current = false;
@@ -234,7 +223,6 @@ export function OnboardingCarousel() {
             goToSlide((activeIndex - 1 + SLIDES.length) % SLIDES.length);
           }
         } else {
-          // Snap back with animation — two-frame RAF so transition applies
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               setDragOffsetX(0);
@@ -249,7 +237,6 @@ export function OnboardingCarousel() {
     [slidePhase, activeIndex, goToSlide, prefersReducedMotion]
   );
 
-  // Suppress phantom clicks after drag
   const onClickCapture = useCallback((e: React.MouseEvent) => {
     if (wasDragged.current) {
       e.stopPropagation();
@@ -258,7 +245,6 @@ export function OnboardingCarousel() {
     }
   }, []);
 
-  // Cleanup pending RAF on unmount
   useEffect(() => {
     return () => cancelAnimationFrame(rafId.current);
   }, []);
@@ -288,7 +274,6 @@ export function OnboardingCarousel() {
   return (
     <section>
       <Container className="py-12">
-        {/* Section header */}
         <div className="flex flex-col items-center text-center">
           <Badge variant="accent">New Here?</Badge>
           <h2 className="mt-3 text-2xl font-bold text-[var(--text-primary)] sm:text-3xl">
@@ -296,7 +281,6 @@ export function OnboardingCarousel() {
           </h2>
         </div>
 
-        {/* Carousel card */}
         <div
           ref={containerRef}
           className="mx-auto mt-8 max-w-2xl select-none"
@@ -316,13 +300,11 @@ export function OnboardingCarousel() {
           aria-label="How InterviewProof Works"
         >
           <div
-            className="rounded-[20px] bg-[var(--bg-card)] shadow-warm overflow-hidden"
+            className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden"
             aria-live="polite"
           >
-            {/* Slide content */}
             <div className="p-6 sm:p-8" style={slideStyle}>
               <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:text-left sm:gap-6">
-                {/* Icon */}
                 <div
                   className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl sm:h-20 sm:w-20"
                   style={{ backgroundColor: accentMuted, color: accentColor }}
@@ -330,7 +312,6 @@ export function OnboardingCarousel() {
                   {currentSlide.icon}
                 </div>
 
-                {/* Text */}
                 <div className="mt-4 sm:mt-0">
                   <span
                     className="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider"
@@ -348,9 +329,7 @@ export function OnboardingCarousel() {
               </div>
             </div>
 
-            {/* Navigation dots + progress bar */}
             <div className="px-6 pb-5 sm:px-8">
-              {/* Dots */}
               <div className="flex items-center justify-center gap-2" role="tablist">
                 {SLIDES.map((_, i) => (
                   <button
@@ -372,7 +351,6 @@ export function OnboardingCarousel() {
                 ))}
               </div>
 
-              {/* Progress bar */}
               <div className="mt-3 h-[2px] overflow-hidden rounded-full bg-[var(--track-bg)]">
                 <div
                   className="h-full rounded-full"

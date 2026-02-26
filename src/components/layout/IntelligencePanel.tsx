@@ -90,7 +90,7 @@ function ScoresIntelligence({ reportData }: { reportData: ReportData }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+      <div className="rounded-xl bg-[var(--bg-card)] p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium text-[var(--text-muted)]">Estimated Percentile</span>
           <span className="text-sm font-bold text-[var(--accent-primary)]">{getPercentile()}</span>
@@ -101,7 +101,7 @@ function ScoresIntelligence({ reportData }: { reportData: ReportData }) {
       </div>
 
       {trend && (
-        <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+        <div className="rounded-xl bg-[var(--bg-card)] p-4">
           <div className="flex items-center gap-2 mb-2">
             <svg
               className={`h-4 w-4 ${trend.direction === 'up' ? 'text-[var(--color-success)]' : 'text-[var(--color-warning)]'}`}
@@ -126,7 +126,7 @@ function ScoresIntelligence({ reportData }: { reportData: ReportData }) {
         </div>
       )}
 
-      <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+      <div className="rounded-xl bg-[var(--bg-card)] p-4">
         <span className="text-xs font-medium text-[var(--text-muted)]">Top Move</span>
         <p className="mt-1 text-sm text-[var(--text-primary)]">
           {score < 70
@@ -145,7 +145,7 @@ function RisksIntelligence({ reportData }: { reportData: ReportData }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+      <div className="rounded-xl bg-[var(--bg-card)] p-4">
         <span className="text-xs font-medium text-[var(--text-muted)]">Recruiter Impact</span>
         <div className="mt-2 flex items-center gap-2">
           <div className="flex-1 h-2 bg-[var(--track-bg)] rounded-full overflow-hidden">
@@ -163,7 +163,7 @@ function RisksIntelligence({ reportData }: { reportData: ReportData }) {
         </p>
       </div>
 
-      <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+      <div className="rounded-xl bg-[var(--bg-card)] p-4">
         <span className="text-xs font-medium text-[var(--text-muted)]">Signal Strength</span>
         <div className="mt-2 grid grid-cols-3 gap-2 text-center">
           <div>
@@ -183,7 +183,7 @@ function RisksIntelligence({ reportData }: { reportData: ReportData }) {
         </div>
       </div>
 
-      <div className="rounded-[20px] bg-[var(--color-danger-muted)] shadow-warm p-4">
+      <div className="rounded-xl bg-[var(--color-danger-muted)] p-4">
         <span className="text-xs font-medium text-[var(--color-danger)]">First Fix</span>
         <p className="mt-1 text-sm text-[var(--text-primary)]">
           {risks[0]?.title ?? 'No critical risks identified'}
@@ -205,7 +205,7 @@ function QuestionsIntelligence({ reportData }: { reportData: ReportData }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+      <div className="rounded-xl bg-[var(--bg-card)] p-4">
         <span className="text-xs font-medium text-[var(--text-muted)]">Question Breakdown</span>
         <div className="mt-2 space-y-2">
           <div className="flex justify-between text-xs">
@@ -221,7 +221,7 @@ function QuestionsIntelligence({ reportData }: { reportData: ReportData }) {
         </div>
       </div>
 
-      <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+      <div className="rounded-xl bg-[var(--bg-card)] p-4">
         <span className="text-xs font-medium text-[var(--text-muted)]">Preparation Tip</span>
         <p className="mt-1 text-xs text-[var(--text-secondary)]">
           Practice answering each question out loud. Time yourself to keep responses under 2
@@ -239,7 +239,7 @@ function StudyIntelligence({ reportData }: { reportData: ReportData }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+      <div className="rounded-xl bg-[var(--bg-card)] p-4">
         <span className="text-xs font-medium text-[var(--text-muted)]">Time to Complete</span>
         <p className="mt-1 text-2xl font-bold text-[var(--accent-primary)]">
           {formatHoursMinutes(totalHours)}
@@ -249,7 +249,7 @@ function StudyIntelligence({ reportData }: { reportData: ReportData }) {
         </p>
       </div>
 
-      <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+      <div className="rounded-xl bg-[var(--bg-card)] p-4">
         <span className="text-xs font-medium text-[var(--text-muted)]">Projected Improvement</span>
         <div className="mt-2 flex items-center gap-2">
           <svg
@@ -272,7 +272,7 @@ function StudyIntelligence({ reportData }: { reportData: ReportData }) {
         </p>
       </div>
 
-      <div className="rounded-[20px] bg-[var(--accent-primary)]/10 shadow-warm p-4">
+      <div className="rounded-xl bg-[var(--accent-primary)]/10 p-4">
         <span className="text-xs font-medium text-[var(--accent-primary)]">Quick Win</span>
         <p className="mt-1 text-sm text-[var(--text-primary)]">
           {tasks[0]?.task ?? 'No tasks available'}
@@ -289,7 +289,7 @@ function CoachingIntelligence({ reportData }: { reportData: ReportData }) {
 
   if (!archetype) {
     return (
-      <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+      <div className="rounded-xl bg-[var(--bg-card)] p-4">
         <p className="text-xs text-[var(--text-muted)]">No coaching data available</p>
       </div>
     );
@@ -300,7 +300,7 @@ function CoachingIntelligence({ reportData }: { reportData: ReportData }) {
   return (
     <div className="space-y-4">
       {/* Archetype card */}
-      <div className="rounded-[20px] bg-[var(--accent-primary)]/5 shadow-warm p-4">
+      <div className="rounded-xl bg-[var(--accent-primary)]/5 p-4">
         <span className="text-xs font-medium text-[var(--accent-primary)]">Candidate Archetype</span>
         <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{archetype.label}</p>
         <div className="mt-2 flex items-center justify-between">
@@ -317,8 +317,8 @@ function CoachingIntelligence({ reportData }: { reportData: ReportData }) {
 
       {/* Improvement potential */}
       {trajectory && (
-        <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
-          <span className="text-xs font-medium text-[var(--text-muted)]">14-Day Potential</span>
+        <div className="rounded-xl bg-[var(--bg-card)] p-4">
+          <span className="text-xs font-medium text-[var(--text-muted)]">{trajectory.milestone3Day ?? 14}-Day Potential</span>
           <div className="mt-2 flex items-center gap-2">
             <svg
               className="h-4 w-4 text-[var(--color-success)]"
@@ -345,7 +345,7 @@ function CoachingIntelligence({ reportData }: { reportData: ReportData }) {
 
       {/* Recommended focus */}
       {forecasts && (
-        <div className="rounded-[20px] bg-[var(--bg-card)] shadow-warm p-4">
+        <div className="rounded-xl bg-[var(--bg-card)] p-4">
           <span className="text-xs font-medium text-[var(--text-muted)]">Recommended Focus</span>
           <p className="mt-1 text-sm text-[var(--text-primary)]">{forecasts.recommendedFocus}</p>
         </div>
@@ -362,7 +362,7 @@ function QuickActions({ reportData }: { reportData: ReportData }) {
         <a
           href={`/api/report/${reportData.reportId}/pdf`}
           download
-          className="flex items-center gap-2 w-full px-3 py-2 rounded-full bg-[var(--bg-card)] shadow-warm text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors"
+          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg bg-[var(--bg-card)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -376,7 +376,7 @@ function QuickActions({ reportData }: { reportData: ReportData }) {
         </a>
         <a
           href="/new"
-          className="flex items-center gap-2 w-full px-3 py-2 rounded-full bg-[var(--bg-card)] shadow-warm text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors"
+          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg bg-[var(--bg-card)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
