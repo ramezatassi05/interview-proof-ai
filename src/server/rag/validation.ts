@@ -195,10 +195,10 @@ export function validateAnalysisQuality(
         }
         return true;
       });
-    // Restore if we'd violate the min(3)
-    if (analysis.personalizedCoaching.archetypeTips.length < 3) {
+    // Restore if we'd violate the min(1)
+    if (analysis.personalizedCoaching.archetypeTips.length < 1) {
       analysis.personalizedCoaching.archetypeTips = originalTips;
-      warnings.push('Archetype tips filter would violate min(3), keeping originals');
+      warnings.push('Archetype tips filter would violate min(1), keeping originals');
     }
 
     // Filter priority actions (min 2 in schema)

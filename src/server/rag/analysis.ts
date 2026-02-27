@@ -21,15 +21,15 @@ import {
 const RecruiterInternalNotesSchema = z.object({
   firstGlanceReaction: z.string(),
   starredItem: z.string(),
-  internalConcerns: z.array(z.string()).min(2).max(4),
-  phoneScreenQuestions: z.array(z.string()).min(3).max(5),
+  internalConcerns: z.array(z.string()).min(1).max(4),
+  phoneScreenQuestions: z.array(z.string()).min(1).max(5),
 });
 
 // Zod schema for recruiter debrief summary
 const RecruiterDebriefSummarySchema = z.object({
   oneLinerVerdict: z.string(),
-  advocateReasons: z.array(z.string()).min(2).max(3),
-  pushbackReasons: z.array(z.string()).min(2).max(3),
+  advocateReasons: z.array(z.string()).min(1).max(3),
+  pushbackReasons: z.array(z.string()).min(1).max(3),
   recommendationParagraph: z.string(),
   comparativeNote: z.string(),
 });
@@ -55,7 +55,7 @@ const RecruiterSignalsSchema = z.object({
 
 // Zod schema for personalized coaching (LLM-generated specific advice)
 const PersonalizedCoachingSchema = z.object({
-  archetypeTips: z.array(z.string()).min(3).max(5),
+  archetypeTips: z.array(z.string()).min(1).max(5),
   roundFocus: z.string().min(30),
   priorityActions: z
     .array(
@@ -72,11 +72,11 @@ const PersonalizedCoachingSchema = z.object({
 // Zod schema for round-specific coaching (Phase 8 — optional for backwards compat)
 const RoundCoachingSchema = z.object({
   roundType: z.string(),
-  coachingRecommendations: z.array(z.string()).min(2).max(6),
-  waysToStandOut: z.array(z.string()).min(2).max(5),
+  coachingRecommendations: z.array(z.string()).min(1).max(6),
+  waysToStandOut: z.array(z.string()).min(1).max(5),
   questionsToAskInterviewer: z
     .array(z.object({ question: z.string(), context: z.string() }))
-    .min(2)
+    .min(1)
     .max(6),
   sampleResponses: z
     .array(
@@ -91,7 +91,7 @@ const RoundCoachingSchema = z.object({
     )
     .min(1)
     .max(4),
-  passionSignals: z.array(z.string()).min(2).max(5),
+  passionSignals: z.array(z.string()).min(1).max(5),
 });
 
 // Zod schema for LLM analysis output validation
@@ -120,7 +120,7 @@ const LLMAnalysisSchema = z.object({
       mappedRiskId: z.string(),
       why: z.string(),
     })
-  ),
+  ).min(1),
   studyPlan: z.array(
     z.object({
       task: z.string(),
@@ -383,8 +383,8 @@ ${roundType === 'technical' ? `
    - Research methodology gaps, publication gaps, ML/AI depth, experimental design weaknesses, paper discussion readiness
    - De-prioritize: Soft skills, cultural fit, non-research technical frameworks
 ` : ''}
-3. **interviewQuestions** (100-120 questions):
-   Generate a diverse pool of technical and job-relevant questions based on skill gaps and experience gaps identified. Each question should relate to the candidate's ability to perform the job role. Include a mix of question types: technical deep-dives, behavioral/situational, case-based/problem-solving, and role-specific.
+3. **interviewQuestions** (15-20 questions, MINIMUM 10):
+   Generate a focused set of technical and job-relevant questions based on skill gaps and experience gaps identified. Each question should relate to the candidate's ability to perform the job role. Include a mix of question types: technical deep-dives, behavioral/situational, case-based/problem-solving, and role-specific.
    IMPORTANT: Do NOT include any questions about citizenship, nationality, immigration status, age, religion, marital status, family planning, disability, or any other protected characteristics. These are illegal to ask in interviews and not relevant to technical assessment.
 
 4. **studyPlan** (${prepPreferences ? getTaskCountRange(prepPreferences.timeline) : '5-8'} items):
@@ -504,7 +504,7 @@ ${formattedResources}
      - BAD: { question: "What's the team culture like?", context: "Shows interest" }
      - GOOD: { question: "I noticed [Company] recently migrated to [Tech] — how has that changed the team's deployment workflow?", context: "Shows you researched their tech blog and understand infrastructure implications" }
 
-   - sampleResponses: 3-4 model answers in STAR format showing passion and fit.
+   - sampleResponses: 3-4 model answers (MINIMUM 2) in STAR format showing passion and fit.
      Each with { scenario, situation, task, action, result, whyItWorks }.
      - scenario: A realistic interview question for this role
      - situation: 2-3 sentences setting the scene — company, team, project context from the candidate's ACTUAL resume
@@ -651,6 +651,7 @@ export async function performAnalysis(
   priorEmployment?: PriorEmploymentSignal
 ): Promise<LLMAnalysis> {
   const openai = getOpenAIClient();
+  const deadline = Date.now() + 90_000; // 90s cumulative deadline for all retries
 
   // Compute company difficulty for prompt calibration
   const companyDifficulty = computeCompanyDifficulty(
@@ -671,6 +672,11 @@ export async function performAnalysis(
   );
 
   for (let attempt = 0; attempt <= retries; attempt++) {
+    if (attempt > 0 && Date.now() > deadline) {
+      throw new Error(
+        'Analysis deadline exceeded — not enough time remaining for another retry'
+      );
+    }
     try {
       const response = await openai.chat.completions.create({
         model: MODELS.reasoning,
@@ -702,8 +708,18 @@ export async function performAnalysis(
         console.warn(`LLM returned only ${validated.rankedRisks.length} risks, expected 10-15`);
       }
 
+      if (validated.interviewQuestions.length < 15) {
+        console.warn(`LLM returned only ${validated.interviewQuestions.length} questions, expected 15-20`);
+      }
+
       return validated;
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.warn(
+          `Validation failed (attempt ${attempt + 1}):`,
+          error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ')
+        );
+      }
       if (attempt === retries) {
         console.error('LLM analysis failed after retries:', error);
         throw new Error(

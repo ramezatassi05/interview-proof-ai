@@ -138,7 +138,7 @@ const PIPELINE_ROUTES = ['/report/analyze', '/report/rerun'];
 class APIClient {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const isPipeline = PIPELINE_ROUTES.some((r) => endpoint.startsWith(r));
-    const timeoutMs = isPipeline ? 150_000 : 120_000;
+    const timeoutMs = isPipeline ? 200_000 : 120_000;
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);

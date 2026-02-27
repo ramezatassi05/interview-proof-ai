@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { runAnalysisPipeline, computeDelta, type PipelineOutput } from '@/server/pipeline';
 import type { RoundType, RiskBand } from '@/types';
 
-export const maxDuration = 120;
+export const maxDuration = 180;
 
 const RerunReportSchema = z.object({
   reportId: z.string().uuid(),

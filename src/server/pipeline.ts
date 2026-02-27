@@ -39,7 +39,7 @@ import {
 import { generatePersonalizedStudyPlan } from './scoring/studyplan';
 import { generateMoreQuestions } from './questions';
 
-const TARGET_QUESTION_POOL = 100;
+const TARGET_QUESTION_POOL = 50;
 
 export interface PipelineInput {
   resumeText: string;
@@ -186,7 +186,7 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
       )
     : undefined;
 
-  // Wait for question backfill to complete before returning
+  // Await backfill so the full question pool is included in the returned analysis
   await backfillPromise;
 
   return {
