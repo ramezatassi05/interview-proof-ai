@@ -423,6 +423,16 @@ h1, h2, h3, h4, h5, h6 {
   animation: terminal-cursor 1s step-end infinite;
 }
 
+/* Score pulse — subtle opacity pulse for live feel */
+@keyframes score-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.score-pulse {
+  animation: score-pulse 2s ease-in-out infinite;
+}
+
 /* ====== OWL MASCOT ANIMATIONS ====== */
 
 @keyframes owl-blink {

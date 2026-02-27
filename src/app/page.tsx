@@ -79,14 +79,25 @@ export default function LandingPage() {
                 </h1>
 
                 <p className="mt-5 max-w-lg text-base text-[var(--text-secondary)]">
-                  We show you the exact sentence that would get you rejected. Get a job-specific diagnostic that reveals
-                  your rejection risks — plus personalized interview questions, coaching, and tips built from your resume and the role.
+                  Upload your resume. See exactly what recruiters will reject you for — before the interview.
                 </p>
+
+                {/* 3-step micro process */}
+                <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs">
+                  <span className="text-[var(--text-muted)]">1.</span>
+                  <span className="text-[var(--text-secondary)]">Upload your resume</span>
+                  <span className="text-[var(--text-muted)]">&rarr;</span>
+                  <span className="text-[var(--text-muted)]">2.</span>
+                  <span className="text-[var(--text-secondary)]">Get your risk score</span>
+                  <span className="text-[var(--text-muted)]">&rarr;</span>
+                  <span className="text-[var(--text-muted)]">3.</span>
+                  <span className="text-[var(--text-secondary)]">Fix hidden red flags</span>
+                </div>
 
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <Link href={ctaHref}>
                     <Button variant="accent" size="lg">
-                      Start Here
+                      Run My Diagnostic
                     </Button>
                   </Link>
                   <Link href={ctaHref}>
@@ -99,6 +110,12 @@ export default function LandingPage() {
 
                 <p className="mt-4 font-mono text-xs text-[var(--text-muted)]">
                   Free preview. Full diagnostic for $15.
+                </p>
+                <p className="mt-2 flex items-center gap-1.5 font-mono text-xs text-[var(--text-muted)]">
+                  <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  Built from 50+ real recruiter rubrics and hiring frameworks
                 </p>
               </div>
 
@@ -160,7 +177,7 @@ export default function LandingPage() {
                     <div className="p-5 font-mono text-sm space-y-3">
                       <div className="flex justify-between">
                         <span className="text-[var(--text-muted)]">READINESS</span>
-                        <span className="font-semibold text-[var(--color-warning)]">73</span>
+                        <span className="score-pulse font-semibold text-[var(--color-warning)]">73</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[var(--text-muted)]">RISK_BAND</span>
@@ -177,6 +194,10 @@ export default function LandingPage() {
                       <div className="flex justify-between">
                         <span className="text-[var(--text-muted)]">TECH_FIT</span>
                         <span className="font-semibold text-[var(--color-success)]">87%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[var(--text-muted)]">TOP_RISK</span>
+                        <span className="font-semibold text-[var(--color-danger)]">Generic leadership example</span>
                       </div>
                       <div className="h-px bg-[var(--border-default)] my-1" />
                       <div className="flex items-center gap-2">

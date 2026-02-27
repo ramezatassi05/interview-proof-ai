@@ -65,7 +65,7 @@ const PersonalizedCoachingSchema = z.object({
         resources: z.array(z.string()).max(5).optional(),
       })
     )
-    .min(1)
+    .min(3)
     .max(5),
 });
 
@@ -89,7 +89,7 @@ const RoundCoachingSchema = z.object({
         whyItWorks: z.string(),
       })
     )
-    .min(1)
+    .min(3)
     .max(4),
   passionSignals: z.array(z.string()).min(1).max(5),
 });
@@ -504,7 +504,7 @@ ${formattedResources}
      - BAD: { question: "What's the team culture like?", context: "Shows interest" }
      - GOOD: { question: "I noticed [Company] recently migrated to [Tech] — how has that changed the team's deployment workflow?", context: "Shows you researched their tech blog and understand infrastructure implications" }
 
-   - sampleResponses: 3-4 model answers (MINIMUM 2) in STAR format showing passion and fit.
+   - sampleResponses: 3-4 model answers (MINIMUM 3) in STAR format showing passion and fit.
      Each with { scenario, situation, task, action, result, whyItWorks }.
      - scenario: A realistic interview question for this role
      - situation: 2-3 sentences setting the scene — company, team, project context from the candidate's ACTUAL resume
@@ -620,6 +620,22 @@ Return ONLY valid JSON matching this exact structure:
     "sampleResponses": [
       {
         "scenario": "Likely interview question for this role...",
+        "situation": "2-3 sentences of context from the candidate's resume...",
+        "task": "The specific challenge or objective they owned...",
+        "action": "3-4 sentences of concrete steps, technologies, and decisions...",
+        "result": "Quantifiable outcomes with metrics...",
+        "whyItWorks": "Why this STAR answer is effective..."
+      },
+      {
+        "scenario": "Another likely interview question...",
+        "situation": "2-3 sentences of context from the candidate's resume...",
+        "task": "The specific challenge or objective they owned...",
+        "action": "3-4 sentences of concrete steps, technologies, and decisions...",
+        "result": "Quantifiable outcomes with metrics...",
+        "whyItWorks": "Why this STAR answer is effective..."
+      },
+      {
+        "scenario": "A third likely interview question...",
         "situation": "2-3 sentences of context from the candidate's resume...",
         "task": "The specific challenge or objective they owned...",
         "action": "3-4 sentences of concrete steps, technologies, and decisions...",
