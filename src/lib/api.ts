@@ -132,24 +132,51 @@ export interface ShareResponse {
   };
 }
 
+// Routes that run the full LLM pipeline and need longer timeouts
+const PIPELINE_ROUTES = ['/report/analyze', '/report/rerun'];
+
 class APIClient {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const res = await fetch(`${API_BASE}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-    });
+    const isPipeline = PIPELINE_ROUTES.some((r) => endpoint.startsWith(r));
+    const timeoutMs = isPipeline ? 150_000 : 120_000;
 
-    const data = await res.json();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-    if (!res.ok) {
-      const error = data as APIError;
-      throw new APIRequestError(error.error || 'Request failed', res.status, error);
+    try {
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options?.headers,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const error = data as APIError;
+        throw new APIRequestError(error.error || 'Request failed', res.status, error);
+      }
+
+      return data as T;
+    } catch (err) {
+      if (err instanceof APIRequestError) throw err;
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw new Error(
+          'The request is taking too long. Please check your connection and try again.'
+        );
+      }
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        throw new Error(
+          'Connection lost — the server may be busy or your network dropped. Please try again.'
+        );
+      }
+      throw err;
+    } finally {
+      clearTimeout(timer);
     }
-
-    return data as T;
   }
 
   async createReport(input: {

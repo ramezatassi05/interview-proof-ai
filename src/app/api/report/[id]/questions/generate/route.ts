@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { generateMoreQuestions } from '@/server/questions';
 
+export const maxDuration = 30;
+
 const RequestSchema = z.object({
   existingQuestions: z.array(z.string()),
 });

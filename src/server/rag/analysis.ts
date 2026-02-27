@@ -65,7 +65,7 @@ const PersonalizedCoachingSchema = z.object({
         resources: z.array(z.string()).max(5).optional(),
       })
     )
-    .min(3)
+    .min(1)
     .max(5),
 });
 
@@ -82,7 +82,10 @@ const RoundCoachingSchema = z.object({
     .array(
       z.object({
         scenario: z.string(),
-        response: z.string(),
+        situation: z.string(),
+        task: z.string(),
+        action: z.string(),
+        result: z.string(),
         whyItWorks: z.string(),
       })
     )
@@ -501,12 +504,14 @@ ${formattedResources}
      - BAD: { question: "What's the team culture like?", context: "Shows interest" }
      - GOOD: { question: "I noticed [Company] recently migrated to [Tech] — how has that changed the team's deployment workflow?", context: "Shows you researched their tech blog and understand infrastructure implications" }
 
-   - sampleResponses: 3-4 model answers showing passion and fit.
-     Each with { scenario, response, whyItWorks }. The scenario should be a likely ${roundType} question for this role.
-     The response should be what an ideal answer looks like, incorporating the candidate's ACTUAL experience.
+   - sampleResponses: 3-4 model answers in STAR format showing passion and fit.
+     Each with { scenario, situation, task, action, result, whyItWorks }.
      - scenario: A realistic interview question for this role
-     - response: A strong sample answer weaving in the candidate's real experience
-     - whyItWorks: Why this answer is effective (what signals it sends to the interviewer)
+     - situation: 2-3 sentences setting the scene — company, team, project context from the candidate's ACTUAL resume
+     - task: 1-2 sentences describing the specific challenge or objective they owned
+     - action: 3-4 sentences detailing the concrete steps taken, technologies used, and decisions made
+     - result: 1-2 sentences with quantifiable outcomes (metrics, percentages, timeframes)
+     - whyItWorks: Why this STAR answer is effective for this specific role
 
    - passionSignals: 3-5 specific ways the candidate can demonstrate genuine passion and fit during the interview.
      These should be concrete actions, not vague platitudes.
@@ -615,8 +620,11 @@ Return ONLY valid JSON matching this exact structure:
     "sampleResponses": [
       {
         "scenario": "Likely interview question for this role...",
-        "response": "Model answer using candidate's actual experience...",
-        "whyItWorks": "Why this answer is effective..."
+        "situation": "2-3 sentences of context from the candidate's resume...",
+        "task": "The specific challenge or objective they owned...",
+        "action": "3-4 sentences of concrete steps, technologies, and decisions...",
+        "result": "Quantifiable outcomes with metrics...",
+        "whyItWorks": "Why this STAR answer is effective..."
       }
     ],
     "passionSignals": [

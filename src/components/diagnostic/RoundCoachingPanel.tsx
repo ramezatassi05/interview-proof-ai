@@ -181,7 +181,7 @@ function InterviewerQuestions({ items }: { items: { question: string; context: s
 function SampleResponses({
   items,
 }: {
-  items: { scenario: string; response: string; whyItWorks: string }[];
+  items: { scenario: string; situation: string; task: string; action: string; result: string; whyItWorks: string }[];
 }) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
@@ -239,11 +239,31 @@ function SampleResponses({
               </div>
               {isExpanded && (
                 <div className="mt-4 space-y-3">
-                  <div className="rounded-lg bg-[var(--bg-elevated)] p-4 border border-[var(--border-default)]">
-                    <p className="text-xs font-medium text-[var(--color-success)] mb-2">Sample Response</p>
-                    <p className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line">
-                      {item.response}
-                    </p>
+                  <div className="rounded-lg bg-[var(--bg-elevated)] p-4 border border-[var(--border-default)] space-y-3">
+                    {item.situation && (
+                    <div>
+                      <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--color-warning)]/15 text-[var(--color-warning)] mb-1.5">S — Situation</span>
+                      <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{item.situation}</p>
+                    </div>
+                    )}
+                    {item.task && (
+                    <div>
+                      <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--color-info)]/15 text-[var(--color-info)] mb-1.5">T — Task</span>
+                      <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{item.task}</p>
+                    </div>
+                    )}
+                    {item.action && (
+                    <div>
+                      <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--color-success)]/15 text-[var(--color-success)] mb-1.5">A — Action</span>
+                      <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{item.action}</p>
+                    </div>
+                    )}
+                    {item.result && (
+                    <div>
+                      <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--color-accent)]/15 text-[var(--color-accent)] mb-1.5">R — Result</span>
+                      <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{item.result}</p>
+                    </div>
+                    )}
                   </div>
                   <div className="border-l-2 border-[var(--color-warning)]/30 pl-3">
                     <p className="text-xs font-medium text-[var(--color-warning)] mb-1">Why This Works</p>

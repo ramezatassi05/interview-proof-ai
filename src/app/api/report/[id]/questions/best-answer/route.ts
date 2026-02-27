@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { generateBestAnswer } from '@/server/questions';
 
+export const maxDuration = 30;
+
 const RequestSchema = z.object({
   questionIndex: z.number(),
   questionText: z.string().min(1),

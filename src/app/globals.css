@@ -65,7 +65,7 @@
   --color-info-muted: rgba(99, 102, 241, 0.08);
   --shadow-warm: none;
   --shadow-warm-hover: none;
-  --dot-grid-color: rgba(99, 102, 241, 0.14);
+  --dot-grid-color: rgba(99, 102, 241, 0.32);
   --scrollbar-thumb: rgba(99, 102, 241, 0.25);
   --scrollbar-thumb-hover: rgba(99, 102, 241, 0.4);
   --strength-card-border: rgba(5, 150, 105, 0.15);
@@ -108,7 +108,7 @@
   --color-info-muted: rgba(79, 70, 229, 0.08);
   --shadow-warm: 0 1px 3px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.05);
   --shadow-warm-hover: 0 4px 12px rgba(0, 0, 0, 0.09), 0 2px 4px rgba(0, 0, 0, 0.05);
-  --dot-grid-color: rgba(79, 70, 229, 0.08);
+  --dot-grid-color: rgba(79, 70, 229, 0.14);
   --scrollbar-thumb: rgba(79, 70, 229, 0.2);
   --scrollbar-thumb-hover: rgba(79, 70, 229, 0.35);
   --strength-card-border: rgba(4, 120, 87, 0.15);
@@ -238,10 +238,21 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ====== UTILITY CLASSES ====== */
 
-/* Dot grid background */
+/* Dot grid background — pseudo-element so mask only affects dots, not content */
 .dot-grid-bg {
+  position: relative;
+}
+
+.dot-grid-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background-image: radial-gradient(circle, var(--dot-grid-color) 1px, transparent 1px);
   background-size: 24px 24px;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Section label — monospace uppercase */

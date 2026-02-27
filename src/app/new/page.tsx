@@ -110,6 +110,8 @@ export default function NewReportPage() {
         } else {
           setErrors({ submit: error.message });
         }
+      } else if (error instanceof Error) {
+        setErrors({ submit: error.message });
       } else {
         setErrors({ submit: 'An unexpected error occurred. Please try again.' });
       }

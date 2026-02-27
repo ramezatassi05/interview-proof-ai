@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { api, APIRequestError, GetReportResponse } from '@/lib/api';
+import type { DeltaComparison } from '@/types';
 
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -25,6 +26,7 @@ import { PriorityActions } from '@/components/diagnostic/PriorityActions';
 import { HireZoneChart } from '@/components/diagnostic/HireZoneChart';
 import { CompetencyHeatmap } from '@/components/diagnostic/CompetencyHeatmap';
 import { ShareModal } from '@/components/share/ShareModal';
+import { DeltaView } from '@/components/diagnostic/DeltaView';
 
 type ReportData = GetReportResponse['data'];
 
@@ -55,6 +57,10 @@ export default function FullDiagnosticPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [rerunning, setRerunning] = useState(false);
+  const [rerunError, setRerunError] = useState<string | null>(null);
+  const [rerunDelta, setRerunDelta] = useState<DeltaComparison | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
     if (authLoading) return;
@@ -89,6 +95,41 @@ export default function FullDiagnosticPage() {
 
     fetchReport();
   }, [reportId, user, authLoading, router]);
+
+  // Elapsed-time timer during rerun
+  useEffect(() => {
+    if (!rerunning) {
+      setElapsedSeconds(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setElapsedSeconds((s) => s + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [rerunning]);
+
+  const handleRerun = async () => {
+    setRerunning(true);
+    setRerunError(null);
+    setRerunDelta(null);
+    try {
+      const result = await api.rerunReport(reportId);
+      setRerunDelta(result.data.delta);
+      const updated = await api.getReport(reportId);
+      setReport(updated.data);
+    } catch (err: unknown) {
+      console.error('Rerun failed:', err);
+      if (err instanceof APIRequestError) {
+        setRerunError(err.message);
+      } else if (err instanceof Error) {
+        setRerunError(err.message);
+      } else {
+        setRerunError('Rerun failed. Please try again.');
+      }
+    } finally {
+      setRerunning(false);
+    }
+  };
 
   if (authLoading || loading) {
     return (
@@ -151,6 +192,7 @@ export default function FullDiagnosticPage() {
                   {report.roundType.charAt(0).toUpperCase() + report.roundType.slice(1)} interview
                   analysis
                   {report.extractedJD?.companyName ? ` for ${report.extractedJD.companyName}` : ''}
+                  {report.extractedJD?.jobTitle ? ` · ${report.extractedJD.jobTitle}` : ''}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -174,12 +216,39 @@ export default function FullDiagnosticPage() {
                   Download PDF
                 </a>
                 {canRerun && (
-                  <Button variant="secondary" size="sm" onClick={() => router.push(`/r/${reportId}/rerun`)}>
-                    Rerun Analysis
+                  <Button variant="secondary" size="sm" onClick={handleRerun} disabled={rerunning}>
+                    {rerunning ? 'Rerunning…' : 'Rerun Analysis'}
                   </Button>
                 )}
               </div>
             </div>
+
+            {rerunning && (
+              <div className="mb-6 flex items-center gap-3 rounded-lg border border-[var(--border-accent)]/30 bg-[var(--bg-card)] px-4 py-3">
+                <svg className="h-4 w-4 animate-spin text-[var(--color-accent)]" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                <span className="text-sm text-[var(--text-secondary)]">
+                  Running full analysis pipeline — this may take up to a minute…
+                  {elapsedSeconds >= 5 && (
+                    <span className="ml-1 text-[var(--text-muted)]">({elapsedSeconds}s)</span>
+                  )}
+                </span>
+              </div>
+            )}
+
+            {rerunError && (
+              <div className="mb-6 rounded-lg border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] px-4 py-3 text-sm text-[var(--color-danger)]">
+                {rerunError}
+              </div>
+            )}
+
+            {rerunDelta && (
+              <div className="mb-8">
+                <DeltaView delta={rerunDelta} />
+              </div>
+            )}
 
             {/* 00 — Executive Summary */}
             <section id="summary">

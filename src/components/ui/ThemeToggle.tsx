@@ -1,9 +1,17 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  // Render placeholder until mounted to avoid hydration mismatch
+  if (!mounted) return <div className="h-7 w-7" />;
+
   const isLight = theme === 'light';
 
   return (

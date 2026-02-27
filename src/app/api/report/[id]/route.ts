@@ -91,6 +91,33 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return coaching;
     };
 
+    // Helper to migrate old STAR sample responses (response → action)
+    const migrateDiagnosticIntelligence = () => {
+      const di = latestRun.diagnostic_intelligence_json;
+      if (!di?.roundForecasts?.roundCoaching?.sampleResponses) return di;
+      const responses = di.roundForecasts.roundCoaching.sampleResponses;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const needsMigration = responses.some((r: any) => 'response' in r && !('situation' in r));
+      if (!needsMigration) return di;
+      return {
+        ...di,
+        roundForecasts: {
+          ...di.roundForecasts,
+          roundCoaching: {
+            ...di.roundForecasts.roundCoaching,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            sampleResponses: responses.map((r: any) => {
+              if ('response' in r && !('situation' in r)) {
+                const { response, ...rest } = r;
+                return { ...rest, situation: '', task: '', action: response, result: '' };
+              }
+              return r;
+            }),
+          },
+        },
+      };
+    };
+
     const allRisks = Array.isArray(latestRun.ranked_risks_json)
       ? latestRun.ranked_risks_json
       : [];
@@ -106,7 +133,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           scoreBreakdown: latestRun.score_breakdown_json,
           extractedResume: latestRun.extracted_resume_json,
           extractedJD: latestRun.extracted_jd_json,
-          diagnosticIntelligence: latestRun.diagnostic_intelligence_json,
+          diagnosticIntelligence: migrateDiagnosticIntelligence(),
           prepPreferences: report.prep_preferences_json || undefined,
           personalizedStudyPlan: latestRun.personalized_study_plan_json || undefined,
           personalizedCoaching: migrateCoaching(),
@@ -122,7 +149,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         totalRisks: allRisks.length,
         extractedJD: latestRun.extracted_jd_json,
         diagnosticIntelligence: latestRun.diagnostic_intelligence_json
-          ? { competencyHeatmap: latestRun.diagnostic_intelligence_json.competencyHeatmap }
+          ? { competencyHeatmap: migrateDiagnosticIntelligence()?.competencyHeatmap }
           : undefined,
         paywallMessage: `Unlock the full diagnostic to see all ${allRisks.length} risks, interview questions, and your personalized study plan.`,
       },

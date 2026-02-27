@@ -73,6 +73,9 @@ export function HireZoneChart({ hireZone, companyName }: HireZoneChartProps) {
             <p className="mt-1 text-sm text-[var(--text-secondary)]">
               How your readiness compares to historically successful candidates
             </p>
+            <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+              The hire zone is calibrated per company — historically difficult companies have a higher threshold.
+            </p>
           </div>
           <span
             className={`inline-flex items-center self-start rounded border px-3 py-1 text-xs font-medium ${badge.className}`}

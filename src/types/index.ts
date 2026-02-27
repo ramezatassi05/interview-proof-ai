@@ -236,7 +236,10 @@ export interface InterviewerQuestion {
 
 export interface SampleResponse {
   scenario: string;
-  response: string;
+  situation: string;
+  task: string;
+  action: string;
+  result: string;
   whyItWorks: string;
 }
 

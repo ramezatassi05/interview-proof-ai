@@ -5,6 +5,8 @@ import { runAnalysisPipeline } from '@/server/pipeline';
 import { grantCredits, GRANT_AMOUNTS } from '@/lib/credits';
 import type { RoundType } from '@/types';
 
+export const maxDuration = 120;
+
 const AnalyzeReportSchema = z.object({
   reportId: z.string().uuid(),
 });
