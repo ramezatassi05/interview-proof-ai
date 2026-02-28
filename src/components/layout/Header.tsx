@@ -8,6 +8,8 @@ import { CreditsBalance } from '@/components/ui/CreditsBalance';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Container } from './Container';
 
+const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
+
 export function Header() {
   const { user, loading, signOut } = useAuth();
   const { balance, loading: creditsLoading, openPurchaseModal } = useCredits();
@@ -54,13 +56,13 @@ export function Header() {
                   Sign Out
                 </button>
               </div>
-            ) : (
+            ) : !WAITLIST_MODE ? (
               <Link href="/auth/login">
                 <Button variant="accent" size="sm">
                   Sign In
                 </Button>
               </Link>
-            )}
+            ) : null}
           </nav>
         </div>
       </Container>

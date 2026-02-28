@@ -98,12 +98,20 @@ export async function POST(request: NextRequest) {
       const confirmUrl = `${appUrl}/api/waitlist/confirm?token=${existing.confirmation_token}`;
 
       const resend = getResendClient();
-      await resend.emails.send({
+      const { error: emailError } = await resend.emails.send({
         from: EMAIL_FROM,
         to: email.toLowerCase(),
         subject: getConfirmationEmailSubject(),
         html: getConfirmationEmailHtml(confirmUrl),
       });
+
+      if (emailError) {
+        console.error('Waitlist resend confirmation email error:', emailError);
+        return NextResponse.json(
+          { error: 'Failed to send confirmation email. Please try again.' },
+          { status: 500 }
+        );
+      }
 
       return NextResponse.json(
         { data: { message: 'Check your email to confirm your spot.' } },
@@ -138,12 +146,20 @@ export async function POST(request: NextRequest) {
     const confirmUrl = `${appUrl}/api/waitlist/confirm?token=${entry.confirmation_token}`;
 
     const resend = getResendClient();
-    await resend.emails.send({
+    const { error: emailError } = await resend.emails.send({
       from: EMAIL_FROM,
       to: email.toLowerCase(),
       subject: getConfirmationEmailSubject(),
       html: getConfirmationEmailHtml(confirmUrl),
     });
+
+    if (emailError) {
+      console.error('Waitlist confirmation email error:', emailError);
+      return NextResponse.json(
+        { error: 'Failed to send confirmation email. Please try again.' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       { data: { message: 'Check your email to confirm your spot.' } },

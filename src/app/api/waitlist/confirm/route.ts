@@ -79,17 +79,22 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Send welcome email
+    // Send welcome email (non-blocking — confirmation already succeeded)
     const tier = getWaitlistTier(position);
     const referralUrl = `${appUrl}?ref=${entry.referral_code}`;
 
     const resend = getResendClient();
-    await resend.emails.send({
+    const { error: emailError } = await resend.emails.send({
       from: EMAIL_FROM,
       to: entry.email,
       subject: getWelcomeEmailSubject(),
       html: getWelcomeEmailHtml(position, referralUrl, tier),
     });
+
+    if (emailError) {
+      console.error('Waitlist welcome email error:', emailError);
+      // Don't fail the redirect — confirmation already succeeded
+    }
 
     return NextResponse.redirect(
       `${appUrl}/waitlist/confirm?status=confirmed&position=${position}&code=${entry.referral_code}`
