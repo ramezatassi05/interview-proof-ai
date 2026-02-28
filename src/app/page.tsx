@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -17,6 +18,9 @@ import { FAQ } from '@/components/landing/FAQ';
 import { InterviewIntelligenceStats } from '@/components/landing/InterviewIntelligenceStats';
 import { ReportPreviewShowcase } from '@/components/landing/ReportPreviewShowcase';
 import { InsightOwlMascot } from '@/components/svg/InsightOwlMascot';
+import { WaitlistForm } from '@/components/waitlist/WaitlistForm';
+
+const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
 
 interface LastReport {
   id: string;
@@ -30,9 +34,12 @@ interface LastReport {
   top3StudyPlan: { task: string; timeEstimateMinutes: number }[];
 }
 
-export default function LandingPage() {
+function LandingPageContent() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const referralCode = searchParams.get('ref') || undefined;
   const [lastReport, setLastReport] = useState<LastReport | null>(null);
+  const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
 
   const ctaHref = user ? '/new' : '/auth/login?redirect=/new';
 
@@ -59,6 +66,18 @@ export default function LandingPage() {
       })
       .catch(() => {});
   }, [user]);
+
+  useEffect(() => {
+    if (!WAITLIST_MODE) return;
+    fetch('/api/waitlist/count')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.data?.count != null) {
+          setWaitlistCount(data.data.count);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
@@ -94,22 +113,43 @@ export default function LandingPage() {
                   <span className="text-[var(--text-secondary)]">Fix hidden red flags</span>
                 </div>
 
-                <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <Link href={ctaHref}>
-                    <Button variant="accent" size="lg">
-                      Run My Diagnostic
-                    </Button>
-                  </Link>
-                  <Link href={ctaHref}>
-                    <Button variant="secondary" size="lg">
-                      See Recruiter View
-                    </Button>
-                  </Link>
-                  <InsightOwlMascot size={48} />
+                <div className="mt-8">
+                  {WAITLIST_MODE ? (
+                    <div>
+                      <WaitlistForm referralCode={referralCode} compact />
+                      {waitlistCount != null && waitlistCount > 0 && (
+                        <div className="mt-3 flex items-center gap-2">
+                          <span className="relative flex h-2.5 w-2.5">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-success)] opacity-75" />
+                            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[var(--color-success)]" />
+                          </span>
+                          <span className="font-mono text-xs text-[var(--text-muted)]">
+                            {waitlistCount.toLocaleString()} people on the waitlist
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Link href={ctaHref}>
+                        <Button variant="accent" size="lg">
+                          Run My Diagnostic
+                        </Button>
+                      </Link>
+                      <Link href={ctaHref}>
+                        <Button variant="secondary" size="lg">
+                          See Recruiter View
+                        </Button>
+                      </Link>
+                      <InsightOwlMascot size={48} />
+                    </div>
+                  )}
                 </div>
 
                 <p className="mt-4 font-mono text-xs text-[var(--text-muted)]">
-                  Free preview. Full diagnostic for $15.
+                  {WAITLIST_MODE
+                    ? 'Join the waitlist for early access. Top 100 get a lifetime discount.'
+                    : 'Free preview. Full diagnostic for $15.'}
                 </p>
                 <p className="mt-2 flex items-center gap-1.5 font-mono text-xs text-[var(--text-muted)]">
                   <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -522,17 +562,23 @@ export default function LandingPage() {
         <section className="border-t border-[var(--border-default)]">
           <Container className="py-16 text-center">
             <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl tracking-tight">
-              Ready to Find Your Gaps?
+              {WAITLIST_MODE ? 'Be First to Know' : 'Ready to Find Your Gaps?'}
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-[var(--text-secondary)]">
-              Get a clear, evidence-based diagnostic in minutes — plus personalized questions, coaching, and tips tailored to your resume and the role.
+              {WAITLIST_MODE
+                ? 'Join the waitlist for early access. Top 100 get a lifetime 30% discount. Top 500 get 10 bonus credits.'
+                : 'Get a clear, evidence-based diagnostic in minutes — plus personalized questions, coaching, and tips tailored to your resume and the role.'}
             </p>
-            <div className="mt-6">
-              <Link href={ctaHref}>
-                <Button variant="accent" size="lg">
-                  Start Here
-                </Button>
-              </Link>
+            <div className="mt-6 flex justify-center">
+              {WAITLIST_MODE ? (
+                <WaitlistForm referralCode={referralCode} compact />
+              ) : (
+                <Link href={ctaHref}>
+                  <Button variant="accent" size="lg">
+                    Start Here
+                  </Button>
+                </Link>
+              )}
             </div>
           </Container>
         </section>
@@ -540,5 +586,13 @@ export default function LandingPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function LandingPage() {
+  return (
+    <Suspense>
+      <LandingPageContent />
+    </Suspense>
   );
 }

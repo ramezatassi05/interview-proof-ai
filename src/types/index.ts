@@ -641,6 +641,55 @@ export interface PersonalizedStudyPlan {
 // Interview Insights Types
 // ============================================
 
+// ============================================
+// Waitlist Types
+// ============================================
+
+export type WaitlistStatus = 'pending' | 'confirmed' | 'launched';
+export type WaitlistTier = 'top100' | 'top500' | 'standard';
+
+export interface WaitlistEntry {
+  id: string;
+  email: string;
+  status: WaitlistStatus;
+  confirmationToken: string;
+  confirmedAt: string | null;
+  referralCode: string;
+  referredBy: string | null;
+  referralCount: number;
+  position: number | null;
+  createdAt: string;
+}
+
+export interface WaitlistJoinResponse {
+  message: string;
+  alreadyJoined?: boolean;
+}
+
+export interface WaitlistConfirmResponse {
+  position: number;
+  referralCode: string;
+  tier: WaitlistTier;
+  alreadyConfirmed?: boolean;
+}
+
+export interface WaitlistStatusResponse {
+  status: WaitlistStatus;
+  position: number | null;
+  totalCount: number;
+  referralCode: string;
+  referralCount: number;
+  tier: WaitlistTier | null;
+}
+
+export interface WaitlistCountResponse {
+  count: number;
+}
+
+// ============================================
+// Interview Insights Types
+// ============================================
+
 export interface AggregateInsightStats {
   totalAnalyses: number;
   avgReadinessScore: number;

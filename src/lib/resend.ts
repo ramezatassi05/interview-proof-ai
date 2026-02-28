@@ -1,0 +1,18 @@
+import { Resend } from 'resend';
+
+let resendClient: Resend | null = null;
+
+export function getResendClient(): Resend {
+  if (!resendClient) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY environment variable is not set');
+    }
+    resendClient = new Resend(apiKey);
+  }
+  return resendClient;
+}
+
+// Use onboarding@resend.dev for dev (only sends to your own email)
+// Switch to your verified domain for production
+export const EMAIL_FROM = 'InterviewProof <onboarding@resend.dev>';
