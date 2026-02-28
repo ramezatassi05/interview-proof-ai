@@ -21,6 +21,7 @@ import {
   InsightOwlMascot,
   InsightOwlWaving,
   InsightOwlReading,
+  InsightOwlThinking,
 } from '@/components/svg/InsightOwlMascot';
 import { WaitlistForm } from '@/components/waitlist/WaitlistForm';
 
@@ -120,11 +121,13 @@ function LandingPageContent() {
                 <div className="mt-8">
                   {WAITLIST_MODE ? (
                     <div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-end gap-4">
                         <div className="flex-1">
                           <WaitlistForm referralCode={referralCode} compact />
                         </div>
-                        <InsightOwlWaving size={56} className="hidden sm:block flex-shrink-0" />
+                        <div className="hidden sm:flex flex-shrink-0 items-center justify-center rounded-full bg-[var(--accent-primary)]/10 p-2">
+                          <InsightOwlWaving size={72} />
+                        </div>
                       </div>
                       {waitlistCount != null && waitlistCount > 0 && (
                         <div className="mt-3 flex items-center gap-2">
@@ -265,6 +268,11 @@ function LandingPageContent() {
         {/* Scroll CTA */}
         <div className="flex justify-center py-4">
           <div className="animate-scroll-cta flex flex-col items-center gap-2 text-center">
+            {WAITLIST_MODE && (
+              <div className="mb-2 flex items-center justify-center rounded-full bg-[var(--accent-primary)]/10 p-3">
+                <InsightOwlThinking size={48} />
+              </div>
+            )}
             <p className="text-sm text-[var(--text-secondary)]">Scroll to discover more</p>
             <svg
               className="h-6 w-6 text-[var(--accent-primary)]"
@@ -425,8 +433,10 @@ function LandingPageContent() {
         <section className="border-t border-[var(--border-default)]">
           <Container className="py-16">
             <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <InsightOwlReading size={64} />
+              <div className="mb-4 flex justify-center">
+                <div className="flex items-center justify-center rounded-full bg-[var(--accent-primary)]/10 p-3">
+                  <InsightOwlReading size={72} />
+                </div>
               </div>
               <Badge variant="accent">Vertical AI Model</Badge>
               <h2 className="mt-4 text-2xl font-bold text-[var(--text-primary)] sm:text-3xl tracking-tight">
@@ -578,7 +588,9 @@ function LandingPageContent() {
           <Container className="py-16 text-center">
             {WAITLIST_MODE && (
               <div className="mb-5 flex justify-center">
-                <InsightOwlMascot size={56} />
+                <div className="flex items-center justify-center rounded-full bg-[var(--accent-primary)]/10 p-3">
+                  <InsightOwlWaving size={72} />
+                </div>
               </div>
             )}
             <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl tracking-tight">
