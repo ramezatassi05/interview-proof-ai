@@ -12,6 +12,7 @@ function PreviewCard({
   colSpan,
   children,
   ctaHref,
+  ctaLabel = 'Unlock Full Report',
   delay,
   height,
 }: {
@@ -21,6 +22,7 @@ function PreviewCard({
   colSpan: string;
   children: ReactNode;
   ctaHref: string;
+  ctaLabel?: string;
   delay: string;
   height?: string;
 }) {
@@ -45,7 +47,7 @@ function PreviewCard({
       <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-primary)]/60 backdrop-blur-[2px] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
         <Link href={ctaHref}>
           <Button variant="accent" size="sm">
-            Unlock Full Report
+            {ctaLabel}
           </Button>
         </Link>
       </div>
@@ -468,9 +470,10 @@ const TrajectoryIcon = (
 
 interface ReportPreviewShowcaseProps {
   ctaHref: string;
+  ctaLabel?: string;
 }
 
-export function ReportPreviewShowcase({ ctaHref }: ReportPreviewShowcaseProps) {
+export function ReportPreviewShowcase({ ctaHref, ctaLabel }: ReportPreviewShowcaseProps) {
   return (
     <section>
       <Container className="py-16">
@@ -496,6 +499,7 @@ export function ReportPreviewShowcase({ ctaHref }: ReportPreviewShowcaseProps) {
             accentColor="var(--color-warning)"
             colSpan="lg:col-span-2"
             ctaHref={ctaHref}
+            ctaLabel={ctaLabel}
             delay="0ms"
             height="h-[340px]"
           >
@@ -509,6 +513,7 @@ export function ReportPreviewShowcase({ ctaHref }: ReportPreviewShowcaseProps) {
             accentColor="var(--color-info)"
             colSpan="lg:col-span-2"
             ctaHref={ctaHref}
+            ctaLabel={ctaLabel}
             delay="80ms"
             height="h-[340px]"
           >
@@ -522,6 +527,7 @@ export function ReportPreviewShowcase({ ctaHref }: ReportPreviewShowcaseProps) {
             accentColor="var(--color-warning)"
             colSpan="lg:col-span-2"
             ctaHref={ctaHref}
+            ctaLabel={ctaLabel}
             delay="160ms"
             height="h-[480px]"
           >
@@ -535,6 +541,7 @@ export function ReportPreviewShowcase({ ctaHref }: ReportPreviewShowcaseProps) {
             accentColor="var(--color-danger)"
             colSpan="lg:col-span-2"
             ctaHref={ctaHref}
+            ctaLabel={ctaLabel}
             delay="240ms"
             height="h-[480px]"
           >
@@ -548,6 +555,7 @@ export function ReportPreviewShowcase({ ctaHref }: ReportPreviewShowcaseProps) {
             accentColor="var(--color-success)"
             colSpan="lg:col-span-4"
             ctaHref={ctaHref}
+            ctaLabel={ctaLabel}
             delay="320ms"
             height="h-[260px]"
           >

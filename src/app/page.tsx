@@ -17,7 +17,11 @@ import { BenefitsRisks } from '@/components/landing/BenefitsRisks';
 import { FAQ } from '@/components/landing/FAQ';
 import { InterviewIntelligenceStats } from '@/components/landing/InterviewIntelligenceStats';
 import { ReportPreviewShowcase } from '@/components/landing/ReportPreviewShowcase';
-import { InsightOwlMascot } from '@/components/svg/InsightOwlMascot';
+import {
+  InsightOwlMascot,
+  InsightOwlWaving,
+  InsightOwlReading,
+} from '@/components/svg/InsightOwlMascot';
 import { WaitlistForm } from '@/components/waitlist/WaitlistForm';
 
 const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
@@ -41,7 +45,7 @@ function LandingPageContent() {
   const [lastReport, setLastReport] = useState<LastReport | null>(null);
   const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
 
-  const ctaHref = user ? '/new' : '/auth/login?redirect=/new';
+  const ctaHref = WAITLIST_MODE ? '#' : user ? '/new' : '/auth/login?redirect=/new';
 
   useEffect(() => {
     if (!user) return;
@@ -116,7 +120,12 @@ function LandingPageContent() {
                 <div className="mt-8">
                   {WAITLIST_MODE ? (
                     <div>
-                      <WaitlistForm referralCode={referralCode} compact />
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <WaitlistForm referralCode={referralCode} compact />
+                        </div>
+                        <InsightOwlWaving size={56} className="hidden sm:block flex-shrink-0" />
+                      </div>
                       {waitlistCount != null && waitlistCount > 0 && (
                         <div className="mt-3 flex items-center gap-2">
                           <span className="relative flex h-2.5 w-2.5">
@@ -416,6 +425,9 @@ function LandingPageContent() {
         <section className="border-t border-[var(--border-default)]">
           <Container className="py-16">
             <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <InsightOwlReading size={64} />
+              </div>
               <Badge variant="accent">Vertical AI Model</Badge>
               <h2 className="mt-4 text-2xl font-bold text-[var(--text-primary)] sm:text-3xl tracking-tight">
                 Trained on the Best Interview Intelligence Available
@@ -523,7 +535,10 @@ function LandingPageContent() {
         <BenefitsRisks />
 
         {/* 8. Report Preview Showcase */}
-        <ReportPreviewShowcase ctaHref={ctaHref} />
+        <ReportPreviewShowcase
+          ctaHref={ctaHref}
+          ctaLabel={WAITLIST_MODE ? 'Join Waitlist' : undefined}
+        />
 
         {/* 9. InterviewIntelligenceStats */}
         <InterviewIntelligenceStats />
@@ -561,6 +576,11 @@ function LandingPageContent() {
         {/* 11. Footer CTA */}
         <section className="border-t border-[var(--border-default)]">
           <Container className="py-16 text-center">
+            {WAITLIST_MODE && (
+              <div className="mb-5 flex justify-center">
+                <InsightOwlMascot size={56} />
+              </div>
+            )}
             <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl tracking-tight">
               {WAITLIST_MODE ? 'Be First to Know' : 'Ready to Find Your Gaps?'}
             </h2>
