@@ -21,7 +21,6 @@ import {
   InsightOwlMascot,
   InsightOwlWaving,
   InsightOwlReading,
-  InsightOwlThinking,
 } from '@/components/svg/InsightOwlMascot';
 import { WaitlistForm } from '@/components/waitlist/WaitlistForm';
 
@@ -91,7 +90,7 @@ function LandingPageContent() {
       <main className="flex-1">
         {/* 1. Hero Section */}
         <section className="relative dot-grid-bg">
-          <Container className="relative py-14 lg:py-20">
+          <Container className="relative py-10 lg:py-14">
             <div className="flex flex-col lg:flex-row lg:items-center lg:gap-16">
               {/* Left — text */}
               <div className="flex-1 lg:max-w-[55%]">
@@ -263,29 +262,24 @@ function LandingPageContent() {
               </div>
             </div>
           </Container>
-        </section>
 
-        {/* Scroll CTA */}
-        <div className="flex justify-center py-4">
-          <div className="animate-scroll-cta flex flex-col items-center gap-2 text-center">
-            {WAITLIST_MODE && (
-              <div className="mb-2 flex items-center justify-center rounded-full bg-[var(--accent-primary)]/10 p-3">
-                <InsightOwlThinking size={48} />
-              </div>
-            )}
-            <p className="text-sm text-[var(--text-secondary)]">Scroll to discover more</p>
-            <svg
-              className="h-6 w-6 text-[var(--accent-primary)]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-            <p className="text-xs text-[var(--text-muted)]">Learn how InterviewProof works</p>
+          {/* Scroll CTA */}
+          <div className="flex justify-center py-2">
+            <div className="animate-scroll-cta flex flex-col items-center gap-2 text-center">
+              <p className="text-sm text-[var(--text-secondary)]">Scroll to discover more</p>
+              <svg
+                className="h-6 w-6 text-[var(--accent-primary)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+              <p className="text-xs text-[var(--text-muted)]">Learn how InterviewProof works</p>
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* 2. OnboardingCarousel */}
         <OnboardingCarousel />

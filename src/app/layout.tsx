@@ -24,6 +24,7 @@ const sourceCode = Source_Code_Pro({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://interviewproof.ai'),
   title: 'InterviewProof - Know What Will Sink You',
   description:
     'Job-specific interview diagnostic that identifies rejection risks and prioritizes fixes.',

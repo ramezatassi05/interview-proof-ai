@@ -13,6 +13,5 @@ export function getResendClient(): Resend {
   return resendClient;
 }
 
-// Use onboarding@resend.dev for dev (only sends to your own email)
-// Switch to your verified domain for production
-export const EMAIL_FROM = 'InterviewProof <onboarding@resend.dev>';
+// Verify interviewproof.ai domain in Resend dashboard before using
+export const EMAIL_FROM = 'InterviewProof <noreply@interviewproof.ai>';

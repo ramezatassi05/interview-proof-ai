@@ -304,7 +304,7 @@ export function DiagnosticPDF({
 
         {/* Footer */}
         <Text style={styles.footer}>
-          InterviewProof - Know What Will Sink You | interviewproof.com
+          InterviewProof - Know What Will Sink You | interviewproof.ai
         </Text>
       </Page>
 
@@ -332,7 +332,7 @@ export function DiagnosticPDF({
         </View>
 
         <Text style={styles.footer}>
-          InterviewProof - Know What Will Sink You | interviewproof.com
+          InterviewProof - Know What Will Sink You | interviewproof.ai
         </Text>
       </Page>
 
@@ -366,7 +366,7 @@ export function DiagnosticPDF({
         </View>
 
         <Text style={styles.footer}>
-          InterviewProof - Know What Will Sink You | interviewproof.com
+          InterviewProof - Know What Will Sink You | interviewproof.ai
         </Text>
       </Page>
     </Document>
