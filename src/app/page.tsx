@@ -101,6 +101,10 @@ function LandingPageContent() {
                   <span className="text-[var(--color-danger)]">Sink You</span>
                 </h1>
 
+                <p className="mt-2 text-lg font-medium text-[var(--text-secondary)] sm:text-xl">
+                  Turn Anxiety Into Clear Action.
+                </p>
+
                 <p className="mt-5 max-w-lg text-base text-[var(--text-secondary)]">
                   Upload your resume. See exactly what recruiters will reject you for — before the interview.
                 </p>
