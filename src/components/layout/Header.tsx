@@ -91,7 +91,7 @@ export function Header() {
 
           {/* Desktop nav links — landing page only */}
           {isLanding && (
-            <nav className="hidden md:flex items-center gap-6">
+            <nav className="hidden lg:flex items-center gap-4">
               {NAV_LINKS.map((link) => (
                 <a
                   key={link.href}
@@ -112,7 +112,7 @@ export function Header() {
             {isLanding && (
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="md:hidden flex items-center justify-center h-8 w-8 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+                className="lg:hidden flex items-center justify-center h-8 w-8 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
                 aria-label="Toggle navigation menu"
               >
                 {mobileOpen ? (
@@ -171,7 +171,7 @@ export function Header() {
 
       {/* Mobile nav dropdown */}
       {isLanding && mobileOpen && (
-        <div className="md:hidden border-t border-[var(--border-default)] bg-[var(--bg-primary)]/95 backdrop-blur-lg">
+        <div className="lg:hidden border-t border-[var(--border-default)] bg-[var(--bg-primary)]/95 backdrop-blur-lg">
           <Container>
             <div className="flex flex-col gap-1 py-3">
               {NAV_LINKS.map((link) => (
