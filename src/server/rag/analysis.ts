@@ -65,7 +65,7 @@ const PersonalizedCoachingSchema = z.object({
         resources: z.array(z.string()).max(5).optional(),
       })
     )
-    .min(3)
+    .min(1)
     .max(5),
 });
 

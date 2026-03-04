@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,7 +18,6 @@ import { ReportPreviewShowcase } from '@/components/landing/ReportPreviewShowcas
 import { VerticalAIModelSection } from '@/components/landing/VerticalAIModelSection';
 import { BenefitsRisks } from '@/components/landing/BenefitsRisks';
 import { AdvantagesSection } from '@/components/landing/AdvantagesSection';
-import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import { SecuritySection } from '@/components/landing/SecuritySection';
 import { FAQ } from '@/components/landing/FAQ';
 import { LiveAnalysisFeed } from '@/components/landing/LiveAnalysisFeed';
@@ -73,17 +72,26 @@ function LandingPageContent() {
         {/* 10. Why InterviewProof */}
         <AdvantagesSection />
 
-        {/* 11. Testimonials */}
-        <TestimonialsSection />
-
-        {/* 12. Security */}
+        {/* 11. Security */}
         <SecuritySection />
 
         {/* 13. FAQ */}
         <FAQ />
 
-        {/* 11. Footer CTA */}
-        <section className="py-20 lg:py-28">
+        {/* 13. Footer CTA */}
+        <section
+          className="py-20 lg:py-28 bg-[var(--bg-dark-band)]"
+          style={
+            {
+              '--text-primary': 'var(--text-dark-band-primary)',
+              '--text-secondary': 'var(--text-dark-band-secondary)',
+              '--text-muted': 'var(--text-dark-band-secondary)',
+              '--bg-card': 'var(--bg-dark-band-card)',
+              '--bg-elevated': 'var(--bg-dark-band-card)',
+              '--border-default': 'var(--border-dark-band)',
+            } as React.CSSProperties
+          }
+        >
           <Container size="2xl" className="text-center">
             {WAITLIST_MODE && (
               <div className="mb-6 flex justify-center">

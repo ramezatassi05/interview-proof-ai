@@ -15,8 +15,7 @@ const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
 const NAV_LINKS = [
   { label: 'How It Works', href: '#how-it-works' },
   { label: 'Features', href: '#features' },
-{ label: 'Benefits', href: '#benefits' },
-  { label: 'Testimonials', href: '#testimonials' },
+  { label: 'Benefits', href: '#benefits' },
   { label: 'Security', href: '#security' },
   { label: 'FAQ', href: '#faq' },
 ];
@@ -49,7 +48,7 @@ export function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 bg-[var(--bg-primary)]/80 backdrop-blur-lg transition-shadow duration-200 ${
+      className={`sticky top-0 z-50 bg-[var(--header-bg)] backdrop-blur-lg transition-shadow duration-200 ${
         scrolled ? 'shadow-md shadow-black/5' : ''
       }`}
     >
@@ -82,7 +81,7 @@ export function Header() {
                   fill="white"
                 />
               </svg>
-              <span className="text-sm font-semibold text-[var(--text-primary)]">
+              <span className="text-sm font-semibold text-[var(--header-text)]">
                 InterviewProof
               </span>
             </Link>
@@ -96,7 +95,7 @@ export function Header() {
                   key={link.href}
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.href)}
-                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                  className="text-sm text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors"
                 >
                   {link.label}
                 </a>
@@ -105,13 +104,24 @@ export function Header() {
           )}
 
           <nav className="flex items-center gap-3">
-            <ThemeToggle />
+            <div
+              style={
+                {
+                  '--bg-elevated': 'var(--header-elevated)',
+                  '--border-default': 'var(--header-border)',
+                  '--text-secondary': 'var(--header-text-secondary)',
+                  '--text-primary': 'var(--header-text)',
+                } as React.CSSProperties
+              }
+            >
+              <ThemeToggle />
+            </div>
 
             {/* Mobile hamburger — landing page only */}
             {isLanding && (
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="lg:hidden flex items-center justify-center h-8 w-8 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+                className="lg:hidden flex items-center justify-center h-8 w-8 rounded-lg text-[var(--header-text-secondary)] hover:text-[var(--header-text)] hover:bg-[var(--header-elevated)] transition-colors"
                 aria-label="Toggle navigation menu"
               >
                 {mobileOpen ? (
@@ -127,7 +137,7 @@ export function Header() {
             )}
 
             {loading ? (
-              <div className="h-9 w-20 animate-pulse rounded-lg bg-[var(--bg-elevated)]" />
+              <div className="h-9 w-20 animate-pulse rounded-lg bg-[var(--header-elevated)]" />
             ) : user ? (
               <div className="flex items-center gap-3">
                 {!creditsLoading && (
@@ -135,7 +145,7 @@ export function Header() {
                 )}
                 <Link
                   href="/dashboard"
-                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors hidden sm:block"
+                  className="text-sm text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors hidden sm:block"
                 >
                   Dashboard
                 </Link>
@@ -144,15 +154,15 @@ export function Header() {
                     New Analysis
                   </Button>
                 </Link>
-                <Link href="/wallet" className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-default)] text-xs font-mono font-semibold text-[var(--text-secondary)]">
+                <Link href="/wallet" className="flex items-center gap-1.5 text-xs text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--header-elevated)] border border-[var(--header-border)] text-xs font-mono font-semibold text-[var(--header-text-secondary)]">
                     {user.email?.[0]?.toUpperCase() ?? 'U'}
                   </div>
                   <span className="hidden sm:inline">Account</span>
                 </Link>
                 <button
                   onClick={() => signOut()}
-                  className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors hidden sm:block"
+                  className="text-xs text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors hidden sm:block"
                 >
                   Sign Out
                 </button>
@@ -170,7 +180,7 @@ export function Header() {
 
       {/* Mobile nav dropdown */}
       {isLanding && mobileOpen && (
-        <div className="lg:hidden border-t border-[var(--border-default)] bg-[var(--bg-primary)]/95 backdrop-blur-lg">
+        <div className="lg:hidden border-t border-[var(--header-border)] bg-[var(--header-bg)] backdrop-blur-lg">
           <Container>
             <div className="flex flex-col gap-1 py-3">
               {NAV_LINKS.map((link) => (
@@ -178,7 +188,7 @@ export function Header() {
                   key={link.href}
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.href)}
-                  className="rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+                  className="rounded-lg px-3 py-2.5 text-sm text-[var(--header-text-secondary)] hover:text-[var(--header-text)] hover:bg-[var(--header-elevated)] transition-colors"
                 >
                   {link.label}
                 </a>
@@ -186,7 +196,7 @@ export function Header() {
               {user && (
                 <Link
                   href="/dashboard"
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--accent-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--accent-primary)] hover:bg-[var(--header-elevated)] transition-colors"
                   onClick={() => setMobileOpen(false)}
                 >
                   Dashboard

@@ -211,9 +211,9 @@ export function validateAnalysisQuality(
         }
         return true;
       });
-    if (analysis.personalizedCoaching.priorityActions.length < 3) {
+    if (analysis.personalizedCoaching.priorityActions.length < 1) {
       analysis.personalizedCoaching.priorityActions = originalActions;
-      warnings.push('Priority actions filter would violate min(3), keeping originals');
+      warnings.push('Priority actions filter would violate min(1), keeping originals');
     }
 
     // Validate and clean resource URLs in priority actions

@@ -90,7 +90,19 @@ const DATA_SOURCES = [
 
 export function VerticalAIModelSection() {
   return (
-    <section className="py-20 lg:py-28">
+    <section
+      className="py-20 lg:py-28 bg-[var(--bg-dark-band)]"
+      style={
+        {
+          '--text-primary': 'var(--text-dark-band-primary)',
+          '--text-secondary': 'var(--text-dark-band-secondary)',
+          '--text-muted': 'var(--text-dark-band-secondary)',
+          '--bg-card': 'var(--bg-dark-band-card)',
+          '--bg-elevated': 'var(--bg-dark-band-card)',
+          '--border-default': 'var(--border-dark-band)',
+        } as React.CSSProperties
+      }
+    >
       <Container size="2xl">
         <div className="flex flex-col items-center text-center">
           {/* Owl mascot */}

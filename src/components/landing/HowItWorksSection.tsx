@@ -80,7 +80,7 @@ export function HowItWorksSection() {
   const currentStep = STEPS[activeIndex];
 
   return (
-    <section id="how-it-works" className="py-20 lg:py-28 bg-[var(--bg-secondary)]/50">
+    <section id="how-it-works" className="py-20 lg:py-28">
       <Container size="2xl">
         <div className="text-center">
           <SectionBadge label="How it works" />

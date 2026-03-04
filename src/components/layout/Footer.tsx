@@ -20,7 +20,19 @@ const LEGAL_LINKS = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-[var(--border-default)] bg-[var(--bg-secondary)]">
+    <footer
+      className="border-t border-[var(--border-dark-band)] bg-[var(--bg-dark-band)]"
+      style={
+        {
+          '--text-primary': 'var(--text-dark-band-primary)',
+          '--text-secondary': 'var(--text-dark-band-secondary)',
+          '--text-muted': 'var(--text-dark-band-secondary)',
+          '--bg-card': 'var(--bg-dark-band-card)',
+          '--bg-elevated': 'var(--bg-dark-band-card)',
+          '--border-default': 'var(--border-dark-band)',
+        } as React.CSSProperties
+      }
+    >
       <Container>
         <div className="grid gap-10 py-16 sm:grid-cols-2 lg:grid-cols-4">
           {/* Column 1: Brand */}

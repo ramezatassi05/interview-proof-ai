@@ -51,7 +51,7 @@ const ADVANTAGES = [
 
 export function AdvantagesSection() {
   return (
-    <section className="py-20 lg:py-28 bg-[var(--bg-secondary)]/50">
+    <section className="py-20 lg:py-28 bg-[var(--bg-section-alt)]">
       <Container size="2xl">
         <div className="text-center">
           <SectionBadge label="Why InterviewProof" />

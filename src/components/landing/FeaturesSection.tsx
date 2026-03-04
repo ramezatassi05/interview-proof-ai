@@ -92,7 +92,7 @@ const SECONDARY_FEATURES = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-20 lg:py-28">
+    <section id="features" className="py-20 lg:py-28 bg-[var(--bg-section-alt)]">
       <Container size="2xl">
         <div className="text-center">
           <SectionBadge label="Features" />

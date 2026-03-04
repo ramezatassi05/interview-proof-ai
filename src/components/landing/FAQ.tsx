@@ -74,7 +74,7 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section id="faq" className="py-20 lg:py-28">
+    <section id="faq" className="py-20 lg:py-28 bg-[var(--bg-section-alt)]">
       <Container size="2xl">
         <div className="flex flex-col items-center text-center">
           <SectionBadge label="FAQ" />

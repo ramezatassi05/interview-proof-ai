@@ -42,7 +42,7 @@ const SECURITY_FEATURES = [
 
 export function SecuritySection() {
   return (
-    <section id="security" className="py-20 lg:py-28 bg-[var(--bg-secondary)]/50">
+    <section id="security" className="py-20 lg:py-28">
       <Container size="2xl">
         <div className="text-center">
           <SectionBadge label="Security" />
