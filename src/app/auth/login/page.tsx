@@ -12,7 +12,7 @@ import { InsightOwlWaving, InsightOwlCelebrating } from '@/components/svg/Insigh
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/';
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
   const error = searchParams.get('error');
 
   const [email, setEmail] = useState('');

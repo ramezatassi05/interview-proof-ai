@@ -140,3 +140,38 @@ export function getWelcomeEmailHtml(
 export function getWelcomeEmailSubject(): string {
   return "You're on the list — InterviewProof is coming soon";
 }
+
+/**
+ * Admin notification: sent to NOTIFICATION_EMAIL on each confirmed signup
+ */
+export function getAdminNotificationEmailHtml(
+  email: string,
+  position: number,
+  referredBy?: string | null
+): string {
+  const referralLine = referredBy
+    ? `<p style="margin:0 0 8px;font-size:14px;color:${TEXT_SECONDARY};">
+        Referred by: <strong style="color:${TEXT_PRIMARY};">${referredBy}</strong>
+      </p>`
+    : '';
+
+  const content = `
+    <h1 style="margin:0 0 16px;font-size:22px;font-weight:700;color:${TEXT_PRIMARY};">
+      New waitlist signup
+    </h1>
+    <div style="padding:20px;background-color:${BG_COLOR};border:1px solid ${BORDER_COLOR};border-radius:8px;">
+      <p style="margin:0 0 8px;font-size:14px;color:${TEXT_SECONDARY};">
+        Email: <strong style="color:${TEXT_PRIMARY};">${email}</strong>
+      </p>
+      <p style="margin:0 0 8px;font-size:14px;color:${TEXT_SECONDARY};">
+        Position: <strong style="color:${BRAND_COLOR};">#${position}</strong>
+      </p>
+      ${referralLine}
+    </div>`;
+
+  return emailWrapper(content);
+}
+
+export function getAdminNotificationEmailSubject(position: number): string {
+  return `New waitlist signup — #${position}`;
+}

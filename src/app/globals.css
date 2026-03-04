@@ -1,11 +1,11 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Background tiers - charcoal-slate */
-  --color-bg-primary: #121218;
-  --color-bg-secondary: #16161D;
-  --color-bg-card: #1C1C24;
-  --color-bg-elevated: #24242E;
+  /* Background tiers - zinc-scale */
+  --color-bg-primary: #09090B;
+  --color-bg-secondary: #18181B;
+  --color-bg-card: #1C1C22;
+  --color-bg-elevated: #27272A;
 
   /* Accent colors - indigo */
   --color-accent: #6366F1;
@@ -30,10 +30,11 @@
 }
 
 :root {
-  --bg-primary: #121218;
-  --bg-secondary: #16161D;
-  --bg-card: #1C1C24;
-  --bg-elevated: #24242E;
+  --bg-primary: #09090B;
+  --bg-secondary: #18181B;
+  --bg-card: #1C1C22;
+  --bg-elevated: #27272A;
+  --gradient-accent-text: linear-gradient(90deg, #FB923C, #F472B6, #E879F9);
   --accent-primary: #6366F1;
   --accent-secondary: #818CF8;
   --accent-gradient: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
@@ -73,10 +74,11 @@
 }
 
 [data-theme="light"] {
-  --bg-primary: #F4F4F8;
-  --bg-secondary: #EDEDF3;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #FAFAFA;
   --bg-card: #FFFFFF;
-  --bg-elevated: #E8E8F0;
+  --bg-elevated: #F4F4F5;
+  --gradient-accent-text: linear-gradient(90deg, #EA580C, #DB2777, #C026D3);
   --accent-primary: #4F46E5;
   --accent-secondary: #6366F1;
   --accent-gradient: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
@@ -505,4 +507,134 @@ h1, h2, h3, h4, h5, h6 {
   50% { opacity: 1; transform: translateY(-6px) scale(1.04) rotate(3deg); }
   75% { transform: translateY(2px) scale(0.98) rotate(-1deg); }
   100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+/* ====== LANDING PAGE OVERRIDES ====== */
+
+/* Gradient accent text (Chatbase-style orange-pink-purple) */
+.text-gradient-accent {
+  background: var(--gradient-accent-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Section badge pill with gradient dot */
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+}
+
+.section-badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gradient-accent-text);
+  flex-shrink: 0;
+}
+
+/* Modern heading — sans-serif, tight tracking */
+.heading-modern {
+  font-family: var(--font-sans), 'Source Sans 3', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+/* Landing page typography: use sans-serif for headings */
+.landing-page h1,
+.landing-page h2,
+.landing-page h3 {
+  font-family: var(--font-sans), 'Source Sans 3', system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.025em;
+}
+
+/* ====== MOCKUP ANIMATIONS ====== */
+
+@keyframes mockup-typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes mockup-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mockup-slide-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes mockup-progress {
+  from { width: 0; }
+  to { width: var(--progress-width, 100%); }
+}
+
+@keyframes mockup-score-fill {
+  from { stroke-dashoffset: var(--score-circumference, 283); }
+  to { stroke-dashoffset: var(--score-offset, 76); }
+}
+
+@keyframes mockup-bar-grow {
+  from { width: 0; }
+  to { width: var(--bar-width, 70%); }
+}
+
+@keyframes mockup-pulse-dot {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@keyframes trust-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes gradient-shift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(10px, -10px) scale(1.05); }
+  66% { transform: translate(-5px, 5px) scale(0.98); }
+}
+
+@keyframes cursor-ripple {
+  from {
+    transform: scale(0.5);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mockup-typing,
+  .mockup-fade-in,
+  .mockup-slide-in,
+  .mockup-progress,
+  .mockup-score-fill,
+  .mockup-bar-grow {
+    animation: none !important;
+  }
+
+  .trust-marquee-track {
+    animation: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [style*="gradient-shift"] {
+    animation: none !important;
+  }
 }
