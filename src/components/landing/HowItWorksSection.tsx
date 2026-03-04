@@ -54,7 +54,6 @@ const AUTO_ADVANCE_MS = 6000;
 export function HowItWorksSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-  const isPaused = useRef(false);
   const progressRef = useRef(0);
 
   const goToStep = useCallback((index: number) => {
@@ -66,7 +65,6 @@ export function HowItWorksSection() {
   useEffect(() => {
     const tick = 50;
     const interval = setInterval(() => {
-      if (isPaused.current) return;
       progressRef.current += tick;
       setProgress(progressRef.current / AUTO_ADVANCE_MS);
       if (progressRef.current >= AUTO_ADVANCE_MS) {
@@ -92,11 +90,7 @@ export function HowItWorksSection() {
           </p>
         </div>
 
-        <div
-          className="mt-14 flex flex-col lg:flex-row lg:gap-14"
-          onMouseEnter={() => { isPaused.current = true; }}
-          onMouseLeave={() => { isPaused.current = false; }}
-        >
+        <div className="mt-14 flex flex-col lg:flex-row lg:gap-14">
           {/* Left — step tabs */}
           <div className="lg:w-[380px] flex-shrink-0">
             <div className="space-y-1">
