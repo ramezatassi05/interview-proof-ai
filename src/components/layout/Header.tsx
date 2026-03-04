@@ -15,8 +15,7 @@ const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
 const NAV_LINKS = [
   { label: 'How It Works', href: '#how-it-works' },
   { label: 'Features', href: '#features' },
-  { label: 'Showcase', href: '#showcase' },
-  { label: 'Benefits', href: '#benefits' },
+{ label: 'Benefits', href: '#benefits' },
   { label: 'Testimonials', href: '#testimonials' },
   { label: 'Security', href: '#security' },
   { label: 'FAQ', href: '#faq' },
