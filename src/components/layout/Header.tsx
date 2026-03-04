@@ -149,7 +149,7 @@ export function Header() {
                 </button>
               </div>
             ) : !WAITLIST_MODE ? (
-              <Link href="/auth/login?redirect=/dashboard">
+              <Link href="/auth/login">
                 <Button variant="accent" size="sm">
                   Sign In
                 </Button>

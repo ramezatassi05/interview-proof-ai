@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect } from 'react';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -29,15 +29,9 @@ const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
 
 function LandingPageContent() {
   const { user } = useAuth();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const referralCode = searchParams.get('ref') || undefined;
 
-  useEffect(() => {
-    if (user) {
-      router.replace('/dashboard');
-    }
-  }, [user, router]);
 
   const ctaHref = WAITLIST_MODE ? '#' : user ? '/new' : '/auth/login?redirect=/new';
 
