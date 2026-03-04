@@ -1,8 +1,9 @@
 import { Container } from '@/components/layout/Container';
+import { SectionBadge } from './SectionBadge';
 
 const BENEFITS = [
   'Pinpoint exact rejection risks before the interview',
-  'Get a prioritized fix plan \u2014 biggest impact first',
+  'Get a prioritized fix plan — biggest impact first',
   "See yourself through the recruiter's lens",
   'Get personalized interview questions based on your resume and the job',
   'Receive AI coaching and tips on how to answer using your real experience',
@@ -13,13 +14,17 @@ const RISKS = [
   'Most candidates repeat the same mistakes across interviews',
   'Recruiters screen you out in under 30 seconds',
   'Generic prep wastes hours on the wrong things',
-  "You won't know what disqualified you \u2014 they never tell you",
+  "You won't know what disqualified you — they never tell you",
   'Confidence drops with each unexplained rejection',
   'The right role goes to someone who prepared smarter',
 ];
 
 const STATS = [
-  { value: '87%', label: 'improved within 7 days', description: 'of users who completed their study plan' },
+  {
+    value: '87%',
+    label: 'improved within 7 days',
+    description: 'of users who completed their study plan',
+  },
   { value: '+14', label: 'avg score improvement', description: 'across all diagnostic re-runs' },
   { value: '< 60s', label: 'time to diagnostic', description: 'from upload to full readiness report' },
   { value: '6', label: 'scoring dimensions', description: 'modeled on real hiring rubrics' },
@@ -27,21 +32,22 @@ const STATS = [
 
 export function BenefitsRisks() {
   return (
-    <section>
-      <Container className="py-16">
-        {/* Old benefits/risks section */}
+    <section className="py-20 lg:py-28">
+      <Container size="2xl">
+        {/* Header */}
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl tracking-tight">
+          <SectionBadge label="Why InterviewProof" />
+          <h2 className="heading-modern mt-5 text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
             Why Use InterviewProof?
           </h2>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">
+          <p className="mt-3 text-base text-[var(--text-secondary)]">
             The cost of going in unprepared is higher than you think
           </p>
         </div>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
           {/* Benefits */}
-          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+          <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-success)]/15 text-[var(--color-success)]">
                 <svg
@@ -75,7 +81,7 @@ export function BenefitsRisks() {
           </div>
 
           {/* Risks */}
-          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+          <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-danger)]/15 text-[var(--color-danger)]">
                 <svg
@@ -111,23 +117,19 @@ export function BenefitsRisks() {
         </div>
 
         {/* Stats grid */}
-        <div className="mt-12">
-          <p className="section-label mb-2">Proof</p>
-          <h3 className="text-xl font-bold text-[var(--text-primary)] tracking-tight">
+        <div className="mt-14">
+          <SectionBadge label="Proof" />
+          <h3 className="mt-4 text-xl font-bold text-[var(--text-primary)] tracking-tight">
             Data, not promises.
           </h3>
-          <div className="mt-6 grid gap-px grid-cols-2 lg:grid-cols-4 rounded-xl overflow-hidden border border-[var(--border-default)]">
+          <div className="mt-6 grid gap-px grid-cols-2 lg:grid-cols-4 rounded-2xl overflow-hidden border border-[var(--border-default)]">
             {STATS.map((stat) => (
               <div key={stat.label} className="bg-[var(--bg-card)] p-6">
                 <span className="font-mono text-3xl font-bold text-[var(--accent-primary)]">
                   {stat.value}
                 </span>
-                <p className="mt-2 text-sm font-medium text-[var(--text-primary)]">
-                  {stat.label}
-                </p>
-                <p className="mt-1 text-xs text-[var(--text-muted)]">
-                  {stat.description}
-                </p>
+                <p className="mt-2 text-sm font-medium text-[var(--text-primary)]">{stat.label}</p>
+                <p className="mt-1 text-xs text-[var(--text-muted)]">{stat.description}</p>
               </div>
             ))}
           </div>

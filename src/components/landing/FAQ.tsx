@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Container } from '@/components/layout/Container';
-import { Badge } from '@/components/ui/Badge';
+import { SectionBadge } from './SectionBadge';
 
 interface FAQItem {
   question: string;
@@ -55,8 +55,8 @@ const FAQS: FAQItem[] = [
 function ChevronIcon({ open }: { open: boolean }) {
   return (
     <svg
-      width="16"
-      height="16"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -74,43 +74,38 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section>
-      <Container className="py-16">
+    <section id="faq" className="py-20 lg:py-28">
+      <Container size="2xl">
         <div className="flex flex-col items-center text-center">
-          <Badge variant="accent">FAQ</Badge>
-          <h2 className="mt-3 text-2xl font-bold text-[var(--text-primary)] sm:text-3xl tracking-tight">
-            Frequently Asked <span className="text-[var(--accent-primary)]">Questions</span>
+          <SectionBadge label="FAQ" />
+          <h2 className="heading-modern mt-5 text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
+            Frequently Asked Questions
           </h2>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">
+          <p className="mt-3 text-base text-[var(--text-secondary)]">
             Everything you need to know about interview prep with InterviewProof
           </p>
         </div>
 
-        <div className="mx-auto mt-8 max-w-2xl space-y-2">
+        <div className="mx-auto mt-12 max-w-2xl space-y-3">
           {FAQS.map((faq, i) => {
             const isOpen = openIndex === i;
             return (
               <div
                 key={i}
-                className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)]"
+                className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] transition-colors duration-150 hover:border-[var(--border-accent)]"
               >
                 <button
                   type="button"
                   onClick={() => setOpenIndex(isOpen ? null : i)}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+                  className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs text-[var(--text-muted)]">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span className="text-sm font-medium text-[var(--text-primary)]">
-                      {faq.question}
-                    </span>
-                  </div>
+                  <span className="text-sm font-medium text-[var(--text-primary)]">
+                    {faq.question}
+                  </span>
                   <ChevronIcon open={isOpen} />
                 </button>
                 {isOpen && (
-                  <div className="px-5 pb-4 pl-14">
+                  <div className="px-6 pb-5">
                     <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
                       {faq.answer}
                     </p>

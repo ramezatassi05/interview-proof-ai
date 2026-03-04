@@ -2,13 +2,14 @@
 
 import { forwardRef, ButtonHTMLAttributes } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'accent' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'accent' | 'danger' | 'gradient';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
+  rounded?: boolean;
   /** @deprecated No longer used in terminal theme */
   glow?: boolean;
 }
@@ -21,6 +22,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]',
   accent: 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-secondary)]',
   danger: 'bg-[var(--color-danger)] text-white hover:opacity-90',
+  gradient:
+    'bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 text-white hover:from-orange-500 hover:via-pink-600 hover:to-purple-600 shadow-lg shadow-pink-500/25',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -35,6 +38,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       variant = 'primary',
       size = 'md',
       loading = false,
+      rounded = false,
       glow: _glow,
       disabled,
       className = '',
@@ -50,7 +54,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={isDisabled}
         className={`
-          inline-flex items-center justify-center gap-2 rounded-lg font-semibold
+          inline-flex items-center justify-center gap-2 ${rounded ? 'rounded-full' : 'rounded-lg'} font-semibold
           transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2
           focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2
           focus-visible:ring-offset-[var(--bg-primary)]

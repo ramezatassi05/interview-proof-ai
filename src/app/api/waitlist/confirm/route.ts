@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { getResendClient, EMAIL_FROM } from '@/lib/resend';
 import { getWaitlistTier } from '@/lib/waitlist';
-import { getWelcomeEmailHtml, getWelcomeEmailSubject } from '@/lib/waitlist-emails';
+import {
+  getWelcomeEmailHtml,
+  getWelcomeEmailSubject,
+  getAdminNotificationEmailHtml,
+  getAdminNotificationEmailSubject,
+} from '@/lib/waitlist-emails';
 
 export async function GET(request: NextRequest) {
   try {
@@ -94,6 +99,21 @@ export async function GET(request: NextRequest) {
     if (emailError) {
       console.error('Waitlist welcome email error:', emailError);
       // Don't fail the redirect — confirmation already succeeded
+    }
+
+    // Send admin notification (non-blocking)
+    const notificationEmail = process.env.NOTIFICATION_EMAIL;
+    if (notificationEmail) {
+      const { error: notifError } = await resend.emails.send({
+        from: EMAIL_FROM,
+        to: notificationEmail,
+        subject: getAdminNotificationEmailSubject(position),
+        html: getAdminNotificationEmailHtml(entry.email, position, entry.referred_by),
+      });
+
+      if (notifError) {
+        console.error('Admin notification email error:', notifError);
+      }
     }
 
     return NextResponse.redirect(

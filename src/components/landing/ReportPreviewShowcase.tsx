@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
+import { SectionBadge } from './SectionBadge';
 
 /* ─── Shared PreviewCard ─── */
 
@@ -28,7 +29,7 @@ function PreviewCard({
 }) {
   return (
     <div
-      className={`group relative rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden card-hover animate-fade-in ${colSpan} ${height ?? ''}`}
+      className={`group relative rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden card-hover animate-fade-in ${colSpan} ${height ?? ''}`}
       style={{ animationDelay: delay }}
     >
       {/* Header */}
@@ -475,14 +476,12 @@ interface ReportPreviewShowcaseProps {
 
 export function ReportPreviewShowcase({ ctaHref, ctaLabel }: ReportPreviewShowcaseProps) {
   return (
-    <section>
-      <Container className="py-16">
+    <section className="py-20 lg:py-28 bg-[var(--bg-secondary)]/50">
+      <Container size="2xl">
         {/* Section header */}
         <div className="mb-10 text-center">
-          <span className="text-xs font-mono font-medium uppercase tracking-widest text-[var(--accent-primary)]">
-            What You&apos;re Missing
-          </span>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-[var(--text-primary)] sm:text-3xl">
+          <SectionBadge label="What You're Missing" />
+          <h2 className="heading-modern mt-5 text-3xl font-bold tracking-tight text-[var(--text-primary)] sm:text-4xl">
             See What&apos;s Hiding in Your Resume
           </h2>
           <p className="mt-3 mx-auto max-w-lg text-[var(--text-secondary)]">
@@ -491,7 +490,7 @@ export function ReportPreviewShowcase({ ctaHref, ctaLabel }: ReportPreviewShowca
         </div>
 
         {/* Bento grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {/* 1. Would You Get Hired? — spans 2 cols */}
           <PreviewCard
             title="Would You Get Hired?"
