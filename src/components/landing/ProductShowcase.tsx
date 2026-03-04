@@ -117,7 +117,7 @@ export function ProductShowcase() {
   const ctaHref = user ? '/new' : '/auth/login?redirect=/new';
 
   return (
-    <section className="py-20 lg:py-28 bg-[var(--bg-secondary)]/50">
+    <section id="showcase" className="py-20 lg:py-28 bg-[var(--bg-secondary)]/50">
       <Container size="2xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:gap-20">
           {/* Left — description */}

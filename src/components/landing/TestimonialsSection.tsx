@@ -59,7 +59,7 @@ export function TestimonialsSection() {
   const current = TESTIMONIALS[activeIndex];
 
   return (
-    <section className="py-20 lg:py-28">
+    <section id="testimonials" className="py-20 lg:py-28">
       <Container size="2xl">
         <div className="text-center">
           <SectionBadge label="Testimonials" />

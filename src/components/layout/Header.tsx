@@ -15,6 +15,10 @@ const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
 const NAV_LINKS = [
   { label: 'How It Works', href: '#how-it-works' },
   { label: 'Features', href: '#features' },
+  { label: 'Showcase', href: '#showcase' },
+  { label: 'Benefits', href: '#benefits' },
+  { label: 'Testimonials', href: '#testimonials' },
+  { label: 'Security', href: '#security' },
   { label: 'FAQ', href: '#faq' },
 ];
 
@@ -130,6 +134,12 @@ export function Header() {
                 {!creditsLoading && (
                   <CreditsBalance balance={balance} size="sm" onClick={openPurchaseModal} />
                 )}
+                <Link
+                  href="/dashboard"
+                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors hidden sm:block"
+                >
+                  Dashboard
+                </Link>
                 <Link href="/new">
                   <Button variant="accent" size="sm">
                     New Analysis
@@ -174,6 +184,15 @@ export function Header() {
                   {link.label}
                 </a>
               ))}
+              {user && (
+                <Link
+                  href="/dashboard"
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--accent-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Dashboard
+                </Link>
+              )}
             </div>
           </Container>
         </div>

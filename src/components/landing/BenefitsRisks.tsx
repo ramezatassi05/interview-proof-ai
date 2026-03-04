@@ -32,7 +32,7 @@ const STATS = [
 
 export function BenefitsRisks() {
   return (
-    <section className="py-20 lg:py-28">
+    <section id="benefits" className="py-20 lg:py-28">
       <Container size="2xl">
         {/* Header */}
         <div className="text-center">
