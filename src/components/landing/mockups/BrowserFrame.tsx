@@ -21,7 +21,7 @@ export function BrowserFrame({ url = 'interviewproof.ai', children, className = 
         </div>
       </div>
       {/* Content */}
-      <div className="p-5">
+      <div className="overflow-hidden p-5">
         {children}
       </div>
     </div>

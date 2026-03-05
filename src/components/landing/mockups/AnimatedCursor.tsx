@@ -18,7 +18,8 @@ export interface CursorWaypoint {
 interface AnimatedCursorProps {
   waypoints: CursorWaypoint[];
   playing: boolean;
-  sceneIndex: number;
+  /** Increments on loop restart to reset the waypoint chain */
+  flowKey: number;
   transitioning: boolean;
 }
 
@@ -36,7 +37,7 @@ function getReducedMotionServer() {
   return false;
 }
 
-export function AnimatedCursor({ waypoints, playing, sceneIndex, transitioning }: AnimatedCursorProps) {
+export function AnimatedCursor({ waypoints, playing, flowKey, transitioning }: AnimatedCursorProps) {
   const cursorRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const ripplesRef = useRef<HTMLDivElement>(null);
@@ -123,7 +124,7 @@ export function AnimatedCursor({ waypoints, playing, sceneIndex, transitioning }
     }
 
     return clearTimers;
-  }, [sceneIndex, playing, waypoints, clearTimers, prefersReducedMotion]);
+  }, [flowKey, playing, waypoints, clearTimers, prefersReducedMotion]);
 
   if (prefersReducedMotion) return null;
 

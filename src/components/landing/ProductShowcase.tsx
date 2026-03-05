@@ -1,118 +1,199 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
-import { UploadMockup } from './mockups/UploadMockup';
-import { AnalysisMockup } from './mockups/AnalysisMockup';
-import { ScoreMockup } from './mockups/ScoreMockup';
-import { RisksMockup } from './mockups/RisksMockup';
-import { PracticeMockup } from './mockups/PracticeMockup';
+import { BrowserFrame } from './mockups/BrowserFrame';
+import { FlowUploadPage, FlowAnalysisPage, FlowReportPage } from './mockups/FlowPages';
 import { AnimatedCursor, type CursorWaypoint } from './mockups/AnimatedCursor';
 
 const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
 
-const SCENES = [
-  { label: 'Upload Resume + JD', mockup: <UploadMockup /> },
-  { label: 'AI Analysis', mockup: <AnalysisMockup /> },
-  { label: 'Readiness Score', mockup: <ScoreMockup /> },
-  { label: 'Risk Breakdown', mockup: <RisksMockup /> },
-  { label: 'Practice Questions', mockup: <PracticeMockup /> },
+/* ====== Flow timing ====== */
+
+type FlowPhase =
+  | 'upload'
+  | 'fade-to-analysis'
+  | 'analysis'
+  | 'fade-to-report'
+  | 'report-score'
+  | 'report-risks'
+  | 'report-questions'
+  | 'hold'
+  | 'fade-out';
+
+const PHASE_BOUNDARIES: [number, FlowPhase][] = [
+  [0, 'upload'],
+  [1100, 'fade-to-analysis'],
+  [1300, 'analysis'],
+  [4000, 'fade-to-report'],
+  [4200, 'report-score'],
+  [7200, 'report-risks'],
+  [10200, 'report-questions'],
+  [14200, 'hold'],
+  [15000, 'fade-out'],
 ];
 
-const SCENE_DURATION = 5000; // 5 seconds per scene
-const TICK_INTERVAL = 50; // progress update interval
+const TOTAL_DURATION = 15500;
+const TICK = 50;
+const ANALYSIS_START = 1300;
+const ANALYSIS_END = 4000;
+const RISKS_START = 7200;
 
-/** Cursor waypoints per scene — timed to match CSS animation delays */
-const SCENE_CHOREOGRAPHY: CursorWaypoint[][] = [
-  // Scene 0: Upload — click resume, JD, pill, then CTA
-  [
-    { x: 35, y: 30, delay: 0, duration: 0 },
-    { x: 55, y: 32, delay: 200, duration: 500, action: 'click' },
-    { x: 35, y: 48, delay: 1200, duration: 500 },
-    { x: 55, y: 49, delay: 1800, duration: 400, action: 'click' },
-    { x: 36, y: 62, delay: 2800, duration: 400, action: 'click' },
-    { x: 50, y: 72, delay: 3800, duration: 400, action: 'click' },
-  ],
-  // Scene 1: Analysis — cursor idles while watching progress
-  [
-    { x: 62, y: 48, delay: 0, duration: 0 },
-    { x: 60, y: 55, delay: 2000, duration: 2000 },
-  ],
-  // Scene 2: Score — hover down each dimension bar
-  [
-    { x: 50, y: 30, delay: 0, duration: 0 },
-    { x: 45, y: 60, delay: 600, duration: 700 },
-    { x: 46, y: 66, delay: 1500, duration: 400 },
-    { x: 47, y: 72, delay: 2200, duration: 400 },
-    { x: 48, y: 78, delay: 2900, duration: 400 },
-  ],
-  // Scene 3: Risks — click each risk card as it slides in
-  [
-    { x: 50, y: 28, delay: 0, duration: 0 },
-    { x: 50, y: 44, delay: 300, duration: 500, action: 'click' },
-    { x: 50, y: 58, delay: 1200, duration: 400, action: 'click' },
-    { x: 50, y: 72, delay: 2100, duration: 400, action: 'click' },
-  ],
-  // Scene 4: Practice — click answer area, then drift to AI feedback
-  [
-    { x: 50, y: 28, delay: 0, duration: 0 },
-    { x: 50, y: 55, delay: 700, duration: 500, action: 'click' },
-    { x: 50, y: 80, delay: 2500, duration: 600 },
-  ],
+/* ====== Phase → derived values ====== */
+
+function getVisiblePage(phase: FlowPhase): 'upload' | 'analysis' | 'report' {
+  switch (phase) {
+    case 'upload':
+    case 'fade-to-analysis':
+      return 'upload';
+    case 'analysis':
+    case 'fade-to-report':
+      return 'analysis';
+    default:
+      return 'report';
+  }
+}
+
+function getContentVisible(phase: FlowPhase): boolean {
+  return phase !== 'fade-to-analysis' && phase !== 'fade-to-report' && phase !== 'fade-out';
+}
+
+function getActiveTab(phase: FlowPhase): 'score' | 'risks' | 'questions' {
+  if (phase === 'report-risks') return 'risks';
+  if (phase === 'report-questions' || phase === 'hold' || phase === 'fade-out') return 'questions';
+  return 'score';
+}
+
+function getUrl(phase: FlowPhase): string {
+  switch (phase) {
+    case 'upload':
+      return 'interviewproof.ai/new';
+    case 'fade-to-analysis':
+    case 'analysis':
+      return 'interviewproof.ai/analyzing';
+    default:
+      return 'interviewproof.ai/r/a3f\u2026';
+  }
+}
+
+/* ====== Cursor waypoints (absolute delays from flow start) ====== */
+
+const FLOW_WAYPOINTS: CursorWaypoint[] = [
+  // Upload (0-1100ms): start center, click CTA
+  { x: 50, y: 40, delay: 0, duration: 0 },
+  { x: 50, y: 82, delay: 300, duration: 400, action: 'click' },
+
+  // Analysis (1300-4000ms): idle watching progress
+  { x: 58, y: 45, delay: 1500, duration: 500 },
+  { x: 55, y: 55, delay: 2800, duration: 1000 },
+
+  // Report — Score tab (4200-7200ms): hover dimension bars
+  { x: 50, y: 30, delay: 4500, duration: 400 },
+  { x: 45, y: 55, delay: 5200, duration: 600 },
+  { x: 46, y: 60, delay: 6000, duration: 400 },
+  { x: 47, y: 66, delay: 6500, duration: 400 },
+
+  // Report — Red Flags tab (7200-10200ms): click tab, hover risk cards
+  { x: 40, y: 30, delay: 7000, duration: 400, action: 'click' },
+  { x: 50, y: 50, delay: 7800, duration: 500 },
+  { x: 50, y: 60, delay: 8800, duration: 400 },
+
+  // Report — Questions tab (10200-14200ms): click tab, hover content
+  { x: 58, y: 30, delay: 10000, duration: 400, action: 'click' },
+  { x: 50, y: 55, delay: 11000, duration: 600 },
+  { x: 50, y: 75, delay: 12500, duration: 700 },
+
+  // Hold (14200-15500ms): drift to center
+  { x: 50, y: 50, delay: 14200, duration: 500 },
 ];
+
+/* ====== Component ====== */
 
 export function ProductShowcase() {
   const { user } = useAuth();
-  const [activeScene, setActiveScene] = useState(0);
+  const [flowPhase, setFlowPhase] = useState<FlowPhase>('upload');
+  const [flowKey, setFlowKey] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const [progress, setProgress] = useState(0); // 0-100 overall progress
-  const [transitioning, setTransitioning] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const sceneProgressRef = useRef(0); // ms elapsed in current scene
+  const [progress, setProgress] = useState(0);
 
-  const advanceScene = useCallback(() => {
-    setTransitioning(true);
-    setTimeout(() => {
-      setActiveScene((prev) => (prev + 1) % SCENES.length);
-      sceneProgressRef.current = 0;
-      setTransitioning(false);
-    }, 250);
-  }, []);
+  const elapsedRef = useRef(0);
+  const phaseRef = useRef<FlowPhase>('upload');
 
+  /* Timer loop */
   useEffect(() => {
-    if (!playing) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      return;
-    }
+    if (!playing) return;
 
-    timerRef.current = setInterval(() => {
-      sceneProgressRef.current += TICK_INTERVAL;
+    const timer = setInterval(() => {
+      elapsedRef.current += TICK;
+      const elapsed = elapsedRef.current;
 
-      // Calculate overall progress
-      const sceneIndex =
-        sceneProgressRef.current >= SCENE_DURATION ? activeScene + 1 : activeScene;
-      const sceneElapsed =
-        sceneProgressRef.current >= SCENE_DURATION ? 0 : sceneProgressRef.current;
-      const overall =
-        ((sceneIndex % SCENES.length) / SCENES.length + sceneElapsed / SCENE_DURATION / SCENES.length) *
-        100;
-      setProgress(overall);
-
-      if (sceneProgressRef.current >= SCENE_DURATION) {
-        advanceScene();
-        sceneProgressRef.current = 0;
+      if (elapsed >= TOTAL_DURATION) {
+        elapsedRef.current = 0;
+        phaseRef.current = 'upload';
+        setFlowPhase('upload');
+        setProgress(0);
+        setFlowKey((k) => k + 1);
+        return;
       }
-    }, TICK_INTERVAL);
 
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [playing, activeScene, advanceScene]);
+      // Determine current phase
+      let newPhase: FlowPhase = 'upload';
+      for (const [boundary, phase] of PHASE_BOUNDARIES) {
+        if (elapsed >= boundary) newPhase = phase;
+      }
 
-  const togglePlay = () => setPlaying((p) => !p);
+      if (newPhase !== phaseRef.current) {
+        phaseRef.current = newPhase;
+        setFlowPhase(newPhase);
+      }
+
+      setProgress((elapsed / TOTAL_DURATION) * 100);
+    }, TICK);
+
+    return () => clearInterval(timer);
+  }, [playing]);
+
+  const togglePlay = () => {
+    if (playing) {
+      setPlaying(false);
+    } else {
+      // Restart from beginning
+      elapsedRef.current = 0;
+      phaseRef.current = 'upload';
+      setFlowPhase('upload');
+      setProgress(0);
+      setFlowKey((k) => k + 1);
+      setPlaying(true);
+    }
+  };
+
+  /* Derived rendering values */
+  const visiblePage = getVisiblePage(flowPhase);
+  const contentVisible = getContentVisible(flowPhase);
+  const activeTab = getActiveTab(flowPhase);
+  const url = getUrl(flowPhase);
+
+  const elapsed = (progress / 100) * TOTAL_DURATION;
+
+  const analysisProgress = (() => {
+    if (elapsed >= ANALYSIS_START && elapsed < ANALYSIS_END) {
+      return ((elapsed - ANALYSIS_START) / (ANALYSIS_END - ANALYSIS_START)) * 90;
+    }
+    return elapsed >= ANALYSIS_END ? 90 : 0;
+  })();
+
+  const scrollOffset = (() => {
+    if (flowPhase === 'report-risks') {
+      const phaseElapsed = elapsed - RISKS_START;
+      return phaseElapsed > 1500
+        ? Math.min(Math.round(((phaseElapsed - 1500) / 1000) * 20), 20)
+        : 0;
+    }
+    return 0;
+  })();
 
   const ctaHref = user ? '/new' : '/auth/login?redirect=/new';
 
@@ -144,11 +225,10 @@ export function ProductShowcase() {
             )}
           </div>
 
-          {/* Right — showcase carousel */}
+          {/* Right — continuous flow animation */}
           <div className="mt-14 lg:mt-0 lg:flex-1">
-            {/* Gradient mesh container */}
             <div className="relative overflow-hidden rounded-3xl" style={{ minHeight: 500 }}>
-              {/* Gradient blobs */}
+              {/* Gradient mesh blobs */}
               <div
                 className="absolute -left-20 -top-20 h-72 w-72 rounded-full opacity-60 blur-[80px] dark:opacity-60"
                 style={{
@@ -181,42 +261,46 @@ export function ProductShowcase() {
               {/* Dark overlay to tone down blobs in light mode */}
               <div className="absolute inset-0 bg-[var(--bg-primary)]/40" />
 
-              {/* Scene label */}
-              <div className="relative z-10 pt-8 text-center">
-                <span
-                  className="inline-block rounded-full bg-[var(--bg-primary)]/60 px-4 py-1.5 text-xs font-medium text-[var(--text-secondary)] backdrop-blur-sm border border-[var(--border-default)]"
-                  style={{
-                    transition: 'opacity 0.3s ease',
-                    opacity: transitioning ? 0 : 1,
-                  }}
-                >
-                  {SCENES[activeScene].label}
-                </span>
-              </div>
-
-              {/* Floating card */}
-              <div className="relative z-10 flex items-center justify-center px-4 py-8">
-                <div
-                  className="w-full max-w-md transition-opacity duration-500 ease-in-out"
-                  style={{ opacity: transitioning ? 0 : 1 }}
-                >
-                  {SCENES[activeScene].mockup}
+              {/* Browser frame with flow content */}
+              <div className="relative z-10 flex items-center justify-center px-4 py-10">
+                <div className="w-full max-w-md">
+                  <BrowserFrame url={url}>
+                    <div
+                      style={{
+                        opacity: contentVisible ? 1 : 0,
+                        transition: 'opacity 200ms ease',
+                        minHeight: 280,
+                      }}
+                    >
+                      {visiblePage === 'upload' && <FlowUploadPage />}
+                      {visiblePage === 'analysis' && (
+                        <FlowAnalysisPage progress={analysisProgress} />
+                      )}
+                      {visiblePage === 'report' && (
+                        <FlowReportPage
+                          activeTab={activeTab}
+                          animKey={flowKey}
+                          scrollOffset={scrollOffset}
+                        />
+                      )}
+                    </div>
+                  </BrowserFrame>
                 </div>
               </div>
 
               {/* Animated demo cursor */}
               <AnimatedCursor
-                waypoints={SCENE_CHOREOGRAPHY[activeScene]}
+                waypoints={FLOW_WAYPOINTS}
                 playing={playing}
-                sceneIndex={activeScene}
-                transitioning={transitioning}
+                flowKey={flowKey}
+                transitioning={!contentVisible}
               />
 
               {/* Play/Pause button */}
               <button
                 onClick={togglePlay}
                 className="absolute bottom-6 left-6 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-primary)]/80 backdrop-blur-sm border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                aria-label={playing ? 'Pause demo' : 'Play demo'}
+                aria-label={playing ? 'Pause demo' : 'Replay demo'}
               >
                 {playing ? (
                   /* Pause icon — two bars */
