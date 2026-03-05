@@ -1,5 +1,6 @@
 import { Container } from '@/components/layout/Container';
 import { InsightOwlMascot } from '@/components/svg/InsightOwlMascot';
+import { BlurFade } from '@/components/ui/blur-fade';
 
 const DATA_SOURCES = [
   {
@@ -126,21 +127,20 @@ export function VerticalAIModelSection() {
         </div>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {DATA_SOURCES.map((item) => (
-            <div
-              key={item.title}
-              className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-7 transition-all duration-200 hover:border-[var(--border-accent)]"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
-                {item.icon}
+          {DATA_SOURCES.map((item, i) => (
+            <BlurFade key={item.title} inView delay={i * 0.08}>
+              <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-7 transition-all duration-200 hover:border-[var(--border-accent)]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
+                  {item.icon}
+                </div>
+                <h3 className="mt-5 text-base font-semibold text-[var(--text-primary)]">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+                  {item.description}
+                </p>
               </div>
-              <h3 className="mt-5 text-base font-semibold text-[var(--text-primary)]">
-                {item.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
-                {item.description}
-              </p>
-            </div>
+            </BlurFade>
           ))}
         </div>
       </Container>

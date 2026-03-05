@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { InsightOwlWaving, InsightOwlCelebrating } from '@/components/svg/InsightOwlMascot';
+import { DotPattern } from '@/components/ui/dot-pattern';
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -179,8 +180,9 @@ function LoginLoading() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-primary)]">
-      <Container size="sm" className="flex flex-1 flex-col items-center justify-center py-12">
+    <div className="relative flex min-h-screen flex-col bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-primary)]">
+      <DotPattern className="opacity-20 [mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)]" />
+      <Container size="sm" className="relative flex flex-1 flex-col items-center justify-center py-12">
         <div className="mb-4 flex justify-center">
           <InsightOwlWaving size={64} />
         </div>

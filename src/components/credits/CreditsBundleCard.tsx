@@ -2,6 +2,7 @@
 
 import { CREDITS_PER_REPORT } from '@/lib/stripe';
 import { InsightOwlThinking } from '@/components/svg/InsightOwlMascot';
+import { BorderBeam } from '@/components/ui/border-beam';
 
 interface CreditsBundleCardProps {
   name: string;
@@ -38,6 +39,9 @@ export function CreditsBundleCard({
         }
       `}
     >
+      {/* Border beam on popular card */}
+      {popular && <BorderBeam size={150} duration={10} />}
+
       {/* Thinking owl on popular card */}
       {popular && (
         <div className="absolute -top-16 left-1/2 -translate-x-1/2">

@@ -1,5 +1,9 @@
+'use client';
+
 import { Container } from '@/components/layout/Container';
 import { SectionBadge } from './SectionBadge';
+import { BlurFade } from '@/components/ui/blur-fade';
+import { NumberTicker } from '@/components/ui/number-ticker';
 
 const BENEFITS = [
   'Pinpoint exact rejection risks before the interview',
@@ -19,16 +23,6 @@ const RISKS = [
   'The right role goes to someone who prepared smarter',
 ];
 
-const STATS = [
-  {
-    value: '87%',
-    label: 'improved within 7 days',
-    description: 'of users who completed their study plan',
-  },
-  { value: '+14', label: 'avg score improvement', description: 'across all diagnostic re-runs' },
-  { value: '< 60s', label: 'time to diagnostic', description: 'from upload to full readiness report' },
-  { value: '6', label: 'scoring dimensions', description: 'modeled on real hiring rubrics' },
-];
 
 export function BenefitsRisks() {
   return (
@@ -47,6 +41,7 @@ export function BenefitsRisks() {
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
           {/* Benefits */}
+          <BlurFade inView delay={0}>
           <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-success)]/15 text-[var(--color-success)]">
@@ -80,7 +75,10 @@ export function BenefitsRisks() {
             </ul>
           </div>
 
+          </BlurFade>
+
           {/* Risks */}
+          <BlurFade inView delay={0.1}>
           <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-danger)]/15 text-[var(--color-danger)]">
@@ -114,6 +112,7 @@ export function BenefitsRisks() {
               ))}
             </ul>
           </div>
+          </BlurFade>
         </div>
 
         {/* Stats grid */}
@@ -123,15 +122,34 @@ export function BenefitsRisks() {
             Data, not promises.
           </h3>
           <div className="mt-6 grid gap-px grid-cols-2 lg:grid-cols-4 rounded-2xl overflow-hidden border border-[var(--border-default)]">
-            {STATS.map((stat) => (
-              <div key={stat.label} className="bg-[var(--bg-card)] p-6">
-                <span className="font-mono text-3xl font-bold text-[var(--accent-primary)]">
-                  {stat.value}
-                </span>
-                <p className="mt-2 text-sm font-medium text-[var(--text-primary)]">{stat.label}</p>
-                <p className="mt-1 text-xs text-[var(--text-muted)]">{stat.description}</p>
-              </div>
-            ))}
+            <div className="bg-[var(--bg-card)] p-6">
+              <span className="font-mono text-3xl font-bold text-[var(--accent-primary)]">
+                <NumberTicker value={87} delay={0.2} />%
+              </span>
+              <p className="mt-2 text-sm font-medium text-[var(--text-primary)]">improved within 7 days</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">of users who completed their study plan</p>
+            </div>
+            <div className="bg-[var(--bg-card)] p-6">
+              <span className="font-mono text-3xl font-bold text-[var(--accent-primary)]">
+                +<NumberTicker value={14} delay={0.3} />
+              </span>
+              <p className="mt-2 text-sm font-medium text-[var(--text-primary)]">avg score improvement</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">across all diagnostic re-runs</p>
+            </div>
+            <div className="bg-[var(--bg-card)] p-6">
+              <span className="font-mono text-3xl font-bold text-[var(--accent-primary)]">
+                {'< '}<NumberTicker value={60} delay={0.4} />s
+              </span>
+              <p className="mt-2 text-sm font-medium text-[var(--text-primary)]">time to diagnostic</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">from upload to full readiness report</p>
+            </div>
+            <div className="bg-[var(--bg-card)] p-6">
+              <span className="font-mono text-3xl font-bold text-[var(--accent-primary)]">
+                <NumberTicker value={6} delay={0.5} />
+              </span>
+              <p className="mt-2 text-sm font-medium text-[var(--text-primary)]">scoring dimensions</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">modeled on real hiring rubrics</p>
+            </div>
           </div>
         </div>
       </Container>

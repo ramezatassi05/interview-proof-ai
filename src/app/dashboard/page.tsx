@@ -9,7 +9,8 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge, riskBandToVariant } from '@/components/ui/Badge';
-import { LoadingOverlay } from '@/components/ui/Spinner';
+import { Skeleton } from '@/components/ui/skeleton';
+import { NumberTicker } from '@/components/ui/number-ticker';
 import type { RiskBand, RoundType } from '@/types';
 
 interface ReportSummary {
@@ -65,8 +66,20 @@ export default function DashboardPage() {
   if (authLoading || loading) {
     return (
       <AppLayout showIntelligencePanel={false}>
-        <div className="flex items-center justify-center py-24">
-          <LoadingOverlay message="Loading dashboard..." />
+        <div className="mb-8">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="mt-2 h-5 w-64" />
+        </div>
+        <div className="mb-8 grid gap-4 sm:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
+          ))}
+        </div>
+        <Skeleton className="mb-4 h-6 w-36" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-16 rounded-xl" />
+          ))}
         </div>
       </AppLayout>
     );
@@ -105,21 +118,25 @@ export default function DashboardPage() {
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="py-6 text-center">
-            <p className="text-3xl font-bold text-[var(--text-primary)]">{totalReports}</p>
+            <p className="text-3xl font-bold text-[var(--text-primary)]">
+              {totalReports > 0 ? <NumberTicker value={totalReports} /> : '0'}
+            </p>
             <p className="mt-1 text-sm text-[var(--text-secondary)]">Total Reports</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-6 text-center">
             <p className="text-3xl font-bold text-[var(--text-primary)]">
-              {avgScore !== null ? avgScore : '—'}
+              {avgScore !== null ? <NumberTicker value={avgScore} /> : '\u2014'}
             </p>
             <p className="mt-1 text-sm text-[var(--text-secondary)]">Average Score</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-6 text-center">
-            <p className="text-3xl font-bold text-[var(--accent-primary)]">{balance}</p>
+            <p className="text-3xl font-bold text-[var(--accent-primary)]">
+              {balance > 0 ? <NumberTicker value={balance} /> : '0'}
+            </p>
             <p className="mt-1 text-sm text-[var(--text-secondary)]">Credits Balance</p>
           </CardContent>
         </Card>

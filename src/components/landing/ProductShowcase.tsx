@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { BrowserFrame } from './mockups/BrowserFrame';
 import { FlowUploadPage, FlowAnalysisPage, FlowReportPage } from './mockups/FlowPages';
 import { AnimatedCursor } from './mockups/AnimatedCursor';
+import { BorderBeam } from '@/components/ui/border-beam';
 
 const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
 
@@ -239,7 +240,8 @@ export function ProductShowcase() {
 
               {/* Browser frame with flow content */}
               <div className="relative z-10 flex items-center justify-center px-4 py-10">
-                <div className="w-full max-w-md">
+                <div className="relative w-full max-w-md">
+                  <BorderBeam size={300} duration={10} delay={0} />
                   <BrowserFrame url={url}>
                     <div
                       style={{

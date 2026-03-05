@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { Container } from '@/components/layout/Container';
 import { SectionBadge } from './SectionBadge';
+import { BlurFade } from '@/components/ui/blur-fade';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 
 interface FAQItem {
   question: string;
@@ -52,69 +53,38 @@ const FAQS: FAQItem[] = [
   },
 ];
 
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`flex-shrink-0 text-[var(--text-muted)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-    >
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
-
 export function FAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
   return (
     <section id="faq" className="py-20 lg:py-28 bg-[var(--bg-section-alt)]">
       <Container size="2xl">
-        <div className="flex flex-col items-center text-center">
-          <SectionBadge label="FAQ" />
-          <h2 className="heading-modern mt-5 text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
-            Frequently Asked Questions
-          </h2>
-          <p className="mt-3 text-base text-[var(--text-secondary)]">
-            Everything you need to know about interview prep with InterviewProof
-          </p>
-        </div>
+        <BlurFade inView>
+          <div className="flex flex-col items-center text-center">
+            <SectionBadge label="FAQ" />
+            <h2 className="heading-modern mt-5 text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
+              Frequently Asked Questions
+            </h2>
+            <p className="mt-3 text-base text-[var(--text-secondary)]">
+              Everything you need to know about interview prep with InterviewProof
+            </p>
+          </div>
+        </BlurFade>
 
-        <div className="mx-auto mt-12 max-w-2xl space-y-3">
-          {FAQS.map((faq, i) => {
-            const isOpen = openIndex === i;
-            return (
-              <div
-                key={i}
-                className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] transition-colors duration-150 hover:border-[var(--border-accent)]"
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenIndex(isOpen ? null : i)}
-                  className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
-                >
-                  <span className="text-sm font-medium text-[var(--text-primary)]">
-                    {faq.question}
-                  </span>
-                  <ChevronIcon open={isOpen} />
-                </button>
-                {isOpen && (
-                  <div className="px-6 pb-5">
+        <BlurFade inView delay={0.15}>
+          <div className="mx-auto mt-12 max-w-2xl">
+            <Accordion type="single" collapsible className="space-y-3">
+              {FAQS.map((faq, i) => (
+                <AccordionItem key={i} value={`faq-${i}`}>
+                  <AccordionTrigger>{faq.question}</AccordionTrigger>
+                  <AccordionContent>
                     <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
                       {faq.answer}
                     </p>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </BlurFade>
       </Container>
     </section>
   );

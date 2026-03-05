@@ -3,6 +3,8 @@ import { Source_Serif_4, Source_Sans_3, Source_Code_Pro } from 'next/font/google
 import { AuthProvider } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { CreditsWrapper } from '@/components/credits/CreditsWrapper';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 
 const sourceSerif = Source_Serif_4({
@@ -60,7 +62,10 @@ export default function RootLayout({
       <body className={`${sourceSerif.variable} ${sourceSans.variable} ${sourceCode.variable} antialiased`}>
         <AuthProvider>
           <ThemeProvider>
-            <CreditsWrapper>{children}</CreditsWrapper>
+            <TooltipProvider>
+              <CreditsWrapper>{children}</CreditsWrapper>
+              <Toaster />
+            </TooltipProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>

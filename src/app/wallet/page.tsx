@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -82,6 +83,7 @@ export default function WalletPage() {
     const appUrl = window.location.origin;
     const shareUrl = `${appUrl}/new?ref=${referral.referralCode}`;
     await navigator.clipboard.writeText(shareUrl);
+    toast.success('Referral link copied to clipboard!');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

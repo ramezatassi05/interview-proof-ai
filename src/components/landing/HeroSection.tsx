@@ -9,6 +9,10 @@ import { Badge, riskBandToVariant } from '@/components/ui/Badge';
 import { RadialScoreIndicator } from '@/components/ui/RadialScoreIndicator';
 import { InsightOwlMascot, InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
 import { WaitlistForm } from '@/components/waitlist/WaitlistForm';
+import { BlurFade } from '@/components/ui/blur-fade';
+import { TextAnimate } from '@/components/ui/text-animate';
+import { BorderBeam } from '@/components/ui/border-beam';
+import { DotPattern } from '@/components/ui/dot-pattern';
 
 const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
 
@@ -69,25 +73,35 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
     <section className="relative overflow-hidden">
       {/* Subtle gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent-primary)]/[0.03] to-transparent pointer-events-none" />
+      <DotPattern className="opacity-30 [mask-image:linear-gradient(to_bottom,white,transparent)]" />
 
       <Container size="2xl" className="relative py-20 lg:py-28">
         <div className="flex flex-col lg:flex-row lg:items-center lg:gap-20">
           {/* Left — text */}
           <div className="flex-1 lg:max-w-[55%]">
-            <h1 className="heading-modern text-4xl font-bold text-[var(--text-primary)] sm:text-5xl lg:text-6xl">
-              Know Exactly What Will{' '}
-              <span className="text-gradient-accent">Sink You</span>
-            </h1>
+            <BlurFade inView delay={0}>
+              <h1 className="heading-modern text-4xl font-bold text-[var(--text-primary)] sm:text-5xl lg:text-6xl">
+                <TextAnimate animation="blurInUp" by="word">
+                  Know Exactly What Will
+                </TextAnimate>{' '}
+                <span className="text-gradient-accent">Sink You</span>
+              </h1>
+            </BlurFade>
 
-            <p className="mt-4 text-xl font-medium text-[var(--text-secondary)] sm:text-2xl">
-              Turn Anxiety Into Clear Action.
-            </p>
+            <BlurFade inView delay={0.1}>
+              <p className="mt-4 text-xl font-medium text-[var(--text-secondary)] sm:text-2xl">
+                Turn Anxiety Into Clear Action.
+              </p>
+            </BlurFade>
 
-            <p className="mt-6 max-w-lg text-base leading-relaxed text-[var(--text-secondary)]">
-              Upload your resume and job description. Get an evidence-backed diagnostic that shows
-              exactly what recruiters will reject you for — before the interview.
-            </p>
+            <BlurFade inView delay={0.15}>
+              <p className="mt-6 max-w-lg text-base leading-relaxed text-[var(--text-secondary)]">
+                Upload your resume and job description. Get an evidence-backed diagnostic that shows
+                exactly what recruiters will reject you for — before the interview.
+              </p>
+            </BlurFade>
 
+            <BlurFade inView delay={0.2}>
             <div className="mt-10">
               {WAITLIST_MODE ? (
                 <div>
@@ -122,6 +136,8 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
                 </div>
               )}
             </div>
+
+            </BlurFade>
 
             {/* Trust badge */}
             <div className="mt-6 flex items-center gap-2">
@@ -175,7 +191,8 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
               </div>
             ) : (
               /* Clean product preview card */
-              <div className="w-full max-w-sm rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden shadow-xl shadow-black/5">
+              <div className="relative w-full max-w-sm rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden shadow-xl shadow-black/5">
+                <BorderBeam size={250} duration={12} delay={0} />
                 {/* Header bar */}
                 <div className="flex items-center gap-2 border-b border-[var(--border-default)] px-5 py-3 bg-[var(--bg-secondary)]">
                   <div className="flex gap-1.5">

@@ -1,5 +1,7 @@
 import { Container } from '@/components/layout/Container';
 import { SectionBadge } from './SectionBadge';
+import { BlurFade } from '@/components/ui/blur-fade';
+import { MagicCard } from '@/components/ui/magic-card';
 
 const PRIMARY_FEATURES = [
   {
@@ -106,37 +108,35 @@ export function FeaturesSection() {
 
         {/* Primary features — 2 large cards */}
         <div className="mt-14 grid gap-6 lg:grid-cols-2">
-          {PRIMARY_FEATURES.map((feature) => (
-            <div
-              key={feature.title}
-              className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-7 transition-all duration-200 hover:border-[var(--border-accent)]"
-            >
-              <h3 className="text-lg font-semibold text-[var(--text-primary)]">{feature.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
-                {feature.description}
-              </p>
-              {feature.preview}
-            </div>
+          {PRIMARY_FEATURES.map((feature, i) => (
+            <BlurFade key={feature.title} inView delay={i * 0.1}>
+              <MagicCard className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-7 transition-all duration-200 hover:border-[var(--border-accent)]">
+                <h3 className="text-lg font-semibold text-[var(--text-primary)]">{feature.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+                  {feature.description}
+                </p>
+                {feature.preview}
+              </MagicCard>
+            </BlurFade>
           ))}
         </div>
 
         {/* Secondary features — 4 smaller cards */}
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {SECONDARY_FEATURES.map((feature) => (
-            <div
-              key={feature.title}
-              className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6 transition-all duration-200 hover:border-[var(--border-accent)]"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
-                {feature.icon}
+          {SECONDARY_FEATURES.map((feature, i) => (
+            <BlurFade key={feature.title} inView delay={0.2 + i * 0.08}>
+              <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6 transition-all duration-200 hover:border-[var(--border-accent)]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
+                  {feature.icon}
+                </div>
+                <h3 className="mt-4 text-sm font-semibold text-[var(--text-primary)]">
+                  {feature.title}
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+                  {feature.description}
+                </p>
               </div>
-              <h3 className="mt-4 text-sm font-semibold text-[var(--text-primary)]">
-                {feature.title}
-              </h3>
-              <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
-                {feature.description}
-              </p>
-            </div>
+            </BlurFade>
           ))}
         </div>
 

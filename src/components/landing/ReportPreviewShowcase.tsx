@@ -3,6 +3,9 @@ import type { ReactNode } from 'react';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
 import { SectionBadge } from './SectionBadge';
+import { BlurFade } from '@/components/ui/blur-fade';
+import { MagicCard } from '@/components/ui/magic-card';
+import { BorderBeam } from '@/components/ui/border-beam';
 
 /* ─── Shared PreviewCard ─── */
 
@@ -10,28 +13,21 @@ function PreviewCard({
   title,
   icon,
   accentColor,
-  colSpan,
   children,
   ctaHref,
   ctaLabel = 'Unlock Full Report',
-  delay,
-  height,
+  hero,
 }: {
   title: string;
   icon: ReactNode;
   accentColor: string;
-  colSpan: string;
   children: ReactNode;
   ctaHref: string;
   ctaLabel?: string;
-  delay: string;
-  height?: string;
+  hero?: boolean;
 }) {
   return (
-    <div
-      className={`group relative rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden card-hover animate-fade-in ${colSpan} ${height ?? ''}`}
-      style={{ animationDelay: delay }}
-    >
+    <MagicCard className="group relative h-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden card-hover">
       {/* Header */}
       <div className="flex items-center gap-2.5 px-5 pt-4 pb-3">
         <span style={{ color: accentColor }}>{icon}</span>
@@ -39,20 +35,29 @@ function PreviewCard({
       </div>
 
       {/* Content */}
-      <div className="px-5 pb-16">{children}</div>
+      <div className="px-5 pb-12">{children}</div>
 
       {/* Bottom fade gradient */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--bg-card)] via-[var(--bg-card)]/80 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--bg-card)] via-[var(--bg-card)]/80 to-transparent" />
 
       {/* Hover lock overlay */}
-      <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-primary)]/60 backdrop-blur-[2px] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
+      <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-primary)]/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <Link href={ctaHref}>
           <Button variant="accent" size="sm">
             {ctaLabel}
           </Button>
         </Link>
       </div>
-    </div>
+
+      {hero && (
+        <BorderBeam
+          colorFrom="var(--color-warning)"
+          colorTo="var(--color-danger)"
+          duration={12}
+          size={250}
+        />
+      )}
+    </MagicCard>
   );
 }
 
@@ -490,76 +495,72 @@ export function ReportPreviewShowcase({ ctaHref, ctaLabel }: ReportPreviewShowca
         </div>
 
         {/* Bento grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* 1. Would You Get Hired? — spans 2 cols */}
-          <PreviewCard
-            title="Would You Get Hired?"
-            icon={HireZoneIcon}
-            accentColor="var(--color-warning)"
-            colSpan="lg:col-span-2"
-            ctaHref={ctaHref}
-            ctaLabel={ctaLabel}
-            delay="0ms"
-            height="h-[340px]"
-          >
-            <HireZonePreview />
-          </PreviewCard>
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[280px_280px_280px]">
+          {/* 1. Would You Get Hired? — hero card, 2 cols + 2 rows */}
+          <BlurFade inView delay={0} className="lg:col-span-2 lg:row-span-2">
+            <PreviewCard
+              title="Would You Get Hired?"
+              icon={HireZoneIcon}
+              accentColor="var(--color-warning)"
+              ctaHref={ctaHref}
+              ctaLabel={ctaLabel}
+              hero
+            >
+              <HireZonePreview />
+            </PreviewCard>
+          </BlurFade>
 
-          {/* 2. Your Interview Playbook — spans 2 cols */}
-          <PreviewCard
-            title="Your Interview Playbook"
-            icon={PlaybookIcon}
-            accentColor="var(--color-info)"
-            colSpan="lg:col-span-2"
-            ctaHref={ctaHref}
-            ctaLabel={ctaLabel}
-            delay="80ms"
-            height="h-[340px]"
-          >
-            <PlaybookPreview />
-          </PreviewCard>
+          {/* 2. Your Interview Playbook — 2 cols */}
+          <BlurFade inView delay={0.08} className="lg:col-span-2">
+            <PreviewCard
+              title="Your Interview Playbook"
+              icon={PlaybookIcon}
+              accentColor="var(--color-info)"
+              ctaHref={ctaHref}
+              ctaLabel={ctaLabel}
+            >
+              <PlaybookPreview />
+            </PreviewCard>
+          </BlurFade>
 
-          {/* 3. Questions They'll Ask You — spans 2 cols */}
-          <PreviewCard
-            title="Questions They'll Ask You"
-            icon={PredictedIcon}
-            accentColor="var(--color-warning)"
-            colSpan="lg:col-span-2"
-            ctaHref={ctaHref}
-            ctaLabel={ctaLabel}
-            delay="160ms"
-            height="h-[480px]"
-          >
-            <PredictedQuestionsPreview />
-          </PreviewCard>
+          {/* 3. Questions They'll Ask You — 2 cols */}
+          <BlurFade inView delay={0.16} className="lg:col-span-2">
+            <PreviewCard
+              title="Questions They'll Ask You"
+              icon={PredictedIcon}
+              accentColor="var(--color-warning)"
+              ctaHref={ctaHref}
+              ctaLabel={ctaLabel}
+            >
+              <PredictedQuestionsPreview />
+            </PreviewCard>
+          </BlurFade>
 
-          {/* 4. How Recruiters See You — spans 2 cols */}
-          <PreviewCard
-            title="How Recruiters See You"
-            icon={RecruiterIcon}
-            accentColor="var(--color-danger)"
-            colSpan="lg:col-span-2"
-            ctaHref={ctaHref}
-            ctaLabel={ctaLabel}
-            delay="240ms"
-            height="h-[480px]"
-          >
-            <RecruiterPreview />
-          </PreviewCard>
+          {/* 4. How Recruiters See You — 2 cols */}
+          <BlurFade inView delay={0.24} className="lg:col-span-2">
+            <PreviewCard
+              title="How Recruiters See You"
+              icon={RecruiterIcon}
+              accentColor="var(--color-danger)"
+              ctaHref={ctaHref}
+              ctaLabel={ctaLabel}
+            >
+              <RecruiterPreview />
+            </PreviewCard>
+          </BlurFade>
 
-          {/* 5. Your 14-Day Path to Interview Ready — full width */}
-          <PreviewCard
-            title="Your 14-Day Path to Interview Ready"
-            icon={TrajectoryIcon}
-            accentColor="var(--color-success)"
-            colSpan="lg:col-span-4"
-            ctaHref={ctaHref}
-            ctaLabel={ctaLabel}
-            delay="320ms"
-            height="h-[260px]"
-          >
-            <TrajectoryPreview />
-          </PreviewCard>
+          {/* 5. Your 14-Day Path to Interview Ready — 2 cols */}
+          <BlurFade inView delay={0.32} className="lg:col-span-2">
+            <PreviewCard
+              title="Your 14-Day Path to Interview Ready"
+              icon={TrajectoryIcon}
+              accentColor="var(--color-success)"
+              ctaHref={ctaHref}
+              ctaLabel={ctaLabel}
+            >
+              <TrajectoryPreview />
+            </PreviewCard>
+          </BlurFade>
         </div>
       </Container>
     </section>

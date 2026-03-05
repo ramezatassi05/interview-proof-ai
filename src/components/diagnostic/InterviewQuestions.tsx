@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { splitTextWithHighlight } from '@/lib/highlight';
 import type {
@@ -189,6 +190,7 @@ function SavedAnswersView({
   const handleCopySaved = useCallback((text: string, idx: number) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedSavedIdx(idx);
+      toast.success('Copied to clipboard');
       setTimeout(() => setCopiedSavedIdx(null), 1500);
     });
   }, []);
@@ -555,6 +557,7 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
   const handleCopyQuestion = useCallback((text: string, poolIndex: number) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedIndex(poolIndex);
+      toast.success('Question copied');
       setTimeout(() => setCopiedIndex(null), 1500);
     });
   }, []);

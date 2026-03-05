@@ -2,11 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { useCredits } from '@/hooks/useCredits';
 import { api, APIRequestError } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { CREDITS_PER_REPORT } from '@/lib/stripe';
 import { InsightOwlThinking } from '@/components/svg/InsightOwlMascot';
+import { BorderBeam } from '@/components/ui/border-beam';
+import { AnimatedShinyText } from '@/components/ui/animated-shiny-text';
+import { fireConfetti } from '@/components/ui/confetti';
 
 interface PaywallCTAProps {
   reportId: string;
@@ -85,6 +89,8 @@ export function PaywallCTA({ reportId, totalRisks }: PaywallCTAProps) {
 
       if (result.data.unlocked || result.data.alreadyUnlocked) {
         refreshBalance();
+        fireConfetti();
+        toast.success('Report unlocked! Redirecting...');
         router.push(`/r/${reportId}/full`);
       } else {
         setError('Failed to unlock report.');
@@ -106,6 +112,7 @@ export function PaywallCTA({ reportId, totalRisks }: PaywallCTAProps) {
 
   return (
     <div className="relative overflow-hidden rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)]">
+      <BorderBeam size={250} duration={12} />
 
       <div className="relative p-8">
         <div className="text-center mb-8">
@@ -126,9 +133,9 @@ export function PaywallCTA({ reportId, totalRisks }: PaywallCTAProps) {
                 d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
               />
             </svg>
-            <span className="text-sm font-medium text-[var(--accent-primary)]">
+            <AnimatedShinyText className="text-sm font-medium text-[var(--accent-primary)]">
               Premium Diagnostic
-            </span>
+            </AnimatedShinyText>
           </div>
 
           <h2 className="text-2xl font-bold text-[var(--text-primary)]">Unlock Full Analysis</h2>

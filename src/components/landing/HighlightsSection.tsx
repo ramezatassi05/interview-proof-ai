@@ -1,5 +1,7 @@
 import { Container } from '@/components/layout/Container';
 import { SectionBadge } from './SectionBadge';
+import { BlurFade } from '@/components/ui/blur-fade';
+import { MagicCard } from '@/components/ui/magic-card';
 
 const HIGHLIGHTS = [
   {
@@ -49,21 +51,20 @@ export function HighlightsSection() {
         </div>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {HIGHLIGHTS.map((item) => (
-            <div
-              key={item.title}
-              className="group rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-7 transition-all duration-200 hover:border-[var(--border-accent)] hover:shadow-lg hover:shadow-black/5"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
-                {item.icon}
-              </div>
-              <h3 className="mt-5 text-lg font-semibold text-[var(--text-primary)]">
-                {item.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
-                {item.description}
-              </p>
-            </div>
+          {HIGHLIGHTS.map((item, i) => (
+            <BlurFade key={item.title} inView delay={i * 0.1}>
+              <MagicCard className="group rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-7 transition-all duration-200 hover:border-[var(--border-accent)] hover:shadow-lg hover:shadow-black/5">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
+                  {item.icon}
+                </div>
+                <h3 className="mt-5 text-lg font-semibold text-[var(--text-primary)]">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+                  {item.description}
+                </p>
+              </MagicCard>
+            </BlurFade>
           ))}
         </div>
       </Container>

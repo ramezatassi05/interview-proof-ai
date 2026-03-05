@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 import { api } from '@/lib/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -25,7 +33,6 @@ export function ShareModal({
   const [shareEnabled, setShareEnabled] = useState(initialEnabled);
   const [shareUrl, setShareUrl] = useState(initialShareUrl || '');
   const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleToggle = useCallback(async () => {
@@ -46,18 +53,15 @@ export function ShareModal({
     if (!shareUrl) return;
     try {
       await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      toast.success('Link copied to clipboard!');
     } catch {
-      // Fallback for older browsers
       const input = document.createElement('input');
       input.value = shareUrl;
       document.body.appendChild(input);
       input.select();
       document.execCommand('copy');
       document.body.removeChild(input);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      toast.success('Link copied to clipboard!');
     }
   }, [shareUrl]);
 
@@ -72,36 +76,13 @@ export function ShareModal({
     window.open(`mailto:?subject=${subject}&body=${body}`, '_self');
   }, [shareUrl, readinessScore, companyName]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Modal */}
-      <div className="relative w-full max-w-md animate-fade-in rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 p-2 text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
-        {/* Header */}
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-[var(--text-primary)]">Share Report</h2>
-          <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Share a read-only version of your diagnostic report
-          </p>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Share Report</DialogTitle>
+          <DialogDescription>Share a read-only version of your diagnostic report</DialogDescription>
+        </DialogHeader>
 
         {/* Error */}
         {error && (
@@ -114,15 +95,13 @@ export function ShareModal({
         <div className="flex items-center justify-between rounded-xl border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4">
           <div>
             <p className="text-sm font-medium text-[var(--text-primary)]">Enable sharing</p>
-            <p className="text-xs text-[var(--text-muted)]">
-              Anyone with the link can view
-            </p>
+            <p className="text-xs text-[var(--text-muted)]">Anyone with the link can view</p>
           </div>
           <button
             onClick={handleToggle}
             disabled={loading}
             className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
-              shareEnabled ? 'bg-[var(--color-accent)]' : 'bg-[var(--border-default)]'
+              shareEnabled ? 'bg-[var(--accent-primary)]' : 'bg-[var(--border-default)]'
             } ${loading ? 'opacity-50' : ''}`}
             role="switch"
             aria-checked={shareEnabled}
@@ -135,10 +114,9 @@ export function ShareModal({
           </button>
         </div>
 
-        {/* Share URL + Actions (only when enabled) */}
+        {/* Share URL + Actions */}
         {shareEnabled && shareUrl && (
           <div className="mt-4 space-y-3">
-            {/* URL input + copy */}
             <div className="flex gap-2">
               <input
                 type="text"
@@ -150,11 +128,10 @@ export function ShareModal({
                 onClick={handleCopy}
                 className="shrink-0 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] px-3 py-2 text-sm font-medium text-[var(--text-primary)] transition-all hover:bg-[var(--bg-card)] hover:border-[var(--border-accent)]"
               >
-                {copied ? 'Copied!' : 'Copy'}
+                Copy
               </button>
             </div>
 
-            {/* Email button */}
             <button
               onClick={handleEmail}
               className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] transition-all hover:bg-[var(--bg-card)] hover:border-[var(--border-accent)]"
@@ -176,7 +153,7 @@ export function ShareModal({
         <p className="mt-4 text-center text-xs text-[var(--text-muted)]">
           Your resume and job description are not included in shared reports.
         </p>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
