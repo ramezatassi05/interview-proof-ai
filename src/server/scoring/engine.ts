@@ -19,6 +19,7 @@ export { computeHireZoneAnalysis } from './hirezone';
 export { computeCompanyDifficulty } from './company-difficulty';
 export { detectPriorEmployment } from './prior-employment';
 export { computeCompetencyHeatmap } from './competency-heatmap';
+export { computePoolPercentile } from './pool-percentile';
 
 const SCORING_VERSION = 'v0.2';
 

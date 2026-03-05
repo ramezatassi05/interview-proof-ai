@@ -429,7 +429,7 @@ ${roundType === 'technical' ? `     For this TECHNICAL round assessment, red fla
      - comparativeNote: How this candidate compares to a typical applicant pool for this role/level.
 
    - **candidatePositioning** (where they sit in the pool):
-     - estimatedPoolPercentile: 0-100, where this candidate falls relative to a typical applicant pool for this role.
+     - estimatedPoolPercentile: 0-100, rough estimate (will be calibrated by the scoring engine).
      - standoutDifferentiator: The biggest competitive advantage this candidate has over others.
      - biggestLiability: The single biggest reason a recruiter might pass.
      - advanceRationale: A sentence explaining why they would or wouldn't advance this candidate.
@@ -578,7 +578,7 @@ Return ONLY valid JSON matching this exact structure:
       "comparativeNote": "How candidate compares to typical applicant pool..."
     },
     "candidatePositioning": {
-      "estimatedPoolPercentile": 65,
+      "estimatedPoolPercentile": 50,
       "standoutDifferentiator": "Biggest competitive advantage...",
       "biggestLiability": "Biggest reason to pass...",
       "advanceRationale": "Why they would/wouldn't advance..."

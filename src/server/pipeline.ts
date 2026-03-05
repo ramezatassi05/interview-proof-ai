@@ -35,6 +35,7 @@ import {
   computeCompanyDifficulty,
   detectPriorEmployment,
   computeCompetencyHeatmap,
+  computePoolPercentile,
 } from './scoring/engine';
 import { generatePersonalizedStudyPlan } from './scoring/studyplan';
 import { generateMoreQuestions } from './questions';
@@ -259,6 +260,17 @@ async function computeDiagnosticIntelligence(
     ? buildRecruiterSimulation(llmAnalysis.recruiterSignals)
     : buildDefaultRecruiterSimulation(llmAnalysis, score);
 
+  // Override LLM percentile with deterministic computation
+  const poolPercentile = computePoolPercentile(
+    llmAnalysis,
+    score,
+    scoreBreakdown,
+    companyDifficulty
+  );
+  if (recruiterSimulation.candidatePositioning) {
+    recruiterSimulation.candidatePositioning.estimatedPoolPercentile = poolPercentile;
+  }
+
   // Compute practice intelligence (Phase 7c)
   const practiceIntelligence = computePracticeIntelligence(
     llmAnalysis,
@@ -392,7 +404,7 @@ function buildDefaultRecruiterSimulation(
 
   // Build synthetic candidate positioning
   const candidatePositioning = {
-    estimatedPoolPercentile: Math.min(100, Math.max(0, Math.round(score * 0.9 + 5))),
+    estimatedPoolPercentile: 0, // Overridden by computePoolPercentile() in caller
     standoutDifferentiator: hiddenStrengths.length > 0
       ? hiddenStrengths[0]
       : 'No single standout differentiator identified.',
