@@ -36,7 +36,10 @@ export function FlowUploadPage() {
         </span>
       </div>
 
-      <div className="flex h-8 items-center justify-center rounded-lg bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 text-[11px] font-semibold text-white shadow-lg shadow-pink-500/20">
+      <div
+        data-cursor-target="cta"
+        className="flex h-8 items-center justify-center rounded-lg bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 text-[11px] font-semibold text-white shadow-lg shadow-pink-500/20"
+      >
         Analyze My Fit
       </div>
     </div>
@@ -192,6 +195,9 @@ export function FlowReportPage({ activeTab, animKey, scrollOffset = 0 }: FlowRep
         {TAB_ITEMS.map((tab) => (
           <span
             key={tab.id}
+            data-cursor-target={
+              tab.id === 'risks' ? 'tab-risks' : tab.id === 'questions' ? 'tab-questions' : undefined
+            }
             className={`-mb-px border-b-2 px-3 py-1.5 text-[11px] font-medium transition-colors ${
               tab.id === activeTab
                 ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'

@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { useCursorWaypoints } from '@/hooks/useCursorWaypoints';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
 import { BrowserFrame } from './mockups/BrowserFrame';
 import { FlowUploadPage, FlowAnalysisPage, FlowReportPage } from './mockups/FlowPages';
-import { AnimatedCursor, type CursorWaypoint } from './mockups/AnimatedCursor';
+import { AnimatedCursor } from './mockups/AnimatedCursor';
 
 const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
 
@@ -79,37 +80,6 @@ function getUrl(phase: FlowPhase): string {
   }
 }
 
-/* ====== Cursor waypoints (absolute delays from flow start) ====== */
-
-const FLOW_WAYPOINTS: CursorWaypoint[] = [
-  // Upload (0-1100ms): start center, click CTA
-  { x: 50, y: 40, delay: 0, duration: 0 },
-  { x: 50, y: 82, delay: 300, duration: 400, action: 'click' },
-
-  // Analysis (1300-4000ms): idle watching progress
-  { x: 58, y: 45, delay: 1500, duration: 500 },
-  { x: 55, y: 55, delay: 2800, duration: 1000 },
-
-  // Report — Score tab (4200-7200ms): hover dimension bars
-  { x: 50, y: 30, delay: 4500, duration: 400 },
-  { x: 45, y: 55, delay: 5200, duration: 600 },
-  { x: 46, y: 60, delay: 6000, duration: 400 },
-  { x: 47, y: 66, delay: 6500, duration: 400 },
-
-  // Report — Red Flags tab (7200-10200ms): click tab, hover risk cards
-  { x: 40, y: 30, delay: 7000, duration: 400, action: 'click' },
-  { x: 50, y: 50, delay: 7800, duration: 500 },
-  { x: 50, y: 60, delay: 8800, duration: 400 },
-
-  // Report — Questions tab (10200-14200ms): click tab, hover content
-  { x: 58, y: 30, delay: 10000, duration: 400, action: 'click' },
-  { x: 50, y: 55, delay: 11000, duration: 600 },
-  { x: 50, y: 75, delay: 12500, duration: 700 },
-
-  // Hold (14200-15500ms): drift to center
-  { x: 50, y: 50, delay: 14200, duration: 500 },
-];
-
 /* ====== Component ====== */
 
 export function ProductShowcase() {
@@ -119,6 +89,7 @@ export function ProductShowcase() {
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const elapsedRef = useRef(0);
   const phaseRef = useRef<FlowPhase>('upload');
 
@@ -195,6 +166,7 @@ export function ProductShowcase() {
     return 0;
   })();
 
+  const dynamicWaypoints = useCursorWaypoints(containerRef, flowKey);
   const ctaHref = user ? '/new' : '/auth/login?redirect=/new';
 
   return (
@@ -227,7 +199,11 @@ export function ProductShowcase() {
 
           {/* Right — continuous flow animation */}
           <div className="mt-14 lg:mt-0 lg:flex-1">
-            <div className="relative overflow-hidden rounded-3xl" style={{ minHeight: 500 }}>
+            <div
+              ref={containerRef}
+              className="relative overflow-hidden rounded-3xl"
+              style={{ minHeight: 500 }}
+            >
               {/* Gradient mesh blobs */}
               <div
                 className="absolute -left-20 -top-20 h-72 w-72 rounded-full opacity-60 blur-[80px] dark:opacity-60"
@@ -290,7 +266,7 @@ export function ProductShowcase() {
 
               {/* Animated demo cursor */}
               <AnimatedCursor
-                waypoints={FLOW_WAYPOINTS}
+                waypoints={dynamicWaypoints}
                 playing={playing}
                 flowKey={flowKey}
                 transitioning={!contentVisible}
