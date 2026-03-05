@@ -153,9 +153,12 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
           {/* Right — preview card */}
           <div className="mt-14 flex justify-center lg:mt-0 lg:flex-1">
             {lastReport ? (
-              <div className="w-full max-w-sm rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-7 shadow-xl shadow-black/5">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[var(--text-secondary)]">
+              <div className="relative w-full max-w-sm rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden shadow-xl shadow-black/5">
+                <BorderBeam size={250} duration={12} delay={0} />
+
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-[var(--border-default)] bg-[var(--bg-secondary)] px-5 py-3">
+                  <span className="text-xs font-medium text-[var(--text-muted)]">
                     Your Last Diagnostic
                   </span>
                   <Badge variant={riskBandToVariant(lastReport.riskBand as 'High' | 'Medium' | 'Low')}>
@@ -163,30 +166,58 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
                   </Badge>
                 </div>
 
-                <div className="mt-6 flex justify-center">
-                  <RadialScoreIndicator
-                    score={lastReport.readinessScore}
-                    size="lg"
-                    variant="auto"
-                    display="clean"
-                    label="Readiness"
-                  />
-                </div>
+                <div className="p-6">
+                  {/* Company & round info */}
+                  {(lastReport.companyName || lastReport.roundType) && (
+                    <div className="mb-4 text-center">
+                      {lastReport.companyName && (
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">
+                          {lastReport.companyName}
+                        </p>
+                      )}
+                      <p className="mt-0.5 text-xs text-[var(--text-muted)] capitalize">
+                        {lastReport.roundType.replace(/_/g, ' ')} round
+                      </p>
+                    </div>
+                  )}
 
-                <div className="mt-7 flex flex-col gap-2">
-                  <Link
-                    href={`/r/${lastReport.id}${lastReport.paidUnlocked ? '/full' : ''}`}
-                    className="block"
-                  >
-                    <Button variant="accent" size="sm" className="w-full">
-                      View Full Report
-                    </Button>
-                  </Link>
-                  <Link href="/new" className="block">
-                    <Button variant="secondary" size="sm" className="w-full">
-                      Run New Analysis
-                    </Button>
-                  </Link>
+                  {/* Score */}
+                  <div className="flex justify-center py-2">
+                    <RadialScoreIndicator
+                      score={lastReport.readinessScore}
+                      size="lg"
+                      variant="auto"
+                      display="clean"
+                      label="Readiness"
+                    />
+                  </div>
+
+                  {/* Date */}
+                  <p className="mt-3 text-center text-[11px] text-[var(--text-muted)]">
+                    Analyzed{' '}
+                    {new Date(lastReport.createdAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </p>
+
+                  {/* Actions */}
+                  <div className="mt-5 flex flex-col gap-2">
+                    <Link
+                      href={`/r/${lastReport.id}${lastReport.paidUnlocked ? '/full' : ''}`}
+                      className="block"
+                    >
+                      <Button variant="accent" size="sm" className="w-full">
+                        View Full Report
+                      </Button>
+                    </Link>
+                    <Link href="/new" className="block">
+                      <Button variant="secondary" size="sm" className="w-full">
+                        Run New Analysis
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             ) : (
