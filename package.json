@@ -14,7 +14,8 @@
     "test": "echo \"No tests yet\"",
     "prepare": "husky",
     "populate-embeddings": "npx tsx scripts/populate-embeddings.ts",
-    "ingest-knowledge": "npx tsx scripts/ingest-knowledge.ts"
+    "ingest-knowledge": "npx tsx scripts/ingest-knowledge.ts",
+    "seed-benchmarks": "npx tsx scripts/seed-benchmarks.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

@@ -82,10 +82,17 @@ export function CompetencyHeatmap({ heatmap, companyName, previewMode, reportId 
             </span>
           </h3>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            How your competency levels compare to {companyName ? `${companyName}'s` : 'the'} target bar
+            {heatmap.benchmarkDescription
+              ? heatmap.benchmarkDescription
+              : `How your competency levels compare to ${companyName ? `${companyName}'s` : 'the'} target bar`}
           </p>
         </div>
         <div className="flex gap-2">
+          {heatmap.roleTypeLabel && (
+            <span className="inline-flex items-center gap-1 rounded bg-[var(--bg-elevated)] px-2.5 py-0.5 text-xs font-medium text-[var(--text-secondary)] border border-[var(--border-default)]">
+              {heatmap.roleTypeLabel}
+            </span>
+          )}
           {heatmap.criticalGaps > 0 && (
             <span className="inline-flex items-center gap-1 rounded bg-[var(--color-danger-muted)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-danger)] border border-[var(--color-danger)]/30">
               {heatmap.criticalGaps} Critical
@@ -142,7 +149,9 @@ export function CompetencyHeatmap({ heatmap, companyName, previewMode, reportId 
                   <td className="py-3 px-4">
                     <span className="text-[var(--text-primary)]">{entry.targetBenchmark}</span>
                     <span className="ml-1.5 text-xs text-[var(--text-secondary)]">
-                      ({entry.targetScore})
+                      ({entry.targetScore}){entry.benchmarkSource === 'company' && (
+                        <span className="ml-0.5 text-[var(--color-accent)]" title="Company-specific benchmark">*</span>
+                      )}
                     </span>
                   </td>
                   <td className="py-3 pl-4">

@@ -164,7 +164,7 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     : baseTechnicalFit;
 
   // Step 6: Compute diagnostic intelligence (Phase 7b)
-  const diagnosticIntelligence = computeDiagnosticIntelligence(
+  const diagnosticIntelligence = await computeDiagnosticIntelligence(
     llmAnalysis,
     score,
     extractedResume,
@@ -206,7 +206,7 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
  * Computes all diagnostic intelligence features from LLM analysis.
  * All computations are deterministic - same inputs always produce same outputs.
  */
-function computeDiagnosticIntelligence(
+async function computeDiagnosticIntelligence(
   llmAnalysis: LLMAnalysis,
   score: number,
   extractedResume: ExtractedResume,
@@ -216,7 +216,7 @@ function computeDiagnosticIntelligence(
   prepPreferences?: PrepPreferences,
   executiveScoresInput?: { conversionLikelihood: number; technicalFit: number },
   priorEmploymentSignal?: PriorEmploymentSignal
-): DiagnosticIntelligence {
+): Promise<DiagnosticIntelligence> {
   // Extract personalized coaching if available
   const coaching = llmAnalysis.personalizedCoaching;
 
@@ -275,14 +275,14 @@ function computeDiagnosticIntelligence(
     companyDifficulty
   );
 
-  // Compute competency heatmap
-  const competencyHeatmap = computeCompetencyHeatmap(
+  // Compute competency heatmap (async — may fetch DB benchmarks)
+  const competencyHeatmap = await computeCompetencyHeatmap(
     llmAnalysis,
     scoreBreakdown,
     extractedJD,
     extractedResume,
     roundType,
-    companyDifficulty.tier !== 'STANDARD' ? companyDifficulty : undefined
+    companyDifficulty
   );
 
   return {

@@ -387,6 +387,22 @@ export type CompetencyLevel = 'Beginner' | 'Intermediate' | 'High' | 'Expert';
 export type GapStatus = 'Critical' | 'Warning' | 'Pass';
 export type InferredSeniority = 'Intern' | 'Junior' | 'Mid-Level' | 'Senior' | 'Staff+' | 'Unknown';
 
+export type RoleType =
+  | 'backend'
+  | 'frontend'
+  | 'fullstack'
+  | 'ml_ai'
+  | 'data'
+  | 'devops_infra'
+  | 'mobile'
+  | 'systems'
+  | 'security'
+  | 'management'
+  | 'general';
+
+export type BenchmarkConfidence = 'data_backed' | 'calibrated' | 'estimated';
+export type BenchmarkMatchLevel = 'company' | 'tier' | 'fallback';
+
 export interface CompetencyHeatmapEntry {
   domain: string;
   rawScore: number;               // 0-100
@@ -395,6 +411,8 @@ export interface CompetencyHeatmapEntry {
   targetScore: number;            // numeric target for gap math
   gapStatus: GapStatus;
   gapPoints: number;              // max(0, target - raw)
+  benchmarkSource?: BenchmarkMatchLevel;
+  benchmarkConfidence?: BenchmarkConfidence;
 }
 
 export interface CompetencyHeatmapData {
@@ -405,6 +423,9 @@ export interface CompetencyHeatmapData {
   criticalGaps: number;
   warningGaps: number;
   passCount: number;
+  roleType?: RoleType;
+  roleTypeLabel?: string;
+  benchmarkDescription?: string;
   version: string;
 }
 
