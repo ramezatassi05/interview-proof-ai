@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
 import { getStripeClient, getCreditBundle } from '@/lib/stripe';
 
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
 
     // Parse request body
     const body = await request.json();
-    const { bundleId, referralCode } = body;
+    const { bundleId, referralCode, applyDiscount } = body;
 
     if (!bundleId) {
       return NextResponse.json({ error: 'bundleId is required' }, { status: 400 });
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
     const stripe = getStripeClient();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: [
@@ -55,11 +56,18 @@ export async function POST(request: Request) {
         credits: bundle.credits.toString(),
         type: 'credit_bundle',
         referral_code: referralCode || '',
+        ...(applyDiscount ? { discount_applied: 'true' } : {}),
       },
       customer_email: user.email,
       success_url: `${appUrl}/wallet?payment=success&credits=${bundle.credits}`,
       cancel_url: `${appUrl}/wallet?payment=cancelled`,
-    });
+    };
+
+    if (applyDiscount) {
+      sessionParams.discounts = [{ coupon: 'ABANDONED_15' }];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return NextResponse.json({
       data: {

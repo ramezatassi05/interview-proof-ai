@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { useAuth } from './useAuth';
+import { ABANDONED_DISCOUNT } from '@/lib/stripe';
 
 interface CreditsContextType {
   balance: number;
@@ -11,6 +12,8 @@ interface CreditsContextType {
   isPurchaseModalOpen: boolean;
   openPurchaseModal: () => void;
   closePurchaseModal: () => void;
+  hasAbandonmentDiscount: boolean;
+  clearAbandonmentDiscount: () => void;
 }
 
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined);
@@ -25,6 +28,7 @@ export function CreditsProvider({ children }: CreditsProviderProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [hasAbandonmentDiscount, setHasAbandonmentDiscount] = useState(false);
 
   const refreshBalance = useCallback(async () => {
     if (!user) {
@@ -54,23 +58,64 @@ export function CreditsProvider({ children }: CreditsProviderProps) {
     refreshBalance();
   }, [authLoading, refreshBalance]);
 
-  // Check for successful payment in URL and refresh
+  const recordAbandonment = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (!localStorage.getItem(ABANDONED_DISCOUNT.localStorageKey)) {
+      localStorage.setItem(ABANDONED_DISCOUNT.localStorageKey, Date.now().toString());
+      setHasAbandonmentDiscount(true);
+    }
+  }, []);
+
+  const clearAbandonmentDiscount = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(ABANDONED_DISCOUNT.localStorageKey);
+    }
+    setHasAbandonmentDiscount(false);
+  }, []);
+
+  // Check abandonment discount from localStorage on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = localStorage.getItem(ABANDONED_DISCOUNT.localStorageKey);
+    if (stored) {
+      const timestamp = Number(stored);
+      if (Date.now() - timestamp < ABANDONED_DISCOUNT.ttlMs) {
+        setHasAbandonmentDiscount(true);
+      } else {
+        localStorage.removeItem(ABANDONED_DISCOUNT.localStorageKey);
+      }
+    }
+  }, []);
+
+  // Check for payment result in URL and refresh
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('payment') === 'success') {
+      const paymentStatus = params.get('payment');
+
+      if (paymentStatus === 'success') {
         refreshBalance();
+        clearAbandonmentDiscount();
         // Clean up URL
         const url = new URL(window.location.href);
         url.searchParams.delete('payment');
         url.searchParams.delete('credits');
         window.history.replaceState({}, '', url);
+      } else if (paymentStatus === 'cancelled') {
+        recordAbandonment();
+        // Clean up URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('payment');
+        window.history.replaceState({}, '', url);
       }
     }
-  }, [refreshBalance]);
+  }, [refreshBalance, clearAbandonmentDiscount, recordAbandonment]);
 
   const openPurchaseModal = useCallback(() => setIsPurchaseModalOpen(true), []);
-  const closePurchaseModal = useCallback(() => setIsPurchaseModalOpen(false), []);
+  const closePurchaseModal = useCallback(() => {
+    setIsPurchaseModalOpen(false);
+    recordAbandonment();
+  }, [recordAbandonment]);
 
   return (
     <CreditsContext.Provider
@@ -82,6 +127,8 @@ export function CreditsProvider({ children }: CreditsProviderProps) {
         isPurchaseModalOpen,
         openPurchaseModal,
         closePurchaseModal,
+        hasAbandonmentDiscount,
+        clearAbandonmentDiscount,
       }}
     >
       {children}

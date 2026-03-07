@@ -92,6 +92,7 @@ const DATA_SOURCES = [
 export function VerticalAIModelSection() {
   return (
     <section
+      id="vertical-ai"
       className="py-20 lg:py-28 bg-[var(--bg-dark-band)]"
       style={
         {

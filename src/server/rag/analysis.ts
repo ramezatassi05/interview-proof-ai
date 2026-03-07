@@ -56,7 +56,7 @@ const RecruiterSignalsSchema = z.object({
 // Zod schema for personalized coaching (LLM-generated specific advice)
 const PersonalizedCoachingSchema = z.object({
   archetypeTips: z.array(z.string()).min(1).max(5),
-  roundFocus: z.string().min(30),
+  roundFocus: z.string().min(1),
   priorityActions: z
     .array(
       z.object({
@@ -89,7 +89,7 @@ const RoundCoachingSchema = z.object({
         whyItWorks: z.string(),
       })
     )
-    .min(3)
+    .min(1)
     .max(4),
   passionSignals: z.array(z.string()).min(1).max(5),
 });
@@ -140,6 +140,78 @@ const LLMAnalysisSchema = z.object({
 interface AnalysisContext {
   rubricChunks: RubricChunk[];
   questionArchetypes: QuestionArchetype[];
+}
+
+/**
+ * Pre-validation repair: fixes common LLM output quirks before Zod validation.
+ * Mutates the object in place and returns it.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function repairAnalysisOutput(obj: any): any {
+  if (!obj || typeof obj !== 'object') return obj;
+
+  // Coerce categoryScores numeric strings → numbers and clamp to 0-1
+  if (obj.categoryScores && typeof obj.categoryScores === 'object') {
+    for (const key of Object.keys(obj.categoryScores)) {
+      const v = obj.categoryScores[key];
+      if (typeof v === 'string') {
+        obj.categoryScores[key] = Number(v);
+      }
+      if (typeof obj.categoryScores[key] === 'number') {
+        obj.categoryScores[key] = Math.max(0, Math.min(1, obj.categoryScores[key]));
+      }
+    }
+  }
+
+  // Ensure top-level arrays exist
+  if (!Array.isArray(obj.rankedRisks)) obj.rankedRisks = [];
+  if (!Array.isArray(obj.interviewQuestions)) obj.interviewQuestions = [];
+  if (!Array.isArray(obj.studyPlan)) obj.studyPlan = [];
+
+  // Repair recruiterSignals sub-arrays
+  if (obj.recruiterSignals && typeof obj.recruiterSignals === 'object') {
+    if (!Array.isArray(obj.recruiterSignals.immediateRedFlags))
+      obj.recruiterSignals.immediateRedFlags = [];
+    if (!Array.isArray(obj.recruiterSignals.hiddenStrengths))
+      obj.recruiterSignals.hiddenStrengths = [];
+
+    // Clamp estimatedScreenTimeSeconds
+    if (typeof obj.recruiterSignals.estimatedScreenTimeSeconds === 'string') {
+      obj.recruiterSignals.estimatedScreenTimeSeconds = Number(
+        obj.recruiterSignals.estimatedScreenTimeSeconds
+      );
+    }
+    if (typeof obj.recruiterSignals.estimatedScreenTimeSeconds === 'number') {
+      obj.recruiterSignals.estimatedScreenTimeSeconds = Math.max(
+        5,
+        Math.min(300, obj.recruiterSignals.estimatedScreenTimeSeconds)
+      );
+    }
+  }
+
+  // Repair roundCoaching sub-arrays if present
+  if (obj.roundCoaching && typeof obj.roundCoaching === 'object') {
+    if (!Array.isArray(obj.roundCoaching.coachingRecommendations))
+      obj.roundCoaching.coachingRecommendations = [];
+    if (!Array.isArray(obj.roundCoaching.waysToStandOut))
+      obj.roundCoaching.waysToStandOut = [];
+    if (!Array.isArray(obj.roundCoaching.questionsToAskInterviewer))
+      obj.roundCoaching.questionsToAskInterviewer = [];
+    if (!Array.isArray(obj.roundCoaching.sampleResponses))
+      obj.roundCoaching.sampleResponses = [];
+    if (!Array.isArray(obj.roundCoaching.passionSignals))
+      obj.roundCoaching.passionSignals = [];
+  }
+
+  // Repair personalizedCoaching sub-arrays if present
+  if (obj.personalizedCoaching && typeof obj.personalizedCoaching === 'object') {
+    if (!Array.isArray(obj.personalizedCoaching.archetypeTips))
+      obj.personalizedCoaching.archetypeTips = [];
+    if (!Array.isArray(obj.personalizedCoaching.priorityActions))
+      obj.personalizedCoaching.priorityActions = [];
+  }
+
+  return obj;
 }
 
 /**
@@ -687,6 +759,8 @@ export async function performAnalysis(
     priorEmployment
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let lastParsed: any = null;
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (attempt > 0 && Date.now() > deadline) {
       throw new Error(
@@ -717,7 +791,9 @@ export async function performAnalysis(
       }
 
       const parsed = JSON.parse(content);
-      const validated = LLMAnalysisSchema.parse(parsed);
+      lastParsed = parsed;
+      const repaired = repairAnalysisOutput(parsed);
+      const validated = LLMAnalysisSchema.parse(repaired);
 
       // Ensure we have enough risks (pad if needed)
       if (validated.rankedRisks.length < 10) {
@@ -725,7 +801,9 @@ export async function performAnalysis(
       }
 
       if (validated.interviewQuestions.length < 15) {
-        console.warn(`LLM returned only ${validated.interviewQuestions.length} questions, expected 15-20`);
+        console.warn(
+          `LLM returned only ${validated.interviewQuestions.length} questions, expected 15-20`
+        );
       }
 
       return validated;
@@ -733,10 +811,29 @@ export async function performAnalysis(
       if (error instanceof z.ZodError) {
         console.warn(
           `Validation failed (attempt ${attempt + 1}):`,
-          error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ')
+          error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
         );
       }
       if (attempt === retries) {
+        // Graceful degradation: if only roundCoaching is invalid, strip it and retry validation
+        if (error instanceof z.ZodError && lastParsed) {
+          const onlyRoundCoachingErrors = error.issues.every(
+            (i) => i.path[0] === 'roundCoaching'
+          );
+          if (onlyRoundCoachingErrors) {
+            console.warn(
+              'Stripping malformed roundCoaching for graceful degradation'
+            );
+            try {
+              const fallback = { ...lastParsed };
+              delete fallback.roundCoaching;
+              const repaired = repairAnalysisOutput(fallback);
+              return LLMAnalysisSchema.parse(repaired);
+            } catch {
+              // Fallback also failed — throw original error
+            }
+          }
+        }
         console.error('LLM analysis failed after retries:', error);
         throw new Error(
           `Failed to perform analysis: ${error instanceof Error ? error.message : 'Unknown error'}`

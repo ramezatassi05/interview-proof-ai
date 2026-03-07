@@ -13,6 +13,7 @@ import { BlurFade } from '@/components/ui/blur-fade';
 import { TextAnimate } from '@/components/ui/text-animate';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { DotPattern } from '@/components/ui/dot-pattern';
+import { motion, useScroll, useTransform } from 'motion/react';
 
 const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
 
@@ -69,8 +70,11 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
       .catch(() => {});
   }, []);
 
+  const { scrollY } = useScroll();
+  const scrollIndicatorOpacity = useTransform(scrollY, [0, 150], [1, 0]);
+
   return (
-    <section className="relative overflow-hidden">
+    <section id="hero" className="relative overflow-hidden">
       {/* Subtle gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent-primary)]/[0.03] to-transparent pointer-events-none" />
       <DotPattern className="opacity-30 [mask-image:linear-gradient(to_bottom,white,transparent)]" />
@@ -280,6 +284,23 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
           </div>
         </div>
       </Container>
+
+      {/* Scroll to explore indicator */}
+      <motion.div
+        className="pointer-events-none absolute inset-x-0 bottom-6 flex flex-col items-center gap-2"
+        style={{ opacity: scrollIndicatorOpacity }}
+      >
+        <span className="text-xs font-medium text-[var(--text-muted)]">Scroll to explore</span>
+        <svg
+          className="h-5 w-5 text-[var(--text-muted)] animate-scroll-cta"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </motion.div>
     </section>
   );
 }

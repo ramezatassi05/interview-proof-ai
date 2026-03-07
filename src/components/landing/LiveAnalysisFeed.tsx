@@ -25,7 +25,7 @@ export function LiveAnalysisFeed() {
   const doubled = [...entries, ...entries];
 
   return (
-    <section className="overflow-hidden border-y border-[var(--border-default)] bg-[var(--bg-secondary)]">
+    <section id="live-feed" className="overflow-hidden border-y border-[var(--border-default)] bg-[var(--bg-secondary)]">
       <div className="py-4">
         <div className="marquee-track">
           {doubled.map((entry, i) => (

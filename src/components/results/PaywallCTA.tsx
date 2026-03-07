@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { forwardRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useCredits } from '@/hooks/useCredits';
@@ -15,6 +15,7 @@ import { fireConfetti } from '@/components/ui/confetti';
 interface PaywallCTAProps {
   reportId: string;
   totalRisks: number;
+  variant?: 'default' | 'bottom';
 }
 
 const FEATURES = [
@@ -72,147 +73,300 @@ const FEATURES = [
   },
 ];
 
-export function PaywallCTA({ reportId, totalRisks }: PaywallCTAProps) {
-  const router = useRouter();
-  const { balance, openPurchaseModal, refreshBalance } = useCredits();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const PREMIUM_SECTIONS = [
+  { number: '01', name: 'Priority Actions' },
+  { number: '02', name: 'Executive Summary' },
+  { number: '03', name: 'Signal Strength' },
+  { number: '04', name: 'Hire Zone' },
+  { number: '05', name: 'Competency Heatmap' },
+  { number: '06', name: 'All Red Flags' },
+  { number: '07', name: 'Practice Questions' },
+  { number: '08', name: 'Execution Roadmap' },
+  { number: '09', name: 'Coaching Notes' },
+  { number: '10', name: 'Cognitive Map' },
+  { number: '11', name: 'Recruiter View' },
+  { number: '12', name: 'Practice Intelligence' },
+  { number: '13', name: 'Study Plan' },
+];
 
-  const hasEnoughCredits = balance >= CREDITS_PER_REPORT;
+export const PaywallCTA = forwardRef<HTMLDivElement, PaywallCTAProps>(
+  function PaywallCTA({ reportId, totalRisks, variant = 'default' }, ref) {
+    const router = useRouter();
+    const { balance, openPurchaseModal, refreshBalance, hasAbandonmentDiscount } = useCredits();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-  const handleUnlockWithCredits = async () => {
-    setLoading(true);
-    setError(null);
+    const hasEnoughCredits = balance >= CREDITS_PER_REPORT;
 
-    try {
-      const result = await api.unlockReport(reportId);
+    const handleUnlockWithCredits = async () => {
+      setLoading(true);
+      setError(null);
 
-      if (result.data.unlocked || result.data.alreadyUnlocked) {
-        refreshBalance();
-        fireConfetti();
-        toast.success('Report unlocked! Redirecting...');
-        router.push(`/r/${reportId}/full`);
-      } else {
-        setError('Failed to unlock report.');
+      try {
+        const result = await api.unlockReport(reportId);
+
+        if (result.data.unlocked || result.data.alreadyUnlocked) {
+          refreshBalance();
+          fireConfetti();
+          toast.success('Report unlocked! Redirecting...');
+          router.push(`/r/${reportId}/full`);
+        } else {
+          setError('Failed to unlock report.');
+          setLoading(false);
+        }
+      } catch (err) {
+        if (err instanceof APIRequestError) {
+          setError(err.message);
+        } else {
+          setError('Failed to unlock report. Please try again.');
+        }
         setLoading(false);
       }
-    } catch (err) {
-      if (err instanceof APIRequestError) {
-        setError(err.message);
-      } else {
-        setError('Failed to unlock report. Please try again.');
-      }
-      setLoading(false);
-    }
-  };
+    };
 
-  const handleBuyCredits = () => {
-    openPurchaseModal();
-  };
+    const handleBuyCredits = () => {
+      openPurchaseModal();
+    };
 
-  return (
-    <div className="relative overflow-hidden rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)]">
-      <BorderBeam size={250} duration={12} />
+    /* ------ Bottom variant: slim closing CTA ------ */
+    if (variant === 'bottom') {
+      return (
+        <div
+          ref={ref}
+          className="relative overflow-hidden rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)]"
+        >
+          <BorderBeam size={200} duration={10} />
 
-      <div className="relative p-8">
-        <div className="text-center mb-8">
-          <div className="mb-2">
-            <InsightOwlThinking size={56} />
+          <div className="relative p-6 text-center">
+            <h3 className="text-xl font-bold text-[var(--text-primary)]">
+              Ready to unlock your full diagnostic?
+            </h3>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              13 premium sections with actionable insights, practice questions, and recruiter
+              intelligence
+            </p>
+
+            <div className="mt-5">
+              {hasEnoughCredits ? (
+                <Button
+                  variant="accent"
+                  size="lg"
+                  onClick={handleUnlockWithCredits}
+                  loading={loading}
+                  className="px-12 rounded-lg bg-[var(--accent-primary)]"
+                >
+                  Unlock with {CREDITS_PER_REPORT} Credits
+                </Button>
+              ) : (
+                <Button
+                  variant="accent"
+                  size="lg"
+                  onClick={handleBuyCredits}
+                  className="px-12 rounded-lg bg-[var(--accent-primary)]"
+                >
+                  {hasAbandonmentDiscount ? 'Claim 15% Discount' : 'Buy Credits to Unlock'}
+                </Button>
+              )}
+            </div>
+
+            <div className="mt-4 flex items-center justify-center gap-4 text-xs text-[var(--text-muted)]">
+              <span className="flex items-center gap-1">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
+                Secure checkout
+              </span>
+              <span>&bull;</span>
+              <span>Starting at $5</span>
+              <span>&bull;</span>
+              <span>No subscription</span>
+            </div>
+
+            {error && (
+              <p className="mt-4 text-sm text-[var(--color-danger)]">{error}</p>
+            )}
           </div>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)]/20 border border-[var(--accent-primary)]/30 mb-4">
-            <svg
-              className="h-4 w-4 text-[var(--accent-primary)]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-            <AnimatedShinyText className="text-sm font-medium text-[var(--accent-primary)]">
-              Premium Diagnostic
-            </AnimatedShinyText>
-          </div>
-
-          <h2 className="text-2xl font-bold text-[var(--text-primary)]">Unlock Full Analysis</h2>
-          <p className="mt-2 text-[var(--text-secondary)]">
-            {totalRisks > 0
-              ? `${totalRisks} more risk${totalRisks !== 1 ? 's' : ''} waiting to be uncovered`
-              : 'Deep-dive insights, action plans & recruiter intelligence inside'}
-          </p>
         </div>
+      );
+    }
 
-        <ul className="mx-auto max-w-md space-y-4 mb-8">
-          {FEATURES.map((feature, index) => (
-            <li key={index} className="flex items-center gap-3 text-[var(--text-primary)]">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-[var(--color-success)]/20 text-[var(--color-success)]">
-                {feature.icon}
-              </div>
-              <span className="text-sm font-medium">{feature.text}</span>
-            </li>
-          ))}
-        </ul>
+    /* ------ Default variant: full CTA with owl, features, and section grid ------ */
+    return (
+      <div
+        ref={ref}
+        className="relative overflow-hidden rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)]"
+      >
+        <BorderBeam size={250} duration={12} />
 
-        <div className="text-center">
-          {hasEnoughCredits ? (
-            <>
-              <Button
-                variant="accent"
-                size="lg"
-                onClick={handleUnlockWithCredits}
-                loading={loading}
-                className="px-12 rounded-lg bg-[var(--accent-primary)]"
+        <div className="relative p-8">
+          <div className="text-center mb-8">
+            <div className="mb-2">
+              <InsightOwlThinking size={56} />
+            </div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)]/20 border border-[var(--accent-primary)]/30 mb-4">
+              <svg
+                className="h-4 w-4 text-[var(--accent-primary)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                Unlock with {CREDITS_PER_REPORT} Credits
-              </Button>
-              <p className="mt-3 text-sm text-[var(--text-secondary)]">
-                You have <span className="font-semibold text-[var(--text-primary)]">{balance}</span>{' '}
-                credits
-              </p>
-            </>
-          ) : (
-            <>
-              <Button variant="accent" size="lg" onClick={handleBuyCredits} className="px-12 rounded-lg bg-[var(--accent-primary)]">
-                Buy Credits to Unlock
-              </Button>
-              <p className="mt-3 text-sm text-[var(--text-secondary)]">
-                You need {CREDITS_PER_REPORT} credits to unlock this report.
-                {balance > 0 && (
-                  <span className="block mt-1">
-                    Current balance:{' '}
-                    <span className="font-semibold text-[var(--text-primary)]">{balance}</span>{' '}
-                    credit{balance !== 1 ? 's' : ''}
-                  </span>
-                )}
-              </p>
-            </>
-          )}
-
-          <div className="mt-4 flex items-center justify-center gap-4 text-xs text-[var(--text-muted)]">
-            <span className="flex items-center gap-1">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                 />
               </svg>
-              Secure checkout
-            </span>
-            <span>&bull;</span>
-            <span>Starting at $5</span>
-            <span>&bull;</span>
-            <span>No subscription</span>
-          </div>
-        </div>
+              <AnimatedShinyText className="text-sm font-medium text-[var(--accent-primary)]">
+                Premium Diagnostic
+              </AnimatedShinyText>
+            </div>
 
-        {error && <p className="mt-4 text-center text-sm text-[var(--color-danger)]">{error}</p>}
+            {hasAbandonmentDiscount && !hasEnoughCredits && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--color-success)]/15 border border-[var(--color-success)]/30 mb-3">
+                <svg
+                  className="h-3.5 w-3.5 text-[var(--color-success)]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span className="text-xs font-semibold text-[var(--color-success)]">
+                  15% Discount Available
+                </span>
+              </div>
+            )}
+
+            <h2 className="text-2xl font-bold text-[var(--text-primary)]">
+              Unlock Full Analysis
+            </h2>
+            <p className="mt-2 text-[var(--text-secondary)]">
+              {totalRisks > 0
+                ? `${totalRisks} more risk${totalRisks !== 1 ? 's' : ''} waiting to be uncovered`
+                : 'Deep-dive insights, action plans & recruiter intelligence inside'}
+            </p>
+          </div>
+
+          <ul className="mx-auto max-w-md space-y-4 mb-8">
+            {FEATURES.map((feature, index) => (
+              <li key={index} className="flex items-center gap-3 text-[var(--text-primary)]">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-[var(--color-success)]/20 text-[var(--color-success)]">
+                  {feature.icon}
+                </div>
+                <span className="text-sm font-medium">{feature.text}</span>
+              </li>
+            ))}
+          </ul>
+
+          {/* Section grid — shows the volume of premium content */}
+          <div className="mx-auto max-w-lg mb-8">
+            <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+              13 Premium Sections Included
+            </p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {PREMIUM_SECTIONS.map((s) => (
+                <div
+                  key={s.number}
+                  className="flex items-center gap-2 rounded-lg bg-[var(--bg-primary)]/60 px-3 py-2"
+                >
+                  <svg
+                    className="h-3.5 w-3.5 shrink-0 text-[var(--text-muted)]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                  <span className="text-xs text-[var(--text-secondary)] truncate">
+                    <span className="font-mono text-[var(--accent-primary)]">{s.number}</span>{' '}
+                    {s.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-center">
+            {hasEnoughCredits ? (
+              <>
+                <Button
+                  variant="accent"
+                  size="lg"
+                  onClick={handleUnlockWithCredits}
+                  loading={loading}
+                  className="px-12 rounded-lg bg-[var(--accent-primary)]"
+                >
+                  Unlock with {CREDITS_PER_REPORT} Credits
+                </Button>
+                <p className="mt-3 text-sm text-[var(--text-secondary)]">
+                  You have{' '}
+                  <span className="font-semibold text-[var(--text-primary)]">{balance}</span>{' '}
+                  credits
+                </p>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="accent"
+                  size="lg"
+                  onClick={handleBuyCredits}
+                  className="px-12 rounded-lg bg-[var(--accent-primary)]"
+                >
+                  {hasAbandonmentDiscount ? 'Claim 15% Discount' : 'Buy Credits to Unlock'}
+                </Button>
+                <p className="mt-3 text-sm text-[var(--text-secondary)]">
+                  You need {CREDITS_PER_REPORT} credits to unlock this report.
+                  {balance > 0 && (
+                    <span className="block mt-1">
+                      Current balance:{' '}
+                      <span className="font-semibold text-[var(--text-primary)]">{balance}</span>{' '}
+                      credit{balance !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                </p>
+              </>
+            )}
+
+            <div className="mt-4 flex items-center justify-center gap-4 text-xs text-[var(--text-muted)]">
+              <span className="flex items-center gap-1">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
+                Secure checkout
+              </span>
+              <span>&bull;</span>
+              <span>Starting at $5</span>
+              <span>&bull;</span>
+              <span>No subscription</span>
+            </div>
+          </div>
+
+          {error && (
+            <p className="mt-4 text-center text-sm text-[var(--color-danger)]">{error}</p>
+          )}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+);

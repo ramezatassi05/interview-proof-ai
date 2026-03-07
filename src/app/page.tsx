@@ -21,6 +21,8 @@ import { AdvantagesSection } from '@/components/landing/AdvantagesSection';
 import { SecuritySection } from '@/components/landing/SecuritySection';
 import { FAQ } from '@/components/landing/FAQ';
 import { LiveAnalysisFeed } from '@/components/landing/LiveAnalysisFeed';
+import { ScrollProgressBar } from '@/components/landing/ScrollProgressBar';
+import { SectionNav } from '@/components/landing/SectionNav';
 import { InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
 import { WaitlistForm } from '@/components/waitlist/WaitlistForm';
 
@@ -37,6 +39,8 @@ function LandingPageContent() {
   return (
     <div className="landing-page flex min-h-screen flex-col bg-[var(--bg-primary)]">
       <Header />
+      <ScrollProgressBar />
+      <SectionNav />
 
       <main className="flex-1">
         {/* 1. Hero */}
@@ -80,6 +84,7 @@ function LandingPageContent() {
 
         {/* 13. Footer CTA */}
         <section
+          id="footer-cta"
           className="py-20 lg:py-28 bg-[var(--bg-dark-band)]"
           style={
             {

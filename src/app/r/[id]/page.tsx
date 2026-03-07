@@ -1,9 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useCredits } from '@/hooks/useCredits';
 import { api, APIRequestError, GetReportResponse } from '@/lib/api';
+import { CREDITS_PER_REPORT } from '@/lib/stripe';
+import { fireConfetti } from '@/components/ui/confetti';
+import { toast } from 'sonner';
 
 import { Container } from '@/components/layout/Container';
 import { Header } from '@/components/layout/Header';
@@ -13,6 +17,8 @@ import { Button } from '@/components/ui/Button';
 import { ScoreCard } from '@/components/results/ScoreCard';
 import { RiskList } from '@/components/results/RiskList';
 import { PaywallCTA } from '@/components/results/PaywallCTA';
+import { PremiumSectionsPreview } from '@/components/results/PremiumSectionsPreview';
+import { StickyUnlockBar } from '@/components/results/StickyUnlockBar';
 import { InsightOwlReading } from '@/components/svg/InsightOwlMascot';
 
 import { CompetencyHeatmap } from '@/components/diagnostic/CompetencyHeatmap';
@@ -23,12 +29,32 @@ export default function ResultsPage() {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { balance, openPurchaseModal, refreshBalance } = useCredits();
 
   const reportId = params.id as string;
 
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [stickyVisible, setStickyVisible] = useState(false);
+
+  const paywallRef = useRef<HTMLDivElement>(null);
+
+  // IntersectionObserver: show sticky bar when primary PaywallCTA exits viewport
+  useEffect(() => {
+    const el = paywallRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setStickyVisible(!entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [report]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -66,6 +92,31 @@ export default function ResultsPage() {
 
     fetchReport();
   }, [reportId, user, authLoading, router]);
+
+  const handleUnlockClick = useCallback(async () => {
+    const hasEnoughCredits = balance >= CREDITS_PER_REPORT;
+
+    if (!hasEnoughCredits) {
+      openPurchaseModal();
+      return;
+    }
+
+    try {
+      const result = await api.unlockReport(reportId);
+      if (result.data.unlocked || result.data.alreadyUnlocked) {
+        refreshBalance();
+        fireConfetti();
+        toast.success('Report unlocked! Redirecting...');
+        router.push(`/r/${reportId}/full`);
+      }
+    } catch (err) {
+      if (err instanceof APIRequestError) {
+        toast.error(err.message);
+      } else {
+        toast.error('Failed to unlock. Please try again.');
+      }
+    }
+  }, [balance, openPurchaseModal, reportId, refreshBalance, router]);
 
   if (authLoading || loading) {
     return (
@@ -126,6 +177,10 @@ export default function ResultsPage() {
     );
   }
 
+  const isPaid = report.paidUnlocked;
+  const totalRisks = report.totalRisks ?? 0;
+  const remainingRisks = Math.max(totalRisks - 3, 0);
+
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
       <Header />
@@ -147,16 +202,15 @@ export default function ResultsPage() {
           </div>
 
           <div className="space-y-8">
-            {/* Score Card */}
+            {/* Score Card — free */}
             <ScoreCard
               score={report.readinessScore!}
               riskBand={report.riskBand!}
               totalRisks={report.totalRisks}
             />
 
-            {/* Two Column Layout for larger screens */}
+            {/* Top 3 Risks — free */}
             <div className="grid gap-8 lg:grid-cols-2">
-              {/* Top 3 Risks */}
               {report.top3Risks && report.top3Risks.length > 0 && (
                 <div className="lg:col-span-2">
                   <RiskList
@@ -172,7 +226,7 @@ export default function ResultsPage() {
               )}
             </div>
 
-            {/* Competency Heatmap Preview */}
+            {/* Competency Heatmap Preview — free */}
             {report.diagnosticIntelligence?.competencyHeatmap && (
               <CompetencyHeatmap
                 heatmap={report.diagnosticIntelligence.competencyHeatmap}
@@ -182,10 +236,33 @@ export default function ResultsPage() {
               />
             )}
 
-            {/* Paywall */}
-            {!report.paidUnlocked && report.totalRisks && (
-              <PaywallCTA reportId={reportId} totalRisks={report.totalRisks - 3} />
+            {/* Primary Paywall CTA */}
+            {!isPaid && (
+              <>
+                <PaywallCTA
+                  ref={paywallRef}
+                  reportId={reportId}
+                  totalRisks={remainingRisks}
+                />
 
+                {/* Blurred premium sections preview */}
+                <PremiumSectionsPreview
+                  reportId={reportId}
+                  companyName={report.extractedJD?.companyName}
+                  totalRisks={totalRisks}
+                  onUnlockClick={handleUnlockClick}
+                />
+
+                {/* Bottom closing CTA */}
+                <PaywallCTA
+                  reportId={reportId}
+                  totalRisks={remainingRisks}
+                  variant="bottom"
+                />
+
+                {/* Sticky unlock bar */}
+                <StickyUnlockBar visible={stickyVisible} reportId={reportId} />
+              </>
             )}
           </div>
         </Container>

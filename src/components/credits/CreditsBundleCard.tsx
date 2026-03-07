@@ -11,6 +11,7 @@ interface CreditsBundleCardProps {
   pricePerCredit: number;
   popular?: boolean;
   loading?: boolean;
+  discountPercent?: number;
   onPurchase: () => void;
 }
 
@@ -21,11 +22,19 @@ export function CreditsBundleCard({
   pricePerCredit,
   popular = false,
   loading = false,
+  discountPercent,
   onPurchase,
 }: CreditsBundleCardProps) {
-  const priceFormatted = (price / 100).toFixed(0);
-  const pricePerFormatted = pricePerCredit.toFixed(2);
-  const savingsPercent = Math.round((1 - pricePerCredit) * 100);
+  const hasDiscount = discountPercent && discountPercent > 0;
+  const discountedPrice = hasDiscount ? Math.round(price * (1 - discountPercent / 100)) : price;
+  const discountedPricePerCredit = hasDiscount
+    ? pricePerCredit * (1 - discountPercent / 100)
+    : pricePerCredit;
+
+  const priceFormatted = (discountedPrice / 100).toFixed(0);
+  const originalPriceFormatted = (price / 100).toFixed(0);
+  const pricePerFormatted = discountedPricePerCredit.toFixed(2);
+  const savingsPercent = Math.round((1 - discountedPricePerCredit) * 100);
   const reportsUnlocked = Math.floor(credits / CREDITS_PER_REPORT);
 
   return (
@@ -61,6 +70,15 @@ export function CreditsBundleCard({
         </div>
       )}
 
+      {/* Discount badge */}
+      {hasDiscount && (
+        <div className={`absolute ${popular ? '-top-3 right-2' : '-top-3 left-1/2 -translate-x-1/2'}`}>
+          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-success)] px-3 py-1 text-xs font-bold text-white shadow-md">
+            {discountPercent}% OFF
+          </span>
+        </div>
+      )}
+
       {/* Plan name */}
       <h3 className="text-sm font-medium text-[var(--text-secondary)] uppercase tracking-wide">
         {name}
@@ -79,7 +97,16 @@ export function CreditsBundleCard({
 
       {/* Price */}
       <div className="mt-4">
-        <span className="text-3xl font-bold text-[var(--text-primary)]">${priceFormatted}</span>
+        {hasDiscount && (
+          <span className="text-lg font-medium text-[var(--text-muted)] line-through mr-2">
+            ${originalPriceFormatted}
+          </span>
+        )}
+        <span
+          className={`text-3xl font-bold ${hasDiscount ? 'text-[var(--color-success)]' : 'text-[var(--text-primary)]'}`}
+        >
+          ${priceFormatted}
+        </span>
       </div>
 
       {/* Price per credit */}

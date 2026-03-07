@@ -481,7 +481,7 @@ interface ReportPreviewShowcaseProps {
 
 export function ReportPreviewShowcase({ ctaHref, ctaLabel }: ReportPreviewShowcaseProps) {
   return (
-    <section className="py-20 lg:py-28">
+    <section id="report-preview" className="py-20 lg:py-28">
       <Container size="2xl">
         {/* Section header */}
         <div className="mb-10 text-center">
