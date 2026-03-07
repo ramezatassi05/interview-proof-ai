@@ -9,7 +9,7 @@ interface TabConfig {
   id: TabId;
   label: string;
   icon: React.ReactNode;
-  badge?: number;
+
 }
 
 interface DiagnosticTabsProps {
@@ -107,16 +107,7 @@ export function DiagnosticTabs({ activeTab, onTabChange, tabs, children }: Diagn
               >
                 <span className="flex-shrink-0">{tab.icon}</span>
                 <span className="hidden sm:inline">{tab.label}</span>
-                {tab.badge !== undefined && tab.badge > 0 && (
-                  <span
-                    className={`
-                      ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-mono leading-none
-                      ${isActive ? 'bg-white/20 text-white' : 'bg-[var(--bg-elevated)] text-[var(--text-muted)]'}
-                    `}
-                  >
-                    {tab.badge}
-                  </span>
-                )}
+
               </button>
             );
           })}

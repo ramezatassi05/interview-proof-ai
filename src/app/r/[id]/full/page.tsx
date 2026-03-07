@@ -165,31 +165,11 @@ export default function FullDiagnosticPage() {
   const di = report.diagnosticIntelligence;
   const companyName = report.extractedJD?.companyName;
 
-  // Tab config with badges
   const tabs = [
-    {
-      id: 'analysis' as TabId,
-      label: 'Analysis',
-      icon: <BarChartIcon />,
-      badge: report.allRisks?.length ?? 0,
-    },
-    {
-      id: 'practice' as TabId,
-      label: 'Practice',
-      icon: <BookOpenIcon />,
-      badge: report.interviewQuestions?.length ?? 0,
-    },
-    {
-      id: 'strategy' as TabId,
-      label: 'Strategy',
-      icon: <TargetIcon />,
-      badge: report.personalizedCoaching?.priorityActions?.length ?? 0,
-    },
-    {
-      id: 'insights' as TabId,
-      label: 'Insights',
-      icon: <EyeIcon />,
-    },
+    { id: 'analysis' as TabId, label: 'Analysis', icon: <BarChartIcon /> },
+    { id: 'practice' as TabId, label: 'Practice', icon: <BookOpenIcon /> },
+    { id: 'strategy' as TabId, label: 'Strategy', icon: <TargetIcon /> },
+    { id: 'insights' as TabId, label: 'Insights', icon: <EyeIcon /> },
   ];
 
   // Render active tab content with lazy mounting

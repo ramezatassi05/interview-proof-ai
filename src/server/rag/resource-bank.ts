@@ -646,4 +646,58 @@ export function formatResourcesForPrompt(resources: CuratedResource[]): string {
     .join('\n');
 }
 
+/**
+ * Returns curated resources matching an action's text by keyword extraction.
+ * Used to backfill when URL cleaning strips resources below minimums.
+ */
+export function getResourcesForAction(
+  actionText: string,
+  rationaleText: string,
+  count: number
+): string[] {
+  const combined = `${actionText} ${rationaleText}`.toLowerCase();
+
+  // Extract keyword hits against the topic index
+  const topicScores = new Map<string, number>();
+
+  for (const [topic, resources] of TOPIC_INDEX.entries()) {
+    if (combined.includes(topic.replace(/-/g, ' ')) || combined.includes(topic)) {
+      for (const r of resources) {
+        topicScores.set(r.id, (topicScores.get(r.id) ?? 0) + 1);
+      }
+    }
+  }
+
+  // Also check normalizeToTopicSlug for common terms in the text
+  const words = combined.split(/[\s,;.!?()]+/).filter((w) => w.length > 2);
+  for (const word of words) {
+    const slugs = normalizeToTopicSlug(word);
+    for (const slug of slugs) {
+      const matching = TOPIC_INDEX.get(slug) ?? [];
+      for (const r of matching) {
+        topicScores.set(r.id, (topicScores.get(r.id) ?? 0) + 1);
+      }
+    }
+  }
+
+  // Fall back to general-prep if nothing matched
+  if (topicScores.size === 0) {
+    const generalPrep = TOPIC_INDEX.get('general-prep') ?? [];
+    for (const r of generalPrep) {
+      topicScores.set(r.id, 1);
+    }
+  }
+
+  // Sort by score descending, pick top N
+  const sorted = [...topicScores.entries()].sort((a, b) => b[1] - a[1]);
+  const resourceMap = new Map(RESOURCE_BANK.map((r) => [r.id, r]));
+
+  return sorted
+    .slice(0, count)
+    .map(([id]) => {
+      const r = resourceMap.get(id)!;
+      return `${r.title} - ${r.url}`;
+    });
+}
+
 void RESOURCE_BANK_VERSION;

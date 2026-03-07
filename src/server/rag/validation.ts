@@ -1,5 +1,5 @@
 import type { LLMAnalysis, ExtractedJD, RoundType } from '@/types';
-import { CURATED_URL_MAP, RESOURCE_BANK } from '@/server/rag/resource-bank';
+import { CURATED_URL_MAP, RESOURCE_BANK, getResourcesForAction } from '@/server/rag/resource-bank';
 
 // Patterns for detecting suspicious/fabricated URLs
 const SUSPICIOUS_URL_PATTERNS = [
@@ -201,7 +201,7 @@ export function validateAnalysisQuality(
       warnings.push('Archetype tips filter would violate min(1), keeping originals');
     }
 
-    // Filter priority actions (min 2 in schema)
+    // Filter priority actions (min 3 required)
     const originalActions = [...analysis.personalizedCoaching.priorityActions];
     analysis.personalizedCoaching.priorityActions =
       analysis.personalizedCoaching.priorityActions.filter((pa) => {
@@ -211,16 +211,39 @@ export function validateAnalysisQuality(
         }
         return true;
       });
-    if (analysis.personalizedCoaching.priorityActions.length < 1) {
+    // Restore originals if filtering would drop below 3
+    if (
+      analysis.personalizedCoaching.priorityActions.length < 3 &&
+      originalActions.length >= 3
+    ) {
       analysis.personalizedCoaching.priorityActions = originalActions;
-      warnings.push('Priority actions filter would violate min(1), keeping originals');
+      warnings.push('Priority actions filter would violate min(3), keeping originals');
     }
 
-    // Validate and clean resource URLs in priority actions
+    // Validate and clean resource URLs in priority actions, backfill if below 2
     for (const pa of analysis.personalizedCoaching.priorityActions) {
       const { cleaned, warnings: resourceWarnings } = validateResources(pa.resources);
-      pa.resources = cleaned.length > 0 ? cleaned : undefined;
       warnings.push(...resourceWarnings);
+
+      // Backfill from curated bank if cleaned resources < 2
+      if (cleaned.length < 2) {
+        const needed = 2 - cleaned.length;
+        const existingUrls = new Set(cleaned.map((r) => extractUrl(r)).filter(Boolean));
+        const backfilled = getResourcesForAction(pa.action, pa.rationale, needed + 3)
+          .filter((r) => {
+            const url = extractUrl(r);
+            return !url || !existingUrls.has(url);
+          })
+          .slice(0, needed);
+        cleaned.push(...backfilled);
+        if (backfilled.length > 0) {
+          warnings.push(
+            `Backfilled ${backfilled.length} resources for action: "${pa.action.slice(0, 50)}..."`
+          );
+        }
+      }
+
+      pa.resources = cleaned;
     }
   }
 

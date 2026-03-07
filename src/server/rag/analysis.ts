@@ -62,10 +62,10 @@ const PersonalizedCoachingSchema = z.object({
       z.object({
         action: z.string(),
         rationale: z.string(),
-        resources: z.array(z.string()).max(5).optional(),
+        resources: z.array(z.string()).max(5),
       })
     )
-    .min(1)
+    .min(3)
     .max(5),
 });
 
@@ -209,6 +209,12 @@ function repairAnalysisOutput(obj: any): any {
       obj.personalizedCoaching.archetypeTips = [];
     if (!Array.isArray(obj.personalizedCoaching.priorityActions))
       obj.personalizedCoaching.priorityActions = [];
+    // Ensure each priority action has a resources array (required by schema)
+    for (const pa of obj.personalizedCoaching.priorityActions) {
+      if (pa && typeof pa === 'object' && !Array.isArray(pa.resources)) {
+        pa.resources = [];
+      }
+    }
   }
 
   return obj;
@@ -527,11 +533,11 @@ ${roundType === 'technical' ? `     For this TECHNICAL round assessment, red fla
    - roundFocus: One specific focus statement for their weakest interview round
      Example: "Your behavioral stories mention teamwork but lack conflict resolution examples. Prepare 3 stories about technical disagreements using 'My Position → Their Position → Resolution → Outcome' format."
 
-   - priorityActions: Top 5 things to do before the interview
+   - priorityActions: 3-5 highest-impact things to do before the interview (MINIMUM 3 required)
      Each must have:
      - action: Specific, concrete task (not "practice more" but "solve 8 medium BFS/DFS problems")
      - rationale: Why this matters for THIS candidate's specific gaps
-     - resources: (optional) Array of 2-5 specific resources with real URL links when possible
+     - resources: REQUIRED array of 2-5 specific resources with real URL links when possible. Every action MUST have at least 2 resources.
 ${(() => {
   if (prepPreferences) {
     const topicSeeds = [...jdData.mustHave, ...jdData.keywords];
