@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
     // Parse request body
     const body = await request.json();
-    const { bundleId, referralCode, applyDiscount } = body;
+    const { bundleId, referralCode } = body;
 
     if (!bundleId) {
       return NextResponse.json({ error: 'bundleId is required' }, { status: 400 });
@@ -56,16 +56,11 @@ export async function POST(request: Request) {
         credits: bundle.credits.toString(),
         type: 'credit_bundle',
         referral_code: referralCode || '',
-        ...(applyDiscount ? { discount_applied: 'true' } : {}),
       },
       customer_email: user.email,
       success_url: `${appUrl}/wallet?payment=success&credits=${bundle.credits}`,
       cancel_url: `${appUrl}/wallet?payment=cancelled`,
     };
-
-    if (applyDiscount) {
-      sessionParams.discounts = [{ coupon: 'ABANDONED_15' }];
-    }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
@@ -77,6 +72,12 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Credits checkout session creation failed:', error);
-    return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 });
+
+    if (error instanceof Stripe.errors.StripeError) {
+      return NextResponse.json({ error: error.message }, { status: error.statusCode || 500 });
+    }
+
+    const message = error instanceof Error ? error.message : 'Failed to create checkout session';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

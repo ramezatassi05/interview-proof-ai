@@ -92,7 +92,7 @@ const PREMIUM_SECTIONS = [
 export const PaywallCTA = forwardRef<HTMLDivElement, PaywallCTAProps>(
   function PaywallCTA({ reportId, totalRisks, variant = 'default' }, ref) {
     const router = useRouter();
-    const { balance, openPurchaseModal, refreshBalance, hasAbandonmentDiscount } = useCredits();
+    const { balance, openPurchaseModal, refreshBalance } = useCredits();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -164,7 +164,7 @@ export const PaywallCTA = forwardRef<HTMLDivElement, PaywallCTAProps>(
                   onClick={handleBuyCredits}
                   className="px-12 rounded-lg bg-[var(--accent-primary)]"
                 >
-                  {hasAbandonmentDiscount ? 'Claim 15% Discount' : 'Buy Credits to Unlock'}
+                  Buy Credits to Unlock
                 </Button>
               )}
             </div>
@@ -226,27 +226,6 @@ export const PaywallCTA = forwardRef<HTMLDivElement, PaywallCTAProps>(
                 Premium Diagnostic
               </AnimatedShinyText>
             </div>
-
-            {hasAbandonmentDiscount && !hasEnoughCredits && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--color-success)]/15 border border-[var(--color-success)]/30 mb-3">
-                <svg
-                  className="h-3.5 w-3.5 text-[var(--color-success)]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span className="text-xs font-semibold text-[var(--color-success)]">
-                  15% Discount Available
-                </span>
-              </div>
-            )}
 
             <h2 className="text-2xl font-bold text-[var(--text-primary)]">
               Unlock Full Analysis
@@ -328,7 +307,7 @@ export const PaywallCTA = forwardRef<HTMLDivElement, PaywallCTAProps>(
                   onClick={handleBuyCredits}
                   className="px-12 rounded-lg bg-[var(--accent-primary)]"
                 >
-                  {hasAbandonmentDiscount ? 'Claim 15% Discount' : 'Buy Credits to Unlock'}
+                  Buy Credits to Unlock
                 </Button>
                 <p className="mt-3 text-sm text-[var(--text-secondary)]">
                   You need {CREDITS_PER_REPORT} credits to unlock this report.

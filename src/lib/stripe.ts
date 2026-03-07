@@ -65,14 +65,6 @@ export function getCreditBundle(bundleId: string): CreditBundle | undefined {
   return CREDIT_BUNDLES.find((b) => b.id === bundleId);
 }
 
-// Abandoned paywall discount config
-export const ABANDONED_DISCOUNT = {
-  couponId: 'ABANDONED_15',
-  percentOff: 15,
-  ttlMs: 48 * 60 * 60 * 1000, // 48 hours
-  localStorageKey: 'ip_purchase_abandoned',
-} as const;
-
 // Stripe webhook event types we handle
 export const WEBHOOK_EVENTS = {
   CHECKOUT_COMPLETED: 'checkout.session.completed',
