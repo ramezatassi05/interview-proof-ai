@@ -1,5 +1,9 @@
+'use client';
+
+import { useState } from 'react';
 import type { RiskItem as RiskItemType } from '@/types';
 import { RiskItem } from './RiskItem';
+import { BlurFade } from '@/components/ui/blur-fade';
 
 interface RiskListProps {
   risks: RiskItemType[];
@@ -7,11 +11,18 @@ interface RiskListProps {
   title?: string;
 }
 
+type SeverityFilter = 'all' | 'critical' | 'high' | 'medium' | 'low';
+
+const DEFAULT_SHOW_COUNT = 3;
+
 export function RiskList({
   risks,
   showEvidence = false,
   title = 'Recruiter Red Flags',
 }: RiskListProps) {
+  const [showAll, setShowAll] = useState(false);
+  const [filter, setFilter] = useState<SeverityFilter>('all');
+
   // Count by severity
   const severityCounts = risks.reduce(
     (acc, risk) => {
@@ -39,9 +50,13 @@ export function RiskList({
     );
   }
 
+  const filteredRisks = filter === 'all' ? risks : risks.filter((r) => r.severity === filter);
+  const displayedRisks = showAll ? filteredRisks : filteredRisks.slice(0, DEFAULT_SHOW_COUNT);
+  const hiddenCount = filteredRisks.length - DEFAULT_SHOW_COUNT;
+
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <svg
             className="h-5 w-5 text-[var(--color-danger)]"
@@ -64,40 +79,78 @@ export function RiskList({
           </h2>
         </div>
 
-        {/* Severity breakdown */}
-        <div className="flex items-center gap-3 text-xs">
-          {severityCounts.critical && (
-            <span className="flex items-center gap-1 text-[var(--color-danger)]">
-              <span className="h-2 w-2 rounded-full bg-[var(--color-danger)]" />
-              {severityCounts.critical} critical
-            </span>
-          )}
-          {severityCounts.high && (
-            <span className="flex items-center gap-1 text-[var(--color-danger)]">
-              <span className="h-2 w-2 rounded-full bg-[var(--color-danger)]/70" />
-              {severityCounts.high} high
-            </span>
-          )}
-          {severityCounts.medium && (
-            <span className="flex items-center gap-1 text-[var(--color-warning)]">
-              <span className="h-2 w-2 rounded-full bg-[var(--color-warning)]" />
-              {severityCounts.medium} medium
-            </span>
-          )}
-          {severityCounts.low && (
-            <span className="flex items-center gap-1 text-[var(--color-success)]">
-              <span className="h-2 w-2 rounded-full bg-[var(--color-success)]" />
-              {severityCounts.low} low
-            </span>
-          )}
+        <div className="flex items-center gap-3">
+          {/* Severity filter */}
+          <select
+            value={filter}
+            onChange={(e) => {
+              setFilter(e.target.value as SeverityFilter);
+              setShowAll(false);
+            }}
+            className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+          >
+            <option value="all">All Severities</option>
+            <option value="critical">Critical ({severityCounts.critical || 0})</option>
+            <option value="high">High ({severityCounts.high || 0})</option>
+            <option value="medium">Medium ({severityCounts.medium || 0})</option>
+            <option value="low">Low ({severityCounts.low || 0})</option>
+          </select>
+
+          {/* Severity breakdown dots */}
+          <div className="hidden sm:flex items-center gap-3 text-xs">
+            {severityCounts.critical && (
+              <span className="flex items-center gap-1 text-[var(--color-danger)]">
+                <span className="h-2 w-2 rounded-full bg-[var(--color-danger)]" />
+                {severityCounts.critical}
+              </span>
+            )}
+            {severityCounts.high && (
+              <span className="flex items-center gap-1 text-[var(--color-danger)]">
+                <span className="h-2 w-2 rounded-full bg-[var(--color-danger)]/70" />
+                {severityCounts.high}
+              </span>
+            )}
+            {severityCounts.medium && (
+              <span className="flex items-center gap-1 text-[var(--color-warning)]">
+                <span className="h-2 w-2 rounded-full bg-[var(--color-warning)]" />
+                {severityCounts.medium}
+              </span>
+            )}
+            {severityCounts.low && (
+              <span className="flex items-center gap-1 text-[var(--color-success)]">
+                <span className="h-2 w-2 rounded-full bg-[var(--color-success)]" />
+                {severityCounts.low}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="space-y-3">
-        {risks.map((risk, index) => (
-          <RiskItem key={risk.id} risk={risk} index={index} showEvidence={showEvidence} />
+        {displayedRisks.map((risk, index) => (
+          <BlurFade key={risk.id} delay={0.06 * index}>
+            <RiskItem risk={risk} index={index} showEvidence={showEvidence} />
+          </BlurFade>
         ))}
       </div>
+
+      {/* Show all / collapse toggle */}
+      {!showAll && hiddenCount > 0 && (
+        <button
+          onClick={() => setShowAll(true)}
+          className="mt-4 w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)] py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-accent)] hover:text-[var(--text-primary)]"
+        >
+          Show {hiddenCount} more risk{hiddenCount !== 1 ? 's' : ''}
+        </button>
+      )}
+      {showAll && filteredRisks.length > DEFAULT_SHOW_COUNT && (
+        <button
+          onClick={() => setShowAll(false)}
+          className="mt-4 w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)] py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-accent)] hover:text-[var(--text-primary)]"
+        >
+          Show fewer
+        </button>
+      )}
     </div>
   );
 }

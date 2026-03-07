@@ -209,6 +209,14 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--scrollbar-thumb-hover);
 }
 
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* ====== KEYFRAME ANIMATIONS ====== */
 
 @keyframes fade-up {
@@ -751,5 +759,14 @@ h1, h2, h3, h4, h5, h6 {
   .animate-border-beam,
   .animate-shimmer-slide {
     animation: none !important;
+  }
+
+  /* Disable all transition and animation for users who prefer reduced motion */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

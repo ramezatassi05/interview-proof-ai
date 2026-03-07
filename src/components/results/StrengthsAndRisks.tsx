@@ -1,6 +1,7 @@
 'use client';
 
 import type { ScoreBreakdown, RiskItem, EvidenceContext } from '@/types';
+import { BlurFade } from '@/components/ui/blur-fade';
 
 interface StrengthsAndRisksProps {
   scoreBreakdown?: ScoreBreakdown;
@@ -64,107 +65,117 @@ export function StrengthsAndRisks({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Strengths Column */}
-      <div className="rounded-xl bg-[var(--color-success-muted)] p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-success)]/20">
-            <svg
-              className="h-4 w-4 text-[var(--color-success)]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
+      <BlurFade delay={0.05}>
+        <div className="rounded-xl border-l-3 border-l-[var(--color-success)] border border-[var(--border-default)] bg-[var(--bg-card)] p-5 h-full">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-success)]/20">
+              <svg
+                className="h-4 w-4 text-[var(--color-success)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h3 className="text-base font-semibold text-[var(--color-success)]">
+              Key Strengths
+              <span className="ml-1.5 text-xs font-normal text-[var(--text-muted)]">({strengths.length})</span>
+            </h3>
           </div>
-          <h3 className="text-base font-semibold text-[var(--color-success)]">Key Strengths</h3>
+          {strengths.length > 0 ? (
+            <ul className="space-y-2.5">
+              {strengths.slice(0, maxItems).map((strength, index) => (
+                <li key={index} className="flex items-start gap-2.5">
+                  <svg
+                    className="h-5 w-5 flex-shrink-0 text-[var(--color-success)] mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4"
+                    />
+                  </svg>
+                  <div>
+                    <span className="text-sm text-[var(--text-primary)]">{strength.label}</span>
+                    {strength.evidence && (
+                      <p className="mt-0.5 text-xs text-[var(--text-muted)] leading-relaxed">
+                        {strength.evidence}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-[var(--text-muted)] italic">
+              No strong areas identified yet. Focus on improving your scores to see strengths here.
+            </p>
+          )}
         </div>
-        {strengths.length > 0 ? (
-          <ul className="space-y-2.5">
-            {strengths.slice(0, maxItems).map((strength, index) => (
-              <li key={index} className="flex items-start gap-2.5">
-                <svg
-                  className="h-5 w-5 flex-shrink-0 text-[var(--color-success)] mt-0.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4"
-                  />
-                </svg>
-                <div>
-                  <span className="text-sm text-[var(--text-primary)]">{strength.label}</span>
-                  {strength.evidence && (
-                    <p className="mt-0.5 text-xs text-[var(--text-muted)] leading-relaxed">
-                      {strength.evidence}
-                    </p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-[var(--text-muted)] italic">
-            No strong areas identified yet. Focus on improving your scores to see strengths here.
-          </p>
-        )}
-      </div>
+      </BlurFade>
 
       {/* Risks Column */}
-      <div className="rounded-xl bg-[var(--color-danger-muted)] p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-danger)]/20">
-            <svg
-              className="h-4 w-4 text-[var(--color-danger)]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
+      <BlurFade delay={0.1}>
+        <div className="rounded-xl border-l-3 border-l-[var(--color-danger)] border border-[var(--border-default)] bg-[var(--bg-card)] p-5 h-full">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-danger)]/20">
+              <svg
+                className="h-4 w-4 text-[var(--color-danger)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-base font-semibold text-[var(--color-danger)]">
+              Areas of Concern
+              <span className="ml-1.5 text-xs font-normal text-[var(--text-muted)]">({topRisks.length})</span>
+            </h3>
           </div>
-          <h3 className="text-base font-semibold text-[var(--color-danger)]">Areas of Concern</h3>
+          {topRisks.length > 0 ? (
+            <ul className="space-y-2.5">
+              {topRisks.map((risk, index) => (
+                <li key={index} className="flex items-start gap-2.5">
+                  <svg
+                    className="h-5 w-5 flex-shrink-0 text-[var(--color-danger)] mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                  <span className="text-sm text-[var(--text-primary)]">{risk.title}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-[var(--text-muted)] italic">
+              No significant concerns identified. Great job!
+            </p>
+          )}
         </div>
-        {topRisks.length > 0 ? (
-          <ul className="space-y-2.5">
-            {topRisks.map((risk, index) => (
-              <li key={index} className="flex items-start gap-2.5">
-                <svg
-                  className="h-5 w-5 flex-shrink-0 text-[var(--color-danger)] mt-0.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-                <span className="text-sm text-[var(--text-primary)]">{risk.title}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-[var(--text-muted)] italic">
-            No significant concerns identified. Great job!
-          </p>
-        )}
-      </div>
+      </BlurFade>
     </div>
   );
 }

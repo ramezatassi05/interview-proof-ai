@@ -2,6 +2,8 @@
 
 import type { ScoreBreakdown as ScoreBreakdownType } from '@/types';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Badge } from '@/components/ui/Badge';
+import { NumberTicker } from '@/components/ui/number-ticker';
 import { Collapsible } from '@/components/ui/Collapsible';
 
 interface ScoreBreakdownProps {
@@ -99,7 +101,7 @@ export function ScoreBreakdown({ breakdown, companyName }: ScoreBreakdownProps) 
 
       <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl overflow-hidden p-6">
         <div className="space-y-1">
-          {categories.map(({ key, score, weight }) => {
+          {categories.map(({ key, score, weight }, index) => {
             const config = CATEGORY_CONFIG[key];
             const roundedScore = Math.round(score);
 
@@ -113,10 +115,11 @@ export function ScoreBreakdown({ breakdown, companyName }: ScoreBreakdownProps) 
                         <span className="text-sm font-medium text-[var(--text-primary)]">
                           {config.label}
                         </span>
-                        <span className="text-xs font-mono text-[var(--text-muted)] bg-[var(--bg-elevated)] px-2 py-0.5 rounded">
-                          {Math.round(weight * 100)}% weight
-                        </span>
+                        <Badge variant="default">{Math.round(weight * 100)}%w</Badge>
                       </div>
+                      <span className="font-mono text-sm font-bold tabular-nums text-[var(--text-primary)]">
+                        <NumberTicker value={roundedScore} delay={0.1 * index} />
+                      </span>
                     </div>
                     <ProgressBar value={roundedScore} max={100} size="md" variant="auto" animated />
                   </div>

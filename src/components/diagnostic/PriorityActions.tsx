@@ -1,6 +1,8 @@
 'use client';
 
 import type { PriorityAction } from '@/types';
+import { BlurFade } from '@/components/ui/blur-fade';
+import { BorderBeam } from '@/components/ui/border-beam';
 
 interface PriorityActionsProps {
   actions: PriorityAction[];
@@ -28,7 +30,7 @@ export function PriorityActions({ actions, companyName }: PriorityActionsProps) 
   }
 
   return (
-    <div className="rounded-xl border-2 border-[var(--color-success)]/30 bg-[var(--color-success-muted)] p-6">
+    <div>
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-success)]/20">
@@ -59,53 +61,64 @@ export function PriorityActions({ actions, companyName }: PriorityActionsProps) 
       {/* Actions List */}
       <div className="space-y-4">
         {actions.map((action, index) => (
-          <div
-            key={index}
-            className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)] p-4"
-          >
-            {/* Priority number and action */}
-            <div className="flex items-start gap-3">
-              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-success)]/20 text-xs font-bold text-[var(--color-success)]">
-                {index + 1}
-              </span>
-              <div className="flex-1">
-                <p className="font-medium text-[var(--text-primary)]">{action.action}</p>
+          <BlurFade key={index} delay={0.08 * index}>
+            <div
+              className={`relative overflow-hidden rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)] p-4 ${
+                index === 0 ? 'border-[var(--accent-primary)]/40' : ''
+              }`}
+            >
+              {index === 0 && <BorderBeam size={150} duration={12} />}
 
-                {/* Rationale */}
-                <p className="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed">
-                  <span className="font-medium text-[var(--text-muted)]">Why: </span>
-                  {action.rationale}
-                </p>
+              {/* Priority number and action */}
+              <div className="flex items-start gap-3">
+                <span
+                  className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                    index === 0
+                      ? 'bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white'
+                      : 'bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-default)]'
+                  }`}
+                >
+                  {index + 1}
+                </span>
+                <div className="flex-1">
+                  <p className="font-medium text-[var(--text-primary)]">{action.action}</p>
 
-                {/* Resources (if provided) */}
-                {action.resources && action.resources.length > 0 && (
-                  <div className="mt-3 space-y-2">
-                    {action.resources.map((res, ri) => (
-                      <div key={ri} className="flex items-start gap-2 rounded-md bg-[var(--color-info-muted)] px-3 py-2">
-                        <svg
-                          className="h-4 w-4 text-[var(--color-info)] mt-0.5 flex-shrink-0"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <span className="text-sm text-[var(--color-info)]">
-                          <span className="font-medium">Resource: </span>
-                          {renderResource(res)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                  {/* Rationale */}
+                  <p className="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed">
+                    <span className="font-medium text-[var(--text-muted)]">Why: </span>
+                    {action.rationale}
+                  </p>
+
+                  {/* Resources (if provided) */}
+                  {action.resources && action.resources.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {action.resources.map((res, ri) => (
+                        <div key={ri} className="flex items-start gap-2 rounded-md bg-[var(--color-info-muted)] px-3 py-2">
+                          <svg
+                            className="h-4 w-4 text-[var(--color-info)] mt-0.5 flex-shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <span className="text-sm text-[var(--color-info)]">
+                            <span className="font-medium">Resource: </span>
+                            {renderResource(res)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          </BlurFade>
         ))}
       </div>
     </div>
