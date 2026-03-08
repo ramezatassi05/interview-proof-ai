@@ -117,7 +117,7 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
                       <InsightOwlWaving size={72} />
                     </div>
                   </div>
-                  {waitlistCount != null && waitlistCount > 0 && (
+                  {waitlistCount != null && waitlistCount >= 500 && (
                     <div className="mt-3 flex items-center gap-2">
                       <span className="relative flex h-2.5 w-2.5">
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-success)] opacity-75" />
