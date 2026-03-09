@@ -11,6 +11,7 @@ import { InsightOwlMascot, InsightOwlWaving } from '@/components/svg/InsightOwlM
 import { WaitlistForm } from '@/components/waitlist/WaitlistForm';
 import { BlurFade } from '@/components/ui/blur-fade';
 import { TextAnimate } from '@/components/ui/text-animate';
+import { RotatingText } from '@/components/ui/rotating-text';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { DotPattern } from '@/components/ui/dot-pattern';
 import { motion, useScroll, useTransform } from 'motion/react';
@@ -88,7 +89,13 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
                 <TextAnimate animation="blurInUp" by="word">
                   Know Exactly What Will
                 </TextAnimate>{' '}
-                <span className="text-gradient-accent">Sink You</span>
+                <span className="text-gradient-accent">
+                  <RotatingText
+                    words={['Sink', 'Reject', 'Expose', 'Blindside', 'Cost']}
+                    interval={2500}
+                  />{' '}
+                  You
+                </span>
               </h1>
             </BlurFade>
 
