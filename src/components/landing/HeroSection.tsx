@@ -80,7 +80,6 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
       {/* Subtle gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent-primary)]/[0.03] to-transparent pointer-events-none" />
       <DotPattern className="opacity-30 [mask-image:linear-gradient(to_bottom,white,transparent)]" />
-      <BackgroundBeams />
 
       <Container size="2xl" className="relative py-20 lg:py-28">
         <div className="flex flex-col lg:flex-row lg:items-center lg:gap-20">
@@ -114,9 +113,12 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
             </BlurFade>
 
             <BlurFade inView delay={0.2}>
-            <div className="mt-10">
+            <div className="relative mt-10">
+              <div className="pointer-events-none absolute -inset-32 [mask-image:radial-gradient(ellipse_at_center,white_30%,transparent_70%)]">
+                <BackgroundBeams />
+              </div>
               {WAITLIST_MODE ? (
-                <div>
+                <div className="relative">
                   <div className="flex items-end gap-4">
                     <div className="flex-1">
                       <WaitlistForm referralCode={referralCode} compact />
@@ -138,7 +140,7 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
                   )}
                 </div>
               ) : (
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="relative flex flex-wrap items-center gap-4">
                   <Link href={ctaHref}>
                     <Button variant="gradient" size="lg" rounded>
                       Run My Diagnostic
