@@ -21,7 +21,7 @@ export function RotatingText({ words, interval = 2500, className }: RotatingText
   }, [words.length, interval]);
 
   return (
-    <span className={cn('inline-flex items-baseline align-baseline', className)}>
+    <span className="inline-flex items-baseline align-baseline">
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
           key={words[index]}
@@ -32,7 +32,7 @@ export function RotatingText({ words, interval = 2500, className }: RotatingText
             duration: 0.35,
             ease: [0.4, 0, 0.2, 1],
           }}
-          className="inline-block"
+          className={cn('inline-block', className)}
         >
           {words[index]}
         </motion.span>

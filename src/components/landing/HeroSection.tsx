@@ -91,13 +91,12 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
                 <TextAnimate animation="blurInUp" by="word">
                   Know Exactly What Will
                 </TextAnimate>{' '}
-                <span className="text-gradient-accent">
-                  <RotatingText
-                    words={['Sink', 'Reject', 'Expose', 'Blindside', 'Cost']}
-                    interval={2500}
-                  />{' '}
-                  You
-                </span>
+                <RotatingText
+                  words={['Sink', 'Reject', 'Expose', 'Blindside', 'Cost']}
+                  interval={2500}
+                  className="text-gradient-accent"
+                />{' '}
+                <span className="text-gradient-accent">You</span>
               </h1>
             </BlurFade>
 
