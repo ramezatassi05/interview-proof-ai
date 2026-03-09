@@ -19,6 +19,7 @@ import { VerticalAIModelSection } from '@/components/landing/VerticalAIModelSect
 import { BenefitsRisks } from '@/components/landing/BenefitsRisks';
 import { AdvantagesSection } from '@/components/landing/AdvantagesSection';
 import { SecuritySection } from '@/components/landing/SecuritySection';
+import { PricingSection } from '@/components/landing/PricingSection';
 import { FAQ } from '@/components/landing/FAQ';
 import { LiveAnalysisFeed } from '@/components/landing/LiveAnalysisFeed';
 import { ScrollProgressBar } from '@/components/landing/ScrollProgressBar';
@@ -78,6 +79,9 @@ function LandingPageContent() {
 
         {/* 11. Security */}
         <SecuritySection />
+
+        {/* 12. Pricing */}
+        {!WAITLIST_MODE && <PricingSection />}
 
         {/* 13. FAQ */}
         <FAQ />

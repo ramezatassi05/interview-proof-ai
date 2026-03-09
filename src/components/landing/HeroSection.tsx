@@ -14,6 +14,7 @@ import { TextAnimate } from '@/components/ui/text-animate';
 import { RotatingText } from '@/components/ui/rotating-text';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { DotPattern } from '@/components/ui/dot-pattern';
+import { BackgroundBeams } from '@/components/ui/background-beams';
 import { motion, useScroll, useTransform } from 'motion/react';
 
 const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
@@ -79,6 +80,7 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
       {/* Subtle gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent-primary)]/[0.03] to-transparent pointer-events-none" />
       <DotPattern className="opacity-30 [mask-image:linear-gradient(to_bottom,white,transparent)]" />
+      <BackgroundBeams />
 
       <Container size="2xl" className="relative py-20 lg:py-28">
         <div className="flex flex-col lg:flex-row lg:items-center lg:gap-20">
