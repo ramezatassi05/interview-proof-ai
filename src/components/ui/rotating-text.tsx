@@ -22,14 +22,14 @@ export function RotatingText({ words, interval = 2500, className }: RotatingText
 
   return (
     <span className={cn('inline-flex items-baseline align-baseline', className)}>
-      <AnimatePresence mode="popLayout" initial={false}>
+      <AnimatePresence mode="wait" initial={false}>
         <motion.span
           key={words[index]}
-          initial={{ opacity: 0, filter: 'blur(10px)', y: 6 }}
+          initial={{ opacity: 0, filter: 'blur(8px)', y: 4 }}
           animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-          exit={{ opacity: 0, filter: 'blur(10px)', y: -6 }}
+          exit={{ opacity: 0, filter: 'blur(8px)', y: -4 }}
           transition={{
-            duration: 0.5,
+            duration: 0.35,
             ease: [0.4, 0, 0.2, 1],
           }}
           className="inline-block"
