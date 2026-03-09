@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 
@@ -14,23 +14,23 @@ export function RotatingText({ words, interval = 2500, className }: RotatingText
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % words.length);
     }, interval);
-    return () => clearTimeout(timer);
-  }, [index, words.length, interval]);
+    return () => clearInterval(timer);
+  }, [words.length, interval]);
 
   return (
-    <span className={cn('inline-flex items-baseline overflow-hidden align-baseline', className)}>
-      <AnimatePresence mode="wait" initial={false}>
+    <span className={cn('inline-flex items-baseline align-baseline', className)}>
+      <AnimatePresence mode="popLayout" initial={false}>
         <motion.span
           key={words[index]}
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -20, opacity: 0 }}
+          initial={{ opacity: 0, filter: 'blur(10px)', y: 6 }}
+          animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+          exit={{ opacity: 0, filter: 'blur(10px)', y: -6 }}
           transition={{
-            y: { type: 'spring', stiffness: 80, damping: 15 },
-            opacity: { duration: 0.2 },
+            duration: 0.5,
+            ease: [0.4, 0, 0.2, 1],
           }}
           className="inline-block"
         >
