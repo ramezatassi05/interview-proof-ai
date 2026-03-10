@@ -3,7 +3,7 @@
 ## Project Overview
 
 **App:** InterviewProof — job-specific interview diagnostic that identifies rejection risks and prioritizes fixes.
-**Stack:** Next.js 16 (App Router), Supabase (Postgres + pgvector + Auth), Stripe, OpenAI, TypeScript, Tailwind CSS 4
+**Stack:** Next.js 16 (App Router), Supabase (Postgres + pgvector + Auth), Stripe, OpenAI + Claude (hybrid), TypeScript, Tailwind CSS 4
 **Stage:** Post-MVP (Phase 8 complete, ongoing enhancements)
 **Repo:** `interview-proof-ai`
 
@@ -158,11 +158,27 @@ The LLM is the **analyst** (extracts, retrieves, produces structured analysis). 
 - Company difficulty adjustment: 1.0-1.5x multiplier based on company tier (FAANG+, Big Tech, etc.)
 - All score breakdowns stored as JSONB for reproducibility
 
+### Hybrid LLM Strategy
+
+The project uses a **hybrid** approach — Claude for the main analysis (where reasoning quality matters most), OpenAI for everything else (where cost efficiency matters):
+
+| Call Site | Provider | Model | Rationale |
+|-----------|----------|-------|-----------|
+| `performAnalysis` | **Claude** | Sonnet 4.6 | Complex 730-line prompt, benefits from superior reasoning + prompt caching |
+| `extractResumeData` | OpenAI | gpt-4o-mini | Simple extraction, cost-sensitive |
+| `extractJDData` | OpenAI | gpt-4o-mini | Simple extraction, cost-sensitive |
+| `createEmbedding` | OpenAI | text-embedding-3-small | No Claude embedding alternative |
+| `generateMoreQuestions` | OpenAI | gpt-4o-mini | Simple generation, cost-sensitive |
+| `generateAnswerFeedback` | OpenAI | gpt-4o-mini | Simple scoring, cost-sensitive |
+| `generateBestAnswer` | OpenAI | gpt-4o-mini | Simple generation, cost-sensitive |
+
+Client modules: `src/lib/openai.ts` (OpenAI), `src/lib/anthropic.ts` (Claude)
+
 ### Analysis Pipeline (`src/server/pipeline.ts`)
 
-1. **Extract** resume + JD via LLM (`rag/extraction.ts`)
+1. **Extract** resume + JD via OpenAI gpt-4o-mini (`rag/extraction.ts`)
 2. **Retrieve** relevant rubric chunks via pgvector cosine similarity (`rag/retrieval.ts`)
-3. **Analyze** with LLM — strict JSON output only (`rag/analysis.ts`)
+3. **Analyze** with Claude Sonnet 4.6 — strict JSON output, prompt caching (`rag/analysis.ts`)
 4. **Validate** analysis quality (`rag/validation.ts`)
 5. **Score** deterministically via code (`scoring/engine.ts`)
 6. **Compute** diagnostic intelligence (archetype, forecast, cognitive map, hire zone, etc.)
@@ -226,7 +242,8 @@ Key Postgres functions:
 NEXT_PUBLIC_SUPABASE_URL        # Supabase project URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY   # Supabase anon key (public)
 SUPABASE_SERVICE_ROLE_KEY       # Supabase service role (server-only, bypasses RLS)
-OPENAI_API_KEY                  # OpenAI API key
+OPENAI_API_KEY                  # OpenAI API key (extraction, questions, embeddings)
+ANTHROPIC_API_KEY               # Anthropic API key (main analysis via Claude)
 STRIPE_SECRET_KEY               # Stripe secret key
 STRIPE_WEBHOOK_SECRET           # Stripe webhook signing secret
 NEXT_PUBLIC_APP_URL             # App base URL (for Stripe redirects, sharing)

@@ -542,3 +542,52 @@ export function InsightOwlReading({ className = '', size }: OwlProps) {
     </svg>
   );
 }
+
+/* ════════════════════════════════════════════════════
+   6. InsightOwlProfessional — Composed, authoritative, with glasses
+   ════════════════════════════════════════════════════ */
+
+export function InsightOwlProfessional({ className = '', size }: OwlProps) {
+  const id = useId();
+  return (
+    <svg
+      className={className}
+      width={size ?? 64}
+      height={size ?? 64}
+      viewBox="0 0 128 128"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      style={{
+        animation: 'owl-professional-breathe 6s ease-in-out infinite',
+        transformOrigin: 'center bottom',
+      }}
+    >
+      <OwlDefs id={id} />
+      <OwlTail id={id} />
+      <OwlWing id={id} side="left" />
+      <OwlWing id={id} side="right" />
+      <OwlBody id={id} />
+      <OwlTufts id={id} />
+      <OwlFace id={id} eyeScale={0.95} lidHeight={4} gazeX={0} gazeY={0} blink />
+      {/* Round glasses */}
+      <g>
+        {/* Left lens */}
+        <circle cx="51" cy="42" r="8" fill="none" stroke="#312E81" strokeWidth="1.2" />
+        {/* Right lens */}
+        <circle cx="77" cy="42" r="8" fill="none" stroke="#312E81" strokeWidth="1.2" />
+        {/* Bridge */}
+        <path d="M59 42 Q64 39 69 42" fill="none" stroke="#312E81" strokeWidth="1.2" />
+        {/* Left temple arm */}
+        <path d="M43 42 Q38 40 36 34" fill="none" stroke="#312E81" strokeWidth="1" />
+        {/* Right temple arm */}
+        <path d="M85 42 Q90 40 92 34" fill="none" stroke="#312E81" strokeWidth="1" />
+        {/* Left lens glare */}
+        <circle cx="48" cy="39" r="1.5" fill="white" opacity="0.35" />
+        {/* Right lens glare */}
+        <circle cx="74" cy="39" r="1.5" fill="white" opacity="0.35" />
+      </g>
+      <OwlTalons />
+    </svg>
+  );
+}

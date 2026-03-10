@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { getOpenAIClient, MODELS } from '@/lib/openai';
+import { getAnthropicClient, CLAUDE_MODELS } from '@/lib/anthropic';
 import type {
   ExtractedResume,
   ExtractedJD,
@@ -744,7 +744,7 @@ export async function performAnalysis(
   retries = 2,
   priorEmployment?: PriorEmploymentSignal
 ): Promise<LLMAnalysis> {
-  const openai = getOpenAIClient();
+  const anthropic = getAnthropicClient();
   const deadline = Date.now() + 90_000; // 90s cumulative deadline for all retries
 
   // Compute company difficulty for prompt calibration
@@ -774,16 +774,18 @@ export async function performAnalysis(
       );
     }
     try {
-      const response = await openai.chat.completions.create({
-        model: MODELS.reasoning,
+      const response = await anthropic.messages.create({
+        model: CLAUDE_MODELS.reasoning,
+        max_tokens: 8192,
         temperature: 0.3, // Moderate temperature for wider score distribution
-        response_format: { type: 'json_object' },
-        messages: [
+        system: [
           {
-            role: 'system',
-            content:
-              'You are an expert interview analyst. Return only valid JSON matching the exact schema requested. Be thorough but honest in your assessment.',
+            type: 'text' as const,
+            text: 'You are an expert interview analyst. Return only valid JSON matching the exact schema requested. Be thorough but honest in your assessment.',
+            cache_control: { type: 'ephemeral' as const },
           },
+        ],
+        messages: [
           {
             role: 'user',
             content: prompt,
@@ -791,7 +793,9 @@ export async function performAnalysis(
         ],
       });
 
-      const content = response.choices[0]?.message?.content;
+      // Extract text from Claude response content blocks
+      const textBlock = response.content.find((block) => block.type === 'text');
+      const content = textBlock && 'text' in textBlock ? textBlock.text : null;
       if (!content) {
         throw new Error('Empty response from LLM');
       }

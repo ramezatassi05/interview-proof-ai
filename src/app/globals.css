@@ -144,11 +144,11 @@
   --text-dark-band-primary: #F9FAFB;
   --text-dark-band-secondary: #D1D5DB;
   --border-dark-band: rgba(255, 255, 255, 0.10);
-  --header-bg: rgba(17, 24, 39, 0.95);
-  --header-text: #F9FAFB;
-  --header-text-secondary: #D1D5DB;
-  --header-border: rgba(255, 255, 255, 0.08);
-  --header-elevated: #374151;
+  --header-bg: rgba(243, 244, 246, 0.90);
+  --header-text: #1A1A1F;
+  --header-text-secondary: #4A4A55;
+  --header-border: rgba(0, 0, 0, 0.08);
+  --header-elevated: #E5E7EB;
   --shadow-warm: 0 1px 3px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.05);
   --shadow-warm-hover: 0 4px 12px rgba(0, 0, 0, 0.09), 0 2px 4px rgba(0, 0, 0, 0.05);
   /* shadcn-compatible aliases */
@@ -575,6 +575,11 @@ h1, h2, h3, h4, h5, h6 {
   50% { opacity: 1; transform: translateY(-6px) scale(1.04) rotate(3deg); }
   75% { transform: translateY(2px) scale(0.98) rotate(-1deg); }
   100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+@keyframes owl-professional-breathe {
+  0%, 100% { transform: scaleY(1) scaleX(1) translateY(0); }
+  50% { transform: scaleY(1.015) scaleX(0.995) translateY(-1px); }
 }
 
 /* ====== LANDING PAGE OVERRIDES ====== */
