@@ -7,7 +7,8 @@ import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
 import { Badge, riskBandToVariant } from '@/components/ui/Badge';
 import { RadialScoreIndicator } from '@/components/ui/RadialScoreIndicator';
-import { InsightOwlMascot, InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
+import Image from 'next/image';
+import { InsightOwlMascot } from '@/components/svg/InsightOwlMascot';
 import { WaitlistForm } from '@/components/waitlist/WaitlistForm';
 import { BlurFade } from '@/components/ui/blur-fade';
 import { TextAnimate } from '@/components/ui/text-animate';
@@ -123,8 +124,8 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
                     <div className="flex-1">
                       <WaitlistForm referralCode={referralCode} compact />
                     </div>
-                    <div className="hidden sm:flex flex-shrink-0 items-center justify-center rounded-full bg-[var(--accent-primary)]/10 p-2">
-                      <InsightOwlWaving size={72} />
+                    <div className="hidden sm:flex flex-shrink-0 items-center justify-center">
+                      <Image src="/owl-mascot.png" alt="InterviewProof owl mascot" width={88} height={88} />
                     </div>
                   </div>
                   {waitlistCount != null && waitlistCount >= 500 && (

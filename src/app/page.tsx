@@ -24,7 +24,7 @@ import { FAQ } from '@/components/landing/FAQ';
 import { LiveAnalysisFeed } from '@/components/landing/LiveAnalysisFeed';
 import { ScrollProgressBar } from '@/components/landing/ScrollProgressBar';
 import { SectionNav } from '@/components/landing/SectionNav';
-import { InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
+import Image from 'next/image';
 import { WaitlistForm } from '@/components/waitlist/WaitlistForm';
 
 const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
@@ -104,9 +104,7 @@ function LandingPageContent() {
           <Container size="2xl" className="text-center">
             {WAITLIST_MODE && (
               <div className="mb-6 flex justify-center">
-                <div className="flex items-center justify-center rounded-full bg-[var(--accent-primary)]/10 p-3">
-                  <InsightOwlWaving size={72} />
-                </div>
+                <Image src="/owl-mascot.png" alt="InterviewProof owl mascot" width={88} height={88} />
               </div>
             )}
             <h2 className="heading-modern text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
