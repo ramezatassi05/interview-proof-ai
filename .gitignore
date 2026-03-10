@@ -47,3 +47,6 @@ next-env.d.ts
 # local dirs
 /my-video/
 supabase/.temp/
+
+# generated carousel assets (marketing, not part of the app)
+tiktok-carousel-*.html

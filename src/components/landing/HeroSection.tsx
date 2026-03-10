@@ -15,6 +15,7 @@ import { RotatingText } from '@/components/ui/rotating-text';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { DotPattern } from '@/components/ui/dot-pattern';
 import { BackgroundBeams } from '@/components/ui/background-beams';
+import { ShineBorder } from '@/components/ui/shine-border';
 import { motion, useScroll, useTransform } from 'motion/react';
 
 const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
@@ -123,7 +124,8 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
                     <div className="flex-1">
                       <WaitlistForm referralCode={referralCode} compact />
                     </div>
-                    <div className="hidden sm:flex flex-shrink-0 items-center justify-center rounded-full bg-[var(--accent-primary)]/10 p-2">
+                    <div className="relative hidden sm:flex flex-shrink-0 items-center justify-center rounded-full bg-[var(--bg-elevated)]/60 p-2">
+                      <ShineBorder shineColor={['#FB923C', '#F472B6', '#E879F9']} borderWidth={2} duration={10} />
                       <InsightOwlWaving size={72} />
                     </div>
                   </div>

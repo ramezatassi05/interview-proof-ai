@@ -92,7 +92,7 @@ export function WaitlistForm({ referralCode, compact = false }: WaitlistFormProp
             required
             className="flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)]"
           />
-          <Button type="submit" variant="accent" size="md" loading={status === 'loading'}>
+          <Button type="submit" variant="gradient" size="md" loading={status === 'loading'}>
             Join Waitlist
           </Button>
         </div>
@@ -134,7 +134,7 @@ export function WaitlistForm({ referralCode, compact = false }: WaitlistFormProp
       )}
       <Button
         type="submit"
-        variant="accent"
+        variant="gradient"
         size="lg"
         loading={status === 'loading'}
         className="mt-3 w-full"

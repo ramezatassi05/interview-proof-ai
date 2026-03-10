@@ -392,7 +392,7 @@ export function InsightOwlMascot({ className = '', size }: OwlProps) {
       style={{ animation: 'owl-bob 4s ease-in-out infinite', transformOrigin: 'center bottom' }}
     >
       <OwlDefs id={id} />
-      <circle cx="64" cy="64" r="56" fill="#6366F1" opacity="0.06" />
+      <circle cx="64" cy="64" r="56" fill="#F472B6" opacity="0.03" />
       <OwlTail id={id} />
       <OwlWing id={id} side="left" anim={{ animation: 'owl-wing-flutter 3s ease-in-out infinite' }} />
       <OwlWing id={id} side="right" anim={{ animation: 'owl-wing-flutter 3s ease-in-out infinite' }} />
@@ -544,7 +544,75 @@ export function InsightOwlReading({ className = '', size }: OwlProps) {
 }
 
 /* ════════════════════════════════════════════════════
-   6. InsightOwlProfessional — Composed, authoritative, with glasses
+   6. InsightOwlAnalyzing — Holding clipboard with charts, pen in right wing
+   ════════════════════════════════════════════════════ */
+
+export function InsightOwlAnalyzing({ className = '', size }: OwlProps) {
+  const id = useId();
+  return (
+    <svg
+      className={className}
+      width={size ?? 64}
+      height={size ?? 64}
+      viewBox="0 0 128 128"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      style={{ animation: 'owl-perch-sway 6s ease-in-out infinite', transformOrigin: 'center bottom' }}
+    >
+      <OwlDefs id={id} />
+      <g transform="rotate(2 64 64)">
+        <OwlTail id={id} />
+        <OwlBody id={id} />
+        <OwlTufts id={id} />
+        <OwlFace id={id} gazeX={0} gazeY={0} blink />
+        <OwlWing id={id} side="left" pose="holding" />
+        <OwlWing id={id} side="right" pose="holding" />
+        {/* Clipboard body — larger than Reading variant */}
+        <rect x="44" y="74" width="40" height="34" rx="3" fill="#E0E7FF" stroke="#A5B4FC" strokeWidth="1" />
+        {/* Clip/binder at top */}
+        <rect x="56" y="71" width="16" height="5" rx="2" fill="#818CF8" opacity="0.7" />
+        {/* Line graph (ascending) */}
+        <polyline
+          points="50,98 56,94 62,96 68,88 74,84"
+          fill="none"
+          stroke="#4F46E5"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {/* Graph dots */}
+        <circle cx="50" cy="98" r="1.2" fill="#4F46E5" />
+        <circle cx="56" cy="94" r="1.2" fill="#4F46E5" />
+        <circle cx="62" cy="96" r="1.2" fill="#4F46E5" />
+        <circle cx="68" cy="88" r="1.2" fill="#4F46E5" />
+        <circle cx="74" cy="84" r="1.2" fill="#4F46E5" />
+        {/* Horizontal rule */}
+        <line x1="50" y1="100" x2="78" y2="100" stroke="#C7D2FE" strokeWidth="0.6" />
+        {/* Mini bar chart below */}
+        <rect x="52" y="102" width="4" height="3" rx="0.5" fill="#818CF8" opacity="0.6" />
+        <rect x="58" y="101" width="4" height="4" rx="0.5" fill="#818CF8" opacity="0.7" />
+        <rect x="64" y="100" width="4" height="5" rx="0.5" fill="#818CF8" opacity="0.8" />
+        {/* Checkmark */}
+        <path
+          d="M72 103 L74 105 L78 99"
+          fill="none"
+          stroke="#10B981"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {/* Pen in right wing */}
+        <line x1="88" y1="78" x2="80" y2="98" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="80" cy="98" r="1" fill="#4F46E5" />
+        <OwlTalons />
+      </g>
+    </svg>
+  );
+}
+
+/* ════════════════════════════════════════════════════
+   7. InsightOwlProfessional — Composed, authoritative, with glasses
    ════════════════════════════════════════════════════ */
 
 export function InsightOwlProfessional({ className = '', size }: OwlProps) {

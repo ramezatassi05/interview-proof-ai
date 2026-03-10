@@ -714,6 +714,22 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ====== MAGIC UI / SHADCN KEYFRAMES ====== */
 
+@keyframes shine {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+.animate-shine {
+  animation: shine var(--duration, 14s) infinite linear;
+}
+
 @keyframes border-beam {
   100% {
     offset-distance: 100%;
