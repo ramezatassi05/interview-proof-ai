@@ -170,7 +170,7 @@
   --color-background: var(--bg-primary);
   --color-foreground: var(--text-primary);
   --color-border: var(--border-default);
-  --dot-grid-color: rgba(79, 70, 229, 0.14);
+  --dot-grid-color: rgba(79, 70, 229, 0.28);
   --scrollbar-thumb: rgba(79, 70, 229, 0.2);
   --scrollbar-thumb-hover: rgba(79, 70, 229, 0.35);
   --strength-card-border: rgba(4, 120, 87, 0.15);
