@@ -9,6 +9,7 @@ import { BorderBeam } from '@/components/ui/border-beam';
 import { RadialScoreIndicator } from '@/components/ui/RadialScoreIndicator';
 import { Badge } from '@/components/ui/Badge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { AIPracticeModePreview } from './AIPracticeModePreview';
 
 /* ─── Shared PreviewCard ─── */
 
@@ -840,6 +841,17 @@ const TrajectoryIcon = (
   </svg>
 );
 
+const PracticeModeIcon = (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+    />
+  </svg>
+);
+
 /* ─── Main Export ─── */
 
 interface ReportPreviewShowcaseProps {
@@ -863,7 +875,7 @@ export function ReportPreviewShowcase({ ctaHref, ctaLabel }: ReportPreviewShowca
         </div>
 
         {/* Bento grid */}
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[280px_280px_280px]">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[280px_280px_280px_auto]">
           {/* 1. Would You Get Hired? — hero card, 2 cols + 2 rows */}
           <BlurFade inView delay={0} className="lg:col-span-2 lg:row-span-2">
             <PreviewCard
@@ -927,6 +939,20 @@ export function ReportPreviewShowcase({ ctaHref, ctaLabel }: ReportPreviewShowca
               ctaLabel={ctaLabel}
             >
               <TrajectoryPreview />
+            </PreviewCard>
+          </BlurFade>
+
+          {/* 6. AI Practice Mode — full width, animated simulation */}
+          <BlurFade inView delay={0.4} className="lg:col-span-4">
+            <PreviewCard
+              title="AI Practice Mode"
+              icon={PracticeModeIcon}
+              accentColor="var(--accent-primary)"
+              ctaHref={ctaHref}
+              ctaLabel="Try Practice Mode"
+              hero
+            >
+              <AIPracticeModePreview />
             </PreviewCard>
           </BlurFade>
         </div>

@@ -38,7 +38,7 @@ export function renderSlideHtml({ text, type, slideNumber, totalSlides }: SlideO
 
   const hookStyles = `
     .slide-text {
-      font-size: 72px;
+      font-size: 60px;
       font-weight: 900;
       line-height: 1.15;
       background: linear-gradient(135deg, #fff 0%, #c084fc 50%, #818cf8 100%);
@@ -51,7 +51,7 @@ export function renderSlideHtml({ text, type, slideNumber, totalSlides }: SlideO
 
   const contentStyles = `
     .slide-text {
-      font-size: 54px;
+      font-size: 46px;
       font-weight: 700;
       line-height: 1.35;
       color: #f1f5f9;
@@ -64,7 +64,7 @@ export function renderSlideHtml({ text, type, slideNumber, totalSlides }: SlideO
 
   const ctaStyles = `
     .slide-text {
-      font-size: 60px;
+      font-size: 50px;
       font-weight: 800;
       line-height: 1.3;
       color: #f1f5f9;
@@ -72,7 +72,7 @@ export function renderSlideHtml({ text, type, slideNumber, totalSlides }: SlideO
     .cta-arrow {
       display: block;
       margin-top: 40px;
-      font-size: 80px;
+      font-size: 66px;
       background: linear-gradient(135deg, #c084fc, #818cf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -114,7 +114,8 @@ export function renderSlideHtml({ text, type, slideNumber, totalSlides }: SlideO
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 80px;
+      /* TikTok safe zone: top 150px, right 120px, bottom 370px, left 64px */
+      padding: 150px 120px 370px 64px;
     }
 
     /* Gradient orb accent */
@@ -178,15 +179,15 @@ export function renderSlideHtml({ text, type, slideNumber, totalSlides }: SlideO
       position: relative;
       z-index: 1;
       text-align: center;
-      max-width: 900px;
+      max-width: 850px;
     }
 
     ${typeStyles}
 
-    /* Slide counter */
+    /* Slide counter — positioned above the bottom safe zone */
     .slide-counter {
       position: absolute;
-      bottom: 60px;
+      bottom: 380px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -214,8 +215,8 @@ export function renderSlideHtml({ text, type, slideNumber, totalSlides }: SlideO
       border: 2px solid rgba(255, 255, 255, 0.03);
       z-index: 1;
     }
-    .corner-tl { top: 40px; left: 40px; border-right: none; border-bottom: none; border-radius: 8px 0 0 0; }
-    .corner-br { bottom: 100px; right: 40px; border-left: none; border-top: none; border-radius: 0 0 8px 0; }
+    .corner-tl { top: 160px; left: 74px; border-right: none; border-bottom: none; border-radius: 8px 0 0 0; }
+    .corner-br { bottom: 380px; right: 130px; border-left: none; border-top: none; border-radius: 0 0 8px 0; }
   </style>
 </head>
 <body>
