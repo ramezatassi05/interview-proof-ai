@@ -52,9 +52,7 @@ function DiagnosticCard({ role, company, score, risk }: (typeof entries)[number]
             {score}
             <span className="text-sm font-normal text-[var(--text-muted)]">/100</span>
           </span>
-          <div className="opacity-75">
-            <Badge variant={riskVariant[risk]}>{risk} Risk</Badge>
-          </div>
+          <Badge variant={riskVariant[risk]}>{risk} Risk</Badge>
         </div>
       </div>
 
