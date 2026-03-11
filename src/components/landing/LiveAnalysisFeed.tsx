@@ -37,10 +37,13 @@ function DiagnosticCard({ role, company, score, risk }: (typeof entries)[number]
         'bg-[var(--bg-card)] p-4 overflow-hidden card-hover'
       )}
     >
-      {/* Warm gradient top accent bar */}
+      {/* Subtle neutral shimmer top accent bar */}
       <div
-        className="absolute inset-x-0 top-0 h-[2px]"
-        style={{ background: 'var(--gradient-accent-text)' }}
+        className="absolute inset-x-0 top-0 h-px"
+        style={{
+          background:
+            'linear-gradient(90deg, transparent, rgba(150,150,150,0.3), transparent)',
+        }}
       />
 
       <div className="flex items-start justify-between">
