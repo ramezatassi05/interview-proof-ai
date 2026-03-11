@@ -1,7 +1,6 @@
 'use client';
 
 import { Marquee } from '@/components/ui/marquee';
-import { Badge } from '@/components/ui/Badge';
 import { NumberTicker } from '@/components/ui/number-ticker';
 import { cn } from '@/lib/utils';
 
@@ -23,10 +22,22 @@ const secondRow = entries.slice(5);
 
 type Risk = 'Low' | 'Medium' | 'High';
 
-const riskVariant: Record<Risk, 'low' | 'medium' | 'high'> = {
-  Low: 'low',
-  Medium: 'medium',
-  High: 'high',
+const landingRiskStyle: Record<Risk, { color: string; bg: string; border: string }> = {
+  High: {
+    color: 'rgba(224, 82, 82, 0.55)',
+    bg: 'rgba(224, 82, 82, 0.06)',
+    border: 'rgba(224, 82, 82, 0.12)',
+  },
+  Medium: {
+    color: 'rgba(217, 119, 6, 0.55)',
+    bg: 'rgba(217, 119, 6, 0.05)',
+    border: 'rgba(217, 119, 6, 0.10)',
+  },
+  Low: {
+    color: 'rgba(5, 150, 105, 0.55)',
+    bg: 'rgba(5, 150, 105, 0.06)',
+    border: 'rgba(5, 150, 105, 0.12)',
+  },
 };
 
 function DiagnosticCard({ role, company, score, risk }: (typeof entries)[number]) {
@@ -52,7 +63,16 @@ function DiagnosticCard({ role, company, score, risk }: (typeof entries)[number]
             {score}
             <span className="text-sm font-normal text-[var(--text-muted)]">/100</span>
           </span>
-          <Badge variant={riskVariant[risk]}>{risk} Risk</Badge>
+          <span
+            className="inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium tracking-wide border"
+            style={{
+              color: landingRiskStyle[risk].color,
+              backgroundColor: landingRiskStyle[risk].bg,
+              borderColor: landingRiskStyle[risk].border,
+            }}
+          >
+            {risk} Risk
+          </span>
         </div>
       </div>
 
