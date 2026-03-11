@@ -23,12 +23,6 @@ const secondRow = entries.slice(5);
 
 type Risk = 'Low' | 'Medium' | 'High';
 
-const riskColor: Record<Risk, string> = {
-  Low: 'var(--color-success)',
-  Medium: 'var(--color-warning)',
-  High: 'var(--color-danger)',
-};
-
 const riskVariant: Record<Risk, 'low' | 'medium' | 'high'> = {
   Low: 'low',
   Medium: 'medium',
@@ -40,22 +34,24 @@ function DiagnosticCard({ role, company, score, risk }: (typeof entries)[number]
     <div
       className={cn(
         'relative w-64 rounded-2xl border border-[var(--border-default)]',
-        'bg-[var(--bg-card)] p-4 overflow-hidden'
+        'bg-[var(--bg-card)] p-4 overflow-hidden card-hover'
       )}
     >
-      {/* Colored top accent bar */}
+      {/* Warm gradient top accent bar */}
       <div
         className="absolute inset-x-0 top-0 h-[2px]"
-        style={{ backgroundColor: riskColor[risk] }}
+        style={{ background: 'var(--gradient-accent-text)' }}
       />
 
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-1">
-          <span className="text-2xl font-bold" style={{ color: riskColor[risk] }}>
+          <span className="text-2xl font-bold text-[var(--text-primary)]">
             {score}
             <span className="text-sm font-normal text-[var(--text-muted)]">/100</span>
           </span>
-          <Badge variant={riskVariant[risk]}>{risk} Risk</Badge>
+          <div className="opacity-75">
+            <Badge variant={riskVariant[risk]}>{risk} Risk</Badge>
+          </div>
         </div>
       </div>
 
