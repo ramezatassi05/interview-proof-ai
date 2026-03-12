@@ -108,8 +108,9 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
 
             <BlurFade inView delay={0.15}>
               <p className="mt-6 max-w-lg text-base leading-relaxed text-[var(--text-secondary)]">
-                Upload your resume and job description. Get an evidence-backed diagnostic that shows
-                exactly what recruiters will reject you for — before the interview.
+                Upload your resume and job description. Get an evidence-backed diagnostic that
+                pinpoints your rejection risks — then practice with AI-crafted answers that turn
+                every weakness into your strongest talking point.
               </p>
             </BlurFade>
 
