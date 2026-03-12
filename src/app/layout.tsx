@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/hooks/useTheme';
 import { CreditsWrapper } from '@/components/credits/CreditsWrapper';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 const sourceSerif = Source_Serif_4({
@@ -65,6 +66,7 @@ export default function RootLayout({
             <TooltipProvider>
               <CreditsWrapper>{children}</CreditsWrapper>
               <Toaster />
+              <Analytics />
             </TooltipProvider>
           </ThemeProvider>
         </AuthProvider>
