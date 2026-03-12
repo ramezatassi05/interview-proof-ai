@@ -113,6 +113,19 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
               </p>
             </BlurFade>
 
+            <BlurFade inView delay={0.17}>
+              <a
+                href="#vertical-ai"
+                className="mt-2 inline-block text-base text-[var(--accent-primary)] hover:underline cursor-pointer transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('vertical-ai')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Trained on the Best Interview Intelligence Available →
+              </a>
+            </BlurFade>
+
             <BlurFade inView delay={0.2}>
             <div className="relative mt-10">
               <div className="pointer-events-none absolute -inset-32 [mask-image:radial-gradient(ellipse_at_center,white_30%,transparent_70%)]">
