@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { useInView } from '@/hooks/useInView';
 import { useCursorWaypoints } from '@/hooks/useCursorWaypoints';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
@@ -87,12 +88,30 @@ export function ProductShowcase() {
   const { user } = useAuth();
   const [flowPhase, setFlowPhase] = useState<FlowPhase>('upload');
   const [flowKey, setFlowKey] = useState(0);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const elapsedRef = useRef(0);
   const phaseRef = useRef<FlowPhase>('upload');
+  const { ref: sectionRef, isInView } = useInView<HTMLElement>({ threshold: 0.3, once: false });
+
+  /* Auto-play on scroll into view, restart each time */
+  useEffect(() => {
+    const id = setTimeout(() => {
+      if (isInView) {
+        elapsedRef.current = 0;
+        phaseRef.current = 'upload';
+        setFlowPhase('upload');
+        setProgress(0);
+        setFlowKey((k) => k + 1);
+        setPlaying(true);
+      } else {
+        setPlaying(false);
+      }
+    }, 0);
+    return () => clearTimeout(id);
+  }, [isInView]);
 
   /* Timer loop */
   useEffect(() => {
@@ -171,7 +190,7 @@ export function ProductShowcase() {
   const ctaHref = user ? '/new' : '/auth/login?redirect=/new';
 
   return (
-    <section id="showcase" className="py-20 lg:py-28 bg-[var(--bg-section-alt)]">
+    <section ref={sectionRef} id="showcase" className="py-20 lg:py-28 bg-[var(--bg-section-alt)]">
       <Container size="2xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:gap-20">
           {/* Left — description */}
