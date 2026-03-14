@@ -11,8 +11,7 @@ import { BrowserFrame } from './mockups/BrowserFrame';
 import { FlowUploadPage, FlowAnalysisPage, FlowReportPage } from './mockups/FlowPages';
 import { AnimatedCursor } from './mockups/AnimatedCursor';
 import { BorderBeam } from '@/components/ui/border-beam';
-
-const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
+import { useWaitlistMode } from '@/hooks/useWaitlistMode';
 
 /* ====== Flow timing ====== */
 
@@ -86,6 +85,7 @@ function getUrl(phase: FlowPhase): string {
 
 export function ProductShowcase() {
   const { user } = useAuth();
+  const WAITLIST_MODE = useWaitlistMode();
   const [flowPhase, setFlowPhase] = useState<FlowPhase>('upload');
   const [flowKey, setFlowKey] = useState(0);
   const [playing, setPlaying] = useState(false);

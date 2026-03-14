@@ -27,14 +27,13 @@ import { SectionNav } from '@/components/landing/SectionNav';
 import { InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
 import { ShineBorder } from '@/components/ui/shine-border';
 import { WaitlistForm } from '@/components/waitlist/WaitlistForm';
-
-const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
+import { useWaitlistMode } from '@/hooks/useWaitlistMode';
 
 function LandingPageContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const referralCode = searchParams.get('ref') || undefined;
-
+  const WAITLIST_MODE = useWaitlistMode();
 
   const ctaHref = WAITLIST_MODE ? '#' : user ? '/new' : '/auth/login?redirect=/new';
 

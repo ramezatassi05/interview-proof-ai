@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { CreditsBalance } from '@/components/ui/CreditsBalance';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Container } from './Container';
-
-const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
+import { useWaitlistMode } from '@/hooks/useWaitlistMode';
 
 const NAV_LINKS = [
   { label: 'How It Works', href: '#how-it-works' },
@@ -23,6 +22,7 @@ const NAV_LINKS = [
 export function Header() {
   const { user, loading, signOut } = useAuth();
   const { balance, loading: creditsLoading, openPurchaseModal } = useCredits();
+  const WAITLIST_MODE = useWaitlistMode();
   const pathname = usePathname();
   const isLanding = pathname === '/';
   const [scrolled, setScrolled] = useState(false);

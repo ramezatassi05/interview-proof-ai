@@ -49,4 +49,8 @@ next-env.d.ts
 supabase/.temp/
 
 # generated carousel assets (marketing, not part of the app)
+/carousel-assets/
 tiktok-carousel-*.html
+
+# playwright MCP logs
+/.playwright-mcp/

@@ -17,8 +17,7 @@ import { DotPattern } from '@/components/ui/dot-pattern';
 import { BackgroundBeams } from '@/components/ui/background-beams';
 import { ShineBorder } from '@/components/ui/shine-border';
 import { motion, useScroll, useTransform } from 'motion/react';
-
-const WAITLIST_MODE = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
+import { useWaitlistMode } from '@/hooks/useWaitlistMode';
 
 interface LastReport {
   id: string;
@@ -36,6 +35,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ referralCode }: HeroSectionProps) {
   const { user } = useAuth();
+  const WAITLIST_MODE = useWaitlistMode();
   const [lastReport, setLastReport] = useState<LastReport | null>(null);
   const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
 
@@ -71,7 +71,7 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
         if (data?.data?.count != null) setWaitlistCount(data.data.count);
       })
       .catch(() => {});
-  }, []);
+  }, [WAITLIST_MODE]);
 
   const { scrollY } = useScroll();
   const scrollIndicatorOpacity = useTransform(scrollY, [0, 150], [1, 0]);
