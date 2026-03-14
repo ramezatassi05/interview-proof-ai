@@ -153,7 +153,18 @@ class APIClient {
         },
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: unknown;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        if (res.status === 504 || text.toLowerCase().includes('error occurred')) {
+          throw new Error(
+            'The analysis timed out. This can happen with complex resumes. Please try again.'
+          );
+        }
+        throw new Error(`Server returned an invalid response (HTTP ${res.status})`);
+      }
 
       if (!res.ok) {
         const error = data as APIError;
