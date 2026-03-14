@@ -745,7 +745,7 @@ export async function performAnalysis(
   priorEmployment?: PriorEmploymentSignal
 ): Promise<LLMAnalysis> {
   const anthropic = getAnthropicClient();
-  const deadline = Date.now() + 90_000; // 90s cumulative deadline for all retries
+  const deadline = Date.now() + 150_000; // 150s cumulative deadline for all retries (within 180s maxDuration)
 
   // Compute company difficulty for prompt calibration
   const companyDifficulty = computeCompanyDifficulty(
@@ -776,7 +776,7 @@ export async function performAnalysis(
     try {
       const response = await anthropic.messages.create({
         model: CLAUDE_MODELS.reasoning,
-        max_tokens: 8192,
+        max_tokens: 16384,
         temperature: 0.3, // Moderate temperature for wider score distribution
         system: [
           {
@@ -793,6 +793,11 @@ export async function performAnalysis(
         ],
       });
 
+      // Fail fast if Claude truncated the response
+      if (response.stop_reason === 'max_tokens') {
+        throw new Error('Claude response truncated — max_tokens limit reached');
+      }
+
       // Extract text from Claude response content blocks
       const textBlock = response.content.find((block) => block.type === 'text');
       const content = textBlock && 'text' in textBlock ? textBlock.text : null;
@@ -800,7 +805,9 @@ export async function performAnalysis(
         throw new Error('Empty response from LLM');
       }
 
-      const parsed = JSON.parse(content);
+      // Strip markdown code fences (```json ... ```) that Claude may wrap around JSON
+      const jsonContent = content.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+      const parsed = JSON.parse(jsonContent);
       lastParsed = parsed;
       const repaired = repairAnalysisOutput(parsed);
       const validated = LLMAnalysisSchema.parse(repaired);
@@ -849,7 +856,10 @@ export async function performAnalysis(
           `Failed to perform analysis: ${error instanceof Error ? error.message : 'Unknown error'}`
         );
       }
-      console.warn(`Analysis attempt ${attempt + 1} failed, retrying...`);
+      console.warn(
+        `Analysis attempt ${attempt + 1} failed, retrying...`,
+        error instanceof Error ? error.message : String(error)
+      );
     }
   }
 

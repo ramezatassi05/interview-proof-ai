@@ -4,6 +4,11 @@ let anthropicClient: Anthropic | null = null;
 
 export function getAnthropicClient(): Anthropic {
   if (!anthropicClient) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error(
+        'ANTHROPIC_API_KEY is not set. Add it to .env.local and restart the dev server.'
+      );
+    }
     anthropicClient = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
     });
