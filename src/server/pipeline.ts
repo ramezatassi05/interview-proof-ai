@@ -151,7 +151,7 @@ export async function pipelineLLM(
       questionArchetypes: retrievalResult.questionArchetypes,
     },
     prepPreferences,
-    undefined,
+    0,
     priorEmployment.detected ? priorEmployment : undefined
   );
 

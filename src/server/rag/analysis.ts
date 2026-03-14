@@ -745,7 +745,7 @@ export async function performAnalysis(
   priorEmployment?: PriorEmploymentSignal
 ): Promise<LLMAnalysis> {
   const anthropic = getAnthropicClient();
-  const deadline = Date.now() + 150_000; // 150s cumulative deadline for all retries (within 180s maxDuration)
+  const deadline = Date.now() + 55_000; // 55s — leave 5s buffer for auth + DB writes within 60s route limit
 
   // Compute company difficulty for prompt calibration
   const companyDifficulty = computeCompanyDifficulty(
