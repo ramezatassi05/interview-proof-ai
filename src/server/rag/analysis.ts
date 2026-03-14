@@ -741,7 +741,7 @@ export async function performAnalysis(
   roundType: RoundType,
   context: AnalysisContext,
   prepPreferences?: PrepPreferences,
-  retries = 2,
+  retries = 1,
   priorEmployment?: PriorEmploymentSignal
 ): Promise<LLMAnalysis> {
   const anthropic = getAnthropicClient();

@@ -187,8 +187,10 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
       )
     : undefined;
 
-  // Await backfill so the full question pool is included in the returned analysis
-  await backfillPromise;
+  // Don't block pipeline on backfill — let it complete in background.
+  // The initial 15-20 questions from the analysis are sufficient for the response.
+  // Backfill continues but results aren't awaited to stay within Vercel's timeout.
+  backfillPromise.catch(() => {}); // suppress unhandled rejection
 
   return {
     extractedResume,
