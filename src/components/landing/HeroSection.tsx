@@ -157,10 +157,13 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
                 </div>
               ) : (
                 <div className="relative flex flex-wrap items-center gap-4">
-                  <Link href={ctaHref}>
-                    <Button variant="gradient" size="lg" rounded>
+                  <Link
+                    href={ctaHref}
+                    className="group relative rounded-full bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 p-[2px]"
+                  >
+                    <span className="flex items-center justify-center gap-2 rounded-full bg-black px-8 py-3.5 text-base font-semibold text-white transition-colors group-hover:bg-black/90">
                       Run My Diagnostic
-                    </Button>
+                    </span>
                   </Link>
                   <InsightOwlMascot size={44} />
                 </div>
