@@ -16,6 +16,7 @@ import {
   summarizeResumeForRetrieval,
   summarizeJDForRetrieval,
   inferDomain,
+  type RetrievalResult,
 } from './rag/retrieval';
 import { performAnalysis } from './rag/analysis';
 import { validateAnalysisQuality } from './rag/validation';
@@ -61,26 +62,56 @@ export interface PipelineOutput {
   personalizedStudyPlan?: PersonalizedStudyPlan;
 }
 
-/**
- * Runs the full analysis pipeline:
- * 1. Extract structured data from resume and JD
- * 2. Retrieve relevant rubric chunks and questions
- * 3. Perform LLM analysis
- * 4. Compute deterministic score
- */
-export async function runAnalysisPipeline(input: PipelineInput): Promise<PipelineOutput> {
-  const { resumeText, jobDescriptionText, roundType, prepPreferences } = input;
+// ============================================
+// Multi-Step Pipeline: Intermediate State Types
+// ============================================
 
-  // Step 1: Extract structured data (parallel)
+export interface PrepareStepOutput {
+  extractedResume: ExtractedResume;
+  extractedJD: ExtractedJD;
+  retrievalResult: RetrievalResult;
+  priorEmployment: PriorEmploymentSignal;
+}
+
+export interface LLMStepOutput {
+  llmAnalysis: LLMAnalysis;
+}
+
+export type PipelineState =
+  | {
+      step: 'prepared';
+      extractedResume: ExtractedResume;
+      extractedJD: ExtractedJD;
+      retrievalResult: RetrievalResult;
+      priorEmployment: PriorEmploymentSignal;
+    }
+  | {
+      step: 'analyzed';
+      extractedResume: ExtractedResume;
+      extractedJD: ExtractedJD;
+      retrievalResult: RetrievalResult;
+      priorEmployment: PriorEmploymentSignal;
+      llmAnalysis: LLMAnalysis;
+    };
+
+// ============================================
+// Multi-Step Pipeline: Individual Step Functions
+// ============================================
+
+/**
+ * Step 1 — Prepare: Extract resume/JD, detect prior employment, retrieve RAG context.
+ * Typically completes in ~8s.
+ */
+export async function pipelinePrepare(input: PipelineInput): Promise<PrepareStepOutput> {
+  const { resumeText, jobDescriptionText, roundType } = input;
+
   const [extractedResume, extractedJD] = await Promise.all([
     extractResumeData(resumeText),
     extractJDData(jobDescriptionText),
   ]);
 
-  // Step 1b: Detect prior employment at target company
   const priorEmployment = detectPriorEmployment(extractedResume, extractedJD);
 
-  // Step 2: Build summaries for retrieval
   const resumeSummary = summarizeResumeForRetrieval(
     extractedResume.skills,
     extractedResume.experiences,
@@ -88,7 +119,6 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
   );
   const jdSummary = summarizeJDForRetrieval(extractedJD.mustHave, extractedJD.keywords);
 
-  // Step 3: Retrieve relevant context (with company/domain filtering)
   const retrievalResult = await retrieveContext(
     resumeSummary,
     jdSummary,
@@ -98,7 +128,20 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     inferDomain(jdSummary)
   );
 
-  // Step 4: Perform LLM analysis
+  return { extractedResume, extractedJD, retrievalResult, priorEmployment };
+}
+
+/**
+ * Step 2 — LLM: Run Claude analysis + validation + fire-and-forget question backfill.
+ * Typically completes in ~35-55s.
+ */
+export async function pipelineLLM(
+  prepareOutput: PrepareStepOutput,
+  roundType: RoundType,
+  prepPreferences?: PrepPreferences
+): Promise<LLMStepOutput> {
+  const { extractedResume, extractedJD, retrievalResult, priorEmployment } = prepareOutput;
+
   const llmAnalysis = await performAnalysis(
     extractedResume,
     extractedJD,
@@ -112,18 +155,13 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     priorEmployment.detected ? priorEmployment : undefined
   );
 
-  // Step 4a: Post-LLM validation (filter parroted content + round-irrelevant risks)
-  const { warnings: validationWarnings } = validateAnalysisQuality(
-    llmAnalysis,
-    extractedJD,
-    roundType
-  );
+  const { warnings: validationWarnings } = validateAnalysisQuality(llmAnalysis, extractedJD, roundType);
   if (validationWarnings.length > 0) {
     console.warn(`[pipeline] Validation applied ${validationWarnings.length} fix(es)`);
   }
 
-  // Step 4b: Expand question pool (async, runs in parallel with scoring)
-  const backfillPromise = (async () => {
+  // Fire-and-forget question backfill
+  (async () => {
     try {
       while (llmAnalysis.interviewQuestions.length < TARGET_QUESTION_POOL) {
         const existingTexts = llmAnalysis.interviewQuestions.map((q) => q.question);
@@ -141,21 +179,43 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     } catch (err) {
       console.error('Question backfill failed, continuing with existing pool:', err);
     }
-  })();
+  })().catch(() => {});
 
-  // Step 5: Compute deterministic score (runs immediately, no await needed)
+  return { llmAnalysis };
+}
+
+/**
+ * Step 3 — Complete: Run all deterministic scoring + diagnostic intelligence.
+ * Typically completes in ~5s.
+ */
+export async function pipelineComplete(
+  extractedResume: ExtractedResume,
+  extractedJD: ExtractedJD,
+  retrievedContextIds: string[],
+  llmAnalysis: LLMAnalysis,
+  roundType: RoundType,
+  priorEmployment: PriorEmploymentSignal,
+  prepPreferences?: PrepPreferences
+): Promise<PipelineOutput> {
   const companyDifficulty = computeCompanyDifficulty(
     extractedJD.companyName,
     prepPreferences?.experienceLevel ?? 'mid',
     extractedJD,
     extractedResume
   );
-  const { score: baseScore, breakdown } = computeReadinessScore(llmAnalysis, companyDifficulty.adjustmentFactor);
+  const { score: baseScore, breakdown } = computeReadinessScore(
+    llmAnalysis,
+    companyDifficulty.adjustmentFactor
+  );
   const score = priorEmployment.detected
     ? Math.min(100, baseScore + priorEmployment.boosts.readinessBoost)
     : baseScore;
   const riskBand = computeRiskBand(score);
-  const baseConversion = computeConversionLikelihood(score, llmAnalysis, companyDifficulty.adjustmentFactor);
+  const baseConversion = computeConversionLikelihood(
+    score,
+    llmAnalysis,
+    companyDifficulty.adjustmentFactor
+  );
   const conversionLikelihood = priorEmployment.detected
     ? Math.min(95, baseConversion + priorEmployment.boosts.conversionBoost)
     : baseConversion;
@@ -164,7 +224,6 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     ? Math.min(100, baseTechnicalFit + priorEmployment.boosts.technicalFitBoost)
     : baseTechnicalFit;
 
-  // Step 6: Compute diagnostic intelligence (Phase 7b)
   const diagnosticIntelligence = await computeDiagnosticIntelligence(
     llmAnalysis,
     score,
@@ -177,7 +236,6 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     priorEmployment.detected ? priorEmployment : undefined
   );
 
-  // Step 7: Generate personalized study plan if preferences provided
   const personalizedStudyPlan = prepPreferences
     ? generatePersonalizedStudyPlan(
         llmAnalysis.studyPlan,
@@ -187,15 +245,10 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
       )
     : undefined;
 
-  // Don't block pipeline on backfill — let it complete in background.
-  // The initial 15-20 questions from the analysis are sufficient for the response.
-  // Backfill continues but results aren't awaited to stay within Vercel's timeout.
-  backfillPromise.catch(() => {}); // suppress unhandled rejection
-
   return {
     extractedResume,
     extractedJD,
-    retrievedContextIds: retrievalResult.contextIds,
+    retrievedContextIds,
     llmAnalysis,
     readinessScore: score,
     riskBand,
@@ -203,6 +256,34 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Pipelin
     diagnosticIntelligence,
     personalizedStudyPlan,
   };
+}
+
+// ============================================
+// Full Pipeline (convenience wrapper for rerun / local dev)
+// ============================================
+
+/**
+ * Runs the full analysis pipeline:
+ * 1. Extract structured data from resume and JD
+ * 2. Retrieve relevant rubric chunks and questions
+ * 3. Perform LLM analysis
+ * 4. Compute deterministic score
+ */
+export async function runAnalysisPipeline(input: PipelineInput): Promise<PipelineOutput> {
+  const { roundType, prepPreferences } = input;
+
+  const prepareOutput = await pipelinePrepare(input);
+  const { llmAnalysis } = await pipelineLLM(prepareOutput, roundType, prepPreferences);
+
+  return pipelineComplete(
+    prepareOutput.extractedResume,
+    prepareOutput.extractedJD,
+    prepareOutput.retrievalResult.contextIds,
+    llmAnalysis,
+    roundType,
+    prepareOutput.priorEmployment,
+    prepPreferences
+  );
 }
 
 /**

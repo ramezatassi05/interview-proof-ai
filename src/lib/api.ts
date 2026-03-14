@@ -133,7 +133,7 @@ export interface ShareResponse {
 }
 
 // Routes that run the full LLM pipeline and need longer timeouts
-const PIPELINE_ROUTES = ['/report/analyze', '/report/rerun'];
+const PIPELINE_ROUTES = ['/report/analyze', '/report/analyze/llm', '/report/rerun'];
 
 class APIClient {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -202,8 +202,33 @@ class APIClient {
     });
   }
 
+  /** Legacy: calls monolithic analyze endpoint. Used by rerun flow. */
   async analyzeReport(reportId: string): Promise<AnalyzeReportResponse> {
     return this.request<AnalyzeReportResponse>('/report/analyze', {
+      method: 'POST',
+      body: JSON.stringify({ reportId }),
+    });
+  }
+
+  /** Step 1: Extract resume/JD + retrieve context (~8s) */
+  async prepareAnalysis(reportId: string): Promise<{ data: { step: string } }> {
+    return this.request('/report/analyze/prepare', {
+      method: 'POST',
+      body: JSON.stringify({ reportId }),
+    });
+  }
+
+  /** Step 2: Run Claude LLM analysis (~35-55s) */
+  async runAnalysisLLM(reportId: string): Promise<{ data: { step: string } }> {
+    return this.request('/report/analyze/llm', {
+      method: 'POST',
+      body: JSON.stringify({ reportId }),
+    });
+  }
+
+  /** Step 3: Deterministic scoring + store results (~5s) */
+  async completeAnalysis(reportId: string): Promise<AnalyzeReportResponse> {
+    return this.request<AnalyzeReportResponse>('/report/analyze/complete', {
       method: 'POST',
       body: JSON.stringify({ reportId }),
     });

@@ -96,9 +96,11 @@ export default function NewReportPage() {
 
       const reportId = createResult.data.reportId;
 
-      // Step 2: Analyze report
+      // Step 2: Multi-step analysis (avoids Vercel 60s timeout)
       setIsAnalyzing(true);
-      await api.analyzeReport(reportId);
+      await api.prepareAnalysis(reportId);
+      await api.runAnalysisLLM(reportId);
+      await api.completeAnalysis(reportId);
 
       // Step 3: Redirect to results
       router.push(`/r/${reportId}`);
