@@ -106,7 +106,8 @@ export async function POST(request: NextRequest) {
         paid_unlocked: true,
         credit_spend_ledger_id: ledgerEntry.id,
       })
-      .eq('id', reportId);
+      .eq('id', reportId)
+      .eq('user_id', user.id);
 
     if (updateError) {
       console.error('Failed to unlock report:', updateError);

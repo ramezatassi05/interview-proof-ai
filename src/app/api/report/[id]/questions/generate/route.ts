@@ -34,13 +34,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const { data: report } = await supabase
       .from('reports')
-      .select('id, round_type, user_id')
+      .select('id, round_type, user_id, paid_unlocked')
       .eq('id', reportId)
       .eq('user_id', user.id)
       .single();
 
     if (!report) {
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+    }
+
+    if (!report.paid_unlocked) {
+      return NextResponse.json(
+        { error: 'Report must be unlocked to access this feature' },
+        { status: 403 }
+      );
     }
 
     const { data: runs } = await supabase

@@ -19,7 +19,7 @@ const PrepPreferencesSchema = z.object({
     )
     .min(1)
     .max(3),
-  additionalContext: z.string().optional(),
+  additionalContext: z.string().max(500).optional(),
 });
 
 const CreateReportSchema = z.object({

@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
         controller.enqueue(
           encoder.encode(
             JSON.stringify({
-              error: error instanceof Error ? error.message : 'Internal server error',
+              error: 'Analysis failed. Please try again.',
             })
           )
         );

@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 export const GRANT_AMOUNTS = {
@@ -48,38 +49,42 @@ export async function grantCredits(params: {
   return { granted: true, alreadyGranted: false };
 }
 
+const REFERRAL_SECRET = process.env.SUPABASE_SERVICE_ROLE_KEY || 'referral-key-fallback';
+
 /**
- * Generate a referral code from a user ID.
- * Takes first 8 chars of UUID (no dashes), uppercased.
+ * Generate an opaque referral code from a user ID using HMAC.
+ * Not reversible — cannot derive the user ID from the code.
  */
 export function generateReferralCode(userId: string): string {
-  return userId.replace(/-/g, '').slice(0, 8).toUpperCase();
+  return crypto.createHmac('sha256', REFERRAL_SECRET).update(userId).digest('hex').slice(0, 8).toUpperCase();
 }
 
 /**
  * Look up a referrer by their referral code.
- * The code is the first 8 hex chars of the user's UUID (no dashes, uppercased).
- * Since UUID format is xxxxxxxx-xxxx-..., the first 8 no-dash chars = first segment.
- * We can query with a LIKE on user_id.
+ * Iterates distinct user_ids and checks the HMAC-derived code for each.
  */
 export async function lookupReferrerByCode(
   supabase: SupabaseClient,
   code: string
 ): Promise<string | null> {
-  const prefix = code.toLowerCase();
+  if (!/^[A-Z0-9]{8}$/i.test(code)) {
+    return null;
+  }
 
-  // First 8 no-dash chars of UUID = first 8 chars of UUID (the first segment before the dash)
-  // UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  // So we match user_id LIKE 'xxxxxxxx-%'
-  const { data, error } = await supabase
-    .from('reports')
-    .select('user_id')
-    .like('user_id', `${prefix}-%`)
-    .limit(1);
+  const { data, error } = await supabase.from('reports').select('user_id');
 
   if (error || !data || data.length === 0) {
     return null;
   }
 
-  return data[0].user_id;
+  const uniqueUserIds = [...new Set(data.map((row) => row.user_id))];
+  const normalizedCode = code.toUpperCase();
+
+  for (const userId of uniqueUserIds) {
+    if (generateReferralCode(userId) === normalizedCode) {
+      return userId;
+    }
+  }
+
+  return null;
 }

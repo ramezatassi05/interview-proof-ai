@@ -31,13 +31,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
-    // TEMP: Bypass paywall - allow PDF download regardless of payment status
-    // if (!report.paid_unlocked) {
-    //   return NextResponse.json(
-    //     { error: 'Report must be unlocked to download PDF' },
-    //     { status: 403 }
-    //   );
-    // }
+    if (!report.paid_unlocked) {
+      return NextResponse.json(
+        { error: 'Report must be unlocked to download PDF' },
+        { status: 403 }
+      );
+    }
 
     // Fetch the latest run
     const { data: run, error: runError } = await supabase
