@@ -11,6 +11,8 @@ export function getAnthropicClient(): Anthropic {
     }
     anthropicClient = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
+      timeout: 240_000, // 4 min per request (analysis can take 2-3 min for large prompts)
+      maxRetries: 0, // App-level retry loop handles retries — don't let SDK retry
     });
   }
   return anthropicClient;

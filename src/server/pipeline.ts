@@ -104,11 +104,13 @@ export type PipelineState =
  */
 export async function pipelinePrepare(input: PipelineInput): Promise<PrepareStepOutput> {
   const { resumeText, jobDescriptionText, roundType } = input;
+  const t0 = performance.now();
 
   const [extractedResume, extractedJD] = await Promise.all([
     extractResumeData(resumeText),
     extractJDData(jobDescriptionText),
   ]);
+  console.log(`[pipeline:prepare] Extraction completed in ${Math.round(performance.now() - t0)}ms`);
 
   const priorEmployment = detectPriorEmployment(extractedResume, extractedJD);
 
@@ -119,6 +121,7 @@ export async function pipelinePrepare(input: PipelineInput): Promise<PrepareStep
   );
   const jdSummary = summarizeJDForRetrieval(extractedJD.mustHave, extractedJD.keywords);
 
+  const tRetrieval = performance.now();
   const retrievalResult = await retrieveContext(
     resumeSummary,
     jdSummary,
@@ -127,6 +130,10 @@ export async function pipelinePrepare(input: PipelineInput): Promise<PrepareStep
     extractedJD.companyName ?? undefined,
     inferDomain(jdSummary)
   );
+  console.log(
+    `[pipeline:prepare] Retrieval completed in ${Math.round(performance.now() - tRetrieval)}ms`
+  );
+  console.log(`[pipeline:prepare] Total: ${Math.round(performance.now() - t0)}ms`);
 
   return { extractedResume, extractedJD, retrievalResult, priorEmployment };
 }
@@ -141,6 +148,7 @@ export async function pipelineLLM(
   prepPreferences?: PrepPreferences
 ): Promise<LLMStepOutput> {
   const { extractedResume, extractedJD, retrievalResult, priorEmployment } = prepareOutput;
+  const t0 = performance.now();
 
   const llmAnalysis = await performAnalysis(
     extractedResume,
@@ -153,6 +161,10 @@ export async function pipelineLLM(
     prepPreferences,
     0,
     priorEmployment.detected ? priorEmployment : undefined
+  );
+
+  console.log(
+    `[pipeline:llm] performAnalysis completed in ${Math.round(performance.now() - t0)}ms`
   );
 
   const { warnings: validationWarnings } = validateAnalysisQuality(llmAnalysis, extractedJD, roundType);

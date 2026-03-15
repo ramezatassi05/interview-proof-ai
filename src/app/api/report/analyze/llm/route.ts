@@ -67,6 +67,8 @@ export async function POST(request: NextRequest) {
         }
       }, 10_000);
 
+      const t0 = Date.now();
+
       try {
         const { llmAnalysis } = await pipelineLLM(
           {
@@ -79,6 +81,9 @@ export async function POST(request: NextRequest) {
           report.prep_preferences_json || undefined
         );
 
+        console.log(`[pipeline:llm] Claude analysis completed in ${Date.now() - t0}ms`);
+
+        const tSave = Date.now();
         const analyzedState: PipelineState = {
           step: 'analyzed',
           extractedResume: state.extractedResume,
@@ -93,6 +98,8 @@ export async function POST(request: NextRequest) {
           .update({ pipeline_state_json: analyzedState })
           .eq('id', reportId);
 
+        console.log(`[pipeline:llm] State saved in ${Date.now() - tSave}ms`);
+
         if (updateError) {
           console.error('Failed to save pipeline state:', updateError);
           controller.enqueue(
@@ -102,15 +109,26 @@ export async function POST(request: NextRequest) {
           controller.enqueue(encoder.encode(JSON.stringify({ data: { step: 'analyzed' } })));
         }
       } catch (error) {
-        console.error('Pipeline LLM error:', error);
-        controller.enqueue(
-          encoder.encode(
-            JSON.stringify({
-              error: 'Analysis failed. Please try again.',
-            })
-          )
-        );
+        const elapsed = Date.now() - t0;
+        console.error(`[pipeline:llm] Failed after ${elapsed}ms:`, error);
+
+        // Classify error for actionable user-facing message
+        const errMsg = error instanceof Error ? error.message : String(error);
+        let userMessage = 'Analysis failed. Please try again.';
+
+        if (errMsg.includes('timeout') || errMsg.includes('ETIMEDOUT') || errMsg.includes('timed out')) {
+          userMessage = 'The AI model took too long to respond. Please try again — it usually works on the second attempt.';
+        } else if (errMsg.includes('rate_limit') || errMsg.includes('429')) {
+          userMessage = 'The AI service is temporarily at capacity. Please wait a minute and try again.';
+        } else if (errMsg.includes('max_tokens') || errMsg.includes('truncated')) {
+          userMessage = 'The analysis was too large to complete. Please try again with a shorter resume or job description.';
+        } else if (errMsg.includes('overloaded') || errMsg.includes('529')) {
+          userMessage = 'The AI service is temporarily overloaded. Please wait a minute and try again.';
+        }
+
+        controller.enqueue(encoder.encode(JSON.stringify({ error: userMessage })));
       } finally {
+        console.log(`[pipeline:llm] Total route time: ${Date.now() - t0}ms`);
         clearInterval(heartbeat);
         controller.close();
       }

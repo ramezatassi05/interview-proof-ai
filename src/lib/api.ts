@@ -138,7 +138,7 @@ const PIPELINE_ROUTES = ['/report/analyze', '/report/analyze/llm', '/report/reru
 class APIClient {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const isPipeline = PIPELINE_ROUTES.some((r) => endpoint.startsWith(r));
-    const timeoutMs = isPipeline ? 200_000 : 120_000;
+    const timeoutMs = isPipeline ? 330_000 : 120_000; // Pipeline: 5.5min (exceeds server 300s maxDuration)
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -176,7 +176,9 @@ class APIClient {
       if (err instanceof APIRequestError) throw err;
       if (err instanceof DOMException && err.name === 'AbortError') {
         throw new Error(
-          'The request is taking too long. Please check your connection and try again.'
+          isPipeline
+            ? 'The analysis is taking longer than expected. This can happen with complex resumes — please try again.'
+            : 'The request timed out. Please check your connection and try again.'
         );
       }
       if (err instanceof TypeError && err.message.includes('fetch')) {
@@ -221,7 +223,7 @@ class APIClient {
   /** Step 2: Run Claude LLM analysis (~35-55s). Uses streaming to avoid Vercel 60s timeout. */
   async runAnalysisLLM(reportId: string): Promise<{ data: { step: string } }> {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 200_000);
+    const timer = setTimeout(() => controller.abort(), 330_000); // 5.5min — exceeds server 300s maxDuration
 
     try {
       const res = await fetch(`${API_BASE}/report/analyze/llm`, {
@@ -249,17 +251,32 @@ class APIClient {
       }
 
       // Streaming response: strip heartbeat spaces, parse final JSON
-      const parsed = JSON.parse(text.trim());
-      if (parsed.error) {
-        throw new APIRequestError(parsed.error, 500, parsed);
+      const trimmed = text.trim();
+      if (!trimmed) {
+        throw new Error(
+          'The analysis server closed the connection before completing. Please try again.'
+        );
       }
 
-      return parsed;
+      let parsed: Record<string, unknown>;
+      try {
+        parsed = JSON.parse(trimmed);
+      } catch {
+        throw new Error(
+          'The analysis returned an incomplete response. This can happen under heavy load — please try again.'
+        );
+      }
+
+      if (parsed.error) {
+        throw new APIRequestError(parsed.error as string, 500, parsed as unknown as APIError);
+      }
+
+      return parsed as { data: { step: string } };
     } catch (err) {
       if (err instanceof APIRequestError) throw err;
       if (err instanceof DOMException && err.name === 'AbortError') {
         throw new Error(
-          'The request is taking too long. Please check your connection and try again.'
+          'The analysis is taking longer than expected. This can happen with complex resumes — please try again.'
         );
       }
       if (err instanceof TypeError && err.message.includes('fetch')) {

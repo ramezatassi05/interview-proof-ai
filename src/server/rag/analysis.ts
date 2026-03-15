@@ -768,24 +768,27 @@ export async function performAnalysis(
   let lastParsed: any = null;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const response = await anthropic.messages.create({
-        model: CLAUDE_MODELS.reasoning,
-        max_tokens: 16384,
-        temperature: 0.3, // Moderate temperature for wider score distribution
-        system: [
-          {
-            type: 'text' as const,
-            text: 'You are an expert interview analyst. Return only valid JSON matching the exact schema requested. Be thorough but honest in your assessment.',
-            cache_control: { type: 'ephemeral' as const },
-          },
-        ],
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-      });
+      const response = await anthropic.messages.create(
+        {
+          model: CLAUDE_MODELS.reasoning,
+          max_tokens: 16384,
+          temperature: 0.3, // Moderate temperature for wider score distribution
+          system: [
+            {
+              type: 'text' as const,
+              text: 'You are an expert interview analyst. Return only valid JSON matching the exact schema requested. Be thorough but honest in your assessment.',
+              cache_control: { type: 'ephemeral' as const },
+            },
+          ],
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        },
+        { timeout: 240_000 } // Defense-in-depth: 4 min hard cap (analysis prompt is ~730 lines)
+      );
 
       // Fail fast if Claude truncated the response
       if (response.stop_reason === 'max_tokens') {
