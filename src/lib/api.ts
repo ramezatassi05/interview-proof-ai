@@ -218,12 +218,59 @@ class APIClient {
     });
   }
 
-  /** Step 2: Run Claude LLM analysis (~35-55s) */
+  /** Step 2: Run Claude LLM analysis (~35-55s). Uses streaming to avoid Vercel 60s timeout. */
   async runAnalysisLLM(reportId: string): Promise<{ data: { step: string } }> {
-    return this.request('/report/analyze/llm', {
-      method: 'POST',
-      body: JSON.stringify({ reportId }),
-    });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 200_000);
+
+    try {
+      const res = await fetch(`${API_BASE}/report/analyze/llm`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reportId }),
+      });
+
+      const text = await res.text();
+
+      // Pre-stream errors (auth, validation) return normal JSON with non-200 status
+      if (!res.ok) {
+        let error: APIError;
+        try {
+          error = JSON.parse(text);
+        } catch {
+          throw new Error(
+            res.status === 504
+              ? 'The analysis timed out. This can happen with complex resumes. Please try again.'
+              : `Server returned an invalid response (HTTP ${res.status})`
+          );
+        }
+        throw new APIRequestError(error.error || 'Request failed', res.status, error);
+      }
+
+      // Streaming response: strip heartbeat spaces, parse final JSON
+      const parsed = JSON.parse(text.trim());
+      if (parsed.error) {
+        throw new APIRequestError(parsed.error, 500, parsed);
+      }
+
+      return parsed;
+    } catch (err) {
+      if (err instanceof APIRequestError) throw err;
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw new Error(
+          'The request is taking too long. Please check your connection and try again.'
+        );
+      }
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        throw new Error(
+          'Connection lost — the server may be busy or your network dropped. Please try again.'
+        );
+      }
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   /** Step 3: Deterministic scoring + store results (~5s) */

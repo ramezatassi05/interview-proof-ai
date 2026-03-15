@@ -745,7 +745,6 @@ export async function performAnalysis(
   priorEmployment?: PriorEmploymentSignal
 ): Promise<LLMAnalysis> {
   const anthropic = getAnthropicClient();
-  const deadline = Date.now() + 55_000; // 55s — leave 5s buffer for auth + DB writes within 60s route limit
 
   // Compute company difficulty for prompt calibration
   const companyDifficulty = computeCompanyDifficulty(
@@ -768,11 +767,6 @@ export async function performAnalysis(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let lastParsed: any = null;
   for (let attempt = 0; attempt <= retries; attempt++) {
-    if (attempt > 0 && Date.now() > deadline) {
-      throw new Error(
-        'Analysis deadline exceeded — not enough time remaining for another retry'
-      );
-    }
     try {
       const response = await anthropic.messages.create({
         model: CLAUDE_MODELS.reasoning,
