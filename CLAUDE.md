@@ -164,7 +164,7 @@ The project uses a **hybrid** approach — Claude for the main analysis (where r
 
 | Call Site | Provider | Model | Rationale |
 |-----------|----------|-------|-----------|
-| `performAnalysis` | **Claude** | Sonnet 4.6 | Complex 730-line prompt, benefits from superior reasoning + prompt caching |
+| `performAnalysis` | OpenAI | gpt-4o | Complex 730-line prompt, reliable response times (Claude caused timeouts) |
 | `extractResumeData` | OpenAI | gpt-4o-mini | Simple extraction, cost-sensitive |
 | `extractJDData` | OpenAI | gpt-4o-mini | Simple extraction, cost-sensitive |
 | `createEmbedding` | OpenAI | text-embedding-3-small | No Claude embedding alternative |
@@ -172,7 +172,7 @@ The project uses a **hybrid** approach — Claude for the main analysis (where r
 | `generateAnswerFeedback` | OpenAI | gpt-4o-mini | Simple scoring, cost-sensitive |
 | `generateBestAnswer` | OpenAI | gpt-4o-mini | Simple generation, cost-sensitive |
 
-Client modules: `src/lib/openai.ts` (OpenAI), `src/lib/anthropic.ts` (Claude)
+Client module: `src/lib/openai.ts`
 
 ### Analysis Pipeline (`src/server/pipeline.ts`)
 

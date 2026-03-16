@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { getAnthropicClient, CLAUDE_MODELS } from '@/lib/anthropic';
+import { getOpenAIClient, MODELS } from '@/lib/openai';
 import type {
   ExtractedResume,
   ExtractedJD,
@@ -744,7 +744,7 @@ export async function performAnalysis(
   retries = 1,
   priorEmployment?: PriorEmploymentSignal
 ): Promise<LLMAnalysis> {
-  const anthropic = getAnthropicClient();
+  const openai = getOpenAIClient();
 
   // Compute company difficulty for prompt calibration
   const companyDifficulty = computeCompanyDifficulty(
@@ -768,41 +768,38 @@ export async function performAnalysis(
   let lastParsed: any = null;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const response = await anthropic.messages.create(
+      const response = await openai.chat.completions.create(
         {
-          model: CLAUDE_MODELS.reasoning,
+          model: MODELS.reasoning,
           max_tokens: 16384,
           temperature: 0.3, // Moderate temperature for wider score distribution
-          system: [
-            {
-              type: 'text' as const,
-              text: 'You are an expert interview analyst. Return only valid JSON matching the exact schema requested. Be thorough but honest in your assessment.',
-              cache_control: { type: 'ephemeral' as const },
-            },
-          ],
+          response_format: { type: 'json_object' },
           messages: [
+            {
+              role: 'system',
+              content:
+                'You are an expert interview analyst. Return only valid JSON matching the exact schema requested. Be thorough but honest in your assessment.',
+            },
             {
               role: 'user',
               content: prompt,
             },
           ],
         },
-        { timeout: 240_000 } // Defense-in-depth: 4 min hard cap (analysis prompt is ~730 lines)
+        { timeout: 120_000 } // 2 min hard cap — OpenAI gpt-4o is faster than Claude
       );
 
-      // Fail fast if Claude truncated the response
-      if (response.stop_reason === 'max_tokens') {
-        throw new Error('Claude response truncated — max_tokens limit reached');
+      // Fail fast if response was truncated
+      if (response.choices[0]?.finish_reason === 'length') {
+        throw new Error('LLM response truncated — max_tokens limit reached');
       }
 
-      // Extract text from Claude response content blocks
-      const textBlock = response.content.find((block) => block.type === 'text');
-      const content = textBlock && 'text' in textBlock ? textBlock.text : null;
+      const content = response.choices[0]?.message?.content;
       if (!content) {
         throw new Error('Empty response from LLM');
       }
 
-      // Strip markdown code fences (```json ... ```) that Claude may wrap around JSON
+      // Strip markdown code fences if present (safety net — JSON mode should return clean JSON)
       const jsonContent = content.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
       const parsed = JSON.parse(jsonContent);
       lastParsed = parsed;

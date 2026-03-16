@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
           report.prep_preferences_json || undefined
         );
 
-        console.log(`[pipeline:llm] Claude analysis completed in ${Date.now() - t0}ms`);
+        console.log(`[pipeline:llm] LLM analysis completed in ${Date.now() - t0}ms`);
 
         const tSave = Date.now();
         const analyzedState: PipelineState = {
