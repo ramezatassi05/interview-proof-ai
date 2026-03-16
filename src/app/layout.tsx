@@ -6,6 +6,8 @@ import { CreditsWrapper } from '@/components/credits/CreditsWrapper';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { organizationJsonLd } from '@/lib/jsonld';
 import './globals.css';
 
 const sourceSerif = Source_Serif_4({
@@ -31,6 +33,19 @@ export const metadata: Metadata = {
   title: 'InterviewProof - Know What Will Sink You',
   description:
     'Job-specific interview diagnostic that identifies rejection risks and prioritizes fixes.',
+  openGraph: {
+    title: 'InterviewProof - Know What Will Sink You',
+    description:
+      'Job-specific interview diagnostic that identifies rejection risks and prioritizes fixes.',
+    type: 'website',
+    siteName: 'InterviewProof',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'InterviewProof - Know What Will Sink You',
+    description:
+      'Job-specific interview diagnostic that identifies rejection risks and prioritizes fixes.',
+  },
 };
 
 const themeScript = `
@@ -59,6 +74,10 @@ export default function RootLayout({
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
+        />
       </head>
       <body className={`${sourceSerif.variable} ${sourceSans.variable} ${sourceCode.variable} antialiased`}>
         <AuthProvider>
@@ -67,6 +86,7 @@ export default function RootLayout({
               <CreditsWrapper>{children}</CreditsWrapper>
               <Toaster />
               <Analytics />
+              <SpeedInsights />
             </TooltipProvider>
           </ThemeProvider>
         </AuthProvider>

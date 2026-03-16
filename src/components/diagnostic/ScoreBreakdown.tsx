@@ -1,6 +1,6 @@
 'use client';
 
-import type { ScoreBreakdown as ScoreBreakdownType } from '@/types';
+import type { ScoreBreakdown as ScoreBreakdownType, EvidenceContext } from '@/types';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Badge } from '@/components/ui/Badge';
 import { NumberTicker } from '@/components/ui/number-ticker';
@@ -9,7 +9,16 @@ import { Collapsible } from '@/components/ui/Collapsible';
 interface ScoreBreakdownProps {
   breakdown: ScoreBreakdownType;
   companyName?: string;
+  evidenceContext?: EvidenceContext;
 }
+
+const EVIDENCE_KEY_MAP: Record<string, keyof EvidenceContext['categoryEvidence']> = {
+  hardRequirementMatch: 'hardMatch',
+  evidenceDepth: 'evidenceDepth',
+  roundReadiness: 'roundReadiness',
+  resumeClarity: 'clarity',
+  companyProxy: 'companyProxy',
+};
 
 const CATEGORY_CONFIG: Record<string, { label: string; description: string; details: string }> = {
   hardRequirementMatch: {
@@ -44,7 +53,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; description: string; deta
   },
 };
 
-export function ScoreBreakdown({ breakdown, companyName }: ScoreBreakdownProps) {
+export function ScoreBreakdown({ breakdown, companyName, evidenceContext }: ScoreBreakdownProps) {
   const categories = [
     {
       key: 'hardRequirementMatch',
@@ -127,6 +136,26 @@ export function ScoreBreakdown({ breakdown, companyName }: ScoreBreakdownProps) 
                 className="border-b border-[var(--border-default)] last:border-b-0"
               >
                 <div className="pb-4 pl-1">
+                  {evidenceContext?.categoryEvidence[EVIDENCE_KEY_MAP[key]] && (
+                    <div className="mb-3 flex gap-2 rounded-lg bg-[var(--bg-elevated)] p-3">
+                      <svg
+                        className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent-primary)]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <p className="text-sm leading-relaxed text-[var(--text-primary)]">
+                        {evidenceContext.categoryEvidence[EVIDENCE_KEY_MAP[key]]}
+                      </p>
+                    </div>
+                  )}
                   <p className="text-sm text-[var(--text-secondary)] mb-2">{config.description}</p>
                   <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                     {config.details}

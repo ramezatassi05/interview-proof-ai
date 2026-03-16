@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { runAnalysisPipeline } from '@/server/pipeline';
+import { backfillQuestionPool } from '@/server/questions';
 import { grantCredits, GRANT_AMOUNTS } from '@/lib/credits';
 import type { RoundType } from '@/types';
 
@@ -74,25 +75,42 @@ export async function POST(request: NextRequest) {
     });
 
     // Store the run
-    const { error: runError } = await supabase.from('runs').insert({
-      report_id: reportId,
-      run_index: 0,
-      extracted_resume_json: pipelineResult.extractedResume,
-      extracted_jd_json: pipelineResult.extractedJD,
-      retrieved_context_ids: pipelineResult.retrievedContextIds,
-      llm_analysis_json: pipelineResult.llmAnalysis,
-      score_breakdown_json: pipelineResult.scoreBreakdown,
-      readiness_score: pipelineResult.readinessScore,
-      risk_band: pipelineResult.riskBand,
-      ranked_risks_json: pipelineResult.llmAnalysis.rankedRisks,
-      diagnostic_intelligence_json: pipelineResult.diagnosticIntelligence,
-      personalized_study_plan_json: pipelineResult.personalizedStudyPlan || null,
-    });
+    const { data: insertedRun, error: runError } = await supabase
+      .from('runs')
+      .insert({
+        report_id: reportId,
+        run_index: 0,
+        extracted_resume_json: pipelineResult.extractedResume,
+        extracted_jd_json: pipelineResult.extractedJD,
+        retrieved_context_ids: pipelineResult.retrievedContextIds,
+        llm_analysis_json: pipelineResult.llmAnalysis,
+        score_breakdown_json: pipelineResult.scoreBreakdown,
+        readiness_score: pipelineResult.readinessScore,
+        risk_band: pipelineResult.riskBand,
+        ranked_risks_json: pipelineResult.llmAnalysis.rankedRisks,
+        diagnostic_intelligence_json: pipelineResult.diagnosticIntelligence,
+        personalized_study_plan_json: pipelineResult.personalizedStudyPlan || null,
+      })
+      .select('id')
+      .single();
 
-    if (runError) {
+    if (runError || !insertedRun) {
       console.error('Failed to store run:', runError);
       return NextResponse.json({ error: 'Failed to store analysis results' }, { status: 500 });
     }
+
+    // Fire-and-forget: backfill question pool to 100+ in the DB
+    createServiceClient()
+      .then((serviceClient) =>
+        backfillQuestionPool(
+          insertedRun.id,
+          serviceClient,
+          pipelineResult.extractedResume,
+          pipelineResult.extractedJD,
+          report.round_type as RoundType
+        )
+      )
+      .catch((err) => console.error('Backfill launch failed:', err));
 
     // Grant upload bonus (non-blocking, idempotent via reportId)
     try {

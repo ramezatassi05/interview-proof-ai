@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { getOpenAIClient, MODELS } from '@/lib/openai';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type {
   ExtractedResume,
   ExtractedJD,
@@ -266,4 +267,73 @@ Return JSON:
   }
 
   throw new Error('Unexpected question generation failure');
+}
+
+/**
+ * Backfill the question pool for a run by generating batches and persisting to DB.
+ * Designed to be called fire-and-forget after the initial run insert.
+ */
+export async function backfillQuestionPool(
+  runId: string,
+  supabase: SupabaseClient,
+  resumeData: ExtractedResume,
+  jdData: ExtractedJD,
+  roundType: RoundType,
+  targetCount = 100
+): Promise<void> {
+  const BATCH_SIZE = 25;
+
+  try {
+    // Read current questions from the run
+    const { data: run, error: fetchError } = await supabase
+      .from('runs')
+      .select('llm_analysis_json')
+      .eq('id', runId)
+      .single();
+
+    if (fetchError || !run) {
+      console.error('[backfill] Failed to fetch run:', fetchError);
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const llmAnalysis = run.llm_analysis_json as any;
+    const questions: LLMAnalysis['interviewQuestions'] = llmAnalysis?.interviewQuestions ?? [];
+
+    while (questions.length < targetCount) {
+      const existingTexts = questions.map((q) => q.question);
+      const remaining = targetCount - questions.length;
+      const batchSize = Math.min(remaining, BATCH_SIZE);
+
+      const newQuestions = await generateMoreQuestions(
+        resumeData,
+        jdData,
+        roundType,
+        existingTexts,
+        batchSize
+      );
+
+      if (newQuestions.length === 0) break;
+      questions.push(...newQuestions);
+
+      // Persist after each batch
+      const { error: updateError } = await supabase
+        .from('runs')
+        .update({
+          llm_analysis_json: { ...llmAnalysis, interviewQuestions: questions },
+        })
+        .eq('id', runId);
+
+      if (updateError) {
+        console.error('[backfill] Failed to update run:', updateError);
+        return;
+      }
+
+      console.log(`[backfill] Run ${runId}: ${questions.length}/${targetCount} questions`);
+    }
+
+    console.log(`[backfill] Run ${runId}: complete with ${questions.length} questions`);
+  } catch (err) {
+    console.error('[backfill] Question backfill failed:', err);
+  }
 }

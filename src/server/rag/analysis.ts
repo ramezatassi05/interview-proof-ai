@@ -461,7 +461,7 @@ ${roundType === 'technical' ? `
    - Research methodology gaps, publication gaps, ML/AI depth, experimental design weaknesses, paper discussion readiness
    - De-prioritize: Soft skills, cultural fit, non-research technical frameworks
 ` : ''}
-3. **interviewQuestions** (15-20 questions, MINIMUM 10):
+3. **interviewQuestions** (25-30 questions, MINIMUM 20):
    Generate a focused set of technical and job-relevant questions based on skill gaps and experience gaps identified. Each question should relate to the candidate's ability to perform the job role. Include a mix of question types: technical deep-dives, behavioral/situational, case-based/problem-solving, and role-specific.
    IMPORTANT: Do NOT include any questions about citizenship, nationality, immigration status, age, religion, marital status, family planning, disability, or any other protected characteristics. These are illegal to ask in interviews and not relevant to technical assessment.
 
@@ -811,9 +811,9 @@ export async function performAnalysis(
         console.warn(`LLM returned only ${validated.rankedRisks.length} risks, expected 10-15`);
       }
 
-      if (validated.interviewQuestions.length < 15) {
+      if (validated.interviewQuestions.length < 20) {
         console.warn(
-          `LLM returned only ${validated.interviewQuestions.length} questions, expected 15-20`
+          `LLM returned only ${validated.interviewQuestions.length} questions, expected 25-30`
         );
       }
 

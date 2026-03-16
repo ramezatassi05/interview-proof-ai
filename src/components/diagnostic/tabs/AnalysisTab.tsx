@@ -38,7 +38,11 @@ export function AnalysisTab({
         <BlurFade delay={0.05}>
           <section>
             <h2 className="section-label mb-4">Signal Strength</h2>
-            <ScoreBreakdown breakdown={scoreBreakdown} companyName={companyName} />
+            <ScoreBreakdown
+              breakdown={scoreBreakdown}
+              companyName={companyName}
+              evidenceContext={evidenceContext}
+            />
           </section>
         </BlurFade>
       )}

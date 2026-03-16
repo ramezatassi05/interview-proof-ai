@@ -39,9 +39,7 @@ import {
   computePoolPercentile,
 } from './scoring/engine';
 import { generatePersonalizedStudyPlan } from './scoring/studyplan';
-import { generateMoreQuestions } from './questions';
-
-const TARGET_QUESTION_POOL = 50;
+export const TARGET_QUESTION_POOL = 100;
 
 export interface PipelineInput {
   resumeText: string;
@@ -171,27 +169,6 @@ export async function pipelineLLM(
   if (validationWarnings.length > 0) {
     console.warn(`[pipeline] Validation applied ${validationWarnings.length} fix(es)`);
   }
-
-  // Fire-and-forget question backfill
-  (async () => {
-    try {
-      while (llmAnalysis.interviewQuestions.length < TARGET_QUESTION_POOL) {
-        const existingTexts = llmAnalysis.interviewQuestions.map((q) => q.question);
-        const remaining = TARGET_QUESTION_POOL - llmAnalysis.interviewQuestions.length;
-        const newQuestions = await generateMoreQuestions(
-          extractedResume,
-          extractedJD,
-          roundType,
-          existingTexts,
-          Math.min(remaining, 50)
-        );
-        if (newQuestions.length === 0) break;
-        llmAnalysis.interviewQuestions.push(...newQuestions);
-      }
-    } catch (err) {
-      console.error('Question backfill failed, continuing with existing pool:', err);
-    }
-  })().catch(() => {});
 
   return { llmAnalysis };
 }

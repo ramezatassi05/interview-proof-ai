@@ -18,7 +18,9 @@ import { ReportPreviewShowcase } from '@/components/landing/ReportPreviewShowcas
 import { VerticalAIModelSection } from '@/components/landing/VerticalAIModelSection';
 import { BenefitsRisks } from '@/components/landing/BenefitsRisks';
 import { AdvantagesSection } from '@/components/landing/AdvantagesSection';
+import { InstitutionalTrust } from '@/components/landing/InstitutionalTrust';
 import { SecuritySection } from '@/components/landing/SecuritySection';
+import { AdvisoryBoard } from '@/components/landing/AdvisoryBoard';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { FAQ } from '@/components/landing/FAQ';
 import { LiveAnalysisFeed } from '@/components/landing/LiveAnalysisFeed';
@@ -77,16 +79,22 @@ function LandingPageContent() {
         {/* 10. Why InterviewProof */}
         <AdvantagesSection />
 
-        {/* 11. Security */}
+        {/* 11. Institutional Trust */}
+        <InstitutionalTrust />
+
+        {/* 12. Security */}
         <SecuritySection />
 
-        {/* 12. Pricing */}
+        {/* 13. Advisory Board */}
+        <AdvisoryBoard />
+
+        {/* 14. Pricing */}
         {!WAITLIST_MODE && <PricingSection />}
 
-        {/* 13. FAQ */}
+        {/* 15. FAQ */}
         <FAQ />
 
-        {/* 13. Footer CTA */}
+        {/* 16. Footer CTA */}
         <section
           id="footer-cta"
           className="py-20 lg:py-28 bg-[var(--bg-dark-band)]"
