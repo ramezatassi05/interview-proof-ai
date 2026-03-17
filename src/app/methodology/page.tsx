@@ -15,32 +15,33 @@ const PIPELINE_STEPS = [
     step: 1,
     title: 'Extract',
     description:
-      'Parse your resume and the job description into structured data -- skills, experience, requirements, keywords, seniority signals, and more.',
-    detail: 'AI-powered extraction identifies what you bring and what the role demands.',
+      'An LLM parses your resume and job description into typed schemas -- skills taxonomy, seniority signals, requirement classification, and experience mapping. This is semantic extraction, not keyword matching.',
+    detail:
+      'The extraction model understands context: "led a team of 8" is a leadership signal, not just a number. Every field is structured for downstream analysis.',
   },
   {
     step: 2,
     title: 'Retrieve',
     description:
-      'Match against a curated database of interview rubrics, scoring criteria, and recruiter playbooks using vector similarity search.',
+      'Your extracted profile is converted into 1536-dimensional embeddings and matched against a curated knowledge base of 50+ rubrics using pgvector cosine similarity search. This is Retrieval-Augmented Generation (RAG) -- grounding AI output in domain-specific data.',
     detail:
-      'Relevant rubric chunks are retrieved based on role type, round format, and company tier.',
+      'Retrieval is contextual: the system selects rubric chunks based on role type, round format, and company tier -- not random sampling.',
   },
   {
     step: 3,
     title: 'Analyze',
     description:
-      'AI-powered gap analysis compares your profile against the job requirements and retrieved rubrics to identify mismatches, missing evidence, and risk areas.',
+      'The LLM performs a gap analysis grounded in the retrieved rubric context (RAG), not just its general training knowledge. It compares your profile against real hiring criteria to identify mismatches, missing evidence, and risk areas.',
     detail:
-      'The analysis produces structured output: category scores, ranked risks, coaching insights, and recruiter signals.',
+      'Output is enforced via strict JSON schema -- structured category scores, ranked risks, coaching insights, and recruiter signals. No freeform text that can drift or hallucinate.',
   },
   {
     step: 4,
     title: 'Score',
     description:
-      'A deterministic scoring engine calculates your readiness score using weighted dimensions. The AI does not generate scores -- code does.',
+      'A deterministic scoring engine calculates your readiness score using weighted dimensions. The AI does not generate scores -- code does. This separation is an architectural decision, not an accident.',
     detail:
-      'Reproducible, auditable, and fair. Same inputs always produce the same score.',
+      'Reproducible, auditable, and fair. Same inputs always produce the same score. The scoring formula is versioned and stored alongside every result.',
   },
   {
     step: 5,
@@ -48,7 +49,7 @@ const PIPELINE_STEPS = [
     description:
       'Generate a comprehensive diagnostic: risk rankings, interview questions calibrated to your gaps, a study plan, coaching tips, and recruiter-perspective insights.',
     detail:
-      'Every recommendation is traced back to specific evidence gaps between your resume and the role.',
+      'Every recommendation traces back to specific retrieved rubric chunks and evidence gaps -- not hallucinated advice. You can see the data trail behind each insight.',
   },
 ];
 
@@ -149,8 +150,112 @@ export default function MethodologyPage() {
           </Container>
         </section>
 
-        {/* Scoring Dimensions */}
+        {/* RAG Architecture */}
         <section className="py-20 lg:py-28">
+          <Container size="md">
+            <div className="mx-auto max-w-3xl">
+              <div className="mb-6 text-center">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--accent-primary)]/20 bg-[var(--accent-primary)]/5 px-4 py-1.5 text-xs font-semibold text-[var(--accent-primary)]">
+                  Vertical AI Architecture
+                </span>
+              </div>
+              <h2 className="text-center text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
+                Retrieval-Augmented Generation
+              </h2>
+              <p className="mx-auto mt-4 max-w-xl text-center text-base text-[var(--text-secondary)]">
+                Most AI tools pass your resume straight to a language model and hope for the best.
+                InterviewProof uses a RAG architecture -- grounding every analysis in domain-specific
+                data, not generic LLM knowledge.
+              </p>
+
+              <div className="mt-12 rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6 sm:p-8">
+                <h3 className="text-base font-bold text-[var(--text-primary)]">How RAG works</h3>
+                <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+                  Before the AI analyzes your fit, it retrieves the most relevant hiring criteria from
+                  a curated knowledge base. This means the analysis is anchored to real rubrics and
+                  evaluation frameworks -- not improvised from the model&apos;s training data.
+                </p>
+
+                {/* Flow diagram */}
+                <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:gap-0">
+                  {[
+                    { label: 'Resume + JD', sub: 'Your inputs' },
+                    { label: 'Embeddings', sub: '1536-dim vectors' },
+                    { label: 'Vector Search', sub: 'pgvector cosine similarity' },
+                    { label: 'Retrieved Rubrics', sub: 'Domain-specific context' },
+                    { label: 'Grounded Analysis', sub: 'RAG-powered output' },
+                  ].map((node, i) => (
+                    <div key={node.label} className="flex items-center gap-3 sm:flex-1">
+                      <div className="flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3 text-center">
+                        <p className="text-xs font-bold text-[var(--text-primary)]">{node.label}</p>
+                        <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">{node.sub}</p>
+                      </div>
+                      {i < 4 && (
+                        <svg
+                          className="hidden h-4 w-4 shrink-0 text-[var(--text-muted)] sm:block"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M5 12h14" />
+                          <path d="M12 5l7 7-7 7" />
+                        </svg>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-8 rounded-lg border border-dashed border-[var(--border-default)] bg-[var(--bg-elevated)] p-4">
+                  <h4 className="text-xs font-bold text-[var(--text-primary)]">
+                    Why this matters for you
+                  </h4>
+                  <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+                    Generic AI can tell you to &quot;quantify your achievements.&quot; RAG-grounded AI
+                    can tell you that for a Senior Backend Engineer role at a Series B startup, the
+                    hiring rubric specifically weights system design ownership and on-call experience --
+                    and your resume is missing both. The difference is actionable specificity.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5 text-center">
+                  <p className="text-2xl font-bold text-[var(--accent-primary)]">50+</p>
+                  <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">
+                    Curated Rubrics
+                  </p>
+                  <p className="mt-1 text-[10px] text-[var(--text-muted)]">
+                    Hand-built, not scraped
+                  </p>
+                </div>
+                <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5 text-center">
+                  <p className="text-2xl font-bold text-[var(--accent-primary)]">1536</p>
+                  <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">
+                    Embedding Dimensions
+                  </p>
+                  <p className="mt-1 text-[10px] text-[var(--text-muted)]">
+                    High-fidelity semantic matching
+                  </p>
+                </div>
+                <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5 text-center">
+                  <p className="text-2xl font-bold text-[var(--accent-primary)]">0</p>
+                  <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">
+                    Hallucinated Insights
+                  </p>
+                  <p className="mt-1 text-[10px] text-[var(--text-muted)]">
+                    Every claim is evidence-backed
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Container>
+        </section>
+
+        {/* Scoring Dimensions */}
+        <section className="bg-[var(--bg-section-alt)] py-20 lg:py-28">
           <Container size="md">
             <div className="mx-auto max-w-3xl">
               <h2 className="text-center text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
@@ -223,7 +328,7 @@ export default function MethodologyPage() {
         </section>
 
         {/* The Deterministic Principle */}
-        <section className="bg-[var(--bg-section-alt)] py-20 lg:py-28">
+        <section className="py-20 lg:py-28">
           <Container size="md">
             <div className="mx-auto max-w-3xl">
               <h2 className="text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
@@ -328,7 +433,7 @@ export default function MethodologyPage() {
         </section>
 
         {/* Data Sources */}
-        <section className="py-20 lg:py-28">
+        <section className="bg-[var(--bg-section-alt)] py-20 lg:py-28">
           <Container size="md">
             <div className="mx-auto max-w-3xl">
               <h2 className="text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
@@ -337,7 +442,9 @@ export default function MethodologyPage() {
               <div className="mt-8 space-y-6 text-base leading-relaxed text-[var(--text-secondary)]">
                 <p>
                   InterviewProof&apos;s analysis is grounded in real interview data, not generic
-                  advice. Our retrieval system draws from:
+                  advice. Every data source below is embedded as 1536-dimensional vectors in a
+                  pgvector database, enabling contextual retrieval based on your specific role type,
+                  round format, and company tier.
                 </p>
               </div>
 
@@ -347,8 +454,9 @@ export default function MethodologyPage() {
                     50+ Hiring Rubrics
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
-                    Structured evaluation criteria used by companies across tiers, from startups to
-                    FAANG+, covering technical, behavioral, and case interview formats.
+                    Hand-curated evaluation criteria used by companies across tiers, from startups to
+                    FAANG+, covering technical, behavioral, and case interview formats. Each rubric is
+                    chunked and embedded for precise vector retrieval.
                   </p>
                 </div>
 
@@ -358,7 +466,8 @@ export default function MethodologyPage() {
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
                     Real screening criteria and evaluation frameworks that recruiters and hiring
-                    managers use to filter candidates at each stage.
+                    managers use to filter candidates at each stage. Embedded alongside rubrics so the
+                    system retrieves the right playbook for your specific interview context.
                   </p>
                 </div>
 
@@ -368,7 +477,7 @@ export default function MethodologyPage() {
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
                     Role-specific question archetypes mapped to competency areas, ensuring practice
-                    questions target your actual weak points.
+                    questions target your actual weak points -- not generic interview prep.
                   </p>
                 </div>
 
@@ -378,7 +487,8 @@ export default function MethodologyPage() {
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
                     Difficulty calibration data that adjusts expectations based on the company&apos;s
-                    hiring bar, interview style, and competitive landscape.
+                    hiring bar, interview style, and competitive landscape. Retrieval adapts
+                    dynamically to company tier.
                   </p>
                 </div>
               </div>
@@ -387,7 +497,7 @@ export default function MethodologyPage() {
         </section>
 
         {/* CTA */}
-        <section className="bg-[var(--bg-section-alt)] py-20 lg:py-28">
+        <section className="py-20 lg:py-28">
           <Container size="md">
             <div className="mx-auto max-w-3xl text-center">
               <h2 className="text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
