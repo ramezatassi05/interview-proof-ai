@@ -12,7 +12,7 @@ let stripeInstance: Stripe | null = null;
 
 export function getStripeClient(): Stripe {
   if (!stripeInstance) {
-    const secretKey = process.env.STRIPE_SECRET_KEY;
+    const secretKey = process.env.STRIPE_SECRET_KEY?.replace(/\\n$/, '').trim();
     if (!secretKey) {
       throw new Error('STRIPE_SECRET_KEY environment variable is not set');
     }
