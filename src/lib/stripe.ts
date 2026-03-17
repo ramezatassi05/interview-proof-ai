@@ -16,9 +16,18 @@ export function getStripeClient(): Stripe {
     if (!secretKey) {
       throw new Error('STRIPE_SECRET_KEY environment variable is not set');
     }
-    stripeInstance = new Stripe(secretKey, {
-      httpClient: Stripe.createNodeHttpClient(),
-    });
+
+    // Stripe v20 defaults to global.fetch, which Next.js patches and breaks.
+    // Try Node HTTP client first (works when the Node entry point is loaded).
+    // Fall back to fetch-based client if the worker/browser entry was loaded instead.
+    let httpClient: Stripe.HttpClient;
+    try {
+      httpClient = Stripe.createNodeHttpClient();
+    } catch {
+      httpClient = Stripe.createFetchHttpClient();
+    }
+
+    stripeInstance = new Stripe(secretKey, { httpClient });
   }
   return stripeInstance;
 }

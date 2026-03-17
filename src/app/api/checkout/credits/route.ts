@@ -3,6 +3,9 @@ import Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
 import { getStripeClient, getCreditBundle } from '@/lib/stripe';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     // Check authentication
@@ -71,13 +74,19 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error('Credits checkout session creation failed:', error);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    const errCause = error instanceof Error ? (error as { cause?: unknown }).cause : undefined;
+    console.error('Credits checkout failed:', {
+      message: errMsg,
+      type: error instanceof Stripe.errors.StripeError ? error.type : 'unknown',
+      cause: errCause,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
 
     if (error instanceof Stripe.errors.StripeError) {
       return NextResponse.json({ error: error.message }, { status: error.statusCode || 500 });
     }
 
-    const message = error instanceof Error ? error.message : 'Failed to create checkout session';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: errMsg }, { status: 500 });
   }
 }
