@@ -118,7 +118,7 @@ export function LiveAnalysisFeed({ lastReport }: LiveAnalysisFeedProps) {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
             {breakdownDimensions.map(({ key, label }) => {
               const rawScore = breakdown[key];
-              const score = Math.round(rawScore * 100);
+              const score = Math.round(rawScore);
               return (
                 <div
                   key={key}
