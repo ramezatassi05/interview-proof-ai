@@ -38,7 +38,8 @@ export async function GET() {
           run_index,
           extracted_jd_json,
           ranked_risks_json,
-          llm_analysis_json
+          llm_analysis_json,
+          score_breakdown_json
         )
       `
       )
@@ -51,7 +52,7 @@ export async function GET() {
     }
 
     // Transform reports data
-    const formattedReports = (reports || []).map((report) => {
+    const formattedReports = (reports || []).map((report, index) => {
       const latestRun = Array.isArray(report.runs)
         ? report.runs.sort((a, b) => b.run_index - a.run_index)[0]
         : null;
@@ -74,10 +75,13 @@ export async function GET() {
         readinessScore: latestRun?.readiness_score ?? null,
         riskBand: latestRun?.risk_band ?? null,
         companyName: (extractedJD?.companyName as string) ?? null,
+        jobTitle: (extractedJD?.jobTitle as string) ?? null,
         top3Risks: rankedRisks.slice(0, 3).map((r) => ({ title: r.title, severity: r.severity })),
         top3StudyPlan: studyPlan
           .slice(0, 3)
           .map((s) => ({ task: s.task, timeEstimateMinutes: s.timeEstimateMinutes })),
+        // Only include scoreBreakdown for the most recent report to keep payload small
+        scoreBreakdown: index === 0 ? (latestRun?.score_breakdown_json ?? null) : undefined,
       };
     });
 

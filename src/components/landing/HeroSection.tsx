@@ -17,52 +17,27 @@ import { BackgroundBeams } from '@/components/ui/background-beams';
 import { ShineBorder } from '@/components/ui/shine-border';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { useWaitlistMode } from '@/hooks/useWaitlistMode';
-
-interface LastReport {
-  id: string;
-  readinessScore: number;
-  riskBand: string;
-  roundType: string;
-  paidUnlocked: boolean;
-  createdAt: string;
-  companyName: string | null;
-  top3Risks: { title: string; severity: string }[];
-}
+import type { LandingReportData } from '@/types';
 
 interface HeroSectionProps {
+  lastReport?: LandingReportData | null;
   referralCode?: string;
 }
 
-export function HeroSection({ referralCode }: HeroSectionProps) {
+function getCardHeaderLabel(report: LandingReportData): string {
+  const { jobTitle, companyName } = report;
+  if (jobTitle && companyName) return `${jobTitle} @ ${companyName}`;
+  if (companyName) return `Readiness — ${companyName}`;
+  if (jobTitle) return jobTitle;
+  return 'Readiness Score';
+}
+
+export function HeroSection({ lastReport, referralCode }: HeroSectionProps) {
   const { user } = useAuth();
   const WAITLIST_MODE = useWaitlistMode();
-  const [lastReport, setLastReport] = useState<LastReport | null>(null);
   const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
 
   const ctaHref = WAITLIST_MODE ? '#' : user ? '/new' : '/auth/login?redirect=/new';
-
-  useEffect(() => {
-    if (!user) return;
-    fetch('/api/account')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!data?.data?.reports?.length) return;
-        const r = data.data.reports[0];
-        if (r.readinessScore != null) {
-          setLastReport({
-            id: r.id,
-            readinessScore: r.readinessScore,
-            riskBand: r.riskBand ?? 'Medium',
-            roundType: r.roundType,
-            paidUnlocked: r.paidUnlocked,
-            createdAt: r.createdAt,
-            companyName: r.companyName ?? null,
-            top3Risks: Array.isArray(r.top3Risks) ? r.top3Risks : [],
-          });
-        }
-      })
-      .catch(() => {});
-  }, [user]);
 
   useEffect(() => {
     if (!WAITLIST_MODE) return;
@@ -202,8 +177,10 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
                 </div>
                 {/* Content */}
                 <div className="p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-[var(--text-primary)]">Readiness Score</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate max-w-[200px] text-sm font-semibold text-[var(--text-primary)]">
+                      {getCardHeaderLabel(lastReport)}
+                    </span>
                     <Badge variant={riskBandToVariant(lastReport.riskBand as 'High' | 'Medium' | 'Low')}>
                       {lastReport.riskBand} Risk
                     </Badge>

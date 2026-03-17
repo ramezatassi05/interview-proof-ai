@@ -659,8 +659,21 @@ export interface PersonalizedStudyPlan {
 }
 
 // ============================================
-// Interview Insights Types
+// Landing Page Personalization Types
 // ============================================
+
+export interface LandingReportData {
+  id: string;
+  readinessScore: number;
+  riskBand: string;
+  roundType: string;
+  paidUnlocked: boolean;
+  createdAt: string;
+  companyName: string | null;
+  jobTitle: string | null;
+  top3Risks: { title: string; severity: string }[];
+  scoreBreakdown: ScoreBreakdown | null;
+}
 
 // ============================================
 // Waitlist Types

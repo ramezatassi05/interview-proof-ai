@@ -2,7 +2,10 @@
 
 import { Marquee } from '@/components/ui/marquee';
 import { NumberTicker } from '@/components/ui/number-ticker';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Container } from '@/components/layout/Container';
 import { cn } from '@/lib/utils';
+import type { LandingReportData } from '@/types';
 
 const entries = [
   { role: 'SWE', company: 'Google', score: 78, risk: 'Medium' as const },
@@ -85,7 +88,88 @@ function DiagnosticCard({ role, company, score, risk }: (typeof entries)[number]
   );
 }
 
-export function LiveAnalysisFeed() {
+interface LiveAnalysisFeedProps {
+  lastReport?: LandingReportData | null;
+}
+
+const breakdownDimensions = [
+  { key: 'hardRequirementMatch' as const, label: 'Hard Match' },
+  { key: 'evidenceDepth' as const, label: 'Evidence' },
+  { key: 'roundReadiness' as const, label: 'Readiness' },
+  { key: 'resumeClarity' as const, label: 'Clarity' },
+  { key: 'companyProxy' as const, label: 'Company Fit' },
+];
+
+export function LiveAnalysisFeed({ lastReport }: LiveAnalysisFeedProps) {
+  // Authenticated view with real score breakdown
+  if (lastReport?.scoreBreakdown) {
+    const breakdown = lastReport.scoreBreakdown;
+    const latestLabel = [lastReport.jobTitle, lastReport.companyName]
+      .filter(Boolean)
+      .join(' @ ');
+
+    return (
+      <section
+        id="live-feed"
+        className="border-y border-[var(--border-default)] bg-[var(--bg-secondary)] py-6"
+      >
+        <Container size="2xl">
+          {/* Score breakdown tiles */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
+            {breakdownDimensions.map(({ key, label }) => {
+              const rawScore = breakdown[key];
+              const score = Math.round(rawScore * 100);
+              return (
+                <div
+                  key={key}
+                  className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] px-4 py-3"
+                >
+                  <span className="text-xs font-medium text-[var(--text-muted)]">{label}</span>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-xl font-bold text-[var(--text-primary)]">
+                      <NumberTicker value={score} />
+                    </span>
+                    <span className="text-xs text-[var(--text-muted)]">/100</span>
+                  </div>
+                  <div className="mt-2">
+                    <ProgressBar value={score} size="sm" variant="auto" showValue={false} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Bottom stats row */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
+            {latestLabel && (
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-success)] opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--color-success)]" />
+                </span>
+                <span className="font-mono text-xs text-[var(--text-muted)]">
+                  Your latest:{' '}
+                  <span className="text-[var(--text-secondary)]">{latestLabel}</span>
+                </span>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[var(--accent-primary)]" />
+              <span className="font-mono text-xs text-[var(--text-muted)]">
+                <NumberTicker
+                  value={lastReport.readinessScore}
+                  className="text-[var(--text-secondary)]"
+                />{' '}
+                readiness
+              </span>
+            </div>
+          </div>
+        </Container>
+      </section>
+    );
+  }
+
+  // Default marquee view (unauthenticated or no data)
   return (
     <section
       id="live-feed"

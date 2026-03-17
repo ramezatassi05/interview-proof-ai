@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -32,12 +32,44 @@ import { InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
 import { ShineBorder } from '@/components/ui/shine-border';
 import { WaitlistForm } from '@/components/waitlist/WaitlistForm';
 import { useWaitlistMode } from '@/hooks/useWaitlistMode';
+import type { LandingReportData } from '@/types';
 
 function LandingPageContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const referralCode = searchParams.get('ref') || undefined;
   const WAITLIST_MODE = useWaitlistMode();
+  const [lastReport, setLastReport] = useState<LandingReportData | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    fetch('/api/account')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled) return;
+        if (!data?.data?.reports?.length) return;
+        const r = data.data.reports[0];
+        if (r.readinessScore != null) {
+          setLastReport({
+            id: r.id,
+            readinessScore: r.readinessScore,
+            riskBand: r.riskBand ?? 'Medium',
+            roundType: r.roundType,
+            paidUnlocked: r.paidUnlocked,
+            createdAt: r.createdAt,
+            companyName: r.companyName ?? null,
+            jobTitle: r.jobTitle ?? null,
+            top3Risks: Array.isArray(r.top3Risks) ? r.top3Risks : [],
+            scoreBreakdown: r.scoreBreakdown ?? null,
+          });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const ctaHref = WAITLIST_MODE ? '#' : user ? '/new' : '/auth/login?redirect=/new';
 
@@ -49,10 +81,10 @@ function LandingPageContent() {
 
       <main className="flex-1">
         {/* 1. Hero */}
-        <HeroSection referralCode={referralCode} />
+        <HeroSection lastReport={lastReport} referralCode={referralCode} />
 
         {/* 2. Live Analysis Feed — scrolling diagnostics */}
-        <LiveAnalysisFeed />
+        <LiveAnalysisFeed lastReport={lastReport} />
 
         {/* 3. Highlights */}
         <HighlightsSection />
