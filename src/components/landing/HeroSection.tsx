@@ -54,6 +54,13 @@ export function HeroSection({ lastReport, referralCode }: HeroSectionProps) {
 
   return (
     <section id="hero" className="relative overflow-hidden">
+      <style>{`
+        @keyframes slide-text {
+          0%, 15% { transform: translateX(0); }
+          45%, 55% { transform: translateX(calc(-100% + 200px)); }
+          85%, 100% { transform: translateX(0); }
+        }
+      `}</style>
       {/* Subtle gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent-primary)]/[0.03] to-transparent pointer-events-none" />
       <DotPattern className="opacity-30 [mask-image:linear-gradient(to_bottom,white,transparent)]" />
@@ -178,9 +185,14 @@ export function HeroSection({ lastReport, referralCode }: HeroSectionProps) {
                 {/* Content */}
                 <div className="p-6 space-y-4">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="truncate max-w-[200px] text-sm font-semibold text-[var(--text-primary)]">
-                      {getCardHeaderLabel(lastReport)}
-                    </span>
+                    <div className="overflow-hidden max-w-[200px]">
+                      <span
+                        className="inline-block whitespace-nowrap text-sm font-semibold text-[var(--text-primary)]"
+                        style={{ animation: 'slide-text 8s ease-in-out infinite' }}
+                      >
+                        {getCardHeaderLabel(lastReport)}
+                      </span>
+                    </div>
                     <Badge variant={riskBandToVariant(lastReport.riskBand as 'High' | 'Medium' | 'Low')}>
                       {lastReport.riskBand} Risk
                     </Badge>
