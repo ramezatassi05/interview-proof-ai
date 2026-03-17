@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
+import { grantCredits } from '@/lib/credits';
+
+// Promotional welcome credits for specific users
+const WELCOME_CREDIT_EMAILS: Record<string, number> = {
+  'business.codehype@gmail.com': 15,
+};
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -11,6 +17,28 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      // Grant promotional welcome credits if applicable
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        const email = user?.email?.toLowerCase();
+        const welcomeAmount = email ? WELCOME_CREDIT_EMAILS[email] : undefined;
+
+        if (user && welcomeAmount) {
+          const serviceClient = await createServiceClient();
+          await grantCredits({
+            supabase: serviceClient,
+            userId: user.id,
+            amount: welcomeAmount,
+            reason: 'welcome',
+            uniqueKey: user.id,
+          });
+        }
+      } catch {
+        // Non-blocking: welcome credits failure should not prevent login
+      }
+
       return NextResponse.redirect(`${origin}${redirect}`);
     }
   }

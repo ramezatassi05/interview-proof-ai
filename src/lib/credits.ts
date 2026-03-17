@@ -5,9 +5,10 @@ export const GRANT_AMOUNTS = {
   UPLOAD_BONUS: 1,
   FIRST_UNLOCK_BONUS: 2,
   REFERRAL_BONUS: 3,
+  WELCOME_BONUS: 15,
 } as const;
 
-export type GrantReason = 'upload' | 'first_unlock' | 'referral';
+export type GrantReason = 'upload' | 'first_unlock' | 'referral' | 'welcome';
 
 /**
  * Idempotent credit grant. Uses stripe_event_id column with convention
