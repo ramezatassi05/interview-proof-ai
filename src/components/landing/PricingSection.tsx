@@ -77,6 +77,7 @@ export function PricingSection() {
   const router = useRouter();
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [loadingBundle, setLoadingBundle] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleBuy = async (bundle: CreditBundle) => {
     if (!user) {
@@ -85,7 +86,7 @@ export function PricingSection() {
     }
 
     setLoadingBundle(bundle.id);
-    fireConfetti();
+    setError(null);
 
     try {
       const res = await fetch('/api/checkout/credits', {
@@ -95,10 +96,17 @@ export function PricingSection() {
       });
 
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
       }
-    } finally {
+
+      if (data.data?.url) {
+        fireConfetti();
+        window.location.href = data.data.url;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
       setLoadingBundle(null);
     }
   };
@@ -161,6 +169,12 @@ export function PricingSection() {
             costs {CREDITS_PER_REPORT} credits.
           </p>
         </div>
+
+        {error && (
+          <div className="mx-auto mt-6 max-w-md rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-center text-sm text-red-400">
+            {error}
+          </div>
+        )}
 
         <div
           className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-6 md:grid-cols-3 md:gap-5 lg:gap-8"
