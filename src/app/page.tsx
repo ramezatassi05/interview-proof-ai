@@ -81,17 +81,17 @@ function LandingPageContent() {
         {/* 10. Why InterviewProof */}
         <AdvantagesSection />
 
-        {/* 11. Institutional Trust */}
-        <InstitutionalTrust />
+        {/* 11. Institutional Trust — hidden until real partnerships confirmed */}
+        {/* <InstitutionalTrust /> */}
 
         {/* 12. Security */}
         <SecuritySection />
 
-        {/* 13. Advisory Board */}
-        <AdvisoryBoard />
+        {/* 13. Advisory Board — hidden until real advisors confirmed */}
+        {/* <AdvisoryBoard /> */}
 
-        {/* 13b. Press / Recognition */}
-        <PressSection />
+        {/* 13b. Press / Recognition — hidden until real press mentions */}
+        {/* <PressSection /> */}
 
         {/* 14. Pricing */}
         {!WAITLIST_MODE && <PricingSection />}
