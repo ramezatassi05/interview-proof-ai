@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import { z } from 'zod';
 import { createServiceClient } from '@/lib/supabase/server';
 import { isDisposableEmail } from '@/lib/waitlist';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const subscribeSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),
@@ -9,6 +11,16 @@ const subscribeSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const headersList = await headers();
+    const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const allowed = await checkRateLimit({
+      prefix: 'newsletter',
+      identifier: `ip:${ip}`,
+      maxRequests: 5,
+      windowSeconds: 3600,
+    });
+    if (!allowed) return rateLimitResponse(3600);
+
     const body = await req.json();
     const parsed = subscribeSchema.safeParse(body);
 

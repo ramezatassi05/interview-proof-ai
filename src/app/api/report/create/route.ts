@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import type { RoundType } from '@/types';
 
 const PrepPreferencesSchema = z.object({
@@ -42,6 +43,14 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const allowed = await checkRateLimit({
+      prefix: 'create',
+      identifier: `user:${user.id}`,
+      maxRequests: 10,
+      windowSeconds: 3600,
+    });
+    if (!allowed) return rateLimitResponse(3600);
 
     // Parse and validate request body
     const body = await request.json();

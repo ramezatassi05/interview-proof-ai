@@ -4,6 +4,8 @@ import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { runAnalysisPipeline } from '@/server/pipeline';
 import { backfillQuestionPool } from '@/server/questions';
 import { grantCredits, GRANT_AMOUNTS } from '@/lib/credits';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { auditLog } from '@/lib/audit';
 import type { RoundType } from '@/types';
 
 export const maxDuration = 180;
@@ -25,6 +27,16 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const allowed = await checkRateLimit({
+      prefix: 'analyze',
+      identifier: `user:${user.id}`,
+      maxRequests: 5,
+      windowSeconds: 3600,
+    });
+    if (!allowed) return rateLimitResponse(3600);
+
+    auditLog({ action: 'report.analyze_start', userId: user.id });
 
     // Parse and validate request body
     const body = await request.json();

@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
+import { auditLog } from '@/lib/audit';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -55,6 +56,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       console.error('Failed to update share settings:', updateError);
       return NextResponse.json({ error: 'Failed to update share settings' }, { status: 500 });
     }
+
+    auditLog({
+      action: 'report.share_toggle',
+      userId: user.id,
+      resourceId: reportId,
+      metadata: { enabled: !!enabled },
+    });
 
     const origin = request.headers.get('origin') || request.headers.get('host') || '';
     const baseUrl = origin.startsWith('http') ? origin : `https://${origin}`;

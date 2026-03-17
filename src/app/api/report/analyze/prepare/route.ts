@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { pipelinePrepare, type PipelineState } from '@/server/pipeline';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import type { RoundType } from '@/types';
 
 export const maxDuration = 60;
@@ -22,6 +23,14 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const allowed = await checkRateLimit({
+      prefix: 'analyze',
+      identifier: `user:${user.id}`,
+      maxRequests: 5,
+      windowSeconds: 3600,
+    });
+    if (!allowed) return rateLimitResponse(3600);
 
     const body = await request.json();
     const validation = PrepareSchema.safeParse(body);

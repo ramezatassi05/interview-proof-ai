@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { generateMoreQuestions } from '@/server/questions';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export const maxDuration = 30;
 
@@ -22,6 +23,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const allowed = await checkRateLimit({
+      prefix: 'questions',
+      identifier: `user:${user.id}`,
+      maxRequests: 20,
+      windowSeconds: 3600,
+    });
+    if (!allowed) return rateLimitResponse(3600);
 
     const body = await request.json();
     const parsed = RequestSchema.safeParse(body);

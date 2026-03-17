@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import { z } from 'zod';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const applySchema = z.object({
   name: z.string().min(1, 'Name is required.'),
@@ -12,6 +14,16 @@ const applySchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const headersList = await headers();
+    const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const allowed = await checkRateLimit({
+      prefix: 'ambassador',
+      identifier: `ip:${ip}`,
+      maxRequests: 3,
+      windowSeconds: 3600,
+    });
+    if (!allowed) return rateLimitResponse(3600);
+
     const body = await req.json();
     const parsed = applySchema.safeParse(body);
 

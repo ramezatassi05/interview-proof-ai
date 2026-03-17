@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,14 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const allowed = await checkRateLimit({
+      prefix: 'pdf',
+      identifier: `user:${user.id}`,
+      maxRequests: 10,
+      windowSeconds: 3600,
+    });
+    if (!allowed) return rateLimitResponse(3600);
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;

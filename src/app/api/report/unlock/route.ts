@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { CREDITS_PER_REPORT } from '@/lib/stripe';
 import { grantCredits, GRANT_AMOUNTS } from '@/lib/credits';
+import { auditLog } from '@/lib/audit';
 
 const UnlockReportSchema = z.object({
   reportId: z.string().uuid(),
@@ -114,6 +115,13 @@ export async function POST(request: NextRequest) {
       // TODO: Consider rolling back the credit spend
       return NextResponse.json({ error: 'Failed to unlock report' }, { status: 500 });
     }
+
+    auditLog({
+      action: 'report.unlock',
+      userId: user.id,
+      resourceId: reportId,
+      metadata: { creditsSpent: CREDITS_PER_REPORT },
+    });
 
     // Grant first-unlock bonus if this is the user's first unlock (non-blocking)
     try {

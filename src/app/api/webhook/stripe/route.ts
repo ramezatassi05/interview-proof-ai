@@ -4,6 +4,7 @@ import Stripe from 'stripe';
 import { getStripeClient, WEBHOOK_EVENTS } from '@/lib/stripe';
 import { createServiceClient } from '@/lib/supabase/server';
 import { grantCredits, lookupReferrerByCode, GRANT_AMOUNTS } from '@/lib/credits';
+import { auditLog } from '@/lib/audit';
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -45,6 +46,11 @@ export async function POST(request: Request) {
     const reportId = session.metadata?.report_id;
     const credits = parseInt(session.metadata?.credits || '1', 10);
     const purchaseType = session.metadata?.type; // 'credit_bundle' or undefined (legacy)
+
+    if (isNaN(credits) || credits < 1 || credits > 1000) {
+      console.error('Invalid credits metadata:', session.metadata?.credits);
+      return NextResponse.json({ error: 'Invalid credits metadata' }, { status: 400 });
+    }
 
     if (!userId) {
       console.error('Missing user_id in checkout session:', session.id);
@@ -92,6 +98,11 @@ export async function POST(request: Request) {
 
       // For credit bundle purchases, process referral if present
       if (purchaseType === 'credit_bundle') {
+        auditLog({
+          action: 'credits.purchase',
+          userId,
+          metadata: { credits, eventId: event.id, type: 'credit_bundle' },
+        });
         console.log('Successfully processed credit bundle purchase:', {
           userId,
           credits,
@@ -163,6 +174,12 @@ export async function POST(request: Request) {
         throw updateError;
       }
 
+      auditLog({
+        action: 'credits.purchase',
+        userId,
+        resourceId: reportId,
+        metadata: { credits, eventId: event.id, type: 'legacy' },
+      });
       console.log('Successfully processed payment:', {
         userId,
         reportId,
