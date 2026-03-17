@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { api, APIRequestError, GetReportResponse } from '@/lib/api';
-import { CREDITS_PER_REPORT } from '@/lib/stripe';
+import { CREDITS_PER_REPORT } from '@/lib/stripe-config';
 import { fireConfetti } from '@/components/ui/confetti';
 import { toast } from 'sonner';
 

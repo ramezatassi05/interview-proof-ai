@@ -10,8 +10,8 @@ import { SectionBadge } from '@/components/landing/SectionBadge';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { InsightOwlThinking } from '@/components/svg/InsightOwlMascot';
 import { fireConfetti } from '@/components/ui/confetti';
-import { CREDIT_BUNDLES, CREDITS_PER_REPORT } from '@/lib/stripe';
-import type { CreditBundle } from '@/lib/stripe';
+import { CREDIT_BUNDLES, CREDITS_PER_REPORT } from '@/lib/stripe-config';
+import type { CreditBundle } from '@/lib/stripe-config';
 
 const FEATURES: Record<string, string[]> = {
   starter: [

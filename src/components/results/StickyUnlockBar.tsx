@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useCredits } from '@/hooks/useCredits';
 import { api, APIRequestError } from '@/lib/api';
-import { CREDITS_PER_REPORT } from '@/lib/stripe';
+import { CREDITS_PER_REPORT } from '@/lib/stripe-config';
 import { Button } from '@/components/ui/Button';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { fireConfetti } from '@/components/ui/confetti';

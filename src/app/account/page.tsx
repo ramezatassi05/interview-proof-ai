@@ -13,7 +13,7 @@ import { LoadingOverlay } from '@/components/ui/Spinner';
 import { MagicCard } from '@/components/ui/magic-card';
 import { BlurFade } from '@/components/ui/blur-fade';
 import { NumberTicker } from '@/components/ui/number-ticker';
-import { CREDITS_PER_REPORT } from '@/lib/stripe';
+import { CREDITS_PER_REPORT } from '@/lib/stripe-config';
 import type { RiskBand, RoundType } from '@/types';
 
 interface ReportSummary {

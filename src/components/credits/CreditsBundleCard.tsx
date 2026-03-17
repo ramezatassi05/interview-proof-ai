@@ -1,6 +1,6 @@
 'use client';
 
-import { CREDITS_PER_REPORT } from '@/lib/stripe';
+import { CREDITS_PER_REPORT } from '@/lib/stripe-config';
 import { InsightOwlThinking } from '@/components/svg/InsightOwlMascot';
 import { BorderBeam } from '@/components/ui/border-beam';
 

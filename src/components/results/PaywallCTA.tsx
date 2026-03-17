@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useCredits } from '@/hooks/useCredits';
 import { api, APIRequestError } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
-import { CREDITS_PER_REPORT } from '@/lib/stripe';
+import { CREDITS_PER_REPORT } from '@/lib/stripe-config';
 import { InsightOwlThinking } from '@/components/svg/InsightOwlMascot';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { AnimatedShinyText } from '@/components/ui/animated-shiny-text';

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CreditsBundleCard } from './CreditsBundleCard';
-import { CREDIT_BUNDLES, CREDITS_PER_REPORT, type CreditBundle } from '@/lib/stripe';
+import { CREDIT_BUNDLES, CREDITS_PER_REPORT, type CreditBundle } from '@/lib/stripe-config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface CreditsPurchaseModalProps {
