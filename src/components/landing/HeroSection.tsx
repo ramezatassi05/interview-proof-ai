@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Container } from '@/components/layout/Container';
-import { Button } from '@/components/ui/Button';
 import { Badge, riskBandToVariant } from '@/components/ui/Badge';
 import { RadialScoreIndicator } from '@/components/ui/RadialScoreIndicator';
 import { InsightOwlMascot, InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
@@ -27,6 +26,7 @@ interface LastReport {
   paidUnlocked: boolean;
   createdAt: string;
   companyName: string | null;
+  top3Risks: { title: string; severity: string }[];
 }
 
 interface HeroSectionProps {
@@ -57,6 +57,7 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
             paidUnlocked: r.paidUnlocked,
             createdAt: r.createdAt,
             companyName: r.companyName ?? null,
+            top3Risks: Array.isArray(r.top3Risks) ? r.top3Risks : [],
           });
         }
       })
@@ -188,34 +189,27 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
             {lastReport ? (
               <div className="relative w-full max-w-sm rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden shadow-xl shadow-black/5">
                 <BorderBeam size={250} duration={12} delay={0} />
-
-                {/* Header */}
-                <div className="flex items-center justify-between border-b border-[var(--border-default)] bg-[var(--bg-secondary)] px-5 py-3">
-                  <span className="text-xs font-medium text-[var(--text-muted)]">
-                    Your Last Diagnostic
+                {/* Browser chrome header */}
+                <div className="flex items-center gap-2 border-b border-[var(--border-default)] px-5 py-3 bg-[var(--bg-secondary)]">
+                  <div className="flex gap-1.5">
+                    <span className="h-3 w-3 rounded-full bg-[#EF4444]/60" />
+                    <span className="h-3 w-3 rounded-full bg-[#F59E0B]/60" />
+                    <span className="h-3 w-3 rounded-full bg-[#22C55E]/60" />
+                  </div>
+                  <span className="ml-2 text-xs text-[var(--text-muted)]">
+                    interviewproof.ai/diagnostic
                   </span>
-                  <Badge variant={riskBandToVariant(lastReport.riskBand as 'High' | 'Medium' | 'Low')}>
-                    {lastReport.riskBand} Risk
-                  </Badge>
                 </div>
+                {/* Content */}
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-[var(--text-primary)]">Readiness Score</span>
+                    <Badge variant={riskBandToVariant(lastReport.riskBand as 'High' | 'Medium' | 'Low')}>
+                      {lastReport.riskBand} Risk
+                    </Badge>
+                  </div>
 
-                <div className="p-6">
-                  {/* Company & round info */}
-                  {(lastReport.companyName || lastReport.roundType) && (
-                    <div className="mb-4 text-center">
-                      {lastReport.companyName && (
-                        <p className="text-sm font-semibold text-[var(--text-primary)]">
-                          {lastReport.companyName}
-                        </p>
-                      )}
-                      <p className="mt-0.5 text-xs text-[var(--text-muted)] capitalize">
-                        {lastReport.roundType.replace(/_/g, ' ')} round
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Score */}
-                  <div className="flex justify-center py-2">
+                  <div className="flex justify-center py-3">
                     <RadialScoreIndicator
                       score={lastReport.readinessScore}
                       size="lg"
@@ -225,30 +219,29 @@ export function HeroSection({ referralCode }: HeroSectionProps) {
                     />
                   </div>
 
-                  {/* Date */}
-                  <p className="mt-3 text-center text-[11px] text-[var(--text-muted)]">
-                    Analyzed{' '}
-                    {new Date(lastReport.createdAt).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </p>
+                  {lastReport.top3Risks.length > 0 && (
+                    <div className="space-y-2.5">
+                      {lastReport.top3Risks.map((risk, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                          <span
+                            className={`h-2 w-2 rounded-full ${
+                              risk.severity === 'High'
+                                ? 'bg-[var(--color-danger)]'
+                                : 'bg-[var(--color-warning)]'
+                            }`}
+                          />
+                          <span className="text-sm text-[var(--text-secondary)]">{risk.title}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-                  {/* Actions */}
-                  <div className="mt-5 flex flex-col gap-2">
+                  <div className="pt-2">
                     <Link
                       href={`/r/${lastReport.id}${lastReport.paidUnlocked ? '/full' : ''}`}
-                      className="block"
+                      className="block h-10 rounded-lg bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 flex items-center justify-center text-sm font-semibold text-white hover:opacity-90 transition-opacity"
                     >
-                      <Button variant="accent" size="sm" className="w-full">
-                        View Full Report
-                      </Button>
-                    </Link>
-                    <Link href="/new" className="block">
-                      <Button variant="secondary" size="sm" className="w-full">
-                        Run New Analysis
-                      </Button>
+                      View Full Diagnostic
                     </Link>
                   </div>
                 </div>
