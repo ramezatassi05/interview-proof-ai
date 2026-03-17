@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Carousel Generator - interviewproof.ai</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            letter-spacing: 0.01em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .download-btn {
+            padding: 15px 40px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .download-btn:hover {
+            background: #0052a3;
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 540px;
+            height: 675px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin: 0 100px;
+        }
+
+        .carousel-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .slide {
+            position: absolute;
+            width: 540px;
+            height: 675px;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            background: #EBF5FB;
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .slide-header {
+            padding: 24px 34px;
+            text-align: right;
+        }
+
+        .slide-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #aaa;
+            line-height: 1.4;
+        }
+
+        .slide-content-wrapper {
+            flex: 1;
+            padding: 28px 42px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        .slide-footer {
+            padding: 22px 42px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .author-pic {
+            width: 46px;
+            height: 46px;
+            border-radius: 20%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .author-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .page-dots {
+            display: flex;
+            gap: 7px;
+        }
+
+        .page-dots .pdot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .page-dots .pdot.active {
+            background: #2E86C1;
+        }
+
+        /* Slide 1 */
+        .slide-1 h1 {
+            font-size: 40px;
+            font-weight: 900;
+            color: #1A1A1A;
+            line-height: 1.15;
+            margin-bottom: 22px;
+        }
+
+        .slide-1 .highlight {
+            color: #2E86C1;
+        }
+
+        .slide-1 .subtitle {
+            font-size: 22px;
+            color: #5D6D7E;
+            line-height: 1.5;
+        }
+
+        /* Content slides */
+        .slide-number {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #999;
+        }
+
+        .slide-content h2 {
+            font-size: 36px;
+            font-weight: 800;
+            color: #1A1A1A;
+            margin-bottom: 22px;
+            line-height: 1.2;
+        }
+
+        .slide-content .number {
+            font-size: 96px;
+            font-weight: 900;
+            color: #2E86C1;
+            opacity: 0.12;
+            position: absolute;
+            top: -90px;
+            left: 46px;
+        }
+
+        .slide-content p {
+            font-size: 22px;
+            color: #4A4A4A;
+            line-height: 1.5;
+            margin-bottom: 14px;
+        }
+
+        .slide-content .key-point {
+            font-weight: 700;
+            color: #1A1A1A;
+        }
+
+        /* CTA slide */
+        .slide-cta h2 {
+            font-size: 40px;
+            font-weight: 900;
+            color: #1A1A1A;
+            margin-bottom: 22px;
+            line-height: 1.2;
+        }
+
+        .slide-cta p {
+            font-size: 22px;
+            color: #4A4A4A;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .slide-cta .cta-text {
+            font-size: 20px;
+            color: #5D6D7E;
+            margin-top: 30px;
+            font-style: italic;
+        }
+
+        /* Owl-heading flex layout */
+        .owl-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .owl-heading h2 {
+            margin-bottom: 0;
+        }
+
+        /* Navigation */
+        .nav-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #333;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .nav-button:hover {
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .nav-button.prev {
+            left: 20px;
+        }
+
+        .nav-button.next {
+            right: 20px;
+        }
+
+        /* PDF slides */
+        .pdf-slides {
+            position: fixed;
+            left: -9999px;
+            top: 0;
+        }
+
+        .pdf-slide {
+            width: 1080px;
+            height: 1350px;
+            display: flex;
+            flex-direction: column;
+            background: #EBF5FB;
+            position: relative;
+        }
+
+        .pdf-slide .slide-header {
+            padding: 48px 68px;
+            text-align: right;
+        }
+
+        .pdf-slide .slide-header h3 {
+            font-size: 40px;
+            font-weight: 600;
+            color: #aaa;
+            line-height: 1.4;
+        }
+
+        .pdf-slide .slide-content-wrapper {
+            flex: 1;
+            padding: 56px 84px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        .pdf-slide .slide-footer {
+            padding: 44px 84px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pdf-slide .author-info {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .pdf-slide .author-pic {
+            width: 92px;
+            height: 92px;
+            border-radius: 20%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pdf-slide .author-name {
+            font-size: 40px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .pdf-slide .page-dots {
+            display: flex;
+            gap: 14px;
+        }
+
+        .pdf-slide .page-dots .pdot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .pdf-slide .page-dots .pdot.active {
+            background: #2E86C1;
+        }
+
+        .pdf-slide h1 {
+            font-size: 80px;
+            font-weight: 900;
+            color: #1A1A1A;
+            line-height: 1.15;
+            margin-bottom: 44px;
+        }
+
+        .pdf-slide h1 .highlight {
+            color: #2E86C1;
+        }
+
+        .pdf-slide .subtitle {
+            font-size: 44px;
+            color: #5D6D7E;
+            line-height: 1.5;
+        }
+
+        .pdf-slide .slide-number {
+            position: absolute;
+            top: 28px;
+            right: 28px;
+            font-size: 28px;
+            font-weight: 600;
+            color: #999;
+        }
+
+        .pdf-slide h2 {
+            font-size: 72px;
+            font-weight: 800;
+            color: #1A1A1A;
+            margin-bottom: 44px;
+            line-height: 1.2;
+        }
+
+        .pdf-slide .number {
+            font-size: 192px;
+            font-weight: 900;
+            color: #2E86C1;
+            opacity: 0.12;
+            position: absolute;
+            top: -180px;
+            left: 92px;
+        }
+
+        .pdf-slide p {
+            font-size: 44px;
+            color: #4A4A4A;
+            line-height: 1.5;
+            margin-bottom: 28px;
+        }
+
+        .pdf-slide .key-point {
+            font-weight: 700;
+            color: #1A1A1A;
+        }
+
+        .pdf-slide.slide-cta h2 {
+            font-size: 80px;
+        }
+
+        .pdf-slide.slide-cta p {
+            font-size: 44px;
+        }
+
+        .pdf-slide.slide-cta .cta-text {
+            font-size: 40px;
+            color: #5D6D7E;
+            margin-top: 60px;
+            font-style: italic;
+        }
+
+        /* Owl-heading for PDF */
+        .pdf-slide .owl-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+
+        .pdf-slide .owl-heading h2 {
+            margin-bottom: 0;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .loading-content h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .progress {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <button class="download-btn" onclick="downloadImages()">Download All Slides</button>
+</div>
+
+<div class="nav-container">
+    <button class="nav-button prev" onclick="changeSlide(-1)">&#8249;</button>
+
+    <div class="carousel-container">
+        <div class="carousel-wrapper">
+        <!-- Slide 1: Hook -->
+        <div class="slide slide-1 active" data-slide="1">
+            <div class="slide-header">
+                <h3></h3>
+            </div>
+            <div class="slide-content-wrapper">
+                <h1>This is what a recruiter <span class="highlight">actually writes about you</span> after reading your resume</h1>
+                <p class="subtitle">It takes them 7.4 seconds</p>
+            </div>
+            <div class="slide-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot active"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Credibility -->
+        <div class="slide slide-content" data-slide="2">
+            <div class="slide-header">
+                <h3></h3>
+            </div>
+            <div class="slide-content-wrapper">
+                <div class="number">01</div>
+                <div class="owl-heading">
+                    <!-- Owl: Talking/Presenting -->
+                    <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" width="80" height="80" style="flex-shrink:0">
+                        <defs>
+                            <radialGradient id="owl-p2-body" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#8B6914"/><stop offset="100%" stop-color="#6B4F10"/></radialGradient>
+                            <radialGradient id="owl-p2-wing" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#7A5C12"/><stop offset="100%" stop-color="#5A4210"/></radialGradient>
+                            <radialGradient id="owl-p2-chest" cx="50%" cy="30%" r="50%"><stop offset="0%" stop-color="#F5DEB3"/><stop offset="100%" stop-color="#DEB887"/></radialGradient>
+                            <radialGradient id="owl-p2-disc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFF8DC"/><stop offset="100%" stop-color="#F5DEB3"/></radialGradient>
+                        </defs>
+                        <ellipse cx="64" cy="78" rx="34" ry="38" fill="url(#owl-p2-body)"/>
+                        <ellipse cx="64" cy="88" rx="20" ry="22" fill="url(#owl-p2-chest)"/>
+                        <ellipse cx="38" cy="75" rx="14" ry="28" fill="url(#owl-p2-wing)" transform="rotate(-8 38 75)"/>
+                        <ellipse cx="98" cy="62" rx="14" ry="28" fill="url(#owl-p2-wing)" transform="rotate(35 98 62)"/>
+                        <path d="M108 46 L116 40 M110 50 L120 46 M111 55 L119 52" stroke="#5A4210" stroke-width="2" stroke-linecap="round" fill="none"/>
+                        <ellipse cx="64" cy="42" rx="26" ry="24" fill="url(#owl-p2-body)"/>
+                        <path d="M42 28 L38 12 L50 24" fill="#7A5C12"/>
+                        <path d="M86 28 L90 12 L78 24" fill="#7A5C12"/>
+                        <ellipse cx="52" cy="42" rx="14" ry="15" fill="url(#owl-p2-disc)"/>
+                        <ellipse cx="76" cy="42" rx="14" ry="15" fill="url(#owl-p2-disc)"/>
+                        <circle cx="52" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                        <circle cx="54" cy="39" r="4.5" fill="#1A1A1A"/>
+                        <circle cx="55.5" cy="37.5" r="1.5" fill="white"/>
+                        <circle cx="76" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                        <circle cx="78" cy="39" r="4.5" fill="#1A1A1A"/>
+                        <circle cx="79.5" cy="37.5" r="1.5" fill="white"/>
+                        <path d="M60 50 L64 54 L68 50" fill="#E8A020" stroke="#D4911A" stroke-width="1"/>
+                        <path d="M61 54 L64 58 L67 54" fill="#D4911A" opacity="0.8"/>
+                        <path d="M52 114 L48 122 M52 114 L52 122 M52 114 L56 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                        <path d="M76 114 L72 122 M76 114 L76 122 M76 114 L80 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    </svg>
+                    <h2>Here's what most people don't realize</h2>
+                </div>
+                <p>Recruiters don't just read your resume. They fill out a <span class="key-point">structured scorecard</span> rating you across 6 dimensions.</p>
+                <p><span class="key-point">33% decide in the first 90 seconds.</span> Your resume isn't a story — it's a data entry form for your rejection.</p>
+            </div>
+            <div class="slide-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span>
+                    <span class="pdot active"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Value - Hard Match -->
+        <div class="slide slide-content" data-slide="3">
+            <div class="slide-header">
+                <h3></h3>
+            </div>
+            <div class="slide-content-wrapper">
+                <div class="number">02</div>
+                <div class="owl-heading">
+                    <!-- Owl: Analyzing/Clipboard -->
+                    <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" width="80" height="80" style="flex-shrink:0">
+                        <defs>
+                            <radialGradient id="owl-p3-body" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#8B6914"/><stop offset="100%" stop-color="#6B4F10"/></radialGradient>
+                            <radialGradient id="owl-p3-wing" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#7A5C12"/><stop offset="100%" stop-color="#5A4210"/></radialGradient>
+                            <radialGradient id="owl-p3-chest" cx="50%" cy="30%" r="50%"><stop offset="0%" stop-color="#F5DEB3"/><stop offset="100%" stop-color="#DEB887"/></radialGradient>
+                            <radialGradient id="owl-p3-disc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFF8DC"/><stop offset="100%" stop-color="#F5DEB3"/></radialGradient>
+                        </defs>
+                        <ellipse cx="64" cy="78" rx="34" ry="38" fill="url(#owl-p3-body)"/>
+                        <ellipse cx="64" cy="88" rx="20" ry="22" fill="url(#owl-p3-chest)"/>
+                        <ellipse cx="36" cy="74" rx="14" ry="28" fill="url(#owl-p3-wing)" transform="rotate(5 36 74)"/>
+                        <rect x="16" y="62" width="24" height="32" rx="3" fill="#DEB887" stroke="#8B6914" stroke-width="1.5"/>
+                        <rect x="22" y="58" width="12" height="6" rx="2" fill="#8B6914"/>
+                        <line x1="20" y1="72" x2="36" y2="72" stroke="#8B6914" stroke-width="1" opacity="0.5"/>
+                        <line x1="20" y1="78" x2="36" y2="78" stroke="#8B6914" stroke-width="1" opacity="0.5"/>
+                        <line x1="20" y1="84" x2="32" y2="84" stroke="#8B6914" stroke-width="1" opacity="0.5"/>
+                        <ellipse cx="92" cy="74" rx="14" ry="28" fill="url(#owl-p3-wing)" transform="rotate(-5 92 74)"/>
+                        <line x1="100" y1="58" x2="108" y2="78" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+                        <polygon points="108,78 106,82 110,82" fill="#2E86C1"/>
+                        <ellipse cx="64" cy="42" rx="26" ry="24" fill="url(#owl-p3-body)"/>
+                        <path d="M42 28 L38 12 L50 24" fill="#7A5C12"/>
+                        <path d="M86 28 L90 12 L78 24" fill="#7A5C12"/>
+                        <ellipse cx="52" cy="42" rx="14" ry="15" fill="url(#owl-p3-disc)"/>
+                        <ellipse cx="76" cy="42" rx="14" ry="15" fill="url(#owl-p3-disc)"/>
+                        <circle cx="52" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                        <circle cx="50" cy="42" r="4.5" fill="#1A1A1A"/>
+                        <circle cx="49" cy="40.5" r="1.5" fill="white"/>
+                        <circle cx="76" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                        <circle cx="74" cy="42" r="4.5" fill="#1A1A1A"/>
+                        <circle cx="73" cy="40.5" r="1.5" fill="white"/>
+                        <path d="M60 50 L64 56 L68 50" fill="#E8A020" stroke="#D4911A" stroke-width="1"/>
+                        <path d="M52 114 L48 122 M52 114 L52 122 M52 114 L56 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                        <path d="M76 114 L72 122 M76 114 L76 122 M76 114 L80 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    </svg>
+                    <h2>They score your 'hard match' first</h2>
+                </div>
+                <p>Before anything else: do your skills <span class="key-point">literally match</span> the job posting? Not "sort of." <span class="key-point">Exact matches.</span></p>
+                <p>This single dimension is worth <span class="key-point">35% of whether you move forward.</span></p>
+            </div>
+            <div class="slide-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot active"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Value - Proof -->
+        <div class="slide slide-content" data-slide="4">
+            <div class="slide-header">
+                <h3></h3>
+            </div>
+            <div class="slide-content-wrapper">
+                <div class="number">03</div>
+                <div class="owl-heading">
+                    <!-- Owl: Peering/Investigating -->
+                    <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" width="80" height="80" style="flex-shrink:0">
+                        <defs>
+                            <radialGradient id="owl-p4-body" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#8B6914"/><stop offset="100%" stop-color="#6B4F10"/></radialGradient>
+                            <radialGradient id="owl-p4-wing" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#7A5C12"/><stop offset="100%" stop-color="#5A4210"/></radialGradient>
+                            <radialGradient id="owl-p4-chest" cx="50%" cy="30%" r="50%"><stop offset="0%" stop-color="#F5DEB3"/><stop offset="100%" stop-color="#DEB887"/></radialGradient>
+                            <radialGradient id="owl-p4-disc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFF8DC"/><stop offset="100%" stop-color="#F5DEB3"/></radialGradient>
+                        </defs>
+                        <ellipse cx="60" cy="78" rx="34" ry="38" fill="url(#owl-p4-body)" transform="rotate(5 60 78)"/>
+                        <ellipse cx="60" cy="88" rx="20" ry="22" fill="url(#owl-p4-chest)" transform="rotate(5 60 88)"/>
+                        <ellipse cx="34" cy="75" rx="14" ry="28" fill="url(#owl-p4-wing)" transform="rotate(-5 34 75)"/>
+                        <ellipse cx="88" cy="58" rx="14" ry="26" fill="url(#owl-p4-wing)" transform="rotate(25 88 58)"/>
+                        <path d="M82 42 Q88 36 96 38" stroke="#5A4210" stroke-width="3" stroke-linecap="round" fill="none"/>
+                        <ellipse cx="62" cy="42" rx="26" ry="24" fill="url(#owl-p4-body)"/>
+                        <path d="M40 28 L36 12 L48 24" fill="#7A5C12"/>
+                        <path d="M84 28 L88 12 L76 24" fill="#7A5C12"/>
+                        <ellipse cx="50" cy="42" rx="14" ry="15" fill="url(#owl-p4-disc)"/>
+                        <ellipse cx="74" cy="42" rx="14" ry="15" fill="url(#owl-p4-disc)"/>
+                        <circle cx="50" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                        <circle cx="52" cy="40" r="5" fill="#1A1A1A"/>
+                        <circle cx="53.5" cy="38.5" r="1.8" fill="white"/>
+                        <path d="M43 35 Q50 33 57 35" stroke="#5A4210" stroke-width="1.5" fill="none"/>
+                        <circle cx="74" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                        <circle cx="76" cy="40" r="5" fill="#1A1A1A"/>
+                        <circle cx="77.5" cy="38.5" r="1.8" fill="white"/>
+                        <path d="M67 35 Q74 33 81 35" stroke="#5A4210" stroke-width="1.5" fill="none"/>
+                        <path d="M58 50 L62 56 L66 50" fill="#E8A020" stroke="#D4911A" stroke-width="1"/>
+                        <path d="M48 114 L44 122 M48 114 L48 122 M48 114 L52 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                        <path d="M72 114 L68 122 M72 114 L72 122 M72 114 L76 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    </svg>
+                    <h2>Then they look for proof — not claims</h2>
+                </div>
+                <p>"Built scalable systems" means nothing without numbers. They want <span class="key-point">users, revenue, latency, uptime.</span></p>
+                <p>Zero outcomes? Flagged as <span class="key-point">"no evidence of impact."</span></p>
+            </div>
+            <div class="slide-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot active"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Value - Company Difficulty -->
+        <div class="slide slide-content" data-slide="5">
+            <div class="slide-header">
+                <h3></h3>
+            </div>
+            <div class="slide-content-wrapper">
+                <div class="number">04</div>
+                <div class="owl-heading">
+                    <!-- Owl: Confused/Overwhelmed -->
+                    <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" width="80" height="80" style="flex-shrink:0">
+                        <defs>
+                            <radialGradient id="owl-p5-body" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#8B6914"/><stop offset="100%" stop-color="#6B4F10"/></radialGradient>
+                            <radialGradient id="owl-p5-wing" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#7A5C12"/><stop offset="100%" stop-color="#5A4210"/></radialGradient>
+                            <radialGradient id="owl-p5-chest" cx="50%" cy="30%" r="50%"><stop offset="0%" stop-color="#F5DEB3"/><stop offset="100%" stop-color="#DEB887"/></radialGradient>
+                            <radialGradient id="owl-p5-disc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFF8DC"/><stop offset="100%" stop-color="#F5DEB3"/></radialGradient>
+                        </defs>
+                        <ellipse cx="64" cy="78" rx="34" ry="38" fill="url(#owl-p5-body)"/>
+                        <ellipse cx="64" cy="88" rx="20" ry="22" fill="url(#owl-p5-chest)"/>
+                        <ellipse cx="38" cy="75" rx="14" ry="28" fill="url(#owl-p5-wing)" transform="rotate(-8 38 75)"/>
+                        <ellipse cx="90" cy="52" rx="12" ry="24" fill="url(#owl-p5-wing)" transform="rotate(40 90 52)"/>
+                        <path d="M84 28 L86 22 M88 30 L91 24 M92 32 L96 27" stroke="#5A4210" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                        <ellipse cx="64" cy="42" rx="26" ry="24" fill="url(#owl-p5-body)"/>
+                        <path d="M42 28 L38 12 L50 24" fill="#7A5C12"/>
+                        <path d="M86 28 L90 12 L78 24" fill="#7A5C12"/>
+                        <ellipse cx="52" cy="42" rx="14" ry="15" fill="url(#owl-p5-disc)"/>
+                        <ellipse cx="76" cy="42" rx="14" ry="15" fill="url(#owl-p5-disc)"/>
+                        <path d="M44 30 Q52 26 58 32" stroke="#5A4210" stroke-width="2" fill="none"/>
+                        <path d="M70 32 Q76 26 84 30" stroke="#5A4210" stroke-width="2" fill="none"/>
+                        <circle cx="52" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                        <circle cx="52" cy="41" r="4" fill="#1A1A1A"/>
+                        <circle cx="53" cy="39.5" r="1.5" fill="white"/>
+                        <circle cx="76" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                        <circle cx="76" cy="41" r="4" fill="#1A1A1A"/>
+                        <circle cx="77" cy="39.5" r="1.5" fill="white"/>
+                        <path d="M60 50 L64 56 L68 50" fill="#E8A020" stroke="#D4911A" stroke-width="1"/>
+                        <text x="18" y="30" font-size="18" fill="#2E86C1" opacity="0.5" font-weight="700">?</text>
+                        <text x="106" y="18" font-size="14" fill="#2E86C1" opacity="0.4" font-weight="700">?</text>
+                        <text x="10" y="50" font-size="12" fill="#2E86C1" opacity="0.3" font-weight="700">?</text>
+                        <path d="M52 114 L48 122 M52 114 L52 122 M52 114 L56 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                        <path d="M76 114 L72 122 M76 114 L76 122 M76 114 L80 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    </svg>
+                    <h2>Company difficulty changes the bar</h2>
+                </div>
+                <p>A 70 at a startup might land you an offer. At Google, a 70 is the <span class="key-point">danger zone.</span></p>
+                <p>The hiring bar shifts by company tier — <span class="key-point">most people prep for the wrong one.</span></p>
+            </div>
+            <div class="slide-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot active"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Value - Rejection Note -->
+        <div class="slide slide-content" data-slide="6">
+            <div class="slide-header">
+                <h3></h3>
+            </div>
+            <div class="slide-content-wrapper">
+                <div class="number">05</div>
+                <div class="owl-heading">
+                    <!-- Owl: Deep Thinker -->
+                    <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" width="80" height="80" style="flex-shrink:0">
+                        <defs>
+                            <radialGradient id="owl-p6-body" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#8B6914"/><stop offset="100%" stop-color="#6B4F10"/></radialGradient>
+                            <radialGradient id="owl-p6-wing" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#7A5C12"/><stop offset="100%" stop-color="#5A4210"/></radialGradient>
+                            <radialGradient id="owl-p6-chest" cx="50%" cy="30%" r="50%"><stop offset="0%" stop-color="#F5DEB3"/><stop offset="100%" stop-color="#DEB887"/></radialGradient>
+                            <radialGradient id="owl-p6-disc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFF8DC"/><stop offset="100%" stop-color="#F5DEB3"/></radialGradient>
+                        </defs>
+                        <ellipse cx="64" cy="78" rx="34" ry="38" fill="url(#owl-p6-body)"/>
+                        <ellipse cx="64" cy="88" rx="20" ry="22" fill="url(#owl-p6-chest)"/>
+                        <ellipse cx="38" cy="75" rx="14" ry="28" fill="url(#owl-p6-wing)" transform="rotate(-8 38 75)"/>
+                        <ellipse cx="86" cy="62" rx="12" ry="24" fill="url(#owl-p6-wing)" transform="rotate(20 86 62)"/>
+                        <circle cx="80" cy="54" r="4" fill="url(#owl-p6-wing)"/>
+                        <ellipse cx="64" cy="42" rx="26" ry="24" fill="url(#owl-p6-body)"/>
+                        <path d="M42 28 L38 12 L50 24" fill="#7A5C12"/>
+                        <path d="M86 28 L90 12 L78 24" fill="#7A5C12"/>
+                        <ellipse cx="52" cy="42" rx="14" ry="15" fill="url(#owl-p6-disc)"/>
+                        <ellipse cx="76" cy="42" rx="14" ry="15" fill="url(#owl-p6-disc)"/>
+                        <circle cx="52" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                        <circle cx="49" cy="37" r="4.5" fill="#1A1A1A"/>
+                        <circle cx="48" cy="35.5" r="1.5" fill="white"/>
+                        <circle cx="76" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                        <circle cx="73" cy="37" r="4.5" fill="#1A1A1A"/>
+                        <circle cx="72" cy="35.5" r="1.5" fill="white"/>
+                        <path d="M60 50 L64 56 L68 50" fill="#E8A020" stroke="#D4911A" stroke-width="1"/>
+                        <circle cx="100" cy="24" r="8" fill="white" stroke="#ccc" stroke-width="1" opacity="0.7"/>
+                        <circle cx="92" cy="36" r="5" fill="white" stroke="#ccc" stroke-width="1" opacity="0.5"/>
+                        <circle cx="88" cy="44" r="3" fill="white" stroke="#ccc" stroke-width="1" opacity="0.4"/>
+                        <path d="M52 114 L48 122 M52 114 L52 122 M52 114 L56 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                        <path d="M76 114 L72 122 M76 114 L76 122 M76 114 L80 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    </svg>
+                    <h2>The rejection note you never see</h2>
+                </div>
+                <p>Recruiters write <span class="key-point">"lacks depth," "no quantified impact,"</span> "skills gap in system design."</p>
+                <p>You get ghosted. They get a scorecard of exactly why. <span class="key-point">The information exists — you just never see it.</span></p>
+            </div>
+            <div class="slide-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot active"></span>
+                    <span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: CTA -->
+        <div class="slide slide-cta" data-slide="7">
+            <div class="slide-header">
+                <h3></h3>
+            </div>
+            <div class="slide-content-wrapper">
+                <h2>Unless you check first</h2>
+                <p>There's a tool that runs your resume against the job posting and shows you the recruiter scorecard <span class="key-point">before they do.</span></p>
+                <p>60 seconds. Every red flag. Every gap.</p>
+                <p class="cta-text">I put the link in my bio if you want to see yours</p>
+            </div>
+            <div class="slide-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot"></span>
+                    <span class="pdot active"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <button class="nav-button next" onclick="changeSlide(1)">&#8250;</button>
+</div>
+
+<!-- Hidden slides for PDF generation -->
+<div class="pdf-slides">
+    <!-- PDF Slide 1 -->
+    <div class="pdf-slide" id="pdf-slide-1">
+        <div class="slide-header">
+            <h3></h3>
+        </div>
+        <div class="slide-content-wrapper">
+            <h1>This is what a recruiter <span class="highlight">actually writes about you</span> after reading your resume</h1>
+            <p class="subtitle">It takes them 7.4 seconds</p>
+        </div>
+        <div class="slide-footer">
+            <div class="author-info">
+                <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                <div class="author-name">interviewproof.ai</div>
+            </div>
+            <div class="page-dots">
+                <span class="pdot active"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Slide 2 -->
+    <div class="pdf-slide" id="pdf-slide-2">
+        <div class="slide-header">
+            <h3></h3>
+        </div>
+        <div class="slide-content-wrapper">
+            <div class="number">01</div>
+            <div class="owl-heading">
+                <!-- Owl: Talking/Presenting (PDF) -->
+                <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" width="160" height="160" style="flex-shrink:0">
+                    <defs>
+                        <radialGradient id="owl-pdf-p2-body" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#8B6914"/><stop offset="100%" stop-color="#6B4F10"/></radialGradient>
+                        <radialGradient id="owl-pdf-p2-wing" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#7A5C12"/><stop offset="100%" stop-color="#5A4210"/></radialGradient>
+                        <radialGradient id="owl-pdf-p2-chest" cx="50%" cy="30%" r="50%"><stop offset="0%" stop-color="#F5DEB3"/><stop offset="100%" stop-color="#DEB887"/></radialGradient>
+                        <radialGradient id="owl-pdf-p2-disc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFF8DC"/><stop offset="100%" stop-color="#F5DEB3"/></radialGradient>
+                    </defs>
+                    <ellipse cx="64" cy="78" rx="34" ry="38" fill="url(#owl-pdf-p2-body)"/>
+                    <ellipse cx="64" cy="88" rx="20" ry="22" fill="url(#owl-pdf-p2-chest)"/>
+                    <ellipse cx="38" cy="75" rx="14" ry="28" fill="url(#owl-pdf-p2-wing)" transform="rotate(-8 38 75)"/>
+                    <ellipse cx="98" cy="62" rx="14" ry="28" fill="url(#owl-pdf-p2-wing)" transform="rotate(35 98 62)"/>
+                    <path d="M108 46 L116 40 M110 50 L120 46 M111 55 L119 52" stroke="#5A4210" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    <ellipse cx="64" cy="42" rx="26" ry="24" fill="url(#owl-pdf-p2-body)"/>
+                    <path d="M42 28 L38 12 L50 24" fill="#7A5C12"/>
+                    <path d="M86 28 L90 12 L78 24" fill="#7A5C12"/>
+                    <ellipse cx="52" cy="42" rx="14" ry="15" fill="url(#owl-pdf-p2-disc)"/>
+                    <ellipse cx="76" cy="42" rx="14" ry="15" fill="url(#owl-pdf-p2-disc)"/>
+                    <circle cx="52" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                    <circle cx="54" cy="39" r="4.5" fill="#1A1A1A"/>
+                    <circle cx="55.5" cy="37.5" r="1.5" fill="white"/>
+                    <circle cx="76" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                    <circle cx="78" cy="39" r="4.5" fill="#1A1A1A"/>
+                    <circle cx="79.5" cy="37.5" r="1.5" fill="white"/>
+                    <path d="M60 50 L64 54 L68 50" fill="#E8A020" stroke="#D4911A" stroke-width="1"/>
+                    <path d="M61 54 L64 58 L67 54" fill="#D4911A" opacity="0.8"/>
+                    <path d="M52 114 L48 122 M52 114 L52 122 M52 114 L56 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    <path d="M76 114 L72 122 M76 114 L76 122 M76 114 L80 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                </svg>
+                <h2>Here's what most people don't realize</h2>
+            </div>
+            <p>Recruiters don't just read your resume. They fill out a <span class="key-point">structured scorecard</span> rating you across 6 dimensions.</p>
+            <p><span class="key-point">33% decide in the first 90 seconds.</span> Your resume isn't a story — it's a data entry form for your rejection.</p>
+        </div>
+        <div class="slide-footer">
+            <div class="author-info">
+                <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                <div class="author-name">interviewproof.ai</div>
+            </div>
+            <div class="page-dots">
+                <span class="pdot"></span>
+                <span class="pdot active"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Slide 3 -->
+    <div class="pdf-slide" id="pdf-slide-3">
+        <div class="slide-header">
+            <h3></h3>
+        </div>
+        <div class="slide-content-wrapper">
+            <div class="number">02</div>
+            <div class="owl-heading">
+                <!-- Owl: Analyzing/Clipboard (PDF) -->
+                <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" width="160" height="160" style="flex-shrink:0">
+                    <defs>
+                        <radialGradient id="owl-pdf-p3-body" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#8B6914"/><stop offset="100%" stop-color="#6B4F10"/></radialGradient>
+                        <radialGradient id="owl-pdf-p3-wing" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#7A5C12"/><stop offset="100%" stop-color="#5A4210"/></radialGradient>
+                        <radialGradient id="owl-pdf-p3-chest" cx="50%" cy="30%" r="50%"><stop offset="0%" stop-color="#F5DEB3"/><stop offset="100%" stop-color="#DEB887"/></radialGradient>
+                        <radialGradient id="owl-pdf-p3-disc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFF8DC"/><stop offset="100%" stop-color="#F5DEB3"/></radialGradient>
+                    </defs>
+                    <ellipse cx="64" cy="78" rx="34" ry="38" fill="url(#owl-pdf-p3-body)"/>
+                    <ellipse cx="64" cy="88" rx="20" ry="22" fill="url(#owl-pdf-p3-chest)"/>
+                    <ellipse cx="36" cy="74" rx="14" ry="28" fill="url(#owl-pdf-p3-wing)" transform="rotate(5 36 74)"/>
+                    <rect x="16" y="62" width="24" height="32" rx="3" fill="#DEB887" stroke="#8B6914" stroke-width="1.5"/>
+                    <rect x="22" y="58" width="12" height="6" rx="2" fill="#8B6914"/>
+                    <line x1="20" y1="72" x2="36" y2="72" stroke="#8B6914" stroke-width="1" opacity="0.5"/>
+                    <line x1="20" y1="78" x2="36" y2="78" stroke="#8B6914" stroke-width="1" opacity="0.5"/>
+                    <line x1="20" y1="84" x2="32" y2="84" stroke="#8B6914" stroke-width="1" opacity="0.5"/>
+                    <ellipse cx="92" cy="74" rx="14" ry="28" fill="url(#owl-pdf-p3-wing)" transform="rotate(-5 92 74)"/>
+                    <line x1="100" y1="58" x2="108" y2="78" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+                    <polygon points="108,78 106,82 110,82" fill="#2E86C1"/>
+                    <ellipse cx="64" cy="42" rx="26" ry="24" fill="url(#owl-pdf-p3-body)"/>
+                    <path d="M42 28 L38 12 L50 24" fill="#7A5C12"/>
+                    <path d="M86 28 L90 12 L78 24" fill="#7A5C12"/>
+                    <ellipse cx="52" cy="42" rx="14" ry="15" fill="url(#owl-pdf-p3-disc)"/>
+                    <ellipse cx="76" cy="42" rx="14" ry="15" fill="url(#owl-pdf-p3-disc)"/>
+                    <circle cx="52" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                    <circle cx="50" cy="42" r="4.5" fill="#1A1A1A"/>
+                    <circle cx="49" cy="40.5" r="1.5" fill="white"/>
+                    <circle cx="76" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                    <circle cx="74" cy="42" r="4.5" fill="#1A1A1A"/>
+                    <circle cx="73" cy="40.5" r="1.5" fill="white"/>
+                    <path d="M60 50 L64 56 L68 50" fill="#E8A020" stroke="#D4911A" stroke-width="1"/>
+                    <path d="M52 114 L48 122 M52 114 L52 122 M52 114 L56 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    <path d="M76 114 L72 122 M76 114 L76 122 M76 114 L80 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                </svg>
+                <h2>They score your 'hard match' first</h2>
+            </div>
+            <p>Before anything else: do your skills <span class="key-point">literally match</span> the job posting? Not "sort of." <span class="key-point">Exact matches.</span></p>
+            <p>This single dimension is worth <span class="key-point">35% of whether you move forward.</span></p>
+        </div>
+        <div class="slide-footer">
+            <div class="author-info">
+                <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                <div class="author-name">interviewproof.ai</div>
+            </div>
+            <div class="page-dots">
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot active"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Slide 4 -->
+    <div class="pdf-slide" id="pdf-slide-4">
+        <div class="slide-header">
+            <h3></h3>
+        </div>
+        <div class="slide-content-wrapper">
+            <div class="number">03</div>
+            <div class="owl-heading">
+                <!-- Owl: Peering/Investigating (PDF) -->
+                <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" width="160" height="160" style="flex-shrink:0">
+                    <defs>
+                        <radialGradient id="owl-pdf-p4-body" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#8B6914"/><stop offset="100%" stop-color="#6B4F10"/></radialGradient>
+                        <radialGradient id="owl-pdf-p4-wing" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#7A5C12"/><stop offset="100%" stop-color="#5A4210"/></radialGradient>
+                        <radialGradient id="owl-pdf-p4-chest" cx="50%" cy="30%" r="50%"><stop offset="0%" stop-color="#F5DEB3"/><stop offset="100%" stop-color="#DEB887"/></radialGradient>
+                        <radialGradient id="owl-pdf-p4-disc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFF8DC"/><stop offset="100%" stop-color="#F5DEB3"/></radialGradient>
+                    </defs>
+                    <ellipse cx="60" cy="78" rx="34" ry="38" fill="url(#owl-pdf-p4-body)" transform="rotate(5 60 78)"/>
+                    <ellipse cx="60" cy="88" rx="20" ry="22" fill="url(#owl-pdf-p4-chest)" transform="rotate(5 60 88)"/>
+                    <ellipse cx="34" cy="75" rx="14" ry="28" fill="url(#owl-pdf-p4-wing)" transform="rotate(-5 34 75)"/>
+                    <ellipse cx="88" cy="58" rx="14" ry="26" fill="url(#owl-pdf-p4-wing)" transform="rotate(25 88 58)"/>
+                    <path d="M82 42 Q88 36 96 38" stroke="#5A4210" stroke-width="3" stroke-linecap="round" fill="none"/>
+                    <ellipse cx="62" cy="42" rx="26" ry="24" fill="url(#owl-pdf-p4-body)"/>
+                    <path d="M40 28 L36 12 L48 24" fill="#7A5C12"/>
+                    <path d="M84 28 L88 12 L76 24" fill="#7A5C12"/>
+                    <ellipse cx="50" cy="42" rx="14" ry="15" fill="url(#owl-pdf-p4-disc)"/>
+                    <ellipse cx="74" cy="42" rx="14" ry="15" fill="url(#owl-pdf-p4-disc)"/>
+                    <circle cx="50" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                    <circle cx="52" cy="40" r="5" fill="#1A1A1A"/>
+                    <circle cx="53.5" cy="38.5" r="1.8" fill="white"/>
+                    <path d="M43 35 Q50 33 57 35" stroke="#5A4210" stroke-width="1.5" fill="none"/>
+                    <circle cx="74" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                    <circle cx="76" cy="40" r="5" fill="#1A1A1A"/>
+                    <circle cx="77.5" cy="38.5" r="1.8" fill="white"/>
+                    <path d="M67 35 Q74 33 81 35" stroke="#5A4210" stroke-width="1.5" fill="none"/>
+                    <path d="M58 50 L62 56 L66 50" fill="#E8A020" stroke="#D4911A" stroke-width="1"/>
+                    <path d="M48 114 L44 122 M48 114 L48 122 M48 114 L52 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    <path d="M72 114 L68 122 M72 114 L72 122 M72 114 L76 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                </svg>
+                <h2>Then they look for proof — not claims</h2>
+            </div>
+            <p>"Built scalable systems" means nothing without numbers. They want <span class="key-point">users, revenue, latency, uptime.</span></p>
+            <p>Zero outcomes? Flagged as <span class="key-point">"no evidence of impact."</span></p>
+        </div>
+        <div class="slide-footer">
+            <div class="author-info">
+                <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                <div class="author-name">interviewproof.ai</div>
+            </div>
+            <div class="page-dots">
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot active"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Slide 5 -->
+    <div class="pdf-slide" id="pdf-slide-5">
+        <div class="slide-header">
+            <h3></h3>
+        </div>
+        <div class="slide-content-wrapper">
+            <div class="number">04</div>
+            <div class="owl-heading">
+                <!-- Owl: Confused/Overwhelmed (PDF) -->
+                <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" width="160" height="160" style="flex-shrink:0">
+                    <defs>
+                        <radialGradient id="owl-pdf-p5-body" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#8B6914"/><stop offset="100%" stop-color="#6B4F10"/></radialGradient>
+                        <radialGradient id="owl-pdf-p5-wing" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#7A5C12"/><stop offset="100%" stop-color="#5A4210"/></radialGradient>
+                        <radialGradient id="owl-pdf-p5-chest" cx="50%" cy="30%" r="50%"><stop offset="0%" stop-color="#F5DEB3"/><stop offset="100%" stop-color="#DEB887"/></radialGradient>
+                        <radialGradient id="owl-pdf-p5-disc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFF8DC"/><stop offset="100%" stop-color="#F5DEB3"/></radialGradient>
+                    </defs>
+                    <ellipse cx="64" cy="78" rx="34" ry="38" fill="url(#owl-pdf-p5-body)"/>
+                    <ellipse cx="64" cy="88" rx="20" ry="22" fill="url(#owl-pdf-p5-chest)"/>
+                    <ellipse cx="38" cy="75" rx="14" ry="28" fill="url(#owl-pdf-p5-wing)" transform="rotate(-8 38 75)"/>
+                    <ellipse cx="90" cy="52" rx="12" ry="24" fill="url(#owl-pdf-p5-wing)" transform="rotate(40 90 52)"/>
+                    <path d="M84 28 L86 22 M88 30 L91 24 M92 32 L96 27" stroke="#5A4210" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                    <ellipse cx="64" cy="42" rx="26" ry="24" fill="url(#owl-pdf-p5-body)"/>
+                    <path d="M42 28 L38 12 L50 24" fill="#7A5C12"/>
+                    <path d="M86 28 L90 12 L78 24" fill="#7A5C12"/>
+                    <ellipse cx="52" cy="42" rx="14" ry="15" fill="url(#owl-pdf-p5-disc)"/>
+                    <ellipse cx="76" cy="42" rx="14" ry="15" fill="url(#owl-pdf-p5-disc)"/>
+                    <path d="M44 30 Q52 26 58 32" stroke="#5A4210" stroke-width="2" fill="none"/>
+                    <path d="M70 32 Q76 26 84 30" stroke="#5A4210" stroke-width="2" fill="none"/>
+                    <circle cx="52" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                    <circle cx="52" cy="41" r="4" fill="#1A1A1A"/>
+                    <circle cx="53" cy="39.5" r="1.5" fill="white"/>
+                    <circle cx="76" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                    <circle cx="76" cy="41" r="4" fill="#1A1A1A"/>
+                    <circle cx="77" cy="39.5" r="1.5" fill="white"/>
+                    <path d="M60 50 L64 56 L68 50" fill="#E8A020" stroke="#D4911A" stroke-width="1"/>
+                    <text x="18" y="30" font-size="18" fill="#2E86C1" opacity="0.5" font-weight="700">?</text>
+                    <text x="106" y="18" font-size="14" fill="#2E86C1" opacity="0.4" font-weight="700">?</text>
+                    <text x="10" y="50" font-size="12" fill="#2E86C1" opacity="0.3" font-weight="700">?</text>
+                    <path d="M52 114 L48 122 M52 114 L52 122 M52 114 L56 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    <path d="M76 114 L72 122 M76 114 L76 122 M76 114 L80 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                </svg>
+                <h2>Company difficulty changes the bar</h2>
+            </div>
+            <p>A 70 at a startup might land you an offer. At Google, a 70 is the <span class="key-point">danger zone.</span></p>
+            <p>The hiring bar shifts by company tier — <span class="key-point">most people prep for the wrong one.</span></p>
+        </div>
+        <div class="slide-footer">
+            <div class="author-info">
+                <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                <div class="author-name">interviewproof.ai</div>
+            </div>
+            <div class="page-dots">
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot active"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Slide 6 -->
+    <div class="pdf-slide" id="pdf-slide-6">
+        <div class="slide-header">
+            <h3></h3>
+        </div>
+        <div class="slide-content-wrapper">
+            <div class="number">05</div>
+            <div class="owl-heading">
+                <!-- Owl: Deep Thinker (PDF) -->
+                <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" width="160" height="160" style="flex-shrink:0">
+                    <defs>
+                        <radialGradient id="owl-pdf-p6-body" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#8B6914"/><stop offset="100%" stop-color="#6B4F10"/></radialGradient>
+                        <radialGradient id="owl-pdf-p6-wing" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#7A5C12"/><stop offset="100%" stop-color="#5A4210"/></radialGradient>
+                        <radialGradient id="owl-pdf-p6-chest" cx="50%" cy="30%" r="50%"><stop offset="0%" stop-color="#F5DEB3"/><stop offset="100%" stop-color="#DEB887"/></radialGradient>
+                        <radialGradient id="owl-pdf-p6-disc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFF8DC"/><stop offset="100%" stop-color="#F5DEB3"/></radialGradient>
+                    </defs>
+                    <ellipse cx="64" cy="78" rx="34" ry="38" fill="url(#owl-pdf-p6-body)"/>
+                    <ellipse cx="64" cy="88" rx="20" ry="22" fill="url(#owl-pdf-p6-chest)"/>
+                    <ellipse cx="38" cy="75" rx="14" ry="28" fill="url(#owl-pdf-p6-wing)" transform="rotate(-8 38 75)"/>
+                    <ellipse cx="86" cy="62" rx="12" ry="24" fill="url(#owl-pdf-p6-wing)" transform="rotate(20 86 62)"/>
+                    <circle cx="80" cy="54" r="4" fill="url(#owl-pdf-p6-wing)"/>
+                    <ellipse cx="64" cy="42" rx="26" ry="24" fill="url(#owl-pdf-p6-body)"/>
+                    <path d="M42 28 L38 12 L50 24" fill="#7A5C12"/>
+                    <path d="M86 28 L90 12 L78 24" fill="#7A5C12"/>
+                    <ellipse cx="52" cy="42" rx="14" ry="15" fill="url(#owl-pdf-p6-disc)"/>
+                    <ellipse cx="76" cy="42" rx="14" ry="15" fill="url(#owl-pdf-p6-disc)"/>
+                    <circle cx="52" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                    <circle cx="49" cy="37" r="4.5" fill="#1A1A1A"/>
+                    <circle cx="48" cy="35.5" r="1.5" fill="white"/>
+                    <circle cx="76" cy="40" r="8" fill="white" stroke="#5A4210" stroke-width="1.5"/>
+                    <circle cx="73" cy="37" r="4.5" fill="#1A1A1A"/>
+                    <circle cx="72" cy="35.5" r="1.5" fill="white"/>
+                    <path d="M60 50 L64 56 L68 50" fill="#E8A020" stroke="#D4911A" stroke-width="1"/>
+                    <circle cx="100" cy="24" r="8" fill="white" stroke="#ccc" stroke-width="1" opacity="0.7"/>
+                    <circle cx="92" cy="36" r="5" fill="white" stroke="#ccc" stroke-width="1" opacity="0.5"/>
+                    <circle cx="88" cy="44" r="3" fill="white" stroke="#ccc" stroke-width="1" opacity="0.4"/>
+                    <path d="M52 114 L48 122 M52 114 L52 122 M52 114 L56 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    <path d="M76 114 L72 122 M76 114 L76 122 M76 114 L80 122" stroke="#D4911A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                </svg>
+                <h2>The rejection note you never see</h2>
+            </div>
+            <p>Recruiters write <span class="key-point">"lacks depth," "no quantified impact,"</span> "skills gap in system design."</p>
+            <p>You get ghosted. They get a scorecard of exactly why. <span class="key-point">The information exists — you just never see it.</span></p>
+        </div>
+        <div class="slide-footer">
+            <div class="author-info">
+                <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                <div class="author-name">interviewproof.ai</div>
+            </div>
+            <div class="page-dots">
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot active"></span>
+                <span class="pdot"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Slide 7: CTA -->
+    <div class="pdf-slide slide-cta" id="pdf-slide-7">
+        <div class="slide-header">
+            <h3></h3>
+        </div>
+        <div class="slide-content-wrapper">
+            <h2>Unless you check first</h2>
+            <p>There's a tool that runs your resume against the job posting and shows you the recruiter scorecard <span class="key-point">before they do.</span></p>
+            <p>60 seconds. Every red flag. Every gap.</p>
+            <p class="cta-text">I put the link in my bio if you want to see yours</p>
+        </div>
+        <div class="slide-footer">
+            <div class="author-info">
+                <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                <div class="author-name">interviewproof.ai</div>
+            </div>
+            <div class="page-dots">
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot"></span>
+                <span class="pdot active"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loading">
+    <div class="loading-content">
+        <h3>Generating Images...</h3>
+        <p class="progress">This may take a few seconds</p>
+    </div>
+</div>
+
+<script>
+    let currentSlide = 1;
+    const totalSlides = 7;
+
+    function changeSlide(direction) {
+        currentSlide += direction;
+
+        if (currentSlide < 1) currentSlide = totalSlides;
+        if (currentSlide > totalSlides) currentSlide = 1;
+
+        updateSlides();
+    }
+
+    function goToSlide(slideNum) {
+        currentSlide = slideNum;
+        updateSlides();
+    }
+
+    function updateSlides() {
+        document.querySelectorAll('.slide').forEach((slide, index) => {
+            slide.classList.remove('active');
+            if (index + 1 === currentSlide) {
+                slide.classList.add('active');
+            }
+        });
+
+        document.querySelectorAll('.nav-dots .dot').forEach((dot, index) => {
+            dot.classList.remove('active');
+            if (index + 1 === currentSlide) {
+                dot.classList.add('active');
+            }
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
+
+    async function downloadImages() {
+        const loading = document.querySelector('.loading');
+        const progressText = document.querySelector('.progress');
+        loading.classList.add('active');
+
+        try {
+            if (typeof html2canvas === 'undefined') {
+                throw new Error('html2canvas library failed to load. Please check your internet connection.');
+            }
+
+            await document.fonts.ready;
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            for (let i = 1; i <= totalSlides; i++) {
+                progressText.textContent = `Processing slide ${i} of ${totalSlides}...`;
+
+                const slide = document.getElementById(`pdf-slide-${i}`);
+
+                if (!slide) {
+                    throw new Error(`Slide ${i} not found`);
+                }
+
+                const canvas = await html2canvas(slide, {
+                    width: 1080,
+                    height: 1350,
+                    scale: 2,
+                    backgroundColor: '#EBF5FB',
+                    logging: false,
+                    allowTaint: true,
+                    useCORS: true,
+                    letterRendering: true,
+                    windowWidth: 1080,
+                    windowHeight: 1350
+                });
+
+                await new Promise((resolve) => {
+                    canvas.toBlob((blob) => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `ig-carousel-slide-${i}.png`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    }, 'image/png');
+                });
+
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            progressText.textContent = 'All slides downloaded successfully!';
+            await new Promise(resolve => setTimeout(resolve, 1500));
+        } catch (error) {
+            console.error('Error generating images:', error);
+            alert('Error generating images: ' + error.message + '\n\nPlease check the browser console for more details.');
+        } finally {
+            progressText.textContent = 'This may take a few seconds';
+            loading.classList.remove('active');
+        }
+    }
+</script>
+
+</body>
+</html>
