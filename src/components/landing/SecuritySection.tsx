@@ -39,6 +39,15 @@ const SECURITY_FEATURES = [
     title: 'GDPR-Ready',
     description: 'Built with data protection principles in mind. You can request deletion of your data at any time.',
   },
+  {
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
+      </svg>
+    ),
+    title: 'FERPA-Aware',
+    description: 'Designed with student data protection in mind. No education records are stored or shared without consent.',
+  },
 ];
 
 export function SecuritySection() {
@@ -55,7 +64,7 @@ export function SecuritySection() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
           {SECURITY_FEATURES.map((feature, i) => (
             <BlurFade key={feature.title} inView delay={i * 0.08}>
               <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6 text-center">

@@ -21,9 +21,11 @@ import { AdvantagesSection } from '@/components/landing/AdvantagesSection';
 import { InstitutionalTrust } from '@/components/landing/InstitutionalTrust';
 import { SecuritySection } from '@/components/landing/SecuritySection';
 import { AdvisoryBoard } from '@/components/landing/AdvisoryBoard';
+import { PressSection } from '@/components/landing/PressSection';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { FAQ } from '@/components/landing/FAQ';
 import { LiveAnalysisFeed } from '@/components/landing/LiveAnalysisFeed';
+import { NewsletterSection } from '@/components/landing/NewsletterSection';
 import { ScrollProgressBar } from '@/components/landing/ScrollProgressBar';
 import { SectionNav } from '@/components/landing/SectionNav';
 import { InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
@@ -88,11 +90,17 @@ function LandingPageContent() {
         {/* 13. Advisory Board */}
         <AdvisoryBoard />
 
+        {/* 13b. Press / Recognition */}
+        <PressSection />
+
         {/* 14. Pricing */}
         {!WAITLIST_MODE && <PricingSection />}
 
         {/* 15. FAQ */}
         <FAQ />
+
+        {/* 15b. Newsletter */}
+        <NewsletterSection />
 
         {/* 16. Footer CTA */}
         <section

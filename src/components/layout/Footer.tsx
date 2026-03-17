@@ -9,8 +9,9 @@ const PRODUCT_LINKS = [
 ];
 
 const RESOURCE_LINKS = [
-  { label: 'Blog', href: '#' },
+  { label: 'Blog', href: '/blog' },
   { label: 'How It Works', href: '/methodology' },
+  { label: 'Ambassadors', href: '/ambassadors' },
 ];
 
 const LEGAL_LINKS = [

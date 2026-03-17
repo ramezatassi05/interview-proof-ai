@@ -54,3 +54,8 @@ tiktok-carousel-*.html
 
 # playwright MCP logs
 /.playwright-mcp/
+
+# marketing screenshots
+/screenshots/
+.auth-state.json
+.playwright-profile/
