@@ -75,12 +75,13 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    const errCause = error instanceof Error ? (error as { cause?: unknown }).cause : undefined;
+    const detail = error instanceof Stripe.errors.StripeError
+      ? (error as unknown as { detail?: Error }).detail
+      : undefined;
     console.error('Credits checkout failed:', {
       message: errMsg,
       type: error instanceof Stripe.errors.StripeError ? error.type : 'unknown',
-      cause: errCause,
-      stack: error instanceof Error ? error.stack : undefined,
+      detail: detail ? { message: detail.message, code: (detail as NodeJS.ErrnoException).code, stack: detail.stack } : undefined,
     });
 
     if (error instanceof Stripe.errors.StripeError) {
