@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { z } from 'zod';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { runAnalysisPipeline } from '@/server/pipeline';
@@ -111,18 +111,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to store analysis results' }, { status: 500 });
     }
 
-    // Fire-and-forget: backfill question pool to 100+ in the DB
-    createServiceClient()
-      .then((serviceClient) =>
-        backfillQuestionPool(
+    // Backfill question pool to 100+ in the DB (runs after response is sent)
+    after(async () => {
+      try {
+        const serviceClient = await createServiceClient();
+        await backfillQuestionPool(
           insertedRun.id,
           serviceClient,
           pipelineResult.extractedResume,
           pipelineResult.extractedJD,
           report.round_type as RoundType
-        )
-      )
-      .catch((err) => console.error('Backfill launch failed:', err));
+        );
+      } catch (err) {
+        console.error('Backfill launch failed:', err);
+      }
+    });
 
     // Grant upload bonus (non-blocking, idempotent via reportId)
     try {

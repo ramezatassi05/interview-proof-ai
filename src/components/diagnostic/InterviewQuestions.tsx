@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { splitTextWithHighlight } from '@/lib/highlight';
@@ -553,6 +553,8 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
   const [activeView, setActiveView] = useState<'practice' | 'saved'>('practice');
   const [activeHighlight, setActiveHighlight] = useState<ActiveHighlight | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [isBackfilling, setIsBackfilling] = useState(false);
+  const backfillRan = useRef(false);
 
   const handleCopyQuestion = useCallback((text: string, poolIndex: number) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -566,6 +568,40 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
   useEffect(() => {
     saveState(reportId, state);
   }, [reportId, state]);
+
+  // Client-side backfill: if pool < 100, auto-generate more questions in batches
+  useEffect(() => {
+    if (backfillRan.current) return;
+    if (state.allQuestions.length >= 100) return;
+    backfillRan.current = true;
+
+    const TARGET = 100;
+    const MAX_ITERATIONS = 3;
+
+    (async () => {
+      setIsBackfilling(true);
+      try {
+        let currentQuestions = state.allQuestions;
+        for (let i = 0; i < MAX_ITERATIONS && currentQuestions.length < TARGET; i++) {
+          const res = await api.generateMoreQuestions(reportId, {
+            existingQuestions: currentQuestions.map((q) => q.question),
+          });
+          const newQuestions = res.data.questions;
+          if (!newQuestions || newQuestions.length === 0) break;
+
+          setState((prev) => {
+            const updatedAll = [...prev.allQuestions, ...newQuestions];
+            currentQuestions = updatedAll;
+            return { ...prev, allQuestions: updatedAll };
+          });
+        }
+      } catch (err) {
+        console.error('Client-side backfill failed:', err);
+      } finally {
+        setIsBackfilling(false);
+      }
+    })();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const answeredCount = state.submittedIndices.filter((i) =>
     state.displayedIndices.includes(i)
@@ -880,7 +916,14 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
         <>
           <p className="mb-4 text-sm text-[var(--text-muted)]">
             Practice answering these questions, then get AI feedback on your responses. Pool:{' '}
-            {state.allQuestions.length} questions.
+            {state.allQuestions.length} questions
+            {isBackfilling && (
+              <span className="text-[var(--color-accent)] animate-pulse">
+                {' '}
+                (generating more...)
+              </span>
+            )}
+            .
           </p>
 
           {/* Question Cards */}

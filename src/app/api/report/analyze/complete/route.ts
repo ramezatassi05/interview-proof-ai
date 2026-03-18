@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { z } from 'zod';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { pipelineComplete, type PipelineState } from '@/server/pipeline';
@@ -7,7 +7,7 @@ import { grantCredits, GRANT_AMOUNTS } from '@/lib/credits';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import type { RoundType } from '@/types';
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 const CompleteSchema = z.object({
   reportId: z.string().uuid(),
@@ -104,18 +104,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to store analysis results' }, { status: 500 });
     }
 
-    // Fire-and-forget: backfill question pool to 100+ in the DB
-    createServiceClient()
-      .then((serviceClient) =>
-        backfillQuestionPool(
+    // Backfill question pool to 100+ in the DB (runs after response is sent)
+    after(async () => {
+      try {
+        const serviceClient = await createServiceClient();
+        await backfillQuestionPool(
           insertedRun.id,
           serviceClient,
           state.extractedResume,
           state.extractedJD,
           roundType
-        )
-      )
-      .catch((err) => console.error('Backfill launch failed:', err));
+        );
+      } catch (err) {
+        console.error('Backfill launch failed:', err);
+      }
+    });
 
     // Clear pipeline state
     await supabase

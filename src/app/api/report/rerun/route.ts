@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { runAnalysisPipeline, computeDelta, type PipelineOutput } from '@/server/pipeline';
+import { backfillQuestionPool } from '@/server/questions';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { auditLog } from '@/lib/audit';
 import type { RoundType, RiskBand } from '@/types';
@@ -107,24 +108,44 @@ export async function POST(request: NextRequest) {
     });
 
     // Store the rerun
-    const { error: runError } = await supabase.from('runs').insert({
-      report_id: reportId,
-      run_index: maxRunIndex + 1,
-      extracted_resume_json: pipelineResult.extractedResume,
-      extracted_jd_json: pipelineResult.extractedJD,
-      retrieved_context_ids: pipelineResult.retrievedContextIds,
-      llm_analysis_json: pipelineResult.llmAnalysis,
-      score_breakdown_json: pipelineResult.scoreBreakdown,
-      readiness_score: pipelineResult.readinessScore,
-      risk_band: pipelineResult.riskBand,
-      ranked_risks_json: pipelineResult.llmAnalysis.rankedRisks,
-      diagnostic_intelligence_json: pipelineResult.diagnosticIntelligence,
-    });
+    const { data: insertedRun, error: runError } = await supabase
+      .from('runs')
+      .insert({
+        report_id: reportId,
+        run_index: maxRunIndex + 1,
+        extracted_resume_json: pipelineResult.extractedResume,
+        extracted_jd_json: pipelineResult.extractedJD,
+        retrieved_context_ids: pipelineResult.retrievedContextIds,
+        llm_analysis_json: pipelineResult.llmAnalysis,
+        score_breakdown_json: pipelineResult.scoreBreakdown,
+        readiness_score: pipelineResult.readinessScore,
+        risk_band: pipelineResult.riskBand,
+        ranked_risks_json: pipelineResult.llmAnalysis.rankedRisks,
+        diagnostic_intelligence_json: pipelineResult.diagnosticIntelligence,
+      })
+      .select('id')
+      .single();
 
-    if (runError) {
+    if (runError || !insertedRun) {
       console.error('Failed to store rerun:', runError);
       return NextResponse.json({ error: 'Failed to store rerun results' }, { status: 500 });
     }
+
+    // Backfill question pool to 100+ in the DB (runs after response is sent)
+    after(async () => {
+      try {
+        const serviceClient = await createServiceClient();
+        await backfillQuestionPool(
+          insertedRun.id,
+          serviceClient,
+          pipelineResult.extractedResume,
+          pipelineResult.extractedJD,
+          report.round_type as RoundType
+        );
+      } catch (err) {
+        console.error('Backfill launch failed:', err);
+      }
+    });
 
     // Compute delta if there's a previous run
     let delta = null;
