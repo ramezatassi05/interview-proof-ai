@@ -15,7 +15,8 @@
     "prepare": "husky",
     "populate-embeddings": "npx tsx scripts/populate-embeddings.ts",
     "ingest-knowledge": "npx tsx scripts/ingest-knowledge.ts",
-    "seed-benchmarks": "npx tsx scripts/seed-benchmarks.ts"
+    "seed-benchmarks": "npx tsx scripts/seed-benchmarks.ts",
+    "scrape-sources": "npx tsx scripts/scrape-sources.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

@@ -46,6 +46,7 @@ next-env.d.ts
 
 # local dirs
 /my-video/
+/output/
 supabase/.temp/
 
 # generated carousel assets (marketing, not part of the app)

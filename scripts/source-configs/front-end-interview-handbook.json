@@ -1,0 +1,20 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "github",
+        "url": "https://github.com/yangshun/front-end-interview-handbook",
+        "paths": ["packages/quiz/questions", "contents", "questions"]
+      }
+    ],
+    "output_dir": "output/front-end-interview-handbook"
+  },
+  "interviewProof": {
+    "sourceId": "front-end-interview-handbook",
+    "sourceName": "Front End Interview Handbook",
+    "defaultDomain": "swe",
+    "defaultRoundTypes": ["technical"],
+    "companyName": null,
+    "qualityScore": 0.9
+  }
+}

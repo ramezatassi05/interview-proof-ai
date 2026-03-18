@@ -1,0 +1,20 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "github-json",
+        "url": "https://github.com/yangshun/tech-interview-handbook",
+        "paths": ["apps/website/contents/_components/QuestionGroups.json"]
+      }
+    ],
+    "output_dir": "output/grind-75"
+  },
+  "interviewProof": {
+    "sourceId": "grind-75",
+    "sourceName": "Grind 75",
+    "defaultDomain": "swe",
+    "defaultRoundTypes": ["technical"],
+    "companyName": null,
+    "qualityScore": 0.9
+  }
+}

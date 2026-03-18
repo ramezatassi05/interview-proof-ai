@@ -1,0 +1,30 @@
+{
+  "skillSeekers": {
+    "sources": [
+      {
+        "type": "github",
+        "url": "https://github.com/donnemartin/interactive-coding-challenges",
+        "paths": [
+          "arrays_strings",
+          "linked_lists",
+          "stacks_queues",
+          "graphs_trees",
+          "sorting_searching",
+          "recursion_dynamic",
+          "bit_manipulation",
+          "math_probability",
+          "online_judges"
+        ]
+      }
+    ],
+    "output_dir": "output/interactive-coding-challenges"
+  },
+  "interviewProof": {
+    "sourceId": "interactive-coding-challenges",
+    "sourceName": "Interactive Coding Challenges",
+    "defaultDomain": "swe",
+    "defaultRoundTypes": ["technical"],
+    "companyName": null,
+    "qualityScore": 0.85
+  }
+}
