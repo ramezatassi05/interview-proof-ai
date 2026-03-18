@@ -52,12 +52,6 @@ export const INTERVIEW_INSIGHTS: InterviewInsight[] = [
     text: 'Behavioral rounds have the lowest hire zone threshold at 72, but the industry average is only 58.',
   },
   {
-    id: 'hirezone-case',
-    icon: 'target',
-    category: 'hiring',
-    text: 'Case interview hire zones start at 75. Structured thinking and clear communication are key differentiators.',
-  },
-  {
     id: 'hirezone-gap-action',
     icon: 'trophy',
     category: 'strategy',
@@ -83,13 +77,6 @@ export const INTERVIEW_INSIGHTS: InterviewInsight[] = [
     category: 'scoring',
     text: 'In behavioral rounds, Communication Clarity carries 40% weight. How you tell your story matters as much as the story itself.',
   },
-  {
-    id: 'forecast-case-weight',
-    icon: 'brain',
-    category: 'scoring',
-    text: 'Case interviews split focus: 30% Hard Match, 30% Round Readiness, 20% Clarity, and 20% Company Fit.',
-  },
-
   // From trajectory.ts improvement rates
   {
     id: 'trajectory-fastest',
@@ -282,15 +269,13 @@ export const FALLBACK_AGGREGATE_STATS: AggregateInsightStats = {
     { band: 'Low', count: 125, percentage: 25 },
   ],
   roundTypeDistribution: [
-    { roundType: 'technical', count: 250, percentage: 50 },
+    { roundType: 'technical', count: 300, percentage: 60 },
     { roundType: 'behavioral', count: 150, percentage: 30 },
-    { roundType: 'case', count: 75, percentage: 15 },
-    { roundType: 'finance', count: 25, percentage: 5 },
+    { roundType: 'research', count: 50, percentage: 10 },
   ],
   avgScoreByRound: [
     { roundType: 'technical', avgScore: 55 },
     { roundType: 'behavioral', avgScore: 62 },
-    { roundType: 'case', avgScore: 57 },
-    { roundType: 'finance', avgScore: 54 },
+    { roundType: 'research', avgScore: 56 },
   ],
 };

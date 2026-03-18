@@ -21,11 +21,6 @@ const ROUND_CONFIG: Record<string, { label: string; color: string; bgColor: stri
     color: 'bg-[var(--color-tier-1)]',
     bgColor: 'bg-[var(--color-tier-1-muted)]',
   },
-  case: {
-    label: 'Case Study',
-    color: 'bg-[var(--color-warning)]',
-    bgColor: 'bg-[var(--color-warning-muted)]',
-  },
   research: {
     label: 'Research / ML',
     color: 'bg-[var(--color-tier-2)]',
@@ -47,11 +42,6 @@ const ROUND_EXPLANATIONS: Record<
     measures: 'Communication, teamwork, leadership, and cultural fit',
     typicalQuestions: 'Tell me about a time..., How do you handle conflict...',
     evaluatedBy: 'Your clarity of expression + demonstrated impact in past roles',
-  },
-  case: {
-    measures: 'Structured thinking, problem decomposition, business judgment',
-    typicalQuestions: 'How would you approach..., Estimate the market size...',
-    evaluatedBy: 'Your analytical clarity + ability to structure ambiguous problems',
   },
   research: {
     measures: 'Research methodology, ML fundamentals, and depth of technical knowledge',

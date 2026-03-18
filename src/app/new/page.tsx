@@ -271,14 +271,14 @@ export default function NewReportPage() {
                   <CardHeader>
                     <CardTitle>Job Description</CardTitle>
                     <CardDescription>
-                      Paste the full job posting you&apos;re targeting
+                      Paste the full job description from LinkedIn or any job board
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Textarea
                       value={jobDescriptionText}
                       onChange={(e) => setJobDescriptionText(e.target.value)}
-                      placeholder="Paste the job description here..."
+                      placeholder="Paste the full job description from LinkedIn, Indeed, or any source..."
                       rows={10}
                       showCount
                       error={errors.jobDescriptionText}

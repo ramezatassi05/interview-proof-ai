@@ -19,7 +19,7 @@ interface CompanyEntry {
   aliases?: string[];
 }
 
-// ~80 companies across 6 tiers
+// ~70 companies across 5 tiers
 const COMPANY_DATABASE: Record<string, CompanyEntry> = {
   // ── FAANG_PLUS ──────────────────────────────────────────────────────
   google: {
@@ -283,98 +283,15 @@ const COMPANY_DATABASE: Record<string, CompanyEntry> = {
       'Cloud data platform focus. System design and database internals knowledge tested thoroughly.',
   },
 
-  // ── TOP_FINANCE ─────────────────────────────────────────────────────
-  'goldman sachs': {
-    tier: 'TOP_FINANCE',
-    difficultyMultiplier: 1.35,
-    internMultiplier: 1.2,
-    acceptanceRateEstimate: '2-4%',
-    competitionLevel: 'very_high',
-    interviewBarDescription:
-      'Superday format with multiple rounds. Tests financial knowledge, problem-solving, and cultural fit. Engineering roles test system design and coding.',
-  },
-  'jp morgan': {
-    tier: 'TOP_FINANCE',
-    difficultyMultiplier: 1.3,
-    internMultiplier: 1.2,
-    acceptanceRateEstimate: '3-5%',
-    competitionLevel: 'very_high',
-    interviewBarDescription:
-      'Structured process with HireVue and superday. Tests financial acumen, technical skills, and leadership potential.',
-    aliases: ['jpmorgan', 'jpmorgan chase', 'j.p. morgan'],
-  },
-  'morgan stanley': {
-    tier: 'TOP_FINANCE',
-    difficultyMultiplier: 1.3,
-    internMultiplier: 1.2,
-    acceptanceRateEstimate: '3-5%',
-    competitionLevel: 'very_high',
-    interviewBarDescription:
-      'Technology division has strong coding bars. Finance roles test market knowledge and analytical thinking.',
-  },
-  blackstone: {
-    tier: 'TOP_FINANCE',
-    difficultyMultiplier: 1.4,
-    internMultiplier: 1.25,
-    acceptanceRateEstimate: '1-3%',
-    competitionLevel: 'extreme',
-    interviewBarDescription:
-      'PE/investment focus with extreme selectivity. Tests financial modeling, deal analysis, and leadership under pressure.',
-  },
-  blackrock: {
-    tier: 'TOP_FINANCE',
-    difficultyMultiplier: 1.3,
-    internMultiplier: 1.15,
-    acceptanceRateEstimate: '3-5%',
-    competitionLevel: 'very_high',
-    interviewBarDescription:
-      'Asset management focus. Tests quantitative skills, market understanding, and Aladdin platform knowledge for tech roles.',
-  },
+  // ── BIG_TECH (reclassified from TOP_FINANCE) ───────────────────────
   bloomberg: {
-    tier: 'TOP_FINANCE',
+    tier: 'BIG_TECH',
     difficultyMultiplier: 1.3,
     internMultiplier: 1.15,
     acceptanceRateEstimate: '3-5%',
     competitionLevel: 'very_high',
     interviewBarDescription:
-      'Terminal-centric culture. Strong C++ coding bar for engineering. Tests data structure knowledge and financial data processing.',
-  },
-  'bank of america': {
-    tier: 'TOP_FINANCE',
-    difficultyMultiplier: 1.25,
-    internMultiplier: 1.15,
-    acceptanceRateEstimate: '4-6%',
-    competitionLevel: 'very_high',
-    interviewBarDescription:
-      'Structured interview process with behavioral and technical rounds. Values teamwork and client-focused mindset.',
-    aliases: ['bofa'],
-  },
-  barclays: {
-    tier: 'TOP_FINANCE',
-    difficultyMultiplier: 1.25,
-    internMultiplier: 1.15,
-    acceptanceRateEstimate: '4-6%',
-    competitionLevel: 'very_high',
-    interviewBarDescription:
-      'Investment banking and technology roles with structured assessment centers. Strength in global markets.',
-  },
-  kkr: {
-    tier: 'TOP_FINANCE',
-    difficultyMultiplier: 1.4,
-    internMultiplier: 1.25,
-    acceptanceRateEstimate: '1-3%',
-    competitionLevel: 'extreme',
-    interviewBarDescription:
-      'Private equity focus with case studies and LBO modeling. Extremely competitive with emphasis on deal judgment.',
-  },
-  point72: {
-    tier: 'TOP_FINANCE',
-    difficultyMultiplier: 1.35,
-    internMultiplier: 1.2,
-    acceptanceRateEstimate: '2-4%',
-    competitionLevel: 'very_high',
-    interviewBarDescription:
-      'Hedge fund with quantitative focus. Tests statistical reasoning, market intuition, and analytical rigor.',
+      'Terminal-centric culture. Strong C++ coding bar for engineering. Tests data structure knowledge and systems programming.',
   },
 
   // ── UNICORN ─────────────────────────────────────────────────────────
@@ -607,9 +524,6 @@ const TIER_INFERENCE_PATTERNS: { pattern: RegExp; tier: CompanyTier; multiplier:
   { pattern: /\bunicorn\b/i, tier: 'UNICORN', multiplier: 1.15 },
   { pattern: /ipo|pre-ipo|publicly\s*traded/i, tier: 'BIG_TECH', multiplier: 1.15 },
   { pattern: /faang|big\s*tech|top-tier\s*tech/i, tier: 'FAANG_PLUS', multiplier: 1.3 },
-  { pattern: /hedge\s*fund|quant\s*fund/i, tier: 'TOP_FINANCE', multiplier: 1.3 },
-  { pattern: /investment\s*bank/i, tier: 'TOP_FINANCE', multiplier: 1.25 },
-  { pattern: /private\s*equity/i, tier: 'TOP_FINANCE', multiplier: 1.3 },
 ];
 
 // Differentiation strategy templates per tier
@@ -631,14 +545,6 @@ const DIFFERENTIATION_STRATEGIES: Record<CompanyTier, string[]> = {
     'Prepare examples of technical trade-offs you made and their business impact',
     'Research the company engineering blog and reference specific technical decisions',
     'Demonstrate ability to work autonomously while aligning with team goals',
-  ],
-  TOP_FINANCE: [
-    'Combine technical depth with financial domain knowledge — show you understand the business',
-    'Demonstrate experience with low-latency systems, real-time data, or high-throughput processing',
-    'Prepare for probability and statistics questions even for engineering roles',
-    'Show attention to detail and precision — errors in finance have outsized consequences',
-    'Highlight any experience with regulatory compliance, data security, or audit trails',
-    'Prepare examples of working under pressure with strict deadlines',
   ],
   UNICORN: [
     'Show scrappiness and ability to ship fast with quality — unicorns value speed',
@@ -828,12 +734,6 @@ function getTierMeta(tier: CompanyTier): {
       competitionLevel: 'very_high',
       barDescription:
         'Major tech company with rigorous interview loop. Expect coding, system design, and behavioral rounds.',
-    },
-    TOP_FINANCE: {
-      acceptanceRate: '2-5%',
-      competitionLevel: 'very_high',
-      barDescription:
-        'Top financial institution with demanding interview process. Expect technical rounds plus domain-specific assessment.',
     },
     UNICORN: {
       acceptanceRate: '4-8%',

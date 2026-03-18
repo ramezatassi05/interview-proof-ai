@@ -39,7 +39,7 @@ const FAQS: FAQItem[] = [
   {
     question: 'What types of interviews does it support?',
     answer:
-      'InterviewProof supports technical, behavioral, case, finance, and research/ML interview rounds. The analysis adapts its scoring dimensions and rubrics based on the round type and the specific role requirements.',
+      'InterviewProof supports technical, behavioral, and research/ML interview rounds. The analysis adapts its scoring dimensions and rubrics based on the round type and the specific role requirements.',
   },
   {
     question: 'What if I get a low readiness score?',

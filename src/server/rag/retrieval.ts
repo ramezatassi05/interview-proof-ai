@@ -296,26 +296,9 @@ export function inferDomain(jdSummary: string): string | undefined {
     'jupyter',
   ];
 
-  const financeKeywords = [
-    'quantitative',
-    'trading',
-    'risk management',
-    'portfolio',
-    'derivatives',
-    'fixed income',
-    'bloomberg',
-    'financial model',
-    'valuation',
-    'investment banking',
-    'hedge fund',
-    'asset management',
-  ];
-
   const dsScore = dsKeywords.filter((kw) => lower.includes(kw)).length;
-  const financeScore = financeKeywords.filter((kw) => lower.includes(kw)).length;
 
   if (dsScore >= 2) return 'ds';
-  if (financeScore >= 2) return 'finance';
   return undefined;
 }
 

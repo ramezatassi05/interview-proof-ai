@@ -151,28 +151,6 @@ const COMPANIES: Record<
       'Cross-functional interviews with strong culture-fit component. Values-driven hiring.',
     relatedCompanies: ['uber', 'spotify', 'netflix', 'shopify'],
   },
-  'goldman-sachs': {
-    displayName: 'Goldman Sachs',
-    tier: 'TOP_FINANCE',
-    tierLabel: 'Top Finance',
-    difficultyMultiplier: 1.35,
-    acceptanceRate: '2-4%',
-    competitionLevel: 'Very High',
-    interviewBar:
-      'Superday format with multiple rounds. Tests financial knowledge, problem-solving, and cultural fit.',
-    relatedCompanies: ['jp-morgan', 'morgan-stanley', 'blackstone', 'bloomberg'],
-  },
-  'jp-morgan': {
-    displayName: 'JP Morgan',
-    tier: 'TOP_FINANCE',
-    tierLabel: 'Top Finance',
-    difficultyMultiplier: 1.3,
-    acceptanceRate: '3-5%',
-    competitionLevel: 'Very High',
-    interviewBar:
-      'Structured process with HireVue and superday. Tests financial acumen and technical skills.',
-    relatedCompanies: ['goldman-sachs', 'morgan-stanley', 'blackrock', 'bloomberg'],
-  },
   figma: {
     displayName: 'Figma',
     tier: 'UNICORN',

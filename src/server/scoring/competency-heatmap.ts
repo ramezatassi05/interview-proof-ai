@@ -133,7 +133,6 @@ const CALIBRATED_BASE_BENCHMARKS: Record<InferredSeniority, Record<string, numbe
 const TIER_BENCHMARK_MULTIPLIERS: Record<CompanyTier, number> = {
   FAANG_PLUS: 1.3,
   BIG_TECH: 1.18,
-  TOP_FINANCE: 1.22,
   UNICORN: 1.12,
   GROWTH: 1.05,
   STANDARD: 1.0,
@@ -569,7 +568,6 @@ function buildBenchmarkDescription(
   const tierLabels: Record<CompanyTier, string> = {
     FAANG_PLUS: 'FAANG+',
     BIG_TECH: 'Big Tech',
-    TOP_FINANCE: 'Top Finance',
     UNICORN: 'Unicorn',
     GROWTH: 'Growth-stage',
     STANDARD: 'Standard',

@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Carousel - 7-Day Interview Prep Playbook</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&family=Source+Sans+3:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #111;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .controls { margin-bottom: 30px; }
+
+        .download-btn {
+            padding: 15px 40px;
+            background: #A8C5D6;
+            color: #0a0a0a;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Source Sans 3', sans-serif;
+        }
+
+        .download-btn:hover { background: #8fb5c9; }
+
+        .carousel-container {
+            position: relative;
+            width: 540px;
+            height: 675px;
+            background: #0a0a0a;
+            border-radius: 12px;
+            box-shadow: 0 10px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+            margin: 0 100px;
+        }
+
+        .carousel-wrapper { position: relative; width: 100%; height: 100%; }
+
+        .slide {
+            position: absolute;
+            width: 540px;
+            height: 675px;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .slide.active { opacity: 1; pointer-events: auto; }
+
+        .bg-image {
+            position: absolute;
+            top: -5%; left: -5%;
+            width: 110%; height: 110%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* HERO */
+        .slide-hero .overlay {
+            background: linear-gradient(to bottom,
+                rgba(0,0,0,.45) 0%, rgba(0,0,0,.25) 25%, rgba(0,0,0,.35) 50%, rgba(0,0,0,.55) 75%, rgba(0,0,0,.85) 100%);
+        }
+
+        .slide-hero .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px 44px 0;
+        }
+
+        .slide-hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-style: italic;
+            font-size: 52px;
+            color: #fff;
+            line-height: 1.05;
+            text-shadow: 0 4px 30px rgba(0,0,0,0.6);
+            margin-bottom: 20px;
+        }
+
+        .slide-hero h1 .accent { font-style: normal; font-weight: 700; color: #A8C5D6; }
+
+        .slide-hero .subtitle {
+            font-size: 22px;
+            font-style: italic;
+            color: rgba(255,255,255,0.8);
+            line-height: 1.4;
+        }
+
+        /* CTA HERO */
+        .slide-cta-hero .overlay {
+            background: linear-gradient(to bottom,
+                rgba(0,0,0,.45) 0%, rgba(0,0,0,.25) 25%, rgba(0,0,0,.35) 50%, rgba(0,0,0,.55) 75%, rgba(0,0,0,.85) 100%);
+        }
+
+        .slide-cta-hero .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 44px 0;
+            text-align: center;
+        }
+
+        .slide-cta-hero .bookmark-icon { margin-bottom: 20px; }
+
+        .slide-cta-hero h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 40px;
+            color: #fff;
+            line-height: 1.05;
+            text-shadow: 0 4px 30px rgba(0,0,0,0.6);
+            margin-bottom: 18px;
+        }
+
+        .slide-cta-hero p {
+            font-size: 20px;
+            color: rgba(255,255,255,0.85);
+            line-height: 1.45;
+            max-width: 440px;
+            margin-bottom: 12px;
+        }
+
+        .slide-cta-hero .cta-action {
+            font-style: italic;
+            font-size: 18px;
+            color: rgba(180,160,220,0.9);
+            margin-top: 16px;
+        }
+
+        /* EDITORIAL */
+        .slide-photo-editorial .bg-image { filter: blur(3px); }
+
+        .slide-photo-editorial .overlay {
+            background: linear-gradient(to bottom,
+                rgba(0,0,0,.60) 0%, rgba(0,0,0,.40) 30%, rgba(0,0,0,.35) 50%, rgba(0,0,0,.50) 70%, rgba(0,0,0,.75) 100%);
+        }
+
+        .slide-photo .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 36px 44px 0;
+            position: relative;
+        }
+
+        .slide-photo h2 {
+            font-family: 'Source Sans 3', sans-serif;
+            font-weight: 800;
+            font-size: 36px;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 18px;
+        }
+
+        .slide-photo h2 .accent { color: #A8C5D6; }
+
+        .slide-photo p {
+            font-size: 22px;
+            color: rgba(255,255,255,0.88);
+            line-height: 1.45;
+            margin-bottom: 10px;
+        }
+
+        .slide-photo p em { color: #A8C5D6; font-style: italic; }
+        .slide-photo .key-point { font-weight: 700; color: #fff; }
+
+        .slide-photo .takeaway {
+            border-left: 4px solid #A8C5D6;
+            background: rgba(168,197,214,0.08);
+            padding: 10px 14px;
+            border-radius: 0 6px 6px 0;
+            margin: 12px 0;
+        }
+
+        .slide-photo .takeaway p {
+            font-weight: 700;
+            color: #fff;
+            font-size: 20px;
+            margin-bottom: 0;
+        }
+
+        /* BODY */
+        .slide-photo-body .bg-image { filter: blur(8px); }
+
+        .slide-photo-body .overlay {
+            background: linear-gradient(to bottom,
+                rgba(0,0,0,.70) 0%, rgba(0,0,0,.55) 30%, rgba(0,0,0,.50) 50%, rgba(0,0,0,.60) 70%, rgba(0,0,0,.80) 100%);
+        }
+
+        .step-label {
+            font-weight: 700;
+            font-size: 14px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            position: absolute;
+            top: 36px;
+            left: 44px;
+        }
+
+        .stat-watermark {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 150px;
+            color: rgba(255,255,255,0.07);
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            line-height: 1;
+        }
+
+        /* FOOTER */
+        .photo-footer {
+            padding: 18px 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .photo-footer .author-info { display: flex; align-items: center; gap: 10px; }
+        .photo-footer .author-pic { width: 34px; height: 34px; border-radius: 20%; overflow: hidden; }
+        .photo-footer .author-name { font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.8); }
+        .photo-footer .page-dots { display: flex; gap: 6px; }
+        .photo-footer .pdot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.25); }
+        .photo-footer .pdot.active { background: #A8C5D6; }
+
+        .slide-hero .photo-footer .pdot.active,
+        .slide-cta-hero .photo-footer .pdot.active { background: #fff; }
+
+        .slide-hero .photo-footer .pdot,
+        .slide-cta-hero .photo-footer .pdot { background: rgba(255,255,255,0.4); }
+
+        .ip-logo { width: 100%; height: 100%; display: block; }
+
+        /* NAV */
+        .nav-container { position: relative; display: flex; justify-content: center; align-items: center; }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #fff;
+            z-index: 10;
+        }
+
+        .nav-button:hover { background: rgba(255,255,255,0.25); }
+        .nav-button.prev { left: 20px; }
+        .nav-button.next { right: 20px; }
+
+        /* PDF (1080x1350) */
+        .pdf-slides { position: fixed; left: -9999px; top: 0; }
+
+        .pdf-slide {
+            width: 1080px;
+            height: 1350px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pdf-slide .bg-image {
+            position: absolute;
+            top: -5%; left: -5%;
+            width: 110%; height: 110%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        .pdf-slide .overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+        }
+
+        .pdf-slide .slide-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* PDF Hero */
+        .pdf-slide.slide-hero .overlay {
+            background: linear-gradient(to bottom,
+                rgba(0,0,0,.45) 0%, rgba(0,0,0,.25) 25%, rgba(0,0,0,.35) 50%, rgba(0,0,0,.55) 75%, rgba(0,0,0,.85) 100%);
+        }
+
+        .pdf-slide.slide-hero .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px 88px 0;
+        }
+
+        .pdf-slide.slide-hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-style: italic;
+            font-size: 104px;
+            color: #fff;
+            line-height: 1.05;
+            text-shadow: 0 8px 60px rgba(0,0,0,0.6);
+            margin-bottom: 40px;
+        }
+
+        .pdf-slide.slide-hero h1 .accent { font-style: normal; font-weight: 700; color: #A8C5D6; }
+
+        .pdf-slide.slide-hero .subtitle {
+            font-size: 44px;
+            font-style: italic;
+            color: rgba(255,255,255,0.8);
+            line-height: 1.4;
+        }
+
+        /* PDF CTA Hero */
+        .pdf-slide.slide-cta-hero .overlay {
+            background: linear-gradient(to bottom,
+                rgba(0,0,0,.45) 0%, rgba(0,0,0,.25) 25%, rgba(0,0,0,.35) 50%, rgba(0,0,0,.55) 75%, rgba(0,0,0,.85) 100%);
+        }
+
+        .pdf-slide.slide-cta-hero .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 80px 88px 0;
+            text-align: center;
+        }
+
+        .pdf-slide.slide-cta-hero .bookmark-icon { margin-bottom: 40px; }
+
+        .pdf-slide.slide-cta-hero h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 80px;
+            color: #fff;
+            line-height: 1.05;
+            text-shadow: 0 8px 60px rgba(0,0,0,0.6);
+            margin-bottom: 36px;
+        }
+
+        .pdf-slide.slide-cta-hero p {
+            font-size: 40px;
+            color: rgba(255,255,255,0.85);
+            line-height: 1.45;
+            max-width: 880px;
+            margin-bottom: 24px;
+        }
+
+        .pdf-slide.slide-cta-hero .cta-action {
+            font-style: italic;
+            font-size: 36px;
+            color: rgba(180,160,220,0.9);
+            margin-top: 32px;
+        }
+
+        /* PDF Editorial */
+        .pdf-slide.slide-photo-editorial .bg-image { filter: blur(6px); }
+
+        .pdf-slide.slide-photo-editorial .overlay {
+            background: linear-gradient(to bottom,
+                rgba(0,0,0,.60) 0%, rgba(0,0,0,.40) 30%, rgba(0,0,0,.35) 50%, rgba(0,0,0,.50) 70%, rgba(0,0,0,.75) 100%);
+        }
+
+        .pdf-slide.slide-photo .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 72px 88px 0;
+            position: relative;
+        }
+
+        .pdf-slide.slide-photo h2 {
+            font-family: 'Source Sans 3', sans-serif;
+            font-weight: 800;
+            font-size: 72px;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 36px;
+        }
+
+        .pdf-slide.slide-photo h2 .accent { color: #A8C5D6; }
+
+        .pdf-slide.slide-photo p {
+            font-size: 44px;
+            color: rgba(255,255,255,0.88);
+            line-height: 1.45;
+            margin-bottom: 20px;
+        }
+
+        .pdf-slide.slide-photo p em { color: #A8C5D6; font-style: italic; }
+        .pdf-slide.slide-photo .key-point { font-weight: 700; color: #fff; }
+
+        .pdf-slide.slide-photo .takeaway {
+            border-left: 8px solid #A8C5D6;
+            background: rgba(168,197,214,0.08);
+            padding: 20px 28px;
+            border-radius: 0 12px 12px 0;
+            margin: 24px 0;
+        }
+
+        .pdf-slide.slide-photo .takeaway p {
+            font-weight: 700;
+            color: #fff;
+            font-size: 40px;
+            margin-bottom: 0;
+        }
+
+        /* PDF Body */
+        .pdf-slide.slide-photo-body .bg-image { filter: blur(16px); }
+
+        .pdf-slide.slide-photo-body .overlay {
+            background: linear-gradient(to bottom,
+                rgba(0,0,0,.70) 0%, rgba(0,0,0,.55) 30%, rgba(0,0,0,.50) 50%, rgba(0,0,0,.60) 70%, rgba(0,0,0,.80) 100%);
+        }
+
+        .pdf-slide .step-label {
+            font-weight: 700;
+            font-size: 28px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            position: absolute;
+            top: 72px;
+            left: 88px;
+        }
+
+        .pdf-slide .stat-watermark {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 300px;
+            color: rgba(255,255,255,0.07);
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            line-height: 1;
+        }
+
+        /* PDF Footer */
+        .pdf-slide .photo-footer {
+            padding: 36px 88px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pdf-slide .photo-footer .author-info { display: flex; align-items: center; gap: 20px; }
+        .pdf-slide .photo-footer .author-pic { width: 68px; height: 68px; border-radius: 20%; overflow: hidden; }
+        .pdf-slide .photo-footer .author-name { font-size: 32px; font-weight: 600; color: rgba(255,255,255,0.8); }
+        .pdf-slide .photo-footer .page-dots { display: flex; gap: 12px; }
+        .pdf-slide .photo-footer .pdot { width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,0.25); }
+        .pdf-slide .photo-footer .pdot.active { background: #A8C5D6; }
+
+        .pdf-slide.slide-hero .photo-footer .pdot.active,
+        .pdf-slide.slide-cta-hero .photo-footer .pdot.active { background: #fff; }
+
+        .pdf-slide.slide-hero .photo-footer .pdot,
+        .pdf-slide.slide-cta-hero .photo-footer .pdot { background: rgba(255,255,255,0.4); }
+
+        .loading {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .loading.active { display: flex; }
+        .loading-content { background: #1a1a1a; padding: 40px; border-radius: 12px; text-align: center; color: #fff; }
+        .loading-content h3 { margin-bottom: 20px; }
+        .progress { color: #A8C5D6; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <button class="download-btn" onclick="downloadImages()">Download All Slides</button>
+</div>
+
+<div class="nav-container">
+    <button class="nav-button prev" onclick="changeSlide(-1)">&#8249;</button>
+
+    <div class="carousel-container">
+        <div class="carousel-wrapper">
+
+        <!-- SLIDE 1: HOOK -->
+        <div class="slide slide-hero active" data-slide="1">
+            <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/hook.png" alt="">
+            <div class="overlay"></div>
+            <div class="slide-content">
+                <div class="content-area">
+                    <h1>Your interview is in <span class="accent">7 days.</span><br>Here's what to do.</h1>
+                    <p class="subtitle">A day-by-day playbook from real recruiter rubrics</p>
+                </div>
+                <div class="photo-footer">
+                    <div class="author-info">
+                        <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                        <div class="author-name">interviewproof.ai</div>
+                    </div>
+                    <div class="page-dots">
+                        <span class="pdot active"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: CREDIBILITY -->
+        <div class="slide slide-photo slide-photo-editorial" data-slide="2">
+            <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/credibility.png" alt="">
+            <div class="overlay"></div>
+            <div class="slide-content">
+                <div class="content-area">
+                    <h2>Why <span class="accent">this</span> works</h2>
+                    <p>Built from <span class="key-point">50+ recruiter scoring rubrics</span> and 6 grading dimensions.</p>
+                    <div class="takeaway"><p>87% who followed a targeted plan improved in 7 days.</p></div>
+                    <p>Stop prepping <em>randomly</em>. Start prepping <em>strategically</em>.</p>
+                </div>
+                <div class="photo-footer">
+                    <div class="author-info">
+                        <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                        <div class="author-name">interviewproof.ai</div>
+                    </div>
+                    <div class="page-dots">
+                        <span class="pdot"></span><span class="pdot active"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: DAY 1-2 -->
+        <div class="slide slide-photo slide-photo-body" data-slide="3">
+            <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/body-bg.png" alt="">
+            <div class="overlay"></div>
+            <div class="slide-content">
+                <div class="content-area">
+                    <div class="step-label">STEP 01</div>
+                    <div class="stat-watermark">35%</div>
+                    <h2>Day 1-2:<br><span class="accent">Find your gaps</span></h2>
+                    <p>Most people start grinding problems. That's <em>backwards</em>.</p>
+                    <div class="takeaway"><p>Know what's weak before you prep.</p></div>
+                    <p>Run a diagnostic against the <em>specific job</em>. Then focus where it matters.</p>
+                </div>
+                <div class="photo-footer">
+                    <div class="author-info">
+                        <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                        <div class="author-name">interviewproof.ai</div>
+                    </div>
+                    <div class="page-dots">
+                        <span class="pdot"></span><span class="pdot"></span><span class="pdot active"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: DAY 3 -->
+        <div class="slide slide-photo slide-photo-body" data-slide="4">
+            <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/body-bg.png" alt="">
+            <div class="overlay"></div>
+            <div class="slide-content">
+                <div class="content-area">
+                    <div class="step-label">STEP 02</div>
+                    <div class="stat-watermark">90s</div>
+                    <h2>Day 3:<br><span class="accent">Master your story</span></h2>
+                    <p>"Tell me about yourself" isn't a warmup. It's your <em>highest-leverage</em> moment.</p>
+                    <div class="takeaway"><p>Craft a 60-second pitch connecting your experience to THIS role.</p></div>
+                    <p>Not your life story. Your <em>value</em> story.</p>
+                </div>
+                <div class="photo-footer">
+                    <div class="author-info">
+                        <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                        <div class="author-name">interviewproof.ai</div>
+                    </div>
+                    <div class="page-dots">
+                        <span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot active"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: DAY 4-5 -->
+        <div class="slide slide-photo slide-photo-body" data-slide="5">
+            <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/body-bg.png" alt="">
+            <div class="overlay"></div>
+            <div class="slide-content">
+                <div class="content-area">
+                    <div class="step-label">STEP 03</div>
+                    <div class="stat-watermark">50+</div>
+                    <h2>Day 4-5:<br><span class="accent">Predicted questions</span></h2>
+                    <p>Don't guess what they'll ask.</p>
+                    <div class="takeaway"><p>Use the JD to predict the 10 most likely questions. Practice those.</p></div>
+                    <p>Each round has a <em>pattern</em>. Study the pattern.</p>
+                </div>
+                <div class="photo-footer">
+                    <div class="author-info">
+                        <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                        <div class="author-name">interviewproof.ai</div>
+                    </div>
+                    <div class="page-dots">
+                        <span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot active"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: DAY 6 -->
+        <div class="slide slide-photo slide-photo-body" data-slide="6">
+            <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/body-bg.png" alt="">
+            <div class="overlay"></div>
+            <div class="slide-content">
+                <div class="content-area">
+                    <div class="step-label">STEP 04</div>
+                    <div class="stat-watermark">+14</div>
+                    <h2>Day 6:<br><span class="accent">Fix your red flags</span></h2>
+                    <p>Every candidate has 2-3 <em>rejection risks</em>.</p>
+                    <div class="takeaway"><p>Gaps, missing keywords, vague impact. Find them first.</p></div>
+                    <p>One afternoon of <em>targeted fixes</em> moves your score by double digits.</p>
+                </div>
+                <div class="photo-footer">
+                    <div class="author-info">
+                        <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                        <div class="author-name">interviewproof.ai</div>
+                    </div>
+                    <div class="page-dots">
+                        <span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot active"></span><span class="pdot"></span><span class="pdot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: DAY 7 (TURN) -->
+        <div class="slide slide-photo slide-photo-editorial" data-slide="7">
+            <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/turn.png" alt="">
+            <div class="overlay"></div>
+            <div class="slide-content">
+                <div class="content-area">
+                    <h2>Day 7:<br><span class="accent">Simulate the pressure</span></h2>
+                    <p>Reading answers is <em>not</em> the same as speaking them.</p>
+                    <div class="takeaway"><p>Do one full mock run. Record yourself. Listen back.</p></div>
+                    <p>Filler words, pacing, <em>confidence dips</em>. One rehearsal changes everything.</p>
+                </div>
+                <div class="photo-footer">
+                    <div class="author-info">
+                        <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                        <div class="author-name">interviewproof.ai</div>
+                    </div>
+                    <div class="page-dots">
+                        <span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot active"></span><span class="pdot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: CTA -->
+        <div class="slide slide-cta-hero" data-slide="8">
+            <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/cta.png" alt="">
+            <div class="overlay"></div>
+            <div class="slide-content">
+                <div class="content-area">
+                    <svg class="bookmark-icon" width="40" height="48" viewBox="0 0 48 56" fill="none">
+                        <path d="M4 4H44V52L24 40L4 52V4Z" stroke="white" stroke-width="3" fill="none"/>
+                    </svg>
+                    <h2>Stop prepping blind.<br>Start prepping smart.</h2>
+                    <p>It's not talent. It's knowing what to fix.</p>
+                    <p class="cta-action">Find your gaps in 60 seconds. Free preview. Link in bio.</p>
+                </div>
+                <div class="photo-footer">
+                    <div class="author-info">
+                        <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                        <div class="author-name">interviewproof.ai</div>
+                    </div>
+                    <div class="page-dots">
+                        <span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot active"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </div>
+    </div>
+
+    <button class="nav-button next" onclick="changeSlide(1)">&#8250;</button>
+</div>
+
+<!-- PDF SLIDES (1080x1350) -->
+<div class="pdf-slides">
+
+    <div class="pdf-slide slide-hero" id="pdf-slide-1" data-slide="1">
+        <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/hook.png" alt="">
+        <div class="overlay"></div>
+        <div class="slide-content">
+            <div class="content-area">
+                <h1>Your interview is in <span class="accent">7 days.</span><br>Here's what to do.</h1>
+                <p class="subtitle">A day-by-day playbook from real recruiter rubrics</p>
+            </div>
+            <div class="photo-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot active"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pdf-slide slide-photo slide-photo-editorial" id="pdf-slide-2" data-slide="2">
+        <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/credibility.png" alt="">
+        <div class="overlay"></div>
+        <div class="slide-content">
+            <div class="content-area">
+                <h2>Why <span class="accent">this</span> works</h2>
+                <p>Built from <span class="key-point">50+ recruiter scoring rubrics</span> and 6 grading dimensions.</p>
+                <div class="takeaway"><p>87% who followed a targeted plan improved in 7 days.</p></div>
+                <p>Stop prepping <em>randomly</em>. Start prepping <em>strategically</em>.</p>
+            </div>
+            <div class="photo-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span><span class="pdot active"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pdf-slide slide-photo slide-photo-body" id="pdf-slide-3" data-slide="3">
+        <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/body-bg.png" alt="">
+        <div class="overlay"></div>
+        <div class="slide-content">
+            <div class="content-area">
+                <div class="step-label">STEP 01</div>
+                <div class="stat-watermark">35%</div>
+                <h2>Day 1-2:<br><span class="accent">Find your gaps</span></h2>
+                <p>Most people start grinding problems. That's <em>backwards</em>.</p>
+                <div class="takeaway"><p>Know what's weak before you prep.</p></div>
+                <p>Run a diagnostic against the <em>specific job</em>. Then focus where it matters.</p>
+            </div>
+            <div class="photo-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span><span class="pdot"></span><span class="pdot active"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pdf-slide slide-photo slide-photo-body" id="pdf-slide-4" data-slide="4">
+        <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/body-bg.png" alt="">
+        <div class="overlay"></div>
+        <div class="slide-content">
+            <div class="content-area">
+                <div class="step-label">STEP 02</div>
+                <div class="stat-watermark">90s</div>
+                <h2>Day 3:<br><span class="accent">Master your story</span></h2>
+                <p>"Tell me about yourself" isn't a warmup. It's your <em>highest-leverage</em> moment.</p>
+                <div class="takeaway"><p>Craft a 60-second pitch connecting your experience to THIS role.</p></div>
+                <p>Not your life story. Your <em>value</em> story.</p>
+            </div>
+            <div class="photo-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot active"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pdf-slide slide-photo slide-photo-body" id="pdf-slide-5" data-slide="5">
+        <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/body-bg.png" alt="">
+        <div class="overlay"></div>
+        <div class="slide-content">
+            <div class="content-area">
+                <div class="step-label">STEP 03</div>
+                <div class="stat-watermark">50+</div>
+                <h2>Day 4-5:<br><span class="accent">Predicted questions</span></h2>
+                <p>Don't guess what they'll ask.</p>
+                <div class="takeaway"><p>Use the JD to predict the 10 most likely questions. Practice those.</p></div>
+                <p>Each round has a <em>pattern</em>. Study the pattern.</p>
+            </div>
+            <div class="photo-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot active"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pdf-slide slide-photo slide-photo-body" id="pdf-slide-6" data-slide="6">
+        <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/body-bg.png" alt="">
+        <div class="overlay"></div>
+        <div class="slide-content">
+            <div class="content-area">
+                <div class="step-label">STEP 04</div>
+                <div class="stat-watermark">+14</div>
+                <h2>Day 6:<br><span class="accent">Fix your red flags</span></h2>
+                <p>Every candidate has 2-3 <em>rejection risks</em>.</p>
+                <div class="takeaway"><p>Gaps, missing keywords, vague impact. Find them first.</p></div>
+                <p>One afternoon of <em>targeted fixes</em> moves your score by double digits.</p>
+            </div>
+            <div class="photo-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot active"></span><span class="pdot"></span><span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pdf-slide slide-photo slide-photo-editorial" id="pdf-slide-7" data-slide="7">
+        <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/turn.png" alt="">
+        <div class="overlay"></div>
+        <div class="slide-content">
+            <div class="content-area">
+                <h2>Day 7:<br><span class="accent">Simulate the pressure</span></h2>
+                <p>Reading answers is <em>not</em> the same as speaking them.</p>
+                <div class="takeaway"><p>Do one full mock run. Record yourself. Listen back.</p></div>
+                <p>Filler words, pacing, <em>confidence dips</em>. One rehearsal changes everything.</p>
+            </div>
+            <div class="photo-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot active"></span><span class="pdot"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pdf-slide slide-cta-hero" id="pdf-slide-8" data-slide="8">
+        <img class="bg-image" src="carousel-assets/7-day-prep-playbook/instagram/cta.png" alt="">
+        <div class="overlay"></div>
+        <div class="slide-content">
+            <div class="content-area">
+                <svg class="bookmark-icon" width="80" height="96" viewBox="0 0 48 56" fill="none">
+                    <path d="M4 4H44V52L24 40L4 52V4Z" stroke="white" stroke-width="3" fill="none"/>
+                </svg>
+                <h2>Stop prepping blind.<br>Start prepping smart.</h2>
+                <p>It's not talent. It's knowing what to fix.</p>
+                <p class="cta-action">Find your gaps in 60 seconds. Free preview. Link in bio.</p>
+            </div>
+            <div class="photo-footer">
+                <div class="author-info">
+                    <div class="author-pic"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ip-logo"><rect width="100" height="100" rx="20" fill="#5046E5"/><text x="50" y="66" text-anchor="middle" fill="white" font-size="44" font-weight="800" letter-spacing="2" style="font-family:inherit">IP</text></svg></div>
+                    <div class="author-name">interviewproof.ai</div>
+                </div>
+                <div class="page-dots">
+                    <span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot"></span><span class="pdot active"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="loading">
+    <div class="loading-content">
+        <h3>Generating Images...</h3>
+        <p class="progress">This may take a few seconds</p>
+    </div>
+</div>
+
+<script>
+    let currentSlide = 1;
+    const totalSlides = 8;
+
+    function changeSlide(direction) {
+        currentSlide += direction;
+        if (currentSlide < 1) currentSlide = totalSlides;
+        if (currentSlide > totalSlides) currentSlide = 1;
+        updateSlides();
+    }
+
+    function updateSlides() {
+        document.querySelectorAll('.carousel-wrapper .slide').forEach((slide, index) => {
+            slide.classList.remove('active');
+            if (index + 1 === currentSlide) slide.classList.add('active');
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
+
+    async function downloadImages() {
+        const loading = document.querySelector('.loading');
+        const progressText = document.querySelector('.progress');
+        loading.classList.add('active');
+
+        try {
+            if (typeof html2canvas === 'undefined') throw new Error('html2canvas failed to load.');
+            await document.fonts.ready;
+            await new Promise(r => setTimeout(r, 500));
+
+            for (let i = 1; i <= totalSlides; i++) {
+                progressText.textContent = `Processing slide ${i} of ${totalSlides}...`;
+                const slide = document.getElementById(`pdf-slide-${i}`);
+                if (!slide) throw new Error(`Slide ${i} not found`);
+
+                const canvas = await html2canvas(slide, {
+                    width: 1080, height: 1350, scale: 2,
+                    backgroundColor: '#0a0a0a', logging: false,
+                    allowTaint: true, useCORS: true,
+                    letterRendering: true, windowWidth: 1080, windowHeight: 1350
+                });
+
+                await new Promise((resolve) => {
+                    canvas.toBlob((blob) => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `slide-${i}.png`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    }, 'image/png');
+                });
+
+                await new Promise(r => setTimeout(r, 300));
+            }
+
+            progressText.textContent = 'All slides downloaded!';
+            await new Promise(r => setTimeout(r, 1500));
+        } catch (error) {
+            console.error(error);
+            alert('Error: ' + error.message);
+        } finally {
+            progressText.textContent = 'This may take a few seconds';
+            loading.classList.remove('active');
+        }
+    }
+</script>
+
+</body>
+</html>

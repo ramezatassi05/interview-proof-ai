@@ -391,11 +391,6 @@ function EvidenceSnapshot({ evidence }: { evidence: EvidenceContext }) {
 const TIER_BADGE_COLORS: Record<CompanyTier, { bg: string; text: string; border: string }> = {
   FAANG_PLUS: { bg: 'bg-[var(--color-tier-1-muted)]', text: 'text-[var(--color-tier-1)]', border: 'border-[var(--color-tier-1)]/30' },
   BIG_TECH: { bg: 'bg-[var(--color-info-muted)]', text: 'text-[var(--color-info)]', border: 'border-[var(--color-info)]/30' },
-  TOP_FINANCE: {
-    bg: 'bg-[var(--color-success-muted)]',
-    text: 'text-[var(--color-success)]',
-    border: 'border-[var(--color-success)]/30',
-  },
   UNICORN: { bg: 'bg-[var(--accent-primary)]/10', text: 'text-[var(--accent-primary)]', border: 'border-[var(--accent-primary)]/30' },
   GROWTH: { bg: 'bg-[var(--color-success-muted)]', text: 'text-[var(--color-success)]', border: 'border-[var(--color-success)]/30' },
   STANDARD: { bg: 'bg-[var(--bg-elevated)]', text: 'text-[var(--text-muted)]', border: 'border-[var(--border-default)]' },
@@ -404,7 +399,6 @@ const TIER_BADGE_COLORS: Record<CompanyTier, { bg: string; text: string; border:
 const TIER_LABELS: Record<CompanyTier, string> = {
   FAANG_PLUS: 'FAANG+',
   BIG_TECH: 'Big Tech',
-  TOP_FINANCE: 'Top Finance',
   UNICORN: 'Unicorn',
   GROWTH: 'Growth',
   STANDARD: 'Standard',

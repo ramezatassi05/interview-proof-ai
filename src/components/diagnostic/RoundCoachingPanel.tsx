@@ -359,13 +359,9 @@ function CoachingContent({ coaching }: { coaching: RoundCoaching }) {
       ? 'Technical'
       : coaching.roundType === 'behavioral'
         ? 'Behavioral'
-        : coaching.roundType === 'case'
-          ? 'Case Study'
-          : coaching.roundType === 'finance'
-            ? 'Finance'
-            : coaching.roundType === 'research'
-              ? 'Research / ML'
-              : coaching.roundType;
+        : coaching.roundType === 'research'
+          ? 'Research / ML'
+          : coaching.roundType;
 
   return (
     <div className="space-y-6">

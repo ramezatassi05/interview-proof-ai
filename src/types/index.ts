@@ -1,5 +1,5 @@
 // Database enums
-export type RoundType = 'technical' | 'behavioral' | 'case' | 'finance' | 'research';
+export type RoundType = 'technical' | 'behavioral' | 'research';
 export type RiskBand = 'Low' | 'Medium' | 'High';
 export type CreditType = 'purchase' | 'spend' | 'refund' | 'grant';
 
@@ -122,7 +122,7 @@ export interface CreditLedgerEntry {
 
 export interface RubricChunk {
   id: string;
-  domain: 'swe' | 'ds' | 'finance' | 'general';
+  domain: 'swe' | 'ds' | 'general';
   roundType: RoundType;
   chunkText: string;
   sourceName: string;
@@ -132,7 +132,7 @@ export interface RubricChunk {
 
 export interface QuestionArchetype {
   id: string;
-  domain: 'swe' | 'ds' | 'finance' | 'general';
+  domain: 'swe' | 'ds' | 'general';
   roundType: RoundType;
   questionTemplate: string;
   tags: string[];
@@ -222,7 +222,7 @@ export interface ArchetypeProfile {
 
 // Interview Round Forecast
 export interface RoundForecastItem {
-  roundType: 'technical' | 'behavioral' | 'case' | 'research';
+  roundType: 'technical' | 'behavioral' | 'research';
   passProbability: number; // 0-1
   primaryStrength: string;
   primaryRisk: string;
@@ -433,7 +433,6 @@ export interface CompetencyHeatmapData {
 export type CompanyTier =
   | 'FAANG_PLUS'
   | 'BIG_TECH'
-  | 'TOP_FINANCE'
   | 'UNICORN'
   | 'GROWTH'
   | 'STANDARD';

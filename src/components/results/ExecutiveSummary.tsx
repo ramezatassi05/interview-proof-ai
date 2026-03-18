@@ -50,8 +50,6 @@ export function ExecutiveSummary({
   const ROUND_LABEL_MAP: Record<string, string> = {
     technical: 'Technical',
     behavioral: 'Behavioral',
-    case: 'Case',
-    finance: 'Finance',
     research: 'Research / ML',
   };
 

@@ -70,7 +70,7 @@ const SCORING_DIMENSIONS = [
     name: 'Round Readiness',
     weight: 20,
     description:
-      'Your preparation level for the specific interview round type -- technical, behavioral, case study, or other formats.',
+      'Your preparation level for the specific interview round type -- technical, behavioral, or research/ML formats.',
   },
   {
     name: 'Clarity',
@@ -455,7 +455,7 @@ export default function MethodologyPage() {
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
                     Hand-curated evaluation criteria used by companies across tiers, from startups to
-                    FAANG+, covering technical, behavioral, and case interview formats. Each rubric is
+                    FAANG+, covering technical, behavioral, and research/ML interview formats. Each rubric is
                     chunked and embedded for precise vector retrieval.
                   </p>
                 </div>

@@ -45,19 +45,19 @@ const CASE_STUDIES = [
   },
   {
     institution: 'Professional Career Transition',
-    title: 'Senior Engineer Pivoting from Finance to Big Tech',
+    title: 'Backend Engineer Transitioning to ML Engineering',
     challenge:
-      'A senior engineer with 8 years in financial services wanted to transition to a FAANG product engineering role but wasn\'t getting past initial screens despite strong technical skills.',
+      'A backend engineer with 6 years of experience wanted to break into ML engineering at a top AI lab but kept getting rejected at technical screens despite completing multiple ML courses.',
     solution:
-      'InterviewProof diagnostic revealed the root cause: resume was optimized for finance hiring (compliance-heavy, process-focused language) instead of tech hiring (impact metrics, system design emphasis).',
+      'InterviewProof diagnostic revealed the root cause: resume highlighted backend infrastructure but buried ML project work, and lacked evidence of research depth that ML roles demand.',
     results: [
-      'Identified 4 critical resume gaps specific to Big Tech expectations',
-      'Reframed 8 years of experience using tech-relevant language and metrics',
-      'Targeted preparation for system design rounds with company-specific calibration',
+      'Identified 4 critical resume gaps specific to ML engineering expectations',
+      'Restructured resume to lead with ML projects, model metrics, and paper implementations',
+      'Targeted preparation for research-depth questions with company-specific calibration',
     ],
     quote:
-      'I was preparing for the wrong interview. The diagnostic showed me exactly what Google cares about versus what Goldman cares about.',
-    quoteAuthor: 'Senior Software Engineer',
+      'I had the skills but my resume told the wrong story. The diagnostic showed me exactly what Anthropic cares about versus what a typical backend role cares about.',
+    quoteAuthor: 'ML Engineer',
   },
 ];
 

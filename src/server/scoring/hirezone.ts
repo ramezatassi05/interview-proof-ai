@@ -15,8 +15,6 @@ const HIRE_ZONE_VERSION = 'v0.1';
 const HIRE_ZONE_THRESHOLDS: Record<RoundType, { min: number; max: number; industryAvg: number }> = {
   technical: { min: 78, max: 85, industryAvg: 62 },
   behavioral: { min: 72, max: 80, industryAvg: 58 },
-  case: { min: 75, max: 82, industryAvg: 60 },
-  finance: { min: 76, max: 83, industryAvg: 61 },
   research: { min: 77, max: 84, industryAvg: 60 },
 };
 
@@ -35,20 +33,6 @@ const CATEGORY_TARGETS: Record<RoundType, Record<string, { target: number; label
     roundReadiness: { target: 74, label: 'Round Readiness' },
     resumeClarity: { target: 76, label: 'Resume Clarity' },
     companyProxy: { target: 65, label: 'Company Alignment' },
-  },
-  case: {
-    hardRequirementMatch: { target: 78, label: 'Hard Requirement Match' },
-    evidenceDepth: { target: 76, label: 'Evidence Depth' },
-    roundReadiness: { target: 78, label: 'Round Readiness' },
-    resumeClarity: { target: 72, label: 'Resume Clarity' },
-    companyProxy: { target: 66, label: 'Company Alignment' },
-  },
-  finance: {
-    hardRequirementMatch: { target: 80, label: 'Hard Requirement Match' },
-    evidenceDepth: { target: 76, label: 'Evidence Depth' },
-    roundReadiness: { target: 78, label: 'Round Readiness' },
-    resumeClarity: { target: 72, label: 'Resume Clarity' },
-    companyProxy: { target: 67, label: 'Company Alignment' },
   },
   research: {
     hardRequirementMatch: { target: 80, label: 'Hard Requirement Match' },

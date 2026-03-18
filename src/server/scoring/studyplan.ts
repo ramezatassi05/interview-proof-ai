@@ -56,8 +56,6 @@ function getDailyTheme(dayNumber: number, totalDays: number, roundType: RoundTyp
     const earlyThemes: Record<RoundType, string> = {
       technical: 'Foundation Review & Gap Analysis',
       behavioral: 'Story Mining & STAR Framework',
-      case: 'Framework Review & Mental Models',
-      finance: 'Core Concepts & Valuation Basics',
       research: 'Paper Reading & ML Fundamentals Review',
     };
     return earlyThemes[roundType];
@@ -66,8 +64,6 @@ function getDailyTheme(dayNumber: number, totalDays: number, roundType: RoundTyp
     const midThemes: Record<RoundType, string> = {
       technical: 'Deep Practice & Problem Solving',
       behavioral: 'Story Refinement & Delivery',
-      case: 'Case Practice & Structuring',
-      finance: 'Modeling & Technical Deep-Dive',
       research: 'Research Proposals & Experiment Design',
     };
     return midThemes[roundType];
@@ -76,8 +72,6 @@ function getDailyTheme(dayNumber: number, totalDays: number, roundType: RoundTyp
     const lateThemes: Record<RoundType, string> = {
       technical: 'Mock Interviews & Final Polish',
       behavioral: 'Mock Interviews & Confidence Building',
-      case: 'Timed Cases & Presentation Polish',
-      finance: 'Mock Technicals & Mental Math',
       research: 'Mock Presentations & ML System Design',
     };
     return lateThemes[roundType];
@@ -295,16 +289,6 @@ function getMidPlanTemplates(roundType: RoundType, topicSamples: string[]): Task
       { task: 'Record yourself telling a story and self-critique', description: 'Hearing yourself reveals filler words, weak transitions, and missing impact statements.', category: 'practice', minutes: 30 },
       { task: 'Draft a conflict-resolution story', description: 'Interviewers frequently probe how you handle disagreements — prepare a polished example.', category: 'behavioral', minutes: 25 },
     ],
-    case: [
-      { task: `Re-examine framework from: ${ref}`, description: 'Revisit the framework you used earlier and stress-test it with a different scenario.', category: 'review', minutes: 25 },
-      { task: 'Timed mini-case: market sizing (15 min)', description: 'Practice a quick market-sizing case to build estimation fluency.', category: 'practice', minutes: 20 },
-      { task: 'Structure a profitability case end-to-end', description: 'Walk through a classic profitability case, focusing on clear structure and hypothesis-driven analysis.', category: 'practice', minutes: 30 },
-    ],
-    finance: [
-      { task: `Review valuation concept from: ${ref}`, description: 'Revisit a valuation method studied earlier and work through a fresh example.', category: 'review', minutes: 25 },
-      { task: 'Mental math drill: quick multiples & percentages', description: 'Speed drills on the mental math that comes up in finance interviews.', category: 'practice', minutes: 20 },
-      { task: 'Walk through a 3-statement model from memory', description: 'Practice building income statement → balance sheet → cash flow linkages without notes.', category: 'technical', minutes: 35 },
-    ],
     research: [
       { task: `Re-read and summarize key paper: ${ref}`, description: 'Revisit a foundational paper, write a one-paragraph summary of contributions and limitations.', category: 'review', minutes: 30 },
       { task: 'ML concept drill: loss functions, optimization, regularization', description: 'Practice explaining core ML concepts clearly — interviewers test depth of understanding.', category: 'practice', minutes: 25 },
@@ -329,16 +313,6 @@ function getLatePlanTemplates(roundType: RoundType, topicSamples: string[]): Tas
       { task: 'Mock behavioral interview: 4 questions in 20 min', description: 'Practice answering rapid-fire behavioral questions to build fluency and confidence.', category: 'practice', minutes: 25 },
       { task: `Strengthen weakest story: ${ref}`, description: 'Identify your least polished story and rewrite it with stronger action verbs and quantified impact.', category: 'behavioral', minutes: 25 },
       { task: 'Prepare "tell me about yourself" (90-second version)', description: 'Craft and rehearse a concise personal pitch that bridges your background to the target role.', category: 'practice', minutes: 20 },
-    ],
-    case: [
-      { task: 'Full timed case interview simulation (30 min)', description: 'Run through a complete case from prompt to recommendation under a strict timer.', category: 'practice', minutes: 35 },
-      { task: `Drill weakness area: ${ref}`, description: 'Revisit the case type or analytical step you found hardest and practice it in isolation.', category: 'practice', minutes: 25 },
-      { task: 'Practice delivering a crisp recommendation', description: 'Focus on the final 2 minutes of a case — synthesize findings and present a clear, confident recommendation.', category: 'practice', minutes: 20 },
-    ],
-    finance: [
-      { task: 'Mock technical Q&A: accounting & valuation', description: 'Have someone (or a timer) quiz you on common finance interview questions.', category: 'practice', minutes: 30 },
-      { task: `Deep review of weak concept: ${ref}`, description: 'Spend focused time on the topic you are least confident about.', category: 'review', minutes: 30 },
-      { task: 'Practice "walk me through a DCF" end to end', description: 'Rehearse the classic DCF walkthrough until it feels natural and complete.', category: 'practice', minutes: 25 },
     ],
     research: [
       { task: 'Mock research presentation (15 min talk + Q&A)', description: 'Simulate presenting a paper or project to a panel — practice handling tough follow-up questions.', category: 'practice', minutes: 30 },
@@ -366,18 +340,6 @@ function getFinalPlanTemplates(roundType: RoundType, topicSamples: string[]): Ta
       { task: `Final story polish: ${ref}`, description: 'Give your best stories one last read-through — tighten language and ensure impact is clear.', category: 'review', minutes: 20 },
       { task: 'Prepare insightful questions for the interviewer', description: 'Show you have researched the company and role with 3-4 tailored questions.', category: 'review', minutes: 15 },
       { task: 'Logistics & confidence prep', description: 'Lay out your outfit, check your setup, and do a brief visualization/confidence exercise.', category: 'review', minutes: 10 },
-    ],
-    case: [
-      { task: 'Full timed case simulation with presentation', description: 'Run a complete case end-to-end including a final recommendation slide/summary.', category: 'practice', minutes: 40 },
-      { task: `Quick framework refresher: ${ref}`, description: 'Review your go-to frameworks one final time — make sure they are second nature.', category: 'review', minutes: 15 },
-      { task: 'Prepare questions to ask the interviewer', description: 'Demonstrate curiosity and preparation with thoughtful, role-specific questions.', category: 'review', minutes: 15 },
-      { task: 'Pre-interview logistics and mental prep', description: 'Confirm time, location/link, and do a brief warm-up case to get in the zone.', category: 'review', minutes: 10 },
-    ],
-    finance: [
-      { task: 'Full mock technical + fit interview', description: 'Simulate the complete interview flow — technical questions followed by fit/motivation questions.', category: 'practice', minutes: 45 },
-      { task: `Final concept review: ${ref}`, description: 'Light refresher on the core concepts — do not cram, just reinforce.', category: 'review', minutes: 20 },
-      { task: 'Prepare 3-4 smart questions about the team/deals', description: 'Show you understand the group\'s focus and recent activity.', category: 'review', minutes: 15 },
-      { task: 'Logistics: print materials, check setup, rest well', description: 'Handle all logistics so interview day is stress-free.', category: 'review', minutes: 10 },
     ],
     research: [
       { task: 'Full mock research interview: paper discussion + ML deep-dive', description: 'Simulate a complete research interview — present your work, discuss papers, and answer ML theory questions.', category: 'practice', minutes: 50 },
