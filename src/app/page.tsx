@@ -159,12 +159,12 @@ function LandingPageContent() {
               </div>
             )}
             <h2 className="heading-modern text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
-              {WAITLIST_MODE ? 'Be First to Know' : 'Ready to Find Your Gaps?'}
+              {WAITLIST_MODE ? 'Be First to Know' : 'Ready to See What\u2019s Really Going On?'}
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base text-[var(--text-secondary)]">
               {WAITLIST_MODE
                 ? 'Join the waitlist for early access. Top 100 get a lifetime 30% discount. Top 500 get 10 bonus credits.'
-                : 'Get a clear, evidence-based diagnostic in minutes — plus personalized questions, coaching, and tips tailored to your resume and the role.'}
+                : 'Stop practicing blind. Get a clear, evidence-backed diagnostic in under 60 seconds — then practice with feedback that actually moves the needle.'}
             </p>
             <div className="mt-8 flex justify-center">
               {WAITLIST_MODE ? (

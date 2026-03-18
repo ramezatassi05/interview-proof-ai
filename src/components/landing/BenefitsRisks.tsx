@@ -15,12 +15,12 @@ const BENEFITS = [
 ];
 
 const RISKS = [
-  'Most candidates repeat the same mistakes across interviews',
-  'Recruiters screen you out in under 30 seconds',
-  'Generic prep wastes hours on the wrong things',
-  "You won't know what disqualified you — they never tell you",
-  'Confidence drops with each unexplained rejection',
-  'The right role goes to someone who prepared smarter',
+  'You practice for hours with no way to tell if it\u2019s helping',
+  'Recruiters see gaps you can\u2019t — and screen you out in seconds',
+  'Generic prep wastes time on things that won\u2019t move the needle',
+  'No one tells you why you got rejected — so the same mistakes repeat',
+  'Each unexplained rejection chips away at your confidence',
+  'The offer goes to someone who practiced with feedback, not just effort',
 ];
 
 
@@ -35,7 +35,8 @@ export function BenefitsRisks() {
             Why Use InterviewProof?
           </h2>
           <p className="mt-3 text-base text-[var(--text-secondary)]">
-            The cost of going in unprepared is higher than you think
+            The problem isn&apos;t how much you practice — it&apos;s practicing without proof
+            it&apos;s working
           </p>
         </div>
 

@@ -57,10 +57,11 @@ export function AdvantagesSection() {
         <div className="text-center">
           <SectionBadge label="Why InterviewProof" />
           <h2 className="heading-modern mt-5 text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
-            Stop guessing, start preparing
+            Practice with proof, not hope
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base text-[var(--text-secondary)]">
-            Interview prep shouldn&apos;t be a black box. Here&apos;s why candidates choose InterviewProof.
+            The candidates who improve fastest are the ones who can see what needs fixing.
+            Here&apos;s how InterviewProof closes the feedback gap.
           </p>
         </div>
 

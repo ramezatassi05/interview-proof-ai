@@ -43,10 +43,11 @@ export function HighlightsSection() {
         <div className="text-center">
           <SectionBadge label="Highlights" />
           <h2 className="heading-modern mt-5 text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
-            The complete platform for interview preparation
+            See what&apos;s really holding you back
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base text-[var(--text-secondary)]">
-            Everything you need to identify gaps, build confidence, and walk into your interview prepared.
+            Most prep is a guessing game. InterviewProof gives you the feedback loop that turns
+            practice into real progress.
           </p>
         </div>
 

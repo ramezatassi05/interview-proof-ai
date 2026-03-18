@@ -85,15 +85,17 @@ export function HeroSection({ lastReport, referralCode }: HeroSectionProps) {
 
             <BlurFade inView delay={0.1}>
               <p className="mt-4 text-xl font-medium text-[var(--text-secondary)] sm:text-2xl">
-                Turn Anxiety Into Clear Action.
+                The Gap Isn&apos;t Effort — It&apos;s Feedback.
               </p>
             </BlurFade>
 
             <BlurFade inView delay={0.15}>
               <p className="mt-6 max-w-lg text-base leading-relaxed text-[var(--text-secondary)]">
-                Upload your resume and job description. Get an evidence-backed diagnostic that
-                pinpoints your rejection risks — then practice with AI-crafted answers that turn
-                every weakness into your strongest talking point.
+                Most candidates think they need to practice more. The real problem is they have no
+                way to tell what&apos;s working, what&apos;s hurting them, or how they actually come
+                across. Upload your resume and job description — get an evidence-backed diagnostic
+                that shows you exactly what to fix, then practice with AI-crafted answers that turn
+                every gap into your strongest talking point.
               </p>
             </BlurFade>
 
@@ -106,7 +108,7 @@ export function HeroSection({ lastReport, referralCode }: HeroSectionProps) {
                   document.getElementById('vertical-ai')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                Trained on the Best Interview Intelligence Available →
+                Built on 50+ Real Hiring Rubrics →
               </a>
             </BlurFade>
 
