@@ -88,6 +88,7 @@ export async function GET() {
     return NextResponse.json({
       data: {
         email: user.email,
+        name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? null,
         creditBalance: balance ?? 0,
         reports: formattedReports,
       },

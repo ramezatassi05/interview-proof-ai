@@ -33,6 +33,7 @@ interface ReportSummary {
 
 interface AccountData {
   email: string;
+  name: string | null;
   creditBalance: number;
   reports: ReportSummary[];
 }
@@ -210,7 +211,11 @@ export default function DashboardPage() {
   }, [scoredReports]);
 
   const greeting = getGreeting();
-  const firstName = data?.email ? extractFirstName(data.email) : '';
+  const firstName = data?.name
+    ? data.name.split(/\s+/)[0].charAt(0).toUpperCase() + data.name.split(/\s+/)[0].slice(1).toLowerCase()
+    : data?.email
+      ? extractFirstName(data.email)
+      : '';
 
   const handleCopyReferral = useCallback(() => {
     if (!referralData) return;
