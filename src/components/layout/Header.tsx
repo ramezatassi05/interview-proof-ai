@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useCredits } from '@/hooks/useCredits';
+
 import { Button } from '@/components/ui/Button';
-import { CreditsBalance } from '@/components/ui/CreditsBalance';
+
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Container } from './Container';
 import { useWaitlistMode } from '@/hooks/useWaitlistMode';
@@ -21,7 +21,7 @@ const NAV_LINKS = [
 
 export function Header() {
   const { user, loading, signOut } = useAuth();
-  const { balance, loading: creditsLoading, openPurchaseModal } = useCredits();
+
   const WAITLIST_MODE = useWaitlistMode();
   const pathname = usePathname();
   const isLanding = pathname === '/';
@@ -140,9 +140,6 @@ export function Header() {
               <div className="h-9 w-20 animate-pulse rounded-lg bg-[var(--header-elevated)]" />
             ) : user ? (
               <div className="flex items-center gap-3">
-                {!creditsLoading && (
-                  <CreditsBalance balance={balance} size="sm" onClick={openPurchaseModal} />
-                )}
                 <Link
                   href="/dashboard"
                   className="text-sm text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors hidden sm:block"
@@ -154,7 +151,7 @@ export function Header() {
                     New Analysis
                   </Button>
                 </Link>
-                <Link href="/wallet" className="flex items-center gap-1.5 text-xs text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors">
+                <Link href="/account" className="flex items-center gap-1.5 text-xs text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors">
                   <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--header-elevated)] border border-[var(--header-border)] text-xs font-mono font-semibold text-[var(--header-text-secondary)]">
                     {user.email?.[0]?.toUpperCase() ?? 'U'}
                   </div>

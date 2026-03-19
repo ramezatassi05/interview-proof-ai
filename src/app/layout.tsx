@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Source_Serif_4, Source_Sans_3, Source_Code_Pro } from 'next/font/google';
 import { AuthProvider } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/hooks/useTheme';
-import { CreditsWrapper } from '@/components/credits/CreditsWrapper';
+
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import { Analytics } from '@vercel/analytics/next';
@@ -83,7 +83,7 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider>
             <TooltipProvider>
-              <CreditsWrapper>{children}</CreditsWrapper>
+              {children}
               <Toaster />
               <Analytics />
               <SpeedInsights />

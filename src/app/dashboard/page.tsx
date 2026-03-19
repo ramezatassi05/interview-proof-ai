@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useCredits } from '@/hooks/useCredits';
+
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -38,12 +38,6 @@ interface AccountData {
   reports: ReportSummary[];
 }
 
-interface ReferralData {
-  referralCode: string;
-  totalReferrals: number;
-  totalEarned: number;
-  bonusPerReferral: number;
-}
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -121,12 +115,9 @@ function ScoreSparkline({ scores }: { scores: number[] }) {
 export default function DashboardPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { balance } = useCredits();
   const [data, setData] = useState<AccountData | null>(null);
-  const [referralData, setReferralData] = useState<ReferralData | null>(null);
   const [insights, setInsights] = useState<AggregateInsightStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [referralCopied, setReferralCopied] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -137,9 +128,8 @@ export default function DashboardPage() {
 
     const fetchAll = async () => {
       try {
-        const [accountRes, referralRes, insightsRes] = await Promise.allSettled([
+        const [accountRes, insightsRes] = await Promise.allSettled([
           fetch('/api/account'),
-          fetch('/api/referral'),
           fetch('/api/insights'),
         ]);
 
@@ -152,11 +142,6 @@ export default function DashboardPage() {
         ) {
           router.push('/auth/login?redirect=/dashboard');
           return;
-        }
-
-        if (referralRes.status === 'fulfilled' && referralRes.value.ok) {
-          const result = await referralRes.value.json();
-          setReferralData(result.data);
         }
 
         if (insightsRes.status === 'fulfilled' && insightsRes.value.ok) {
@@ -217,15 +202,6 @@ export default function DashboardPage() {
       ? extractFirstName(data.email)
       : '';
 
-  const handleCopyReferral = useCallback(() => {
-    if (!referralData) return;
-    const url = `${window.location.origin}/auth/login?ref=${referralData.referralCode}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setReferralCopied(true);
-      setTimeout(() => setReferralCopied(false), 2000);
-    });
-  }, [referralData]);
-
   // Subtitle based on user's data
   const subtitle = useMemo(() => {
     if (!data || totalReports === 0) return 'Ready to start your interview prep journey?';
@@ -246,8 +222,8 @@ export default function DashboardPage() {
           <Skeleton className="mt-3 h-5 w-80" />
         </div>
         {/* Stats skeleton */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-28 rounded-2xl" />
           ))}
         </div>
@@ -300,7 +276,7 @@ export default function DashboardPage() {
       </BlurFade>
 
       {/* Stats Row */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Total Reports */}
         <BlurFade delay={0.05}>
           <MagicCard className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
@@ -340,25 +316,6 @@ export default function DashboardPage() {
               </div>
             </div>
             {sparklineScores.length > 0 && <ScoreSparkline scores={sparklineScores} />}
-          </MagicCard>
-        </BlurFade>
-
-        {/* Credits Balance */}
-        <BlurFade delay={0.15}>
-          <MagicCard className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-[var(--accent-primary)]">
-                  {balance > 0 ? <NumberTicker value={balance} /> : '0'}
-                </p>
-                <p className="text-xs text-[var(--text-muted)]">Credits</p>
-              </div>
-            </div>
           </MagicCard>
         </BlurFade>
 
@@ -420,30 +377,6 @@ export default function DashboardPage() {
               New Analysis
             </Button>
           </Link>
-          <Link href="/wallet">
-            <Button variant="secondary" rounded>
-              View Wallet
-            </Button>
-          </Link>
-          {referralData && (
-            <Button variant="secondary" rounded onClick={handleCopyReferral}>
-              {referralCopied ? (
-                <>
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                  </svg>
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-                  </svg>
-                  Share Referral
-                </>
-              )}
-            </Button>
-          )}
         </div>
       </BlurFade>
 

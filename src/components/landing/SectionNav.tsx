@@ -15,7 +15,7 @@ const SECTIONS = [
   { id: 'advantages', label: 'Why Us' },
   { id: 'security', label: 'Security' },
   { id: 'press', label: 'Recognition' },
-  { id: 'pricing', label: 'Pricing' },
+
   { id: 'faq', label: 'FAQ' },
   { id: 'newsletter', label: 'Newsletter' },
   { id: 'footer-cta', label: 'Get Started' },

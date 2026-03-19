@@ -22,7 +22,7 @@ import { InstitutionalTrust } from '@/components/landing/InstitutionalTrust';
 import { SecuritySection } from '@/components/landing/SecuritySection';
 import { AdvisoryBoard } from '@/components/landing/AdvisoryBoard';
 import { PressSection } from '@/components/landing/PressSection';
-import { PricingSection } from '@/components/landing/PricingSection';
+
 import { FAQ } from '@/components/landing/FAQ';
 import { LiveAnalysisFeed } from '@/components/landing/LiveAnalysisFeed';
 import { NewsletterSection } from '@/components/landing/NewsletterSection';
@@ -98,7 +98,7 @@ function LandingPageContent() {
         {/* 6. What You're Missing — bento grid */}
         <ReportPreviewShowcase
           ctaHref={ctaHref}
-          ctaLabel={WAITLIST_MODE ? 'Join Waitlist' : 'Unlock Full Report'}
+          ctaLabel={WAITLIST_MODE ? 'Join Waitlist' : 'Get Full Report'}
         />
 
         {/* 7. Features */}
@@ -124,9 +124,6 @@ function LandingPageContent() {
 
         {/* 13b. Press / Recognition — hidden until real press mentions */}
         {/* <PressSection /> */}
-
-        {/* 14. Pricing */}
-        {!WAITLIST_MODE && <PricingSection />}
 
         {/* 15. FAQ */}
         <FAQ />

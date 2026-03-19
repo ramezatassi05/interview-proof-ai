@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useCredits } from '@/hooks/useCredits';
+
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -13,7 +13,7 @@ import { LoadingOverlay } from '@/components/ui/Spinner';
 import { MagicCard } from '@/components/ui/magic-card';
 import { BlurFade } from '@/components/ui/blur-fade';
 import { NumberTicker } from '@/components/ui/number-ticker';
-import { CREDITS_PER_REPORT } from '@/lib/stripe-config';
+
 import type { RiskBand, RoundType } from '@/types';
 
 interface ReportSummary {
@@ -50,7 +50,6 @@ function getRelativeDate(dateStr: string): string {
 export default function AccountPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { balance, openPurchaseModal, refreshBalance } = useCredits();
   const [data, setData] = useState<AccountData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,8 +74,6 @@ export default function AccountPage() {
         }
         const result = await res.json();
         setData(result.data);
-        // Sync credits balance with the provider
-        refreshBalance();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -85,7 +82,7 @@ export default function AccountPage() {
     };
 
     fetchAccount();
-  }, [user, authLoading, router, refreshBalance]);
+  }, [user, authLoading, router]);
 
   if (authLoading || loading) {
     return (
@@ -114,7 +111,7 @@ export default function AccountPage() {
         <h1 className="mb-8 text-2xl font-bold text-[var(--text-primary)]">Account</h1>
       </BlurFade>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="max-w-lg">
         {/* Profile Card */}
         <BlurFade delay={0.05}>
           <MagicCard className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)]">
@@ -129,39 +126,6 @@ export default function AccountPage() {
                     <p className="font-medium text-[var(--text-primary)]">{data.email}</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </MagicCard>
-        </BlurFade>
-
-        {/* Credits Card */}
-        <BlurFade delay={0.1}>
-          <MagicCard className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)]">
-            <Card className="border-0 bg-transparent">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Credits</CardTitle>
-                <Button variant="accent" size="sm" onClick={openPurchaseModal}>
-                  Buy Credits
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-[var(--text-primary)]">
-                    {balance > 0 ? <NumberTicker value={balance} /> : '0'}
-                  </span>
-                  <span className="text-[var(--text-secondary)]">
-                    credit{balance !== 1 ? 's' : ''} remaining
-                  </span>
-                </div>
-                <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                  {CREDITS_PER_REPORT} credits unlock one full diagnostic report.
-                </p>
-                {balance > 0 && (
-                  <p className="mt-1 text-sm text-[var(--accent-primary)]">
-                    You can unlock {Math.floor(balance / CREDITS_PER_REPORT)} report
-                    {Math.floor(balance / CREDITS_PER_REPORT) !== 1 ? 's' : ''}.
-                  </p>
-                )}
               </CardContent>
             </Card>
           </MagicCard>
@@ -222,11 +186,6 @@ export default function AccountPage() {
                           <Badge variant={riskBandToVariant(report.riskBand)}>
                             {report.riskBand}
                           </Badge>
-                        )}
-                        {report.paidUnlocked ? (
-                          <Badge variant="low">Unlocked</Badge>
-                        ) : (
-                          <Badge variant="default">Free</Badge>
                         )}
                       </div>
                     </CardContent>

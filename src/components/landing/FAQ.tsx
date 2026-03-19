@@ -27,14 +27,9 @@ const FAQS: FAQItem[] = [
       'Our scoring engine uses structured rubrics modeled on real hiring criteria across 6 dimensions. It cross-references your resume evidence against the job requirements to surface concrete gaps \u2014 not generic advice.',
   },
   {
-    question: 'Do I need a credit card for the free preview?',
+    question: 'Is InterviewProof free?',
     answer:
-      'No. You can run a diagnostic and see your readiness score, risk band, and top gaps for free. The full diagnostic with detailed breakdowns, recruiter simulation, and practice questions is a one-time $15 unlock per report.',
-  },
-  {
-    question: "What's the difference between the free preview and the full diagnostic?",
-    answer:
-      'The free preview gives you your overall readiness score and risk band. The full diagnostic unlocks detailed scoring breakdowns, evidence-backed rejection risks, a recruiter simulation, personalized interview questions with coaching on how to answer them, targeted tips, a study plan, and practice intelligence tools.',
+      'Yes. InterviewProof is completely free. Run a diagnostic, see your full readiness score, risk band, detailed scoring breakdowns, rejection risks, recruiter simulation, personalized interview questions with coaching, targeted tips, a study plan, and practice intelligence tools — all at no cost.',
   },
   {
     question: 'What types of interviews does it support?',
