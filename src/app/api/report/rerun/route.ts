@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const allowed = await checkRateLimit({
       prefix: 'analyze',
       identifier: `user:${user.id}`,
-      maxRequests: 20,
+      maxRequests: 100,
       windowSeconds: 3600,
     });
     if (!allowed) return rateLimitResponse(3600);
