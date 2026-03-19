@@ -64,14 +64,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
-    // Check if report is paid (rerun requires paid unlock)
-    if (!report.paid_unlocked) {
-      return NextResponse.json(
-        { error: 'Rerun requires paid unlock. Unlock the report first.' },
-        { status: 403 }
-      );
-    }
-
     // Check existing runs
     const { data: existingRuns, error: runsError } = await supabase
       .from('runs')

@@ -122,36 +122,20 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       ? latestRun.ranked_risks_json
       : [];
 
-    if (report.paid_unlocked) {
-      // Full diagnostic for paid reports
-      return NextResponse.json({
-        data: {
-          ...baseResponse,
-          allRisks,
-          interviewQuestions: latestRun.llm_analysis_json?.interviewQuestions,
-          studyPlan: latestRun.llm_analysis_json?.studyPlan,
-          scoreBreakdown: latestRun.score_breakdown_json,
-          extractedResume: latestRun.extracted_resume_json,
-          extractedJD: latestRun.extracted_jd_json,
-          diagnosticIntelligence: migrateDiagnosticIntelligence(),
-          prepPreferences: report.prep_preferences_json || undefined,
-          personalizedStudyPlan: latestRun.personalized_study_plan_json || undefined,
-          personalizedCoaching: migrateCoaching(),
-        },
-      });
-    }
-
-    // Free tier: limited preview data
+    // Always return full diagnostic data (app is free)
     return NextResponse.json({
       data: {
         ...baseResponse,
-        top3Risks: allRisks.slice(0, 3),
-        totalRisks: allRisks.length,
+        allRisks,
+        interviewQuestions: latestRun.llm_analysis_json?.interviewQuestions,
+        studyPlan: latestRun.llm_analysis_json?.studyPlan,
+        scoreBreakdown: latestRun.score_breakdown_json,
+        extractedResume: latestRun.extracted_resume_json,
         extractedJD: latestRun.extracted_jd_json,
-        diagnosticIntelligence: latestRun.diagnostic_intelligence_json
-          ? { competencyHeatmap: migrateDiagnosticIntelligence()?.competencyHeatmap }
-          : undefined,
-        paywallMessage: `Unlock the full diagnostic to see all ${allRisks.length} risks, interview questions, and your personalized study plan.`,
+        diagnosticIntelligence: migrateDiagnosticIntelligence(),
+        prepPreferences: report.prep_preferences_json || undefined,
+        personalizedStudyPlan: latestRun.personalized_study_plan_json || undefined,
+        personalizedCoaching: migrateCoaching(),
       },
     });
   } catch (error) {

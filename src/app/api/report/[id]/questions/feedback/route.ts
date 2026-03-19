@@ -55,13 +55,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
-    if (!report.paid_unlocked) {
-      return NextResponse.json(
-        { error: 'Report must be unlocked to access this feature' },
-        { status: 403 }
-      );
-    }
-
     const { data: runs } = await supabase
       .from('runs')
       .select('extracted_resume_json, extracted_jd_json')

@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
         round_type: roundType as RoundType,
         resume_text: resumeText,
         job_description_text: jobDescriptionText,
-        paid_unlocked: false,
+        paid_unlocked: true,
         prep_preferences_json: prepPreferences || null,
       })
       .select('id, created_at')

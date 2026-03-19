@@ -67,8 +67,6 @@ export default function FullDiagnosticPage() {
             router.push(`/auth/login?redirect=/r/${reportId}/full`);
           } else if (err.isNotFound) {
             setError('Report not found.');
-          } else if (err.isForbidden) {
-            router.push(`/r/${reportId}`);
           } else {
             setError(err.message);
           }
