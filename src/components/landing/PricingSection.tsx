@@ -247,7 +247,7 @@ export function PricingSection() {
                   {/* Price */}
                   <div className="mb-6 flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-[var(--text-primary)]">
-                      ${(bundle.price / 100).toFixed(0)}
+                      ${(bundle.price / 100).toFixed(2)}
                     </span>
                     <span className="text-sm text-[var(--text-muted)]">one-time</span>
                     {savings && (

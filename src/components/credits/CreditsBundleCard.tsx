@@ -23,7 +23,7 @@ export function CreditsBundleCard({
   loading = false,
   onPurchase,
 }: CreditsBundleCardProps) {
-  const priceFormatted = (price / 100).toFixed(0);
+  const priceFormatted = (price / 100).toFixed(2);
   const pricePerFormatted = pricePerCredit.toFixed(2);
   const savingsPercent = Math.round((1 - pricePerCredit) * 100);
   const reportsUnlocked = Math.floor(credits / CREDITS_PER_REPORT);
