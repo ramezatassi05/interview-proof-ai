@@ -55,7 +55,7 @@ const RecruiterSignalsSchema = z.object({
 
 // Zod schema for personalized coaching (LLM-generated specific advice)
 const PersonalizedCoachingSchema = z.object({
-  archetypeTips: z.array(z.string()).min(1).max(5),
+  archetypeTips: z.array(z.string()).max(5),
   roundFocus: z.string().min(1),
   priorityActions: z
     .array(
@@ -65,18 +65,17 @@ const PersonalizedCoachingSchema = z.object({
         resources: z.array(z.string()).max(5),
       })
     )
-    .min(3)
+    .min(1)
     .max(5),
 });
 
 // Zod schema for round-specific coaching (Phase 8 — optional for backwards compat)
 const RoundCoachingSchema = z.object({
   roundType: z.string(),
-  coachingRecommendations: z.array(z.string()).min(1).max(6),
-  waysToStandOut: z.array(z.string()).min(1).max(5),
+  coachingRecommendations: z.array(z.string()).max(6),
+  waysToStandOut: z.array(z.string()).max(5),
   questionsToAskInterviewer: z
     .array(z.object({ question: z.string(), context: z.string() }))
-    .min(1)
     .max(6),
   sampleResponses: z
     .array(
@@ -89,9 +88,8 @@ const RoundCoachingSchema = z.object({
         whyItWorks: z.string(),
       })
     )
-    .min(1)
     .max(4),
-  passionSignals: z.array(z.string()).min(1).max(5),
+  passionSignals: z.array(z.string()).max(5),
 });
 
 // Zod schema for LLM analysis output validation
@@ -120,7 +118,7 @@ const LLMAnalysisSchema = z.object({
       mappedRiskId: z.string(),
       why: z.string(),
     })
-  ).min(15),
+  ).min(1),
   studyPlan: z.array(
     z.object({
       task: z.string(),
@@ -741,7 +739,7 @@ export async function performAnalysis(
   roundType: RoundType,
   context: AnalysisContext,
   prepPreferences?: PrepPreferences,
-  retries = 1,
+  retries = 2,
   priorEmployment?: PriorEmploymentSignal
 ): Promise<LLMAnalysis> {
   const openai = getOpenAIClient();
@@ -826,18 +824,44 @@ export async function performAnalysis(
         );
       }
       if (attempt === retries) {
-        // Graceful degradation: if only roundCoaching is invalid, strip it and retry validation
+        // Graceful degradation: strip optional/non-critical fields that fail validation
         if (error instanceof z.ZodError && lastParsed) {
-          const onlyRoundCoachingErrors = error.issues.every(
-            (i) => i.path[0] === 'roundCoaching'
-          );
-          if (onlyRoundCoachingErrors) {
+          const strippableRoots = new Set(['roundCoaching', 'personalizedCoaching', 'recruiterSignals']);
+          const failingRoots = new Set(error.issues.map((i) => String(i.path[0])));
+          const allStrippable = error.issues.every((i) => strippableRoots.has(String(i.path[0])));
+
+          if (allStrippable) {
             console.warn(
-              'Stripping malformed roundCoaching for graceful degradation'
+              `Stripping malformed fields for graceful degradation: ${[...failingRoots].join(', ')}`
             );
             try {
               const fallback = { ...lastParsed };
-              delete fallback.roundCoaching;
+              for (const root of failingRoots) {
+                if (root === 'roundCoaching') {
+                  delete fallback.roundCoaching;
+                } else if (root === 'personalizedCoaching') {
+                  // Provide minimal valid coaching instead of deleting (it's required)
+                  fallback.personalizedCoaching = {
+                    archetypeTips: ['Focus on demonstrating relevant experience.'],
+                    roundFocus: 'Prepare for the specific round format.',
+                    priorityActions: [
+                      {
+                        action: 'Review the job description requirements.',
+                        rationale: 'Ensure you can address each key requirement.',
+                        resources: [],
+                      },
+                    ],
+                  };
+                } else if (root === 'recruiterSignals') {
+                  // Provide minimal valid signals instead of deleting (it's required)
+                  fallback.recruiterSignals = {
+                    immediateRedFlags: [],
+                    hiddenStrengths: [],
+                    estimatedScreenTimeSeconds: 30,
+                    firstImpression: 'maybe',
+                  };
+                }
+              }
               const repaired = repairAnalysisOutput(fallback);
               return LLMAnalysisSchema.parse(repaired);
             } catch {
