@@ -26,19 +26,20 @@ export async function GET(request: NextRequest) {
   const supabase = await createServiceClient();
   const resend = getResendClient();
 
-  // Find completed runs from the last hour whose reports haven't been emailed
-  // TODO: Restore to 1-3 hour window after testing:
-  //   const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString();
-  //   const oneHourAgo = new Date(now.getTime() - 1 * 60 * 60 * 1000).toISOString();
+  // Find completed runs from the last 25 hours (daily cron with buffer)
+  // Once upgraded to Pro, switch to hourly cron with 1-3 hour window:
+  //   schedule: "0 * * * *"
+  //   const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  //   const oneHourAgo = new Date(now.getTime() - 1 * 60 * 60 * 1000);
   //   .gte('created_at', threeHoursAgo).lte('created_at', oneHourAgo)
   const now = new Date();
-  const oneHourAgo = new Date(now.getTime() - 1 * 60 * 60 * 1000).toISOString();
+  const lookbackStart = new Date(now.getTime() - 25 * 60 * 60 * 1000).toISOString();
 
   const { data: pendingReports, error: queryError } = await supabase
     .from('runs')
     .select('report_id, reports!inner(id, user_id, feedback_email_sent_at)')
     .eq('status', 'complete')
-    .gte('created_at', oneHourAgo)
+    .gte('created_at', lookbackStart)
     .is('reports.feedback_email_sent_at', null)
     .limit(50);
 
