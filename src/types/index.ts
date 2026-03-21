@@ -730,3 +730,18 @@ export interface AggregateInsightStats {
   roundTypeDistribution: { roundType: string; count: number; percentage: number }[];
   avgScoreByRound: { roundType: string; avgScore: number }[];
 }
+
+// ============================================
+// Feedback System Types
+// ============================================
+
+export interface FeedbackResponse {
+  id: string;
+  reportId: string;
+  userId: string;
+  rating: number;
+  mostUseful?: string;
+  improvement?: string;
+  wouldRecommend?: 'yes' | 'no' | 'maybe';
+  createdAt: string;
+}
