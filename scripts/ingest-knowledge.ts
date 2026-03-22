@@ -1,18 +1,19 @@
 /**
  * Knowledge Base Ingestion Orchestrator
  *
- * Reads Skill Seekers source configs, runs scraping, transforms content,
- * deduplicates, and inserts into Supabase.
+ * Reads source configs, scrapes GitHub repos (via local scraper),
+ * transforms content with GPT-4o-mini classification, deduplicates
+ * via embedding similarity, and inserts into Supabase.
  *
  * Usage:
  *   npx tsx scripts/ingest-knowledge.ts --config scripts/source-configs/tech-interview-handbook.json
  *   npx tsx scripts/ingest-knowledge.ts --all
+ *   npx tsx scripts/ingest-knowledge.ts --all --force   # re-ingest completed sources
  */
 
 import { config } from 'dotenv';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
-import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
@@ -20,6 +21,7 @@ import {
   type SourceConfig,
   type LangChainDocument,
 } from './transform-scraped-data';
+import { handleGitHubSource, handleGrind75Source } from './scrape-sources';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabaseClient = SupabaseClient<any, 'public', any>;
@@ -47,9 +49,9 @@ function validateEnv(): void {
   }
 }
 
-function parseArgs(): { configPath?: string; all: boolean } {
+function parseArgs(): { configPath?: string; all: boolean; force: boolean } {
   const args = process.argv.slice(2);
-  const result: { configPath?: string; all: boolean } = { all: false };
+  const result: { configPath?: string; all: boolean; force: boolean } = { all: false, force: false };
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--config' && args[i + 1]) {
@@ -57,6 +59,8 @@ function parseArgs(): { configPath?: string; all: boolean } {
       i++;
     } else if (args[i] === '--all') {
       result.all = true;
+    } else if (args[i] === '--force') {
+      result.force = true;
     }
   }
 
@@ -64,6 +68,7 @@ function parseArgs(): { configPath?: string; all: boolean } {
     console.error('Usage:');
     console.error('  npx tsx scripts/ingest-knowledge.ts --config <path-to-config.json>');
     console.error('  npx tsx scripts/ingest-knowledge.ts --all');
+    console.error('  npx tsx scripts/ingest-knowledge.ts --all --force  (re-ingest completed sources)');
     process.exit(1);
   }
 
@@ -92,47 +97,55 @@ function getAllConfigPaths(): string[] {
 }
 
 /**
- * Runs Skill Seekers scrape + package for a single source config.
- * Returns the path to the LangChain JSON output.
+ * Runs the local scraper for a source config.
+ * Determines source type and calls the appropriate handler from scrape-sources.ts.
+ * Returns the path to the LangChain JSON output, or null if the source type is unsupported.
  */
-function runSkillSeekers(sourceConfig: FullSourceConfig): string {
-  const outputDir = sourceConfig.skillSeekers.output_dir;
+async function runScraper(sourceConfig: FullSourceConfig): Promise<string | null> {
+  const source = sourceConfig.skillSeekers.sources[0];
+  if (!source) {
+    throw new Error('No source entry in config');
+  }
 
-  // Create output directory if it doesn't exist
+  // Web sources can't be scraped programmatically
+  if (source.type === 'web') {
+    console.log(`   ⏭ Skipping web source (requires manual curation): ${source.url}`);
+    return null;
+  }
+
+  // Check if ALL sources in the config are web-only
+  const hasScrapableSources = sourceConfig.skillSeekers.sources.some(
+    (s) => s.type === 'github' || s.type === 'github-json'
+  );
+  if (!hasScrapableSources) {
+    console.log('   ⏭ All sources are web-based — skipping (requires manual curation)');
+    return null;
+  }
+
+  const outputDir = path.resolve(sourceConfig.skillSeekers.output_dir);
   fs.mkdirSync(outputDir, { recursive: true });
 
-  // Write a temporary Skill Seekers config file
-  const tempConfigPath = path.join(outputDir, '_skill-seekers-config.json');
-  fs.writeFileSync(tempConfigPath, JSON.stringify(sourceConfig.skillSeekers, null, 2));
+  let docs: LangChainDocument[] = [];
 
-  try {
-    // Run Skill Seekers scrape
-    console.log(`   Running: skill-seekers scrape --config ${tempConfigPath}`);
-    execSync(`skill-seekers scrape --config ${tempConfigPath}`, {
-      stdio: 'inherit',
-      timeout: 300000, // 5 minute timeout
-    });
-
-    // Package as LangChain JSON
-    const langchainOutput = path.join(outputDir, 'langchain.json');
-    console.log(
-      `   Running: skill-seekers package --dir ${outputDir} --target langchain --output ${langchainOutput}`
-    );
-    execSync(
-      `skill-seekers package --dir ${outputDir} --target langchain --output ${langchainOutput}`,
-      {
-        stdio: 'inherit',
-        timeout: 120000,
-      }
-    );
-
-    return langchainOutput;
-  } finally {
-    // Clean up temp config
-    if (fs.existsSync(tempConfigPath)) {
-      fs.unlinkSync(tempConfigPath);
+  // Process only github/github-json sources (skip web entries in multi-source configs)
+  for (const s of sourceConfig.skillSeekers.sources) {
+    if (s.type === 'github-json') {
+      docs.push(...(await handleGrind75Source(s)));
+    } else if (s.type === 'github') {
+      docs.push(...(await handleGitHubSource(s)));
+    } else {
+      console.log(`   ⏭ Skipping web source in multi-source config: ${s.url}`);
     }
   }
+
+  // Filter out empty/tiny docs
+  docs = docs.filter((d) => d.page_content.trim().length >= 50);
+
+  const langchainPath = path.join(outputDir, 'langchain.json');
+  fs.writeFileSync(langchainPath, JSON.stringify(docs, null, 2));
+  console.log(`   ✅ Scraped ${docs.length} documents → ${langchainPath}`);
+
+  return langchainPath;
 }
 
 /**
@@ -147,12 +160,30 @@ function readLangChainOutput(filePath: string): LangChainDocument[] {
 }
 
 /**
+ * Checks if a source has already been successfully ingested.
+ */
+async function isAlreadyIngested(
+  supabase: AnySupabaseClient,
+  sourceId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from('knowledge_ingestion_jobs')
+    .select('id')
+    .eq('source_config_id', sourceId)
+    .eq('status', 'complete')
+    .limit(1);
+
+  return !!(data && data.length > 0);
+}
+
+/**
  * Processes a single source config end-to-end.
  */
 async function processSource(
   configPath: string,
   supabase: AnySupabaseClient,
-  openai: OpenAI
+  openai: OpenAI,
+  force: boolean
 ): Promise<void> {
   const sourceConfig = loadConfig(configPath);
   const { interviewProof } = sourceConfig;
@@ -163,6 +194,24 @@ async function processSource(
   console.log(`   Domain: ${interviewProof.defaultDomain}`);
   console.log(`   Company: ${interviewProof.companyName || 'General'}`);
   console.log(`${'='.repeat(60)}`);
+
+  // Check if already ingested (skip unless --force)
+  if (!force) {
+    const alreadyDone = await isAlreadyIngested(supabase, interviewProof.sourceId);
+    if (alreadyDone) {
+      console.log(`   ⏭ Already ingested — skipping (use --force to re-ingest)`);
+      return;
+    }
+  }
+
+  // Check if this is a web-only source (no scraper available)
+  const hasScrapableSources = sourceConfig.skillSeekers.sources.some(
+    (s) => s.type === 'github' || s.type === 'github-json'
+  );
+  if (!hasScrapableSources) {
+    console.log('   ⏭ Web-only source — skipping (requires manual curation)');
+    return;
+  }
 
   // Create ingestion job
   const { data: job, error: jobError } = await supabase
@@ -185,8 +234,8 @@ async function processSource(
   const jobId = job.id;
 
   try {
-    // Step 1: Run Skill Seekers (or use existing output)
-    console.log('\n🔍 Step 1: Scraping with Skill Seekers...');
+    // Step 1: Check for existing output or run scraper
+    console.log('\n🔍 Step 1: Scraping...');
     let langchainPath: string;
 
     // Check for existing LangChain output first (may have been generated separately)
@@ -201,13 +250,11 @@ async function processSource(
       console.log(`   ✅ Found existing output: ${existingOutput}`);
       langchainPath = existingOutput;
     } else {
-      try {
-        langchainPath = runSkillSeekers(sourceConfig);
-      } catch (err) {
-        throw new Error(
-          `Skill Seekers scraping failed and no existing output found: ${err instanceof Error ? err.message : 'Unknown error'}`
-        );
+      const scraped = await runScraper(sourceConfig);
+      if (!scraped) {
+        throw new Error('Scraping produced no output and no existing output found');
       }
+      langchainPath = scraped;
     }
 
     // Step 2: Read output
@@ -288,9 +335,12 @@ async function main(): Promise<void> {
   for (const cp of configPaths) {
     console.log(`   - ${path.basename(cp)}`);
   }
+  if (args.force) {
+    console.log('\n⚠ --force mode: will re-ingest already completed sources');
+  }
 
   for (const configPath of configPaths) {
-    await processSource(configPath, supabase, openai);
+    await processSource(configPath, supabase, openai, args.force);
   }
 
   console.log(`\n${'='.repeat(60)}`);

@@ -745,3 +745,88 @@ export interface FeedbackResponse {
   wouldRecommend?: 'yes' | 'no' | 'maybe';
   createdAt: string;
 }
+
+// ============================================
+// Phase 9: Career Advisor Types
+// ============================================
+
+export interface ParsedResumeEducation {
+  institution: string;
+  degree: string;
+  graduationDate?: string;
+  gpa?: string;
+  relevantCourses?: string[];
+}
+
+export interface ParsedResumeExperience {
+  company: string;
+  title: string;
+  dates: string;
+  durationMonths?: number;
+  skills: string[];
+  description: string;
+}
+
+export interface ParsedResumeProject {
+  name: string;
+  description: string;
+  skills: string[];
+  url?: string;
+}
+
+export interface ParsedResumeSkills {
+  languages?: string[];
+  frameworks?: string[];
+  tools?: string[];
+  databases?: string[];
+  concepts?: string[];
+}
+
+export interface ParsedResume {
+  name?: string;
+  email?: string;
+  location?: string;
+  education: ParsedResumeEducation[];
+  experience: ParsedResumeExperience[];
+  projects: ParsedResumeProject[];
+  skills: ParsedResumeSkills;
+  certifications?: string[];
+  interests?: string[];
+  targetRole?: string;
+  yearsOfExperience?: number;
+}
+
+export type CareerStage = 'student' | 'new_grad' | 'junior' | 'mid';
+
+export interface UserResume {
+  id: string;
+  userId: string;
+  rawText?: string;
+  rawFileUrl?: string;
+  fileName?: string;
+  fileType?: string;
+  parsedData: ParsedResume;
+  skills: string[];
+  skillIds: string[];
+  targetRole?: string;
+  targetIndustry?: string;
+  experienceLevel?: CareerStage;
+  graduationDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  lastParsedAt?: string;
+  parseVersion: string;
+}
+
+export interface CareerAdvisorMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
+export interface SkillDemand {
+  skillName: string;
+  skillId?: string;
+  targetRole: string;
+  totalMentions: number;
+}

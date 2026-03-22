@@ -11,7 +11,7 @@ interface RateLimitOptions {
 /**
  * Check if a request is within rate limits.
  * Returns true if allowed, false if rate limited.
- * Fails open on DB errors.
+ * Fails closed on DB errors (denies requests for safety).
  */
 export async function checkRateLimit({
   prefix,
@@ -32,7 +32,7 @@ export async function checkRateLimit({
 
     if (countError) {
       console.error('Rate limit check error:', countError);
-      return true; // fail open
+      return false; // fail closed — deny requests when rate limit DB is unavailable
     }
 
     if ((count ?? 0) >= maxRequests) {
@@ -49,7 +49,7 @@ export async function checkRateLimit({
     return true;
   } catch (error) {
     console.error('Rate limit error:', error);
-    return true; // fail open
+    return false; // fail closed — deny requests on unexpected errors
   }
 }
 

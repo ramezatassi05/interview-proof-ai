@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   try {
+    // Rate limit by IP to prevent token brute-forcing
+    const forwarded = _request.headers.get('x-forwarded-for');
+    const ip = forwarded?.split(',')[0]?.trim() || 'unknown';
+    const allowed = await checkRateLimit({
+      prefix: 'shared-report',
+      identifier: ip,
+      maxRequests: 20,
+      windowSeconds: 3600,
+    });
+    if (!allowed) return rateLimitResponse(3600);
+
     const { token } = await params;
     const serviceClient = await createServiceClient();
 

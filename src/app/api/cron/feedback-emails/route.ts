@@ -7,16 +7,13 @@ import {
   generateFeedbackToken,
 } from '@/lib/feedback-emails';
 import { auditLog } from '@/lib/audit';
+import { verifyCronSecret } from '@/lib/security';
 
 export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const unauthorized = verifyCronSecret(request.headers.get('authorization'));
+  if (unauthorized) return unauthorized;
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (!baseUrl) {

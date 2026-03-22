@@ -85,9 +85,9 @@ export async function POST(request: Request) {
     });
 
     if (error instanceof Stripe.errors.StripeError) {
-      return NextResponse.json({ error: error.message }, { status: error.statusCode || 500 });
+      return NextResponse.json({ error: 'Payment processing failed. Please try again.' }, { status: error.statusCode || 500 });
     }
 
-    return NextResponse.json({ error: errMsg }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create checkout session. Please try again.' }, { status: 500 });
   }
 }

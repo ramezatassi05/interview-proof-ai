@@ -41,6 +41,11 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    // Validate PDF magic bytes (MIME type alone is client-spoofable)
+    if (!buffer.toString('utf8', 0, 5).startsWith('%PDF-')) {
+      return NextResponse.json({ error: 'Invalid PDF file' }, { status: 400 });
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const pdfParse = require('pdf-parse');
     const data = await pdfParse(buffer);

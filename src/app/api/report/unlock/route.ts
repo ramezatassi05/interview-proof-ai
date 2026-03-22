@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Check user's credit balance
+    // Check balance first (for user-friendly error)
     const { data: balanceResult, error: balanceError } = await supabase.rpc(
       'get_user_credit_balance',
       { p_user_id: user.id }
@@ -84,36 +84,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Spend credits (insert negative ledger entry)
-    const { data: ledgerEntry, error: ledgerError } = await supabase
-      .from('credits_ledger')
-      .insert({
-        user_id: user.id,
-        type: 'spend',
-        amount: -CREDITS_PER_REPORT,
-      })
-      .select('id')
-      .single();
+    // Atomic credit spend + report unlock (prevents race condition double-spend)
+    const serviceClient = await createServiceClient();
+    const { data: spent, error: spendError } = await serviceClient.rpc('spend_credits_atomic', {
+      p_user_id: user.id,
+      p_amount: CREDITS_PER_REPORT,
+      p_report_id: reportId,
+    });
 
-    if (ledgerError) {
-      console.error('Failed to spend credit:', ledgerError);
+    if (spendError) {
+      console.error('Atomic credit spend failed:', spendError);
       return NextResponse.json({ error: 'Failed to process credit' }, { status: 500 });
     }
 
-    // Update report to unlocked
-    const { error: updateError } = await supabase
-      .from('reports')
-      .update({
-        paid_unlocked: true,
-        credit_spend_ledger_id: ledgerEntry.id,
-      })
-      .eq('id', reportId)
-      .eq('user_id', user.id);
-
-    if (updateError) {
-      console.error('Failed to unlock report:', updateError);
-      // TODO: Consider rolling back the credit spend
-      return NextResponse.json({ error: 'Failed to unlock report' }, { status: 500 });
+    if (!spent) {
+      return NextResponse.json(
+        {
+          error: 'Insufficient credits',
+          message: 'Purchase credits to unlock the full diagnostic',
+        },
+        { status: 402 }
+      );
     }
 
     auditLog({

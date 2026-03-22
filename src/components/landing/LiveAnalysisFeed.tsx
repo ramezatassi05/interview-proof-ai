@@ -193,23 +193,6 @@ export function LiveAnalysisFeed({ lastReport }: LiveAnalysisFeedProps) {
         </Marquee>
       </div>
 
-      <div className="mt-6 flex items-center justify-center gap-8">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-success)] opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--color-success)]" />
-          </span>
-          <span className="font-mono text-xs text-[var(--text-muted)]">
-            <NumberTicker value={2847} className="text-[var(--text-secondary)]" /> diagnostics run
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[var(--accent-primary)]" />
-          <span className="font-mono text-xs text-[var(--text-muted)]">
-            +<NumberTicker value={14} className="text-[var(--text-secondary)]" /> avg improvement
-          </span>
-        </div>
-      </div>
     </section>
   );
 }

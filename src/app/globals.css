@@ -808,11 +808,36 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* MagicUI: spin-around for shimmer-button spark */
+@keyframes spin-around {
+  0% { transform: translateZ(0) rotate(0); }
+  15%, 35% { transform: translateZ(0) rotate(90deg); }
+  65%, 85% { transform: translateZ(0) rotate(270deg); }
+  100% { transform: translateZ(0) rotate(360deg); }
+}
+
+.animate-spin-around {
+  animation: spin-around calc(var(--speed, 3s)) infinite linear;
+}
+
+/* MagicUI: animated-gradient-text background animation */
+@keyframes gradient-animate {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  animation: gradient-animate 8s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-border-beam,
   .animate-shimmer-slide,
   .animate-marquee,
-  .animate-marquee-vertical {
+  .animate-marquee-vertical,
+  .animate-spin-around,
+  .animate-gradient {
     animation: none !important;
   }
 

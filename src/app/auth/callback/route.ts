@@ -5,12 +5,21 @@ import { grantCredits } from '@/lib/credits';
 // Promotional welcome credits for specific users
 const WELCOME_CREDIT_EMAILS: Record<string, number> = {
   'business.codehype@gmail.com': 15,
+  'phalgun.mittal99@gmail.com': 15,
 };
+
+/** Validate redirect is a safe relative path (prevents open redirect attacks) */
+function sanitizeRedirect(redirect: string | null): string {
+  if (!redirect || !redirect.startsWith('/') || redirect.startsWith('//') || redirect.includes('://')) {
+    return '/';
+  }
+  return redirect;
+}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const redirect = searchParams.get('redirect') || '/';
+  const redirect = sanitizeRedirect(searchParams.get('redirect'));
 
   if (code) {
     const supabase = await createClient();

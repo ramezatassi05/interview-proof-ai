@@ -11,9 +11,16 @@ import { Spinner } from '@/components/ui/Spinner';
 import { InsightOwlWaving, InsightOwlCelebrating } from '@/components/svg/InsightOwlMascot';
 import { DotPattern } from '@/components/ui/dot-pattern';
 
+function sanitizeRedirect(redirect: string | null): string {
+  if (!redirect || !redirect.startsWith('/') || redirect.startsWith('//') || redirect.includes('://')) {
+    return '/';
+  }
+  return redirect;
+}
+
 function LoginForm() {
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/';
+  const redirectTo = sanitizeRedirect(searchParams.get('redirect'));
   const error = searchParams.get('error');
 
   const [email, setEmail] = useState('');

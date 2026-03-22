@@ -50,19 +50,39 @@ export async function grantCredits(params: {
   return { granted: true, alreadyGranted: false };
 }
 
-const REFERRAL_SECRET = process.env.SUPABASE_SERVICE_ROLE_KEY || 'referral-key-fallback';
+function getReferralSecret(): string {
+  const secret = process.env.REFERRAL_HMAC_SECRET;
+  if (!secret) {
+    throw new Error('REFERRAL_HMAC_SECRET environment variable is not set');
+  }
+  return secret;
+}
 
 /**
  * Generate an opaque referral code from a user ID using HMAC.
  * Not reversible — cannot derive the user ID from the code.
  */
 export function generateReferralCode(userId: string): string {
-  return crypto.createHmac('sha256', REFERRAL_SECRET).update(userId).digest('hex').slice(0, 8).toUpperCase();
+  return crypto.createHmac('sha256', getReferralSecret()).update(userId).digest('hex').slice(0, 8).toUpperCase();
 }
 
 /**
- * Look up a referrer by their referral code.
- * Iterates distinct user_ids and checks the HMAC-derived code for each.
+ * Ensure a user's referral code exists in the referral_codes table.
+ * Called when fetching a user's referral code (lazy creation).
+ */
+export async function ensureReferralCode(supabase: SupabaseClient, userId: string): Promise<string> {
+  const code = generateReferralCode(userId);
+
+  // Upsert: insert if not exists, ignore conflicts
+  await supabase
+    .from('referral_codes')
+    .upsert({ user_id: userId, code }, { onConflict: 'user_id' });
+
+  return code;
+}
+
+/**
+ * Look up a referrer by their referral code via indexed table query.
  */
 export async function lookupReferrerByCode(
   supabase: SupabaseClient,
@@ -72,20 +92,17 @@ export async function lookupReferrerByCode(
     return null;
   }
 
-  const { data, error } = await supabase.from('reports').select('user_id');
+  const normalizedCode = code.toUpperCase();
 
-  if (error || !data || data.length === 0) {
+  const { data, error } = await supabase
+    .from('referral_codes')
+    .select('user_id')
+    .eq('code', normalizedCode)
+    .single();
+
+  if (error || !data) {
     return null;
   }
 
-  const uniqueUserIds = [...new Set(data.map((row) => row.user_id))];
-  const normalizedCode = code.toUpperCase();
-
-  for (const userId of uniqueUserIds) {
-    if (generateReferralCode(userId) === normalizedCode) {
-      return userId;
-    }
-  }
-
-  return null;
+  return data.user_id;
 }

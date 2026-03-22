@@ -20,7 +20,7 @@ interface LangChainDocument {
   metadata: Record<string, unknown>;
 }
 
-interface SourceEntry {
+export interface SourceEntry {
   type: string;
   url: string;
   paths: string[];
@@ -282,7 +282,7 @@ async function fetchDirectoryRecursive(
 /**
  * Handle standard GitHub source (markdown, mdx, py files).
  */
-async function handleGitHubSource(source: SourceEntry): Promise<LangChainDocument[]> {
+export async function handleGitHubSource(source: SourceEntry): Promise<LangChainDocument[]> {
   const { owner, repo } = parseGitHubUrl(source.url);
   const branch = await getDefaultBranch(owner, repo);
   console.log(`   Repo: ${owner}/${repo} (branch: ${branch})`);
@@ -338,7 +338,7 @@ async function handleGitHubSource(source: SourceEntry): Promise<LangChainDocumen
  * Handle Grind 75 — structured JSON from tech-interview-handbook repo.
  * Each question becomes a separate document.
  */
-async function handleGrind75Source(source: SourceEntry): Promise<LangChainDocument[]> {
+export async function handleGrind75Source(source: SourceEntry): Promise<LangChainDocument[]> {
   const { owner, repo } = parseGitHubUrl(source.url);
   const branch = await getDefaultBranch(owner, repo);
   console.log(`   Repo: ${owner}/${repo} (branch: ${branch})`);
@@ -503,7 +503,14 @@ async function main(): Promise<void> {
   console.log(`${'='.repeat(60)}`);
 }
 
-main().catch((err) => {
-  console.error('\n❌ Fatal error:', err);
-  process.exit(1);
-});
+// Only run CLI when this file is the entry point
+const isMainModule =
+  process.argv[1] &&
+  (process.argv[1].endsWith('scrape-sources.ts') || process.argv[1].endsWith('scrape-sources.js'));
+
+if (isMainModule) {
+  main().catch((err) => {
+    console.error('\n❌ Fatal error:', err);
+    process.exit(1);
+  });
+}
