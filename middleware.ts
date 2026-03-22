@@ -63,7 +63,8 @@ const maintenanceHTML = `<!DOCTYPE html>
 const MAINTENANCE_PASSTHROUGH = ['/api/webhook/', '/api/cron/'];
 
 export async function middleware(request: NextRequest) {
-  if (process.env.MAINTENANCE_MODE === 'true') {
+  // MAINTENANCE MODE: hardcoded ON — remove this block to restore the site
+  if (true) {
     const path = request.nextUrl.pathname;
     const isPassthrough = MAINTENANCE_PASSTHROUGH.some((prefix) => path.startsWith(prefix));
     if (!isPassthrough) {
