@@ -32,10 +32,10 @@ CREATE TABLE user_profiles (
 
   -- Step 5: Industry & Function
   industries TEXT[] DEFAULT '{}',  -- multi-select
-  functions TEXT[] DEFAULT '{}',   -- multi-select
+  job_functions TEXT[] DEFAULT '{}',   -- multi-select (renamed from "functions" to avoid reserved word)
 
   -- Step 6: Current Situation
-  current_role TEXT,
+  current_job_role TEXT,           -- renamed from "current_role" to avoid reserved word
   current_company TEXT,
 
   -- Step 7: Target Role

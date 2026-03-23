@@ -47,11 +47,11 @@ Profile:
 - Display Name: ${profile.display_name || 'Not provided'}
 - Career Status: ${profile.career_status || 'Not provided'}
 - Years of Experience: ${profile.years_of_experience ?? 'Not provided'}
-- Current Role: ${profile.current_role || 'Not provided'} at ${profile.current_company || 'Unknown'}
+- Current Role: ${profile.current_job_role || 'Not provided'} at ${profile.current_company || 'Unknown'}
 - Target Role: ${profile.target_role || 'Not provided'}
 - Target Companies: ${(profile.target_companies as { name: string }[])?.map((c) => c.name).join(', ') || 'Not specified'}
 - Industries: ${(profile.industries as string[])?.join(', ') || 'Not specified'}
-- Functions: ${(profile.functions as string[])?.join(', ') || 'Not specified'}
+- Functions: ${(profile.job_functions as string[])?.join(', ') || 'Not specified'}
 - Interview Timeline: ${profile.interview_timeline || 'Not specified'}
 - Biggest Concerns: ${(profile.concerns as string[])?.join(', ') || 'None listed'}
 - Resume Skills: ${skills.slice(0, 15).join(', ') || 'No resume uploaded'}
