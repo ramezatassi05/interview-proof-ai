@@ -746,3 +746,99 @@ export interface FeedbackResponse {
   createdAt: string;
 }
 
+// ============================================
+// Onboarding & User Profile Types
+// ============================================
+
+export type CareerStatus =
+  | 'student'
+  | 'early_career'
+  | 'mid_career'
+  | 'senior'
+  | 'executive'
+  | 'career_changer';
+
+export type OnboardingInterviewTimeline =
+  | 'this_week'
+  | 'two_weeks'
+  | 'one_month'
+  | 'one_to_three_months'
+  | 'exploring';
+
+export type ProfileIndustry =
+  | 'technology'
+  | 'finance'
+  | 'healthcare'
+  | 'consulting'
+  | 'legal'
+  | 'education'
+  | 'government'
+  | 'retail'
+  | 'media'
+  | 'energy'
+  | 'manufacturing'
+  | 'other';
+
+export type ProfileFunction =
+  | 'engineering'
+  | 'product'
+  | 'design'
+  | 'data'
+  | 'marketing'
+  | 'sales'
+  | 'operations'
+  | 'management'
+  | 'research'
+  | 'other';
+
+export type InterviewConcern =
+  | 'technical_depth'
+  | 'behavioral_stories'
+  | 'system_design'
+  | 'communication'
+  | 'domain_knowledge'
+  | 'salary_negotiation'
+  | 'culture_fit'
+  | 'imposter_syndrome'
+  | 'time_management'
+  | 'company_research';
+
+export interface TargetCompany {
+  name: string;
+  tier?: CompanyTier | 'STARTUP' | 'ENTERPRISE';
+}
+
+export interface ProfileSummary {
+  readinessEstimate: number; // 0-100
+  projectedPotential: number; // 0-100
+  summaryText: string;
+  recommendations: string[];
+  strengths: string[];
+}
+
+export interface UserProfile {
+  id: string;
+  userId: string;
+  displayName: string | null;
+  resumeFilePath: string | null;
+  resumeText: string | null;
+  resumeParsedJson: ExtractedResume | null;
+  careerStatus: CareerStatus | null;
+  yearsOfExperience: number | null;
+  industries: ProfileIndustry[];
+  functions: ProfileFunction[];
+  currentRole: string | null;
+  currentCompany: string | null;
+  targetRole: string | null;
+  targetCompanies: TargetCompany[];
+  interviewTimeline: OnboardingInterviewTimeline | null;
+  concerns: InterviewConcern[];
+  currentCompensationRange: string | null;
+  targetCompensationRange: string | null;
+  onboardingCompleted: boolean;
+  onboardingCurrentStep: number;
+  profileSummaryJson: ProfileSummary | null;
+  createdAt: string;
+  updatedAt: string;
+}
+

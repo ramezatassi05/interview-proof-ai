@@ -1,6 +1,9 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+/** Routes that bypass the onboarding guard */
+const ONBOARDING_BYPASS = ['/', '/auth/', '/api/', '/onboarding', '/s/'];
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -28,7 +31,25 @@ export async function updateSession(request: NextRequest) {
   );
 
   // Refresh session if expired
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Onboarding guard: redirect authenticated users without onboarding to /onboarding
+  if (user) {
+    const path = request.nextUrl.pathname;
+    const isBypassed =
+      path === '/' || ONBOARDING_BYPASS.some((prefix) => prefix !== '/' && path.startsWith(prefix));
+
+    if (!isBypassed) {
+      const onboardedCookie = request.cookies.get('ip_onboarded');
+      if (!onboardedCookie) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/onboarding';
+        return NextResponse.redirect(url);
+      }
+    }
+  }
 
   return supabaseResponse;
 }

@@ -48,6 +48,40 @@ export async function GET(request: Request) {
         // Non-blocking: welcome credits failure should not prevent login
       }
 
+      // Check if user has completed onboarding
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (user) {
+          const serviceClient = await createServiceClient();
+          const { data: profile } = await serviceClient
+            .from('user_profiles')
+            .select('onboarding_completed')
+            .eq('user_id', user.id)
+            .single();
+
+          if (profile?.onboarding_completed) {
+            // Onboarding complete — set cookie and redirect to original destination
+            const response = NextResponse.redirect(`${origin}${redirect}`);
+            response.cookies.set('ip_onboarded', '1', {
+              httpOnly: false,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              maxAge: 60 * 60 * 24 * 365, // 1 year
+              path: '/',
+            });
+            return response;
+          }
+
+          // No profile or onboarding incomplete — redirect to onboarding
+          return NextResponse.redirect(`${origin}/onboarding`);
+        }
+      } catch {
+        // Non-blocking: onboarding check failure should not prevent login
+      }
+
       return NextResponse.redirect(`${origin}${redirect}`);
     }
   }
