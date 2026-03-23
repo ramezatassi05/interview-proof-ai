@@ -12,8 +12,6 @@ import type {
   ExtractedJD,
   QuestionFeedbackResponse,
   BestAnswerResponse,
-  UserResume,
-  CareerAdvisorMessage,
 } from '@/types';
 
 const API_BASE = '/api';
@@ -131,27 +129,6 @@ export interface ShareResponse {
   data: {
     shareEnabled: boolean;
     shareUrl: string;
-  };
-}
-
-// Phase 9: Career Advisor
-export interface ParseResumeResponse {
-  data: {
-    resume: UserResume;
-    message: string;
-  };
-}
-
-export interface GetResumeResponse {
-  data: {
-    resume: UserResume | null;
-  };
-}
-
-export interface CareerAdvisorChatResponse {
-  data: {
-    response: string;
-    requiresResume: boolean;
   };
 }
 
@@ -389,60 +366,6 @@ class APIClient {
     });
   }
 
-  // Phase 9: Career Advisor
-
-  async parseResume(file: File): Promise<ParseResumeResponse> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    // Bypass this.request() — FormData needs the browser to set Content-Type with boundary
-    const res = await fetch(`${API_BASE}/resume/parse`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    const text = await res.text();
-    let data: unknown;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error(`Server returned an invalid response (HTTP ${res.status})`);
-    }
-
-    if (!res.ok) {
-      const error = data as APIError;
-      throw new APIRequestError(error.error || 'Request failed', res.status, error);
-    }
-
-    return data as ParseResumeResponse;
-  }
-
-  async parseResumeText(text: string): Promise<ParseResumeResponse> {
-    return this.request<ParseResumeResponse>('/resume/parse', {
-      method: 'POST',
-      body: JSON.stringify({ text }),
-    });
-  }
-
-  async getResume(): Promise<GetResumeResponse> {
-    return this.request<GetResumeResponse>('/resume');
-  }
-
-  async deleteResume(): Promise<{ data: { message: string } }> {
-    return this.request<{ data: { message: string } }>('/resume', {
-      method: 'DELETE',
-    });
-  }
-
-  async sendCareerAdvisorMessage(data: {
-    message: string;
-    conversationHistory?: CareerAdvisorMessage[];
-  }): Promise<CareerAdvisorChatResponse> {
-    return this.request<CareerAdvisorChatResponse>('/career-advisor/chat', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
 }
 
 export class APIRequestError extends Error {

@@ -146,12 +146,6 @@ export function Header() {
                 >
                   Dashboard
                 </Link>
-                <Link
-                  href="/dashboard/career-advisor"
-                  className="text-sm text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors hidden sm:block"
-                >
-                  Career Advisor
-                </Link>
                 <Link href="/new">
                   <Button variant="accent" size="sm">
                     New Analysis
@@ -204,13 +198,6 @@ export function Header() {
                     onClick={() => setMobileOpen(false)}
                   >
                     Dashboard
-                  </Link>
-                  <Link
-                    href="/dashboard/career-advisor"
-                    className="rounded-lg px-3 py-2.5 text-sm text-[var(--header-text-secondary)] hover:text-[var(--header-text)] hover:bg-[var(--header-elevated)] transition-colors"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    Career Advisor
                   </Link>
                 </>
               )}
