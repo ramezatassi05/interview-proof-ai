@@ -33,43 +33,21 @@ export function AnalysisTab({
 }: AnalysisTabProps) {
   return (
     <div className="space-y-8">
-      {/* Signal Strength */}
-      {scoreBreakdown && (
+      {/* Red Flags */}
+      {allRisks && allRisks.length > 0 && (
         <BlurFade delay={0.05}>
           <section>
-            <h2 className="section-label mb-4">Signal Strength</h2>
-            <ScoreBreakdown
-              breakdown={scoreBreakdown}
-              companyName={companyName}
-              evidenceContext={evidenceContext}
-            />
-          </section>
-        </BlurFade>
-      )}
-
-      {/* Hire Zone */}
-      {hireZoneAnalysis && (
-        <BlurFade delay={0.1}>
-          <section>
-            <h2 className="section-label mb-4">Hire Zone</h2>
-            <HireZoneChart hireZone={hireZoneAnalysis} companyName={companyName} />
-          </section>
-        </BlurFade>
-      )}
-
-      {/* Competency Map */}
-      {competencyHeatmap && (
-        <BlurFade delay={0.15}>
-          <section>
-            <h2 className="section-label mb-4">Competency Map</h2>
-            <CompetencyHeatmap heatmap={competencyHeatmap} companyName={companyName} />
+            <h2 className="section-label mb-4">
+              {companyName ? `${companyName} ` : ''}Red Flags ({allRisks.length})
+            </h2>
+            <RiskList risks={allRisks} showEvidence />
           </section>
         </BlurFade>
       )}
 
       {/* Strengths & Risks */}
       {scoreBreakdown && allRisks && (
-        <BlurFade delay={0.2}>
+        <BlurFade delay={0.1}>
           <section>
             <h2 className="section-label mb-4">Strengths & Risks</h2>
             <StrengthsAndRisks
@@ -82,14 +60,36 @@ export function AnalysisTab({
         </BlurFade>
       )}
 
-      {/* Red Flags */}
-      {allRisks && allRisks.length > 0 && (
+      {/* Hire Zone */}
+      {hireZoneAnalysis && (
+        <BlurFade delay={0.15}>
+          <section>
+            <h2 className="section-label mb-4">Hire Zone</h2>
+            <HireZoneChart hireZone={hireZoneAnalysis} companyName={companyName} />
+          </section>
+        </BlurFade>
+      )}
+
+      {/* Competency Map */}
+      {competencyHeatmap && (
+        <BlurFade delay={0.2}>
+          <section>
+            <h2 className="section-label mb-4">Competency Map</h2>
+            <CompetencyHeatmap heatmap={competencyHeatmap} companyName={companyName} />
+          </section>
+        </BlurFade>
+      )}
+
+      {/* Signal Strength */}
+      {scoreBreakdown && (
         <BlurFade delay={0.25}>
           <section>
-            <h2 className="section-label mb-4">
-              {companyName ? `${companyName} ` : ''}Red Flags ({allRisks.length})
-            </h2>
-            <RiskList risks={allRisks} showEvidence />
+            <h2 className="section-label mb-4">Signal Strength</h2>
+            <ScoreBreakdown
+              breakdown={scoreBreakdown}
+              companyName={companyName}
+              evidenceContext={evidenceContext}
+            />
           </section>
         </BlurFade>
       )}
