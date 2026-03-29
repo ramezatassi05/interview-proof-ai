@@ -10,7 +10,7 @@ import { InsightOwlMascot, InsightOwlWaving } from '@/components/svg/InsightOwlM
 import { WaitlistForm } from '@/components/waitlist/WaitlistForm';
 import { BlurFade } from '@/components/ui/blur-fade';
 import { TextAnimate } from '@/components/ui/text-animate';
-import { RotatingText } from '@/components/ui/rotating-text';
+import { TextRotate } from '@/components/ui/text-rotate';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { DotPattern } from '@/components/ui/dot-pattern';
 import { BackgroundBeams } from '@/components/ui/background-beams';
@@ -73,13 +73,25 @@ export function HeroSection({ lastReport, referralCode }: HeroSectionProps) {
               <h1 className="heading-modern text-4xl font-bold text-[var(--text-primary)] sm:text-5xl lg:text-6xl">
                 <TextAnimate animation="blurInUp" by="word">
                   Know Exactly What Will
-                </TextAnimate>{' '}
-                <RotatingText
-                  words={['Sink', 'Reject', 'Expose', 'Blindside', 'Cost']}
-                  interval={2500}
-                  className="text-gradient-accent"
-                />{' '}
-                <span className="text-gradient-accent">You</span>
+                </TextAnimate>
+                <TextRotate
+                  texts={[
+                    'Sink You',
+                    'Reject You',
+                    'Expose You',
+                    'Blindside You',
+                    'Cost You',
+                  ]}
+                  mainClassName="text-gradient-accent overflow-hidden py-0.5 sm:py-1 md:py-1.5"
+                  staggerFrom="last"
+                  staggerDuration={0.025}
+                  splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+                  initial={{ y: '100%' }}
+                  animate={{ y: 0 }}
+                  exit={{ y: '-120%' }}
+                  transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                  rotationInterval={2500}
+                />
               </h1>
             </BlurFade>
 
