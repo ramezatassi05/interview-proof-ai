@@ -90,7 +90,7 @@ export function HeroSection({ lastReport, referralCode }: HeroSectionProps) {
                   animate={{ y: 0 }}
                   exit={{ y: '-120%' }}
                   transition={{ type: 'spring', damping: 30, stiffness: 400 }}
-                  rotationInterval={2500}
+                  rotationInterval={1800}
                 />
               </h1>
             </BlurFade>
