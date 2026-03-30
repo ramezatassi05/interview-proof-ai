@@ -126,7 +126,7 @@ export default function AccountPage() {
   return (
     <AppLayout showIntelligencePanel={false}>
       <BlurFade delay={0}>
-        <h1 className="mb-8 text-2xl font-bold text-[var(--text-primary)]">Account</h1>
+        <h1 className="heading-modern mb-8 text-2xl font-bold text-[var(--text-primary)]">Account</h1>
       </BlurFade>
 
       <div className="max-w-lg">
@@ -161,9 +161,9 @@ export default function AccountPage() {
       <div className="mt-8">
         <BlurFade delay={0.15}>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)]">Your Reports</h2>
+            <h2 className="heading-modern text-lg font-semibold text-[var(--text-primary)]">Your Reports</h2>
             <Link href="/new">
-              <Button size="sm">New Analysis</Button>
+              <Button size="sm" rounded>New Analysis</Button>
             </Link>
           </div>
         </BlurFade>
@@ -176,7 +176,7 @@ export default function AccountPage() {
                   No reports yet. Start your first diagnostic!
                 </p>
                 <Link href="/new">
-                  <Button className="mt-4">Start Analysis</Button>
+                  <Button className="mt-4" rounded>Start Analysis</Button>
                 </Link>
               </CardContent>
             </Card>

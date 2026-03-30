@@ -184,7 +184,7 @@ export function ResumeSection({ initialResumeText }: ResumeSectionProps) {
               <p className="text-xs text-[var(--text-muted)]">
                 {resumeText.length.toLocaleString()} characters
               </p>
-              <Button variant="secondary" size="sm" onClick={handleStartEditing}>
+              <Button variant="primary" size="sm" rounded onClick={handleStartEditing}>
                 Update Resume
               </Button>
             </div>
