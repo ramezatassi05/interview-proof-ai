@@ -86,6 +86,7 @@ function OnboardingContent() {
     return init;
   });
   const [saving, setSaving] = useState(false);
+  const [profileChecked, setProfileChecked] = useState(false);
   const [jobMarketData, setJobMarketData] = useState<JobMarketData | null>(null);
   const [jobDataLoading, setJobDataLoading] = useState(false);
   const [benchmarkData, setBenchmarkData] = useState<OnboardingBenchmarkData | null>(null);
@@ -126,6 +127,24 @@ function OnboardingContent() {
       router.replace('/auth/login?redirect=/onboarding');
     }
   }, [authLoading, user, router]);
+
+  // Redirect away if user already completed onboarding
+  useEffect(() => {
+    if (authLoading || !user) return;
+
+    fetch('/api/profile')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json?.data?.onboardingCompleted) {
+          router.replace(redirectTarget);
+        } else {
+          setProfileChecked(true);
+        }
+      })
+      .catch(() => {
+        setProfileChecked(true);
+      });
+  }, [authLoading, user, router, redirectTarget]);
 
   // Fetch job market data in background when user reaches Urgency step
   const fetchJobData = useCallback(() => {
@@ -285,7 +304,7 @@ function OnboardingContent() {
   }, [user, state, ahaScore, router, redirectTarget]);
 
   // Don't render until auth check complete
-  if (authLoading || !user) {
+  if (authLoading || !user || !profileChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-500" />
