@@ -21,6 +21,9 @@ const PrepPreferencesSchema = z.object({
     .min(1)
     .max(3),
   additionalContext: z.string().max(500).optional(),
+  careerStage: z
+    .enum(['student', 'new_grad', 'career_changer', 'experienced_professional'])
+    .optional(),
 });
 
 const CreateReportSchema = z.object({

@@ -8,6 +8,7 @@ import type {
   PrepPreferences,
   CompanyDifficultyContext,
   PriorEmploymentSignal,
+  CareerStage,
 } from '@/types';
 import type { RubricChunk, QuestionArchetype } from './retrieval';
 import { computeCompanyDifficulty } from '@/server/scoring/company-difficulty';
@@ -233,6 +234,39 @@ function getTimelineDays(timeline: PrepPreferences['timeline']): number {
 }
 
 /**
+ * Returns career stage context for the LLM prompt.
+ */
+function getCareerStageContext(stage: CareerStage): string {
+  const contexts: Record<CareerStage, string> = {
+    student: `CANDIDATE CONTEXT: This is a STUDENT applying to internships.
+- Evaluate coursework, personal projects, hackathons, and learning velocity as primary evidence
+- Do NOT penalize for lack of years of professional experience — this is expected for students
+- Weight project complexity, academic achievements, and technical curiosity highly
+- Behavioral assessment should focus on teamwork in academic/project settings, not corporate leadership
+- Study plan tasks should emphasize fundamentals and interview pattern practice over advanced topics
+- recruiterSignals should reflect intern hiring criteria (potential over polish)`,
+
+    new_grad: `CANDIDATE CONTEXT: This is a RECENT GRADUATE entering the workforce.
+- Evaluate a mix of academic projects, internship experience, and any early career work
+- Some professional experience gaps are expected — focus on demonstrated potential
+- Weight internship achievements and capstone/thesis projects as meaningful evidence
+- Behavioral stories from internships and academic team projects are valid`,
+
+    career_changer: `CANDIDATE CONTEXT: This candidate is CHANGING CAREERS from another field.
+- They may have substantial professional experience but in a different domain
+- Evaluate transferable skills (leadership, project management, analytical thinking) as genuine strengths
+- Technical gaps in the new domain are expected — focus on learning trajectory and bridge skills
+- Their prior career experience is an asset, not irrelevant — help them frame it strategically`,
+
+    experienced_professional: `CANDIDATE CONTEXT: This is an EXPERIENCED PROFESSIONAL.
+- Apply standard evaluation criteria with full rigor
+- Expect demonstrated impact with metrics and leadership evidence
+- Hold to higher standards for system design and architectural thinking`,
+  };
+  return contexts[stage];
+}
+
+/**
  * Gets experience level label for display.
  */
 function getExperienceLabel(level: PrepPreferences['experienceLevel']): string {
@@ -340,6 +374,13 @@ When generating the study plan:
 - Prioritize tasks that address: ${getFocusAreaLabels(prepPreferences.focusAreas).join(', ')}
 - Include description, category, and priority level for each task
 - Total time should fit within ${Math.round(getTimelineDays(prepPreferences.timeline) * prepPreferences.dailyHours * 60)} minutes
+`
+    : ''
+}
+${
+  prepPreferences?.careerStage
+    ? `## Career Stage Context
+${getCareerStageContext(prepPreferences.careerStage)}
 `
     : ''
 }

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { api, APIRequestError } from '@/lib/api';
-import type { RoundType, PrepPreferences } from '@/types';
+import type { RoundType, PrepPreferences, CareerStage, ExperienceLevel } from '@/types';
 
 import { Container } from '@/components/layout/Container';
 import { Header } from '@/components/layout/Header';
@@ -44,6 +44,29 @@ export default function NewReportPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [manualResume, setManualResume] = useState(false);
+  const [profileCareerStage, setProfileCareerStage] = useState<CareerStage | null>(null);
+
+  // Fetch user profile to auto-populate experience level from onboarding
+  useEffect(() => {
+    if (!user) return;
+    fetch('/api/profile')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.data?.careerStage) {
+          setProfileCareerStage(data.data.careerStage);
+        }
+      })
+      .catch(() => {});
+  }, [user]);
+
+  const defaultExperienceLevel: ExperienceLevel | undefined = profileCareerStage
+    ? ({
+        student: 'intern' as const,
+        new_grad: 'entry' as const,
+        career_changer: 'entry' as const,
+        experienced_professional: 'mid' as const,
+      }[profileCareerStage])
+    : undefined;
 
   // Redirect to login if not authenticated
   if (!authLoading && !user) {
@@ -316,6 +339,8 @@ export default function NewReportPage() {
                       value={prepPreferences}
                       onChange={setPrepPreferences}
                       error={errors.prepPreferences}
+                      defaultExperienceLevel={defaultExperienceLevel}
+                      careerStage={profileCareerStage}
                     />
                   </CardContent>
                 </Card>

@@ -50,6 +50,8 @@ export interface UserProfile {
   targetCompanyTier: TargetCompanyTier | null;
   segment: string | null;
   resumeText: string | null;
+  targetCountries: string[] | null;
+  targetCities: string[] | null;
   onboardingCompleted: boolean;
   onboardingStep: number;
   onboardingCompletedAt: string | null;
@@ -70,6 +72,30 @@ export interface OnboardingState {
   resumeText: string;
   interviewExperience: InterviewExperience | null;
   targetCompanyTier: TargetCompanyTier | null;
+  targetCountries: string[];
+  targetCities: string[];
+}
+
+// ============================================
+// Job Market Data Types (Onboarding)
+// ============================================
+
+export interface JobMarketContext {
+  totalListings: number;
+  locationSummary: string;
+  roleSummary: string;
+  topEmployers: string[];
+  salaryRange?: { min: number; max: number; currency: string };
+  isInternshipOnly: boolean;
+  fetchedAt: string;
+  source: 'jsearch' | 'adzuna' | 'cache';
+}
+
+export interface JobMarketData {
+  contexts: JobMarketContext[];
+  aggregateListings: number;
+  calibrationAdjustment: number;
+  fetchError?: string;
 }
 
 // Database enums
@@ -703,6 +729,7 @@ export interface PrepPreferences {
   experienceLevel: ExperienceLevel;
   focusAreas: FocusArea[];
   additionalContext?: string;
+  careerStage?: CareerStage;
 }
 
 export interface DetailedTask {

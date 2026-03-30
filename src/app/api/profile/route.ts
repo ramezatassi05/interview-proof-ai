@@ -25,6 +25,8 @@ const ProfileSchema = z.object({
   resumeText: z.string().max(100000).optional(),
   interviewExperience: z.enum(['none', 'a_few', 'many']).nullable().optional(),
   targetCompanyTier: z.enum(['big_tech', 'startup', 'any']).nullable().optional(),
+  targetCountries: z.array(z.string().max(5)).max(10).optional(),
+  targetCities: z.array(z.string().max(100)).max(20).optional(),
   ahaScore: z
     .object({
       readinessEstimate: z.number(),
@@ -51,6 +53,8 @@ function mapRowToProfile(row: Record<string, unknown>): UserProfile {
     targetCompanyTier: row.target_company_tier as UserProfile['targetCompanyTier'],
     segment: row.segment as string | null,
     resumeText: row.resume_text as string | null,
+    targetCountries: (row.target_countries as string[]) ?? [],
+    targetCities: (row.target_cities as string[]) ?? [],
     onboardingCompleted: row.onboarding_completed as boolean,
     onboardingStep: row.onboarding_step as number,
     onboardingCompletedAt: row.onboarding_completed_at as string | null,
@@ -181,6 +185,8 @@ export async function POST(request: Request) {
       resume_text: input.resumeText ?? null,
       interview_experience: input.interviewExperience ?? null,
       target_company_tier: input.targetCompanyTier ?? null,
+      target_countries: input.targetCountries ?? [],
+      target_cities: input.targetCities ?? [],
       segment,
       aha_score: input.ahaScore ?? null,
     };

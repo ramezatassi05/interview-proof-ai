@@ -1,7 +1,13 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { InterviewTimeline, ExperienceLevel, FocusArea, PrepPreferences } from '@/types';
+import type {
+  InterviewTimeline,
+  ExperienceLevel,
+  FocusArea,
+  PrepPreferences,
+  CareerStage,
+} from '@/types';
 import { Textarea } from '@/components/ui/Textarea';
 
 // Timeline options
@@ -124,16 +130,25 @@ interface PrepPreferencesFormProps {
   value: PrepPreferences | null;
   onChange: (preferences: PrepPreferences) => void;
   error?: string;
+  defaultExperienceLevel?: ExperienceLevel;
+  careerStage?: CareerStage | null;
 }
 
-export function PrepPreferencesForm({ value, onChange, error }: PrepPreferencesFormProps) {
+export function PrepPreferencesForm({
+  value,
+  onChange,
+  error,
+  defaultExperienceLevel,
+  careerStage,
+}: PrepPreferencesFormProps) {
   const handleTimelineChange = (timeline: InterviewTimeline) => {
     onChange({
       timeline,
       dailyHours: value?.dailyHours ?? 2,
-      experienceLevel: value?.experienceLevel ?? 'entry',
+      experienceLevel: value?.experienceLevel ?? defaultExperienceLevel ?? 'entry',
       focusAreas: value?.focusAreas ?? [],
       additionalContext: value?.additionalContext,
+      careerStage: value?.careerStage ?? careerStage ?? undefined,
     });
   };
 

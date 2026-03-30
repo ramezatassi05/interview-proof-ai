@@ -10,6 +10,7 @@ import type {
   AhaScore,
   InterviewExperience,
   TargetCompanyTier,
+  JobMarketData,
 } from '@/types';
 
 import { OnboardingProgress } from '@/components/onboarding/OnboardingProgress';
@@ -17,11 +18,12 @@ import { StepWelcome } from '@/components/onboarding/StepWelcome';
 import { StepResumeUpload } from '@/components/onboarding/StepResumeUpload';
 import { StepCareerStage } from '@/components/onboarding/StepCareerStage';
 import { StepRoleDetails } from '@/components/onboarding/StepRoleDetails';
+import { StepLocation } from '@/components/onboarding/StepLocation';
 import { StepUrgency } from '@/components/onboarding/StepUrgency';
 import { StepAhaMoment } from '@/components/onboarding/StepAhaMoment';
 import { BlurFade } from '@/components/ui/blur-fade';
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 const STORAGE_KEY = 'ip_onboarding_draft';
 
 // ── State Machine ──────────────────────────────────────────────
@@ -44,6 +46,8 @@ const initialState: OnboardingState = {
   resumeText: '',
   interviewExperience: null,
   targetCompanyTier: null,
+  targetCountries: [],
+  targetCities: [],
 };
 
 function reducer(state: OnboardingState, action: Action): OnboardingState {
@@ -80,7 +84,10 @@ function OnboardingContent() {
     return init;
   });
   const [saving, setSaving] = useState(false);
+  const [jobMarketData, setJobMarketData] = useState<JobMarketData | null>(null);
+  const [jobDataLoading, setJobDataLoading] = useState(false);
   const isFirstRender = useRef(true);
+  const jobFetchTriggered = useRef(false);
 
   const redirectTarget = searchParams.get('redirect') ?? '/new';
 
@@ -116,6 +123,54 @@ function OnboardingContent() {
     }
   }, [authLoading, user, router]);
 
+  // Fetch job market data in background when user reaches Urgency step
+  useEffect(() => {
+    if (
+      state.step === 5 &&
+      state.targetCountries.length > 0 &&
+      !jobMarketData &&
+      !jobFetchTriggered.current
+    ) {
+      jobFetchTriggered.current = true;
+      setJobDataLoading(true);
+      fetch('/api/jobs/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          countries: state.targetCountries,
+          cities: state.targetCities,
+          targetRole: state.targetRole,
+          targetDomain: state.targetDomain,
+          careerStage: state.careerStage,
+        }),
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.data) setJobMarketData(data.data);
+        })
+        .catch(() => {
+          // Non-blocking — job data is additive
+        })
+        .finally(() => setJobDataLoading(false));
+    }
+  }, [
+    state.step,
+    state.targetCountries,
+    state.targetCities,
+    state.targetRole,
+    state.targetDomain,
+    state.careerStage,
+    jobMarketData,
+  ]);
+
+  // Invalidate job data if user goes back and changes locations
+  useEffect(() => {
+    if (state.step < 5 && jobFetchTriggered.current) {
+      jobFetchTriggered.current = false;
+      setJobMarketData(null);
+    }
+  }, [state.step]);
+
   // Auto-advance after career stage selection
   const handleCareerStageChange = useCallback(
     (stage: CareerStage) => {
@@ -137,6 +192,7 @@ function OnboardingContent() {
     resumeText: state.resumeText,
     interviewExperience: state.interviewExperience,
     targetCompanyTier: state.targetCompanyTier,
+    jobMarketData,
   });
 
   // Save profile and complete onboarding
@@ -159,6 +215,8 @@ function OnboardingContent() {
           resumeText: state.resumeText || undefined,
           interviewExperience: state.interviewExperience || undefined,
           targetCompanyTier: state.targetCompanyTier || undefined,
+          targetCountries: state.targetCountries,
+          targetCities: state.targetCities,
           ahaScore,
           onboardingCompleted: true,
         }),
@@ -200,11 +258,11 @@ function OnboardingContent() {
         currentStep={state.step}
         totalSteps={TOTAL_STEPS}
         onBack={() => dispatch({ type: 'PREV_STEP' })}
-        showBack={state.step > 0 && state.step < TOTAL_STEPS - 1}
+        showBack={state.step > 0 && state.step < 6}
       />
 
-      {/* Steps 0 + 5 render full-screen — skip constrained wrapper */}
-      {state.step === 0 || state.step === 5 ? (
+      {/* Steps 0 + 6 render full-screen — skip constrained wrapper */}
+      {state.step === 0 || state.step === 6 ? (
         <BlurFade key={state.step} duration={0.3} delay={0}>
           {state.step === 0 && (
             <StepWelcome
@@ -212,7 +270,7 @@ function OnboardingContent() {
               onContinue={() => dispatch({ type: 'NEXT_STEP' })}
             />
           )}
-          {state.step === 5 && (
+          {state.step === 6 && (
             <StepAhaMoment
               ahaScore={ahaScore}
               displayName={state.displayName}
@@ -221,6 +279,10 @@ function OnboardingContent() {
               targetDomain={state.targetDomain}
               prepUrgency={state.prepUrgency}
               biggestConcern={state.biggestConcern}
+              jobMarketData={jobMarketData}
+              jobDataLoading={jobDataLoading}
+              targetCountries={state.targetCountries}
+              targetCities={state.targetCities}
               onComplete={handleComplete}
               loading={saving}
             />
@@ -269,6 +331,20 @@ function OnboardingContent() {
               )}
 
               {state.step === 4 && (
+                <StepLocation
+                  targetCountries={state.targetCountries}
+                  targetCities={state.targetCities}
+                  onTargetCountriesChange={(v) =>
+                    dispatch({ type: 'SET_FIELD', field: 'targetCountries', value: v })
+                  }
+                  onTargetCitiesChange={(v) =>
+                    dispatch({ type: 'SET_FIELD', field: 'targetCities', value: v })
+                  }
+                  onContinue={() => dispatch({ type: 'NEXT_STEP' })}
+                />
+              )}
+
+              {state.step === 5 && (
                 <StepUrgency
                   careerStage={state.careerStage}
                   prepUrgency={state.prepUrgency}
