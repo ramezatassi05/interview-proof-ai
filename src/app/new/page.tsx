@@ -183,7 +183,7 @@ export default function NewReportPage() {
             <form onSubmit={handleSubmit}>
               {/* Header */}
               <div className="mb-8">
-                <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+                <h1 className="heading-modern text-2xl font-bold text-[var(--text-primary)]">
                   New Interview Diagnostic
                 </h1>
                 <p className="mt-2 text-[var(--text-secondary)]">
@@ -352,7 +352,7 @@ export default function NewReportPage() {
                 )}
 
                 <div className="flex justify-end">
-                  <Button variant="accent" type="submit" size="lg" loading={isLoading}>
+                  <Button variant="gradient" type="submit" size="lg" loading={isLoading}>
                     Analyze My Readiness
                   </Button>
                 </div>

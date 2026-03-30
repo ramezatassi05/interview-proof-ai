@@ -25,6 +25,7 @@ export interface SelectionContext {
   interviewExperience: InterviewExperience | null;
   targetCompanyTier: TargetCompanyTier | null;
   resumeSignals: ResumeSignals | null;
+  benchmarkDomainWeights: Record<string, number> | null;
   // Derived
   concernCategory: string | null;
   roleSeniority: string | null;
@@ -120,6 +121,14 @@ function roleOrDomain(ctx: SelectionContext): string {
   return ctx.targetRole || DOMAIN_LABELS[ctx.targetDomain];
 }
 
+function isBenchmarkTopDomain(ctx: SelectionContext, ...domains: string[]): boolean {
+  if (!ctx.benchmarkDomainWeights) return false;
+  const entries = Object.entries(ctx.benchmarkDomainWeights);
+  if (entries.length === 0) return false;
+  const topDomain = entries.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+  return domains.includes(topDomain);
+}
+
 // ── The Candidate Pool ─────────────────────────────────────────
 
 const ALL_STAGES: CareerStage[] = [
@@ -164,6 +173,11 @@ const POOL: FocusAreaCandidate[] = [
           ctx.resumeSignals !== null && !ctx.resumeSignals.detectedSkills.includes('algorithms'),
         weight: 2,
       },
+      {
+        signal: 'benchmark',
+        condition: (ctx) => isBenchmarkTopDomain(ctx, 'Coding / Algorithms'),
+        weight: 3,
+      },
     ],
     descriptionVariants: {
       urgent: () =>
@@ -205,6 +219,11 @@ const POOL: FocusAreaCandidate[] = [
         condition: (ctx) => ctx.roleSeniority === 'senior' || ctx.roleSeniority === 'staff',
         weight: 2,
       },
+      {
+        signal: 'benchmark',
+        condition: (ctx) => isBenchmarkTopDomain(ctx, 'Coding / Algorithms'),
+        weight: 3,
+      },
     ],
   },
 
@@ -236,6 +255,11 @@ const POOL: FocusAreaCandidate[] = [
           ctx.resumeSignals.detectedSkills.includes('backend') &&
           !ctx.resumeSignals.detectedSkills.includes('system_design'),
         weight: 2,
+      },
+      {
+        signal: 'benchmark',
+        condition: (ctx) => isBenchmarkTopDomain(ctx, 'System Design'),
+        weight: 3,
       },
     ],
     reasonVariants: {
@@ -274,6 +298,11 @@ const POOL: FocusAreaCandidate[] = [
           ctx.resumeSignals !== null &&
           ctx.resumeSignals.detectedSkills.includes('system_design'),
         weight: 2,
+      },
+      {
+        signal: 'benchmark',
+        condition: (ctx) => isBenchmarkTopDomain(ctx, 'System Design'),
+        weight: 3,
       },
     ],
     descriptionVariants: {
@@ -320,6 +349,11 @@ const POOL: FocusAreaCandidate[] = [
           ctx.resumeSignals !== null && !ctx.resumeSignals.hasQuantifiedImpact,
         weight: 2,
       },
+      {
+        signal: 'benchmark',
+        condition: (ctx) => isBenchmarkTopDomain(ctx, 'Behavioral', 'Leadership / Collab'),
+        weight: 3,
+      },
     ],
     descriptionVariants: {
       resume_thin: () =>
@@ -356,6 +390,11 @@ const POOL: FocusAreaCandidate[] = [
       {
         signal: 'concern',
         condition: (ctx) => ctx.concernCategory === 'behavioral',
+        weight: 3,
+      },
+      {
+        signal: 'benchmark',
+        condition: (ctx) => isBenchmarkTopDomain(ctx, 'Behavioral', 'Leadership / Collab'),
         weight: 3,
       },
     ],
@@ -976,6 +1015,7 @@ export const SIGNAL_SOURCE_LABELS: Record<string, string> = {
   tier: 'target companies',
   experience: 'interview experience',
   role: 'target role',
+  benchmark: 'benchmark data',
 };
 
 // ── Selection Algorithm ────────────────────────────────────────
@@ -991,6 +1031,7 @@ export function selectFocusAreas(
     interviewExperience: InterviewExperience | null;
     targetCompanyTier: TargetCompanyTier | null;
     resumeText: string;
+    benchmarkDomainWeights?: Record<string, number> | null;
   },
   resumeSignals: ResumeSignals | null
 ): FocusAreaItem[] {
@@ -1007,6 +1048,7 @@ export function selectFocusAreas(
     interviewExperience: input.interviewExperience,
     targetCompanyTier: input.targetCompanyTier,
     resumeSignals,
+    benchmarkDomainWeights: input.benchmarkDomainWeights ?? null,
     concernCategory: detectConcernCategory(input.biggestConcern),
     roleSeniority: parseRoleSeniority(input.targetRole),
     roleSpecialization: parseRoleSpecialization(input.targetRole),

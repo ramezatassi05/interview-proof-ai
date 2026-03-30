@@ -98,6 +98,33 @@ export interface JobMarketData {
   fetchError?: string;
 }
 
+// ── Onboarding Benchmark Data ─────────────────────────────────
+
+export interface OnboardingBenchmarkTarget {
+  domain: string;
+  targetScore: number;
+  tierLabel: string;
+  seniorityLabel: string;
+  confidence: BenchmarkConfidence;
+}
+
+export interface KnowledgeBaseStats {
+  totalRubricChunks: number;
+  totalQuestionArchetypes: number;
+  totalCalibratedCompanies: number;
+  domainRubricCount: number;
+  domainQuestionCount: number;
+  topWeightedDomain: string | null;
+}
+
+export interface OnboardingBenchmarkData {
+  benchmarkTargets: OnboardingBenchmarkTarget[];
+  knowledgeStats: KnowledgeBaseStats;
+  tierLabel: string;
+  seniorityLabel: string;
+  fetchError?: string;
+}
+
 // Database enums
 export type RoundType = 'technical' | 'behavioral' | 'research';
 export type RiskBand = 'Low' | 'Medium' | 'High';

@@ -27,6 +27,7 @@ export interface OnboardingInput {
   interviewExperience: InterviewExperience | null;
   targetCompanyTier: TargetCompanyTier | null;
   jobMarketData?: JobMarketData | null;
+  benchmarkDomainWeights?: Record<string, number> | null;
 }
 
 const CAREER_STAGE_ADJUSTMENTS: Record<CareerStage, number> = {

@@ -13,21 +13,21 @@ function OwlDefs({ id }: { id: string }) {
   return (
     <defs>
       <linearGradient id={`${id}-body`} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#4F46E5" />
-        <stop offset="100%" stopColor="#312E81" />
+        <stop offset="0%" stopColor="#4B5563" />
+        <stop offset="100%" stopColor="#1F2937" />
       </linearGradient>
       <linearGradient id={`${id}-wing`} x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stopColor="#4338CA" />
-        <stop offset="100%" stopColor="#1E1B4B" />
+        <stop offset="0%" stopColor="#374151" />
+        <stop offset="100%" stopColor="#111827" />
       </linearGradient>
       <linearGradient id={`${id}-chest`} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#E0E7FF" />
-        <stop offset="100%" stopColor="#C7D2FE" />
+        <stop offset="0%" stopColor="#D1D5DB" />
+        <stop offset="100%" stopColor="#9CA3AF" />
       </linearGradient>
       <radialGradient id={`${id}-disc`} cx="50%" cy="45%" r="50%">
-        <stop offset="0%" stopColor="#EEF2FF" />
-        <stop offset="70%" stopColor="#C7D2FE" />
-        <stop offset="100%" stopColor="#A5B4FC" />
+        <stop offset="0%" stopColor="#F3F4F6" />
+        <stop offset="70%" stopColor="#9CA3AF" />
+        <stop offset="100%" stopColor="#9CA3AF" />
       </radialGradient>
     </defs>
   );
@@ -63,7 +63,7 @@ function OwlBody({ id }: { id: string }) {
       />
 
       {/* Chest feather pattern — V-shaped markings */}
-      <g opacity="0.3" stroke="#818CF8" strokeWidth="0.8" fill="none">
+      <g opacity="0.3" stroke="#9CA3AF" strokeWidth="0.8" fill="none">
         <path d="M58 70 L64 74 L70 70" />
         <path d="M56 78 L64 82 L72 78" />
         <path d="M57 86 L64 90 L71 86" />
@@ -71,13 +71,13 @@ function OwlBody({ id }: { id: string }) {
       </g>
 
       {/* Shoulder feather scallops — left */}
-      <g opacity="0.2" stroke="#818CF8" strokeWidth="0.7" fill="none">
+      <g opacity="0.2" stroke="#9CA3AF" strokeWidth="0.7" fill="none">
         <path d="M36 60 Q40 56 44 60" />
         <path d="M34 68 Q38 64 42 68" />
         <path d="M35 76 Q39 72 43 76" />
       </g>
       {/* Shoulder feather scallops — right */}
-      <g opacity="0.2" stroke="#818CF8" strokeWidth="0.7" fill="none">
+      <g opacity="0.2" stroke="#9CA3AF" strokeWidth="0.7" fill="none">
         <path d="M84 60 Q88 56 92 60" />
         <path d="M86 68 Q90 64 94 68" />
         <path d="M85 76 Q89 72 93 76" />
@@ -114,14 +114,14 @@ function OwlFace({
   const renderEye = (cx: number, cy: number, side: 'left' | 'right') => (
     <g key={side}>
       {/* Eye socket shadow */}
-      <circle cx={cx} cy={cy} r={whiteR + 2} fill="#312E81" opacity="0.3" />
+      <circle cx={cx} cy={cy} r={whiteR + 2} fill="#1F2937" opacity="0.3" />
       {/* Eye white */}
       <circle cx={cx} cy={cy} r={whiteR} fill="#FEFCE8" />
       <g style={scanAnim ? { animation: 'owl-read-scan 3s ease-in-out infinite', animationDelay: side === 'right' ? '0.15s' : '0s' } : undefined}>
         {/* Iris */}
-        <circle cx={cx + gazeX} cy={cy + gazeY} r={iR} fill="#F59E0B" />
+        <circle cx={cx + gazeX} cy={cy + gazeY} r={iR} fill="#374151" />
         {/* Iris detail ring */}
-        <circle cx={cx + gazeX} cy={cy + gazeY} r={iR - 2} fill="none" stroke="#D97706" strokeWidth="0.5" opacity="0.4" />
+        <circle cx={cx + gazeX} cy={cy + gazeY} r={iR - 2} fill="none" stroke="#1F2937" strokeWidth="0.5" opacity="0.4" />
         {/* Pupil */}
         <circle cx={cx + gazeX} cy={cy + gazeY} r={pR} fill="#0F0A2A" />
         {/* Specular highlights */}
@@ -188,16 +188,16 @@ function OwlFace({
            C82 58 92 52 92 42
            C92 30 80 22 64 22 Z"
         fill="none"
-        stroke="#A5B4FC"
+        stroke="#9CA3AF"
         strokeWidth="1.2"
         opacity="0.5"
       />
       {/* Inner disc V-line (nasal ridge) */}
-      <path d="M64 30 L64 50" stroke="#A5B4FC" strokeWidth="0.6" opacity="0.3" />
+      <path d="M64 30 L64 50" stroke="#9CA3AF" strokeWidth="0.6" opacity="0.3" />
 
       {/* Brow ridges — the stern overhanging brow that gives owls their intense look */}
-      <path d="M38 34 Q44 28 54 32" fill="#3730A3" opacity="0.6" />
-      <path d="M90 34 Q84 28 74 32" fill="#3730A3" opacity="0.6" />
+      <path d="M38 34 Q44 28 54 32" fill="#374151" opacity="0.6" />
+      <path d="M90 34 Q84 28 74 32" fill="#374151" opacity="0.6" />
 
       {/* Eyes */}
       {renderEye(51, 40, 'left')}
@@ -206,14 +206,14 @@ function OwlFace({
       {/* Beak — small hooked shape */}
       {beakOpen ? (
         <g>
-          <path d="M61 51 L64 48 L67 51" fill="#7C3AED" />
-          <path d="M62 51 L64 55 L66 51" fill="#6D28D9" opacity="0.8" />
+          <path d="M61 51 L64 48 L67 51" fill="#4B5563" />
+          <path d="M62 51 L64 55 L66 51" fill="#374151" opacity="0.8" />
         </g>
       ) : (
-        <path d="M61 50 Q64 46 67 50 Q64 56 61 50 Z" fill="#7C3AED" />
+        <path d="M61 50 Q64 46 67 50 Q64 56 61 50 Z" fill="#4B5563" />
       )}
       {/* Beak highlight */}
-      <path d="M63 49 Q64 47.5 65 49" fill="none" stroke="#A78BFA" strokeWidth="0.5" opacity="0.6" />
+      <path d="M63 49 Q64 47.5 65 49" fill="none" stroke="#6B7280" strokeWidth="0.5" opacity="0.6" />
     </g>
   );
 }
@@ -225,13 +225,13 @@ function OwlTufts({ id }: { id: string }) {
     <g>
       {/* Left tuft — 3 layered feather spikes */}
       <path d="M42 18 Q36 6 34 -2 Q42 6 46 16" fill={`url(#${id}-body)`} />
-      <path d="M44 20 Q40 10 38 2 Q44 10 47 18" fill="#818CF8" opacity="0.6" />
-      <path d="M46 22 Q44 14 42 6 Q46 12 48 20" fill="#A5B4FC" opacity="0.3" />
+      <path d="M44 20 Q40 10 38 2 Q44 10 47 18" fill="#9CA3AF" opacity="0.6" />
+      <path d="M46 22 Q44 14 42 6 Q46 12 48 20" fill="#9CA3AF" opacity="0.3" />
 
       {/* Right tuft — mirrored */}
       <path d="M86 18 Q92 6 94 -2 Q86 6 82 16" fill={`url(#${id}-body)`} />
-      <path d="M84 20 Q88 10 90 2 Q84 10 81 18" fill="#818CF8" opacity="0.6" />
-      <path d="M82 22 Q84 14 86 6 Q82 12 80 20" fill="#A5B4FC" opacity="0.3" />
+      <path d="M84 20 Q88 10 90 2 Q84 10 81 18" fill="#9CA3AF" opacity="0.6" />
+      <path d="M82 22 Q84 14 86 6 Q82 12 80 20" fill="#9CA3AF" opacity="0.3" />
     </g>
   );
 }
@@ -256,8 +256,8 @@ function OwlWing({
       right: 'M92 58 C100 66 106 80 104 96 C103 102 98 104 94 100 C90 94 88 82 88 72 Z',
     },
     raised: {
-      left:  'M36 58 C26 46 18 30 14 18 C14 12 18 14 22 20 C28 32 34 48 38 56 Z',
-      right: 'M92 58 C102 46 110 30 114 18 C114 12 110 14 106 20 C100 32 94 48 90 56 Z',
+      left:  'M36 56 C28 42 24 28 24 18 Q26 8 20 8 Q20 -2 14 8 Q12 0 10 12 C10 24 16 42 22 52 C28 58 32 58 36 56 Z',
+      right: 'M92 56 C100 42 104 28 104 18 Q102 8 108 8 Q108 -2 114 8 Q116 0 118 12 C118 24 112 42 106 52 C100 58 96 58 92 56 Z',
     },
     chin: {
       left:  'M36 58 C28 54 28 46 32 40 C36 36 42 40 42 48 C42 54 40 58 38 60 Z',
@@ -284,14 +284,8 @@ function OwlWing({
       ],
     },
     raised: {
-      left: [
-        'M16 22 C13 18 14 14 18 16',
-        'M18 26 C14 22 16 18 20 20',
-      ],
-      right: [
-        'M112 22 C115 18 114 14 110 16',
-        'M110 26 C114 22 112 18 108 20',
-      ],
+      left: [],
+      right: [],
     },
     chin: {
       left:  ['M32 42 C30 38 34 36 36 38'],
@@ -316,8 +310,8 @@ function OwlWing({
       ],
     },
     raised: {
-      left:  ['M30 44 C26 36 22 28 20 22'],
-      right: ['M98 44 C102 36 106 28 108 22'],
+      left: [],
+      right: [],
     },
     chin: {
       left:  ['M36 50 C32 46 32 42 34 40'],
@@ -335,11 +329,11 @@ function OwlWing({
       <path d={paths[pose][side]} fill={`url(#${id}-wing)`} />
       {/* Feather tips — slightly lighter */}
       {featherTips[pose][side].map((d, i) => (
-        <path key={`tip-${i}`} d={d} fill="none" stroke="#6366F1" strokeWidth="1" opacity={0.35 - i * 0.05} />
+        <path key={`tip-${i}`} d={d} fill="none" stroke="#6B7280" strokeWidth="1" opacity={0.35 - i * 0.05} />
       ))}
       {/* Covert feather lines */}
       {coverts[pose][side].map((d, i) => (
-        <path key={`cov-${i}`} d={d} fill="none" stroke="#818CF8" strokeWidth="0.6" opacity={0.25 - i * 0.05} />
+        <path key={`cov-${i}`} d={d} fill="none" stroke="#9CA3AF" strokeWidth="0.6" opacity={0.25 - i * 0.05} />
       ))}
     </g>
   );
@@ -351,13 +345,13 @@ function OwlTalons() {
   return (
     <g>
       {/* Left foot */}
-      <path d="M52 116 C50 118 48 122 46 124" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      <path d="M54 116 C54 119 54 122 54 124" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      <path d="M56 116 C58 118 59 121 60 124" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      <path d="M52 116 C50 118 48 122 46 124" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      <path d="M54 116 C54 119 54 122 54 124" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      <path d="M56 116 C58 118 59 121 60 124" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" fill="none" />
       {/* Right foot */}
-      <path d="M72 116 C70 118 69 121 68 124" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      <path d="M74 116 C74 119 74 122 74 124" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      <path d="M76 116 C78 118 80 122 82 124" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      <path d="M72 116 C70 118 69 121 68 124" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      <path d="M74 116 C74 119 74 122 74 124" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      <path d="M76 116 C78 118 80 122 82 124" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" fill="none" />
     </g>
   );
 }
@@ -392,7 +386,7 @@ export function InsightOwlMascot({ className = '', size }: OwlProps) {
       style={{ animation: 'owl-bob 4s ease-in-out infinite', transformOrigin: 'center bottom' }}
     >
       <OwlDefs id={id} />
-      <circle cx="64" cy="64" r="56" fill="#F472B6" opacity="0.03" />
+      <circle cx="64" cy="64" r="56" fill="#9CA3AF" opacity="0.03" />
       <OwlTail id={id} />
       <OwlWing id={id} side="left" anim={{ animation: 'owl-wing-flutter 3s ease-in-out infinite' }} />
       <OwlWing id={id} side="right" anim={{ animation: 'owl-wing-flutter 3s ease-in-out infinite' }} />
@@ -427,7 +421,7 @@ export function InsightOwlWaving({ className = '', size }: OwlProps) {
       <OwlBody id={id} />
       <OwlTufts id={id} />
       <OwlFace id={id} eyeScale={1.1} blink beakOpen />
-      <OwlWing id={id} side="right" pose="raised" anim={{ transformOrigin: '92px 58px', animation: 'owl-wave-v2 2s ease-in-out infinite' }} />
+      <OwlWing id={id} side="right" pose="raised" anim={{ transformOrigin: '92px 56px', animation: 'owl-wave-v2 2s ease-in-out infinite' }} />
       <OwlTalons />
     </svg>
   );
@@ -452,9 +446,9 @@ export function InsightOwlThinking({ className = '', size }: OwlProps) {
     >
       <OwlDefs id={id} />
       {/* Thought bubbles */}
-      <circle cx="104" cy="20" r="2.5" fill="#818CF8" opacity="0.4" />
-      <circle cx="112" cy="12" r="3.5" fill="#818CF8" opacity="0.3" />
-      <circle cx="120" cy="6" r="4.5" fill="#818CF8" opacity="0.2" />
+      <circle cx="104" cy="20" r="2.5" fill="#9CA3AF" opacity="0.4" />
+      <circle cx="112" cy="12" r="3.5" fill="#9CA3AF" opacity="0.3" />
+      <circle cx="120" cy="6" r="4.5" fill="#9CA3AF" opacity="0.2" />
       <OwlTail id={id} />
       <OwlWing id={id} side="right" />
       <OwlBody id={id} />
@@ -486,16 +480,16 @@ export function InsightOwlCelebrating({ className = '', size }: OwlProps) {
       <OwlDefs id={id} />
       {/* Sparkle stars */}
       <g style={{ animation: 'owl-sparkle-v2 1.5s ease-in-out infinite', transformOrigin: '20px 8px' }}>
-        <path d="M18 4 L20 0 L22 4 L26 6 L22 8 L20 12 L18 8 L14 6 Z" fill="#818CF8" opacity="0.8" />
+        <path d="M18 4 L20 0 L22 4 L26 6 L22 8 L20 12 L18 8 L14 6 Z" fill="#9CA3AF" opacity="0.8" />
       </g>
       <g style={{ animation: 'owl-sparkle-v2 1.5s ease-in-out infinite 0.5s', transformOrigin: '108px 4px' }}>
-        <path d="M106 0 L108 -4 L110 0 L114 2 L110 4 L108 8 L106 4 L102 2 Z" fill="#A78BFA" opacity="0.8" />
+        <path d="M106 0 L108 -4 L110 0 L114 2 L110 4 L108 8 L106 4 L102 2 Z" fill="#6B7280" opacity="0.8" />
       </g>
       <g style={{ animation: 'owl-sparkle-v2 1.5s ease-in-out infinite 1s', transformOrigin: '9px 32px' }}>
-        <path d="M7 29 L9 26 L11 29 L14 31 L11 33 L9 36 L7 33 L4 31 Z" fill="#818CF8" opacity="0.6" />
+        <path d="M7 29 L9 26 L11 29 L14 31 L11 33 L9 36 L7 33 L4 31 Z" fill="#9CA3AF" opacity="0.6" />
       </g>
       <g style={{ animation: 'owl-sparkle-v2 1.5s ease-in-out infinite 0.75s', transformOrigin: '120px 30px' }}>
-        <path d="M118 27 L120 24 L122 27 L125 29 L122 31 L120 34 L118 31 L115 29 Z" fill="#A78BFA" opacity="0.6" />
+        <path d="M118 27 L120 24 L122 27 L125 29 L122 31 L120 34 L118 31 L115 29 Z" fill="#6B7280" opacity="0.6" />
       </g>
       <OwlTail id={id} />
       <OwlBody id={id} />
@@ -533,11 +527,11 @@ export function InsightOwlReading({ className = '', size }: OwlProps) {
       <OwlWing id={id} side="left" pose="holding" />
       <OwlWing id={id} side="right" pose="holding" />
       {/* Clipboard */}
-      <rect x="46" y="78" width="36" height="28" rx="3" fill="#E0E7FF" stroke="#A5B4FC" strokeWidth="1" />
-      <rect x="56" y="75" width="16" height="5" rx="2" fill="#818CF8" opacity="0.7" />
-      <line x1="52" y1="87" x2="76" y2="87" stroke="#C7D2FE" strokeWidth="0.8" />
-      <line x1="52" y1="92" x2="72" y2="92" stroke="#C7D2FE" strokeWidth="0.8" />
-      <line x1="52" y1="97" x2="68" y2="97" stroke="#C7D2FE" strokeWidth="0.8" />
+      <rect x="46" y="78" width="36" height="28" rx="3" fill="#D1D5DB" stroke="#9CA3AF" strokeWidth="1" />
+      <rect x="56" y="75" width="16" height="5" rx="2" fill="#9CA3AF" opacity="0.7" />
+      <line x1="52" y1="87" x2="76" y2="87" stroke="#9CA3AF" strokeWidth="0.8" />
+      <line x1="52" y1="92" x2="72" y2="92" stroke="#9CA3AF" strokeWidth="0.8" />
+      <line x1="52" y1="97" x2="68" y2="97" stroke="#9CA3AF" strokeWidth="0.8" />
       <OwlTalons />
     </svg>
   );
@@ -569,30 +563,30 @@ export function InsightOwlAnalyzing({ className = '', size }: OwlProps) {
         <OwlWing id={id} side="left" pose="holding" />
         <OwlWing id={id} side="right" pose="holding" />
         {/* Clipboard body — larger than Reading variant */}
-        <rect x="44" y="74" width="40" height="34" rx="3" fill="#E0E7FF" stroke="#A5B4FC" strokeWidth="1" />
+        <rect x="44" y="74" width="40" height="34" rx="3" fill="#D1D5DB" stroke="#9CA3AF" strokeWidth="1" />
         {/* Clip/binder at top */}
-        <rect x="56" y="71" width="16" height="5" rx="2" fill="#818CF8" opacity="0.7" />
+        <rect x="56" y="71" width="16" height="5" rx="2" fill="#9CA3AF" opacity="0.7" />
         {/* Line graph (ascending) */}
         <polyline
           points="50,98 56,94 62,96 68,88 74,84"
           fill="none"
-          stroke="#4F46E5"
+          stroke="#4B5563"
           strokeWidth="1.2"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         {/* Graph dots */}
-        <circle cx="50" cy="98" r="1.2" fill="#4F46E5" />
-        <circle cx="56" cy="94" r="1.2" fill="#4F46E5" />
-        <circle cx="62" cy="96" r="1.2" fill="#4F46E5" />
-        <circle cx="68" cy="88" r="1.2" fill="#4F46E5" />
-        <circle cx="74" cy="84" r="1.2" fill="#4F46E5" />
+        <circle cx="50" cy="98" r="1.2" fill="#4B5563" />
+        <circle cx="56" cy="94" r="1.2" fill="#4B5563" />
+        <circle cx="62" cy="96" r="1.2" fill="#4B5563" />
+        <circle cx="68" cy="88" r="1.2" fill="#4B5563" />
+        <circle cx="74" cy="84" r="1.2" fill="#4B5563" />
         {/* Horizontal rule */}
-        <line x1="50" y1="100" x2="78" y2="100" stroke="#C7D2FE" strokeWidth="0.6" />
+        <line x1="50" y1="100" x2="78" y2="100" stroke="#9CA3AF" strokeWidth="0.6" />
         {/* Mini bar chart below */}
-        <rect x="52" y="102" width="4" height="3" rx="0.5" fill="#818CF8" opacity="0.6" />
-        <rect x="58" y="101" width="4" height="4" rx="0.5" fill="#818CF8" opacity="0.7" />
-        <rect x="64" y="100" width="4" height="5" rx="0.5" fill="#818CF8" opacity="0.8" />
+        <rect x="52" y="102" width="4" height="3" rx="0.5" fill="#9CA3AF" opacity="0.6" />
+        <rect x="58" y="101" width="4" height="4" rx="0.5" fill="#9CA3AF" opacity="0.7" />
+        <rect x="64" y="100" width="4" height="5" rx="0.5" fill="#9CA3AF" opacity="0.8" />
         {/* Checkmark */}
         <path
           d="M72 103 L74 105 L78 99"
@@ -603,8 +597,8 @@ export function InsightOwlAnalyzing({ className = '', size }: OwlProps) {
           strokeLinejoin="round"
         />
         {/* Pen in right wing */}
-        <line x1="88" y1="78" x2="80" y2="98" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" />
-        <circle cx="80" cy="98" r="1" fill="#4F46E5" />
+        <line x1="88" y1="78" x2="80" y2="98" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="80" cy="98" r="1" fill="#4B5563" />
         <OwlTalons />
       </g>
     </svg>
@@ -641,15 +635,15 @@ export function InsightOwlProfessional({ className = '', size }: OwlProps) {
       {/* Round glasses */}
       <g>
         {/* Left lens */}
-        <circle cx="51" cy="42" r="8" fill="none" stroke="#312E81" strokeWidth="1.2" />
+        <circle cx="51" cy="42" r="8" fill="none" stroke="#1F2937" strokeWidth="1.2" />
         {/* Right lens */}
-        <circle cx="77" cy="42" r="8" fill="none" stroke="#312E81" strokeWidth="1.2" />
+        <circle cx="77" cy="42" r="8" fill="none" stroke="#1F2937" strokeWidth="1.2" />
         {/* Bridge */}
-        <path d="M59 42 Q64 39 69 42" fill="none" stroke="#312E81" strokeWidth="1.2" />
+        <path d="M59 42 Q64 39 69 42" fill="none" stroke="#1F2937" strokeWidth="1.2" />
         {/* Left temple arm */}
-        <path d="M43 42 Q38 40 36 34" fill="none" stroke="#312E81" strokeWidth="1" />
+        <path d="M43 42 Q38 40 36 34" fill="none" stroke="#1F2937" strokeWidth="1" />
         {/* Right temple arm */}
-        <path d="M85 42 Q90 40 92 34" fill="none" stroke="#312E81" strokeWidth="1" />
+        <path d="M85 42 Q90 40 92 34" fill="none" stroke="#1F2937" strokeWidth="1" />
         {/* Left lens glare */}
         <circle cx="48" cy="39" r="1.5" fill="white" opacity="0.35" />
         {/* Right lens glare */}

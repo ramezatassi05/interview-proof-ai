@@ -12,6 +12,7 @@ import { BlurFade } from '@/components/ui/blur-fade';
 import { TextAnimate } from '@/components/ui/text-animate';
 import { TextRotate } from '@/components/ui/text-rotate';
 import { BorderBeam } from '@/components/ui/border-beam';
+import { LiquidButton } from '@/components/ui/liquid-glass-button';
 import { DotPattern } from '@/components/ui/dot-pattern';
 import { BackgroundBeams } from '@/components/ui/background-beams';
 import { ShineBorder } from '@/components/ui/shine-border';
@@ -154,14 +155,9 @@ export function HeroSection({ lastReport, referralCode }: HeroSectionProps) {
                 </div>
               ) : (
                 <div className="relative flex flex-wrap items-center gap-4">
-                  <Link
-                    href={ctaHref}
-                    className="group relative rounded-full bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 p-[2px]"
-                  >
-                    <span className="flex items-center justify-center gap-2 rounded-full bg-black px-8 py-3.5 text-base font-semibold text-white transition-colors group-hover:bg-black/90">
-                      Run My Diagnostic
-                    </span>
-                  </Link>
+                  <LiquidButton href={ctaHref} variant="gradient" size={null} className="px-8 py-3.5 text-base">
+                    Run My Diagnostic
+                  </LiquidButton>
                   <InsightOwlMascot size={44} />
                 </div>
               )}
@@ -240,12 +236,14 @@ export function HeroSection({ lastReport, referralCode }: HeroSectionProps) {
                   )}
 
                   <div className="pt-2">
-                    <Link
+                    <LiquidButton
                       href={`/r/${lastReport.id}${lastReport.paidUnlocked ? '/full' : ''}`}
-                      className="block h-10 rounded-lg bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 flex items-center justify-center text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                      variant="gradient"
+                      size={null}
+                      className="h-10 w-full rounded-lg text-sm"
                     >
                       View Full Diagnostic
-                    </Link>
+                    </LiquidButton>
                   </div>
                 </div>
               </div>

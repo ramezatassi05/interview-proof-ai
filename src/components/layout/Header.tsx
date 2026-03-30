@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
 import { Button } from '@/components/ui/Button';
+import { LiquidButton } from '@/components/ui/liquid-glass-button';
 
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Container } from './Container';
@@ -146,11 +147,9 @@ export function Header() {
                 >
                   Dashboard
                 </Link>
-                <Link href="/new">
-                  <Button variant="accent" size="sm">
-                    New Analysis
-                  </Button>
-                </Link>
+                <LiquidButton href="/new" variant="gradient" size={null} className="px-4 py-2 text-sm">
+                  New Analysis
+                </LiquidButton>
                 <Link href="/account" className="flex items-center gap-1.5 text-xs text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors">
                   <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--header-elevated)] border border-[var(--header-border)] text-xs font-mono font-semibold text-[var(--header-text-secondary)]">
                     {user.email?.[0]?.toUpperCase() ?? 'U'}

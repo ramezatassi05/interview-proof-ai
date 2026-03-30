@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import type {
   AhaScore,
   CareerStage,
@@ -7,6 +8,7 @@ import type {
   OnboardingPrepUrgency,
   FocusAreaItem,
   JobMarketData,
+  OnboardingBenchmarkData,
 } from '@/types';
 import { getCountryByCode } from '@/lib/location-data';
 import { SIGNAL_SOURCE_LABELS } from '@/lib/focus-area-pool';
@@ -16,6 +18,11 @@ import type { OrbitalNode } from '@/components/ui/radial-orbital-timeline';
 import { NumberTicker } from '@/components/ui/number-ticker';
 import { TextAnimate } from '@/components/ui/text-animate';
 import { ShineBorder } from '@/components/ui/shine-border';
+import { BorderBeam } from '@/components/ui/border-beam';
+import { ShimmerButton } from '@/components/ui/shimmer-button';
+import { DotPattern } from '@/components/ui/dot-pattern';
+import { fireConfetti } from '@/components/ui/confetti';
+import { AhaParallaxSection } from './aha-parallax-section';
 
 interface StepAhaMomentProps {
   ahaScore: AhaScore;
@@ -27,6 +34,8 @@ interface StepAhaMomentProps {
   biggestConcern: string;
   jobMarketData?: JobMarketData | null;
   jobDataLoading?: boolean;
+  benchmarkData?: OnboardingBenchmarkData | null;
+  benchmarkLoading?: boolean;
   targetCountries?: string[];
   targetCities?: string[];
   onComplete: () => void;
@@ -111,7 +120,6 @@ function getFirstName(name: string): string {
   return name.split(' ')[0] || name;
 }
 
-/** Type guard: is this a rich FocusAreaItem or a legacy plain string? */
 function isFocusAreaItem(area: FocusAreaItem | string): area is FocusAreaItem {
   return typeof area === 'object' && 'id' in area;
 }
@@ -126,11 +134,14 @@ export function StepAhaMoment({
   biggestConcern,
   jobMarketData,
   jobDataLoading,
+  benchmarkData,
+  benchmarkLoading,
   targetCountries,
   targetCities,
   onComplete,
   loading,
 }: StepAhaMomentProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const scoreColorClass = getScoreColorClass(ahaScore.readinessEstimate);
   const firstName = getFirstName(displayName);
 
@@ -141,9 +152,7 @@ export function StepAhaMoment({
   else if (targetDomain) pills.push(DOMAIN_LABELS[targetDomain]);
   if (prepUrgency) pills.push(URGENCY_LABELS[prepUrgency]);
 
-  // Add location pills
   if (targetCities && targetCities.length > 0) {
-    // Show first 2 cities
     const cityLabels = targetCities.slice(0, 2).map((c) => c.split(',')[0].trim());
     pills.push(...cityLabels);
     if (targetCities.length > 2) pills.push(`+${targetCities.length - 2} more`);
@@ -155,16 +164,33 @@ export function StepAhaMoment({
     if (targetCountries.length > 2) pills.push(`+${targetCountries.length - 2} more`);
   }
 
-  // Job market context for display
   const jobContext = jobMarketData?.contexts?.[0] ?? null;
   const hasJobData = jobContext && !jobMarketData?.fetchError;
 
+  const hasBenchmarks =
+    benchmarkData && !benchmarkData.fetchError && benchmarkData.benchmarkTargets.length > 0;
+  const hasKnowledgeStats =
+    benchmarkData &&
+    !benchmarkData.fetchError &&
+    benchmarkData.knowledgeStats.totalRubricChunks > 0;
+
+  const handleComplete = () => {
+    fireConfetti();
+    onComplete();
+  };
+
   return (
-    <div className="h-screen w-full bg-white flex flex-col overflow-hidden">
-      {/* ── Header (centered, full width) ── */}
-      <div className="pt-6 pb-2 px-6 text-center flex-shrink-0">
+    <div
+      ref={scrollRef}
+      className="relative h-screen w-full overflow-y-auto bg-white"
+      style={{ '--dot-grid-color': 'rgba(0,0,0,0.04)' } as React.CSSProperties}
+    >
+      <DotPattern className="opacity-40" />
+
+      {/* ── Sticky Header ── */}
+      <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-zinc-100/60 pt-14 pb-4 px-6 text-center">
         <BlurFade delay={0}>
-          <h2 className="heading-modern text-xl sm:text-2xl font-bold text-[var(--text-primary)] mb-2">
+          <h2 className="heading-modern text-2xl sm:text-3xl font-bold text-zinc-900 mb-3">
             <TextAnimate animation="blurInUp" by="word" delay={0.1}>
               {`Here's your plan, ${firstName}`}
             </TextAnimate>
@@ -185,301 +211,443 @@ export function StepAhaMoment({
         </BlurFade>
       </div>
 
-      {/* ── Two-column grid — vertically centered in remaining space ── */}
-      <div className="flex-1 flex items-center justify-center px-6 pb-4 min-h-0">
-        <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 items-center">
-
-          {/* ─── LEFT COLUMN: Orbital Timeline + Score + Breakdown ─── */}
-          <div className="flex flex-col items-center">
-            {/* Radial Orbital Timeline */}
-            <BlurFade delay={0.25}>
-              <div className="relative h-[220px] w-[220px] lg:h-[260px] lg:w-[260px] mb-2">
-                <RadialOrbitalTimeline
-                  nodes={ORBITAL_NODES}
-                  radius={90}
-                  className="h-full w-full"
-                  centerContent={
-                    <div className="relative flex h-[60px] w-[60px] lg:h-[68px] lg:w-[68px] items-center justify-center rounded-full bg-white">
-                      <div className="absolute inset-0 rounded-full overflow-hidden">
-                        <ShineBorder
-                          shineColor={['#6366f1', '#8b5cf6', '#a78bfa']}
-                          duration={8}
-                          borderWidth={1}
-                        />
-                      </div>
-                      <div className="z-10 flex flex-col items-center justify-center">
-                        <div className="flex items-baseline gap-0.5">
-                          <NumberTicker
-                            value={ahaScore.readinessEstimate}
-                            delay={0.6}
-                            className={`text-2xl lg:text-3xl font-bold tracking-tighter ${scoreColorClass}`}
-                          />
-                          <span className="text-sm font-semibold text-zinc-400">%</span>
-                        </div>
-                        <span className="text-[8px] uppercase tracking-[0.2em] text-zinc-400 mt-0.5">
-                          Readiness
-                        </span>
-                      </div>
-                    </div>
-                  }
-                />
-              </div>
-            </BlurFade>
-
+      {/* ── Section 1: Your Readiness ── */}
+      <AhaParallaxSection
+        scrollContainerRef={scrollRef}
+        title={
+          <div>
+            <span className="mb-2 inline-block rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+              Your Readiness
+            </span>
+            <h3 className="text-xl font-bold text-zinc-900 sm:text-2xl">
+              We analyzed your profile
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-500">
+              Here&apos;s how your background, timeline, and goals translate into interview readiness.
+            </p>
+          </div>
+        }
+        description={
+          <div className="space-y-4 mt-4">
             {/* Score Breakdown */}
             {ahaScore.breakdown.length > 0 && (
-              <BlurFade delay={0.5}>
-                <div className="w-full max-w-xs">
-                  <h3 className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 mb-2 text-center">
-                    Score Breakdown
-                  </h3>
-                  <div className="space-y-0.5">
-                    {ahaScore.breakdown.map((item) => (
-                      <div
-                        key={item.label}
-                        className="flex items-center justify-between px-3 py-1 rounded-lg bg-zinc-50 border border-zinc-100"
-                      >
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium text-zinc-700">{item.label}</span>
-                          <span className="text-[10px] text-zinc-400">{item.detail}</span>
-                        </div>
-                        <span
-                          className={`text-xs font-semibold tabular-nums ${
-                            item.sentiment === 'positive'
-                              ? 'text-emerald-600'
-                              : item.sentiment === 'negative'
-                                ? 'text-red-500'
-                                : 'text-zinc-400'
-                          }`}
-                        >
-                          {item.impact > 0 ? '+' : ''}{item.impact}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </BlurFade>
-            )}
-
-            {/* Timeline message */}
-            <BlurFade delay={0.6}>
-              <p className="text-xs text-zinc-400 leading-relaxed text-center italic mt-2 max-w-xs">
-                {ahaScore.timelineMessage}
-              </p>
-            </BlurFade>
-
-            {/* Job Market Context */}
-            {(jobDataLoading || hasJobData) && (
-              <BlurFade delay={0.7}>
-                <div className="mt-2 w-full max-w-xs">
-                  {jobDataLoading && !hasJobData ? (
-                    <div className="flex items-center gap-2 justify-center">
-                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-500" />
-                      <span className="text-[11px] text-zinc-400">Analyzing job market...</span>
-                    </div>
-                  ) : hasJobData ? (
-                    <div className="rounded-xl bg-indigo-50/50 border border-indigo-100 p-2 space-y-1.5">
-                      <div className="flex items-start gap-2">
-                        <svg
-                          className="h-3.5 w-3.5 text-indigo-500 mt-0.5 flex-shrink-0"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <circle cx="11" cy="11" r="8" />
-                          <path d="m21 21-4.3-4.3" />
-                        </svg>
-                        <p className="text-[11px] text-zinc-600 leading-relaxed">
-                          Based on{' '}
-                          <span className="font-semibold text-indigo-600">
-                            {jobContext!.totalListings}{' '}
-                            {jobContext!.isInternshipOnly ? 'internship' : ''} position
-                            {jobContext!.totalListings !== 1 ? 's' : ''}
-                          </span>{' '}
-                          for{' '}
-                          <span className="font-medium">{jobContext!.roleSummary}</span> in{' '}
-                          <span className="font-medium">{jobContext!.locationSummary}</span>
-                        </p>
-                      </div>
-                      {jobContext!.topEmployers.length > 0 && (
-                        <p className="text-[10px] text-zinc-400 leading-relaxed pl-5">
-                          Hiring now:{' '}
-                          <span className="text-zinc-500">
-                            {jobContext!.topEmployers.slice(0, 3).join(', ')}
-                            {jobContext!.topEmployers.length > 3 ? ' and more' : ''}
-                          </span>
-                        </p>
-                      )}
-                    </div>
-                  ) : null}
-                </div>
-              </BlurFade>
-            )}
-          </div>
-
-          {/* ─── RIGHT COLUMN: Focus + Concern + Next Steps + CTA ─── */}
-          <div className="flex flex-col gap-2.5 max-h-[calc(100vh-120px)] overflow-y-auto pr-1">
-            {/* Focus Areas */}
-            <BlurFade delay={0.4}>
               <div>
-                <h3 className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 mb-2 text-center lg:text-left">
-                  Your Focus Areas
-                </h3>
-                <div className="space-y-2">
-                  {ahaScore.focusAreas.map((area, i) => {
-                    if (isFocusAreaItem(area)) {
-                      return (
-                        <div
-                          key={area.id}
-                          className="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50"
-                        >
-                          {/* Title row */}
-                          <div className="flex items-start gap-3">
-                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-white text-zinc-500 border border-zinc-200 mt-0.5">
-                              {focusIcons[i] ?? focusIcons[0]}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-semibold text-zinc-800 leading-snug">
-                                  {area.title}
-                                </span>
-                                {area.priority === 'high' && (
-                                  <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-600 border border-indigo-200">
-                                    Priority
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-zinc-500 leading-relaxed mt-0.5">
-                                {area.description}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Reason */}
-                          <div className="mt-2 ml-10 pl-2.5 border-l-2 border-indigo-200">
-                            <p className="text-[11px] text-indigo-600/80 leading-relaxed italic">
-                              {area.reason}
-                            </p>
-                          </div>
-
-                          {/* Signal source tags */}
-                          {area.signalSources.length > 0 && (
-                            <div className="mt-2 ml-10 flex flex-wrap gap-1">
-                              {area.signalSources.map((signal) => (
-                                <span
-                                  key={signal}
-                                  className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-100 text-zinc-400 border border-zinc-150"
-                                >
-                                  {SIGNAL_SOURCE_LABELS[signal] ?? signal}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-
-                    // Legacy fallback: plain string focus areas
-                    return (
-                      <div
-                        key={i}
-                        className="flex items-start gap-3 p-3 rounded-xl border border-zinc-200 bg-zinc-50/50"
-                      >
-                        <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-white text-zinc-500 border border-zinc-200 mt-0.5">
-                          {focusIcons[i]}
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-sm font-medium text-zinc-800 leading-snug">
-                            {area}
-                          </span>
-                          <span className="text-xs text-zinc-400 leading-relaxed">
-                            InterviewProof will build a targeted plan for this.
-                          </span>
-                        </div>
+                <h4 className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 mb-2">
+                  Score Breakdown
+                </h4>
+                <div className="space-y-1">
+                  {ahaScore.breakdown.map((item) => (
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-between rounded-lg border border-zinc-100 bg-zinc-50 px-3 py-1.5"
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-xs font-medium text-zinc-700">{item.label}</span>
+                        <span className="text-[10px] text-zinc-400">{item.detail}</span>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </BlurFade>
-
-            {/* Biggest Concern Acknowledgment */}
-            {biggestConcern && (
-              <BlurFade delay={0.55}>
-                <div className="p-2.5 rounded-xl border border-indigo-100 bg-indigo-50/50">
-                  <div className="flex items-start gap-2.5">
-                    <svg className="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-                      <path d="m9 12 2 2 4-4" />
-                    </svg>
-                    <div>
-                      <p className="text-xs font-medium text-zinc-700 mb-0.5">We heard you</p>
-                      <p className="text-xs text-zinc-500 leading-relaxed">
-                        &ldquo;{biggestConcern}&rdquo; — your first diagnostic will specifically flag risks related to this.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </BlurFade>
-            )}
-
-            {/* What Happens Next */}
-            <BlurFade delay={0.65}>
-              <div>
-                <h3 className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 mb-2 text-center lg:text-left">
-                  What Happens Next
-                </h3>
-                <div className="space-y-1.5">
-                  {[
-                    { step: '1', title: 'Upload a job description', desc: 'Pair it with your resume for a targeted analysis' },
-                    { step: '2', title: 'Get your AI diagnostic', desc: 'We score fit, flag risks, and generate practice questions' },
-                    { step: '3', title: 'Follow your prep plan', desc: 'Prioritized tasks calibrated to your timeline' },
-                  ].map((item) => (
-                    <div key={item.step} className="flex items-start gap-2">
-                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-zinc-100 text-[10px] font-bold text-zinc-500 border border-zinc-200">
-                        {item.step}
+                      <span
+                        className={`text-xs font-semibold tabular-nums ${
+                          item.sentiment === 'positive'
+                            ? 'text-emerald-600'
+                            : item.sentiment === 'negative'
+                              ? 'text-red-500'
+                              : 'text-zinc-400'
+                        }`}
+                      >
+                        {item.impact > 0 ? '+' : ''}
+                        {item.impact}
                       </span>
-                      <div>
-                        <p className="text-sm font-medium text-zinc-700">{item.title}</p>
-                        <p className="text-xs text-zinc-400">{item.desc}</p>
-                      </div>
                     </div>
                   ))}
                 </div>
               </div>
-            </BlurFade>
+            )}
 
-            {/* CTA */}
-            <BlurFade delay={0.75}>
-              <div className="mt-1">
-                <button
-                  onClick={onComplete}
-                  disabled={loading}
-                  className="w-full py-3 rounded-lg text-sm font-semibold bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            {/* Timeline message */}
+            <p className="text-xs italic leading-relaxed text-zinc-400">
+              {ahaScore.timelineMessage}
+            </p>
+
+            {/* Job Market Context */}
+            {(jobDataLoading || hasJobData) && (
+              <div>
+                {jobDataLoading && !hasJobData ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-500" />
+                    <span className="text-[11px] text-zinc-400">Analyzing job market...</span>
+                  </div>
+                ) : hasJobData ? (
+                  <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 space-y-1.5">
+                    <div className="flex items-start gap-2">
+                      <svg
+                        className="h-3.5 w-3.5 text-indigo-500 mt-0.5 flex-shrink-0"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.3-4.3" />
                       </svg>
-                      Saving...
-                    </span>
-                  ) : (
-                    'Start Your First Analysis'
-                  )}
-                </button>
-                <p className="text-xs text-zinc-400 text-center mt-2">
-                  Takes about 2 minutes
-                </p>
+                      <p className="text-[11px] leading-relaxed text-zinc-600">
+                        Based on{' '}
+                        <span className="font-semibold text-indigo-600">
+                          {jobContext!.totalListings}{' '}
+                          {jobContext!.isInternshipOnly ? 'internship' : ''} position
+                          {jobContext!.totalListings !== 1 ? 's' : ''}
+                        </span>{' '}
+                        for <span className="font-medium">{jobContext!.roleSummary}</span> in{' '}
+                        <span className="font-medium">{jobContext!.locationSummary}</span>
+                      </p>
+                    </div>
+                    {jobContext!.topEmployers.length > 0 && (
+                      <p className="pl-5 text-[10px] leading-relaxed text-zinc-400">
+                        Hiring now:{' '}
+                        <span className="text-zinc-500">
+                          {jobContext!.topEmployers.slice(0, 3).join(', ')}
+                          {jobContext!.topEmployers.length > 3 ? ' and more' : ''}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                ) : null}
               </div>
-            </BlurFade>
+            )}
           </div>
+        }
+      >
+        {/* Mockup card: Orbital Timeline */}
+        <div className="relative flex flex-col items-center">
+          <BorderBeam size={300} duration={12} />
+          <div className="relative h-[240px] w-[240px] lg:h-[280px] lg:w-[280px]">
+            <RadialOrbitalTimeline
+              nodes={ORBITAL_NODES}
+              radius={95}
+              className="h-full w-full"
+              centerContent={
+                <div className="relative flex h-[68px] w-[68px] lg:h-[76px] lg:w-[76px] items-center justify-center rounded-full bg-white">
+                  <div className="absolute inset-0 overflow-hidden rounded-full">
+                    <ShineBorder
+                      shineColor={['#6366f1', '#8b5cf6', '#a78bfa']}
+                      duration={8}
+                      borderWidth={1}
+                    />
+                  </div>
+                  <div className="z-10 flex flex-col items-center justify-center">
+                    <div className="flex items-baseline gap-0.5">
+                      <NumberTicker
+                        value={ahaScore.readinessEstimate}
+                        delay={0.6}
+                        className={`text-3xl lg:text-4xl font-bold tracking-tighter ${scoreColorClass}`}
+                      />
+                      <span className="text-sm font-semibold text-zinc-400">%</span>
+                    </div>
+                    <span className="mt-0.5 text-[9px] uppercase tracking-[0.2em] text-zinc-400">
+                      Readiness
+                    </span>
+                  </div>
+                </div>
+              }
+            />
+          </div>
+          <p className="mt-3 text-center text-xs text-zinc-400">
+            Your personalized interview readiness score
+          </p>
         </div>
-      </div>
+      </AhaParallaxSection>
+
+      {/* ── Section 2: Your Focus Areas (reversed) ── */}
+      <AhaParallaxSection
+        scrollContainerRef={scrollRef}
+        reverseLayout
+        title={
+          <div>
+            <span className="mb-2 inline-block rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-600">
+              Your Focus Areas
+            </span>
+            <h3 className="text-xl font-bold text-zinc-900 sm:text-2xl">
+              Personalized just for you
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-500">
+              Based on your career stage, target role, and timeline, we&apos;ve identified the areas
+              that will have the biggest impact on your interview performance.
+            </p>
+
+            {/* Biggest Concern Acknowledgment */}
+            {biggestConcern && (
+              <div className="mt-4 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3">
+                <div className="flex items-start gap-2.5">
+                  <svg
+                    className="h-4 w-4 mt-0.5 flex-shrink-0 text-indigo-500"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                  <div>
+                    <p className="text-xs font-medium text-zinc-700 mb-0.5">We heard you</p>
+                    <p className="text-xs leading-relaxed text-zinc-500">
+                      &ldquo;{biggestConcern}&rdquo; — your first diagnostic will specifically flag
+                      risks related to this.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        }
+        description={<></>}
+      >
+        {/* Mockup card: Focus Area Cards */}
+        <div className="space-y-2.5">
+          {ahaScore.focusAreas.map((area, i) => {
+            if (isFocusAreaItem(area)) {
+              return (
+                <div key={area.id} className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-3">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-500">
+                      {focusIcons[i] ?? focusIcons[0]}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold leading-snug text-zinc-800">
+                          {area.title}
+                        </span>
+                        {area.priority === 'high' && (
+                          <span className="flex-shrink-0 rounded border border-indigo-200 bg-indigo-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-indigo-600">
+                            Priority
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-0.5 text-xs leading-relaxed text-zinc-500">
+                        {area.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="ml-10 mt-2 border-l-2 border-indigo-200 pl-2.5">
+                    <p className="text-[11px] italic leading-relaxed text-indigo-600/80">
+                      {area.reason}
+                    </p>
+                  </div>
+
+                  {area.signalSources.length > 0 && (
+                    <div className="ml-10 mt-2 flex flex-wrap gap-1">
+                      {area.signalSources.map((signal) => (
+                        <span
+                          key={signal}
+                          className="rounded border border-zinc-150 bg-zinc-100 px-1.5 py-0.5 text-[9px] font-medium text-zinc-400"
+                        >
+                          {SIGNAL_SOURCE_LABELS[signal] ?? signal}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return (
+              <div
+                key={i}
+                className="flex items-start gap-3 rounded-xl border border-zinc-200 bg-zinc-50/50 p-3"
+              >
+                <div className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-500">
+                  {focusIcons[i]}
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm font-medium leading-snug text-zinc-800">{area}</span>
+                  <span className="text-xs leading-relaxed text-zinc-400">
+                    InterviewProof will build a targeted plan for this.
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </AhaParallaxSection>
+
+      {/* ── Section 3: Built for You + CTA ── */}
+      <AhaParallaxSection
+        scrollContainerRef={scrollRef}
+        title={
+          <div>
+            <span className="mb-2 inline-block rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-emerald-600">
+              Built for You
+            </span>
+            <h3 className="text-xl font-bold text-zinc-900 sm:text-2xl">
+              Backed by real data
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-500">
+              Your diagnostic is calibrated against real interview standards — not generic advice.
+            </p>
+
+            {/* Benchmark Targets */}
+            {(benchmarkLoading || hasBenchmarks) && (
+              <div className="mt-4">
+                {benchmarkLoading && !hasBenchmarks ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-500" />
+                    <span className="text-[11px] text-zinc-400">Loading benchmarks...</span>
+                  </div>
+                ) : hasBenchmarks ? (
+                  <div>
+                    <h4 className="mb-2 text-[11px] uppercase tracking-[0.15em] text-zinc-400">
+                      What {benchmarkData!.tierLabel} {benchmarkData!.seniorityLabel} roles expect
+                    </h4>
+                    <div className="space-y-1.5">
+                      {benchmarkData!.benchmarkTargets.map((target, i) => (
+                        <div
+                          key={target.domain}
+                          className="flex items-center gap-2 rounded-lg border border-zinc-100 bg-zinc-50 px-3 py-2"
+                        >
+                          <span className="min-w-0 flex-1 truncate text-xs font-medium text-zinc-700">
+                            {target.domain}
+                          </span>
+                          <div className="flex flex-shrink-0 items-center gap-2">
+                            <div className="h-2 w-20 overflow-hidden rounded-full bg-zinc-200">
+                              <div
+                                className={`h-full rounded-full ${
+                                  i === 0
+                                    ? 'bg-indigo-500'
+                                    : i === 1
+                                      ? 'bg-indigo-400'
+                                      : 'bg-indigo-300'
+                                }`}
+                                style={{ width: `${target.targetScore}%` }}
+                              />
+                            </div>
+                            <span className="w-7 text-right text-[11px] font-semibold tabular-nums text-zinc-500">
+                              {target.targetScore}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            {/* Knowledge Stats */}
+            {hasKnowledgeStats && (
+              <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50/30 p-3">
+                <p className="mb-1.5 text-[11px] font-medium text-zinc-600">
+                  Your diagnostic is calibrated against
+                </p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  <span className="text-[11px] text-zinc-500">
+                    <span className="font-semibold text-zinc-700">
+                      {benchmarkData!.knowledgeStats.totalRubricChunks}+
+                    </span>{' '}
+                    evaluation criteria
+                  </span>
+                  <span className="text-[11px] text-zinc-500">
+                    <span className="font-semibold text-zinc-700">
+                      {benchmarkData!.knowledgeStats.totalQuestionArchetypes}+
+                    </span>{' '}
+                    practice questions
+                  </span>
+                  <span className="text-[11px] text-zinc-500">
+                    <span className="font-semibold text-zinc-700">
+                      {benchmarkData!.knowledgeStats.totalCalibratedCompanies}
+                    </span>{' '}
+                    calibrated companies
+                  </span>
+                </div>
+                {benchmarkData!.knowledgeStats.topWeightedDomain && (
+                  <p className="mt-1.5 text-[10px] text-indigo-500">
+                    {benchmarkData!.knowledgeStats.topWeightedDomain} is the #1 weighted domain for{' '}
+                    {targetRole || (targetDomain ? DOMAIN_LABELS[targetDomain] : 'your role')} at{' '}
+                    {benchmarkData!.tierLabel}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        }
+        description={<></>}
+      >
+        {/* Mockup card: What Happens Next + CTA */}
+        <div className="space-y-5">
+          <div>
+            <h4 className="mb-3 text-[11px] uppercase tracking-[0.15em] text-zinc-400">
+              What Happens Next
+            </h4>
+            <div className="space-y-3">
+              {[
+                {
+                  step: '1',
+                  title: 'Upload a job description',
+                  desc: 'Pair it with your resume for a targeted analysis',
+                },
+                {
+                  step: '2',
+                  title: 'Get your AI diagnostic',
+                  desc: 'We score fit, flag risks, and generate practice questions',
+                },
+                {
+                  step: '3',
+                  title: 'Follow your prep plan',
+                  desc: 'Prioritized tasks calibrated to your timeline',
+                },
+              ].map((item) => (
+                <div key={item.step} className="flex items-start gap-3">
+                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 text-[11px] font-bold text-indigo-600">
+                    {item.step}
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-zinc-700">{item.title}</p>
+                    <p className="text-xs text-zinc-400">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <ShimmerButton
+            onClick={handleComplete}
+            disabled={loading}
+            shimmerColor="#a78bfa"
+            background="rgba(79, 70, 229, 1)"
+            className="w-full py-3.5 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Saving...
+              </span>
+            ) : (
+              'Start Your First Analysis'
+            )}
+          </ShimmerButton>
+          <p className="text-center text-xs text-zinc-400">Takes about 2 minutes</p>
+        </div>
+      </AhaParallaxSection>
+
+      {/* Bottom spacing */}
+      <div className="h-16" />
     </div>
   );
 }

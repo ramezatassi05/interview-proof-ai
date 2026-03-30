@@ -65,7 +65,7 @@ const DOMAIN_KEYWORDS: Record<string, string[]> = {
 
 // ── Calibrated base benchmarks (numeric scores, not levels) ─────────────
 // Better calibrated starting points per seniority per domain
-const CALIBRATED_BASE_BENCHMARKS: Record<InferredSeniority, Record<string, number>> = {
+export const CALIBRATED_BASE_BENCHMARKS: Record<InferredSeniority, Record<string, number>> = {
   Intern: {
     'System Design': 25,
     'Coding / Algorithms': 50,
@@ -140,7 +140,7 @@ const TIER_BENCHMARK_MULTIPLIERS: Record<CompanyTier, number> = {
 
 // ── Role-type domain multipliers ────────────────────────────────────────
 // Adjust targets based on what the role emphasizes
-const ROLE_DOMAIN_MULTIPLIERS: Record<RoleType, Partial<Record<string, number>>> = {
+export const ROLE_DOMAIN_MULTIPLIERS: Record<RoleType, Partial<Record<string, number>>> = {
   backend: {
     'System Design': 1.15,
     'Coding / Algorithms': 1.1,
@@ -197,7 +197,7 @@ const ROLE_DOMAIN_MULTIPLIERS: Record<RoleType, Partial<Record<string, number>>>
 };
 
 // ── Role type display labels ────────────────────────────────────────────
-const ROLE_TYPE_LABELS: Record<RoleType, string> = {
+export const ROLE_TYPE_LABELS: Record<RoleType, string> = {
   backend: 'Backend',
   frontend: 'Frontend',
   fullstack: 'Full-Stack',

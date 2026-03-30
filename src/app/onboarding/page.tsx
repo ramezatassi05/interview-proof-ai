@@ -11,6 +11,7 @@ import type {
   InterviewExperience,
   TargetCompanyTier,
   JobMarketData,
+  OnboardingBenchmarkData,
 } from '@/types';
 
 import { OnboardingProgress } from '@/components/onboarding/OnboardingProgress';
@@ -22,6 +23,7 @@ import { StepLocation } from '@/components/onboarding/StepLocation';
 import { StepUrgency } from '@/components/onboarding/StepUrgency';
 import { StepAhaMoment } from '@/components/onboarding/StepAhaMoment';
 import { BlurFade } from '@/components/ui/blur-fade';
+import { OnboardingDotNav } from '@/components/onboarding/OnboardingDotNav';
 
 const TOTAL_STEPS = 7;
 const STORAGE_KEY = 'ip_onboarding_draft';
@@ -86,9 +88,11 @@ function OnboardingContent() {
   const [saving, setSaving] = useState(false);
   const [jobMarketData, setJobMarketData] = useState<JobMarketData | null>(null);
   const [jobDataLoading, setJobDataLoading] = useState(false);
+  const [benchmarkData, setBenchmarkData] = useState<OnboardingBenchmarkData | null>(null);
+  const [benchmarkLoading, setBenchmarkLoading] = useState(false);
   const isFirstRender = useRef(true);
   const jobFetchTriggered = useRef(false);
-
+  const benchmarkFetchTriggered = useRef(false);
   const redirectTarget = searchParams.get('redirect') ?? '/new';
 
   // Persist to localStorage on every change (skip initial render)
@@ -161,6 +165,44 @@ function OnboardingContent() {
     setJobMarketData(null);
   }, []);
 
+  // Invalidate benchmark data if user navigates back before the Aha step
+  const invalidateBenchmarkData = useCallback(() => {
+    benchmarkFetchTriggered.current = false;
+    setBenchmarkData(null);
+  }, []);
+
+  // Fetch benchmark data in background when user advances past Urgency step
+  const fetchBenchmarkData = useCallback(() => {
+    if (benchmarkFetchTriggered.current || !state.targetCompanyTier || !state.careerStage) return;
+    benchmarkFetchTriggered.current = true;
+    setBenchmarkLoading(true);
+    fetch('/api/onboarding/benchmarks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        targetCompanyTier: state.targetCompanyTier,
+        careerStage: state.careerStage,
+        targetDomain: state.targetDomain,
+        targetRole: state.targetRole,
+        yearsExperience: state.yearsExperience,
+      }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.data) setBenchmarkData(data.data);
+      })
+      .catch(() => {
+        // Non-blocking — benchmark data is additive
+      })
+      .finally(() => setBenchmarkLoading(false));
+  }, [
+    state.targetCompanyTier,
+    state.careerStage,
+    state.targetDomain,
+    state.targetRole,
+    state.yearsExperience,
+  ]);
+
   // Auto-advance after career stage selection
   const handleCareerStageChange = useCallback(
     (stage: CareerStage) => {
@@ -170,6 +212,14 @@ function OnboardingContent() {
     },
     []
   );
+
+  // Build benchmark domain weights map for focus area selection
+  const benchmarkDomainWeights =
+    benchmarkData?.benchmarkTargets && benchmarkData.benchmarkTargets.length > 0
+      ? Object.fromEntries(
+          benchmarkData.benchmarkTargets.map((t) => [t.domain, t.targetScore])
+        )
+      : null;
 
   // Compute aha score from current state
   const ahaScore: AhaScore = computeAhaScore({
@@ -183,6 +233,7 @@ function OnboardingContent() {
     interviewExperience: state.interviewExperience,
     targetCompanyTier: state.targetCompanyTier,
     jobMarketData,
+    benchmarkDomainWeights,
   });
 
   // Save profile and complete onboarding
@@ -249,6 +300,7 @@ function OnboardingContent() {
         totalSteps={TOTAL_STEPS}
         onBack={() => {
           if (state.step <= 5) invalidateJobData();
+          if (state.step <= 6) invalidateBenchmarkData();
           dispatch({ type: 'PREV_STEP' });
         }}
         showBack={state.step > 0 && state.step < 6}
@@ -274,6 +326,8 @@ function OnboardingContent() {
               biggestConcern={state.biggestConcern}
               jobMarketData={jobMarketData}
               jobDataLoading={jobDataLoading}
+              benchmarkData={benchmarkData}
+              benchmarkLoading={benchmarkLoading}
               targetCountries={state.targetCountries}
               targetCities={state.targetCities}
               onComplete={handleComplete}
@@ -359,12 +413,19 @@ function OnboardingContent() {
                   onTargetCompanyTierChange={(v: TargetCompanyTier) =>
                     dispatch({ type: 'SET_FIELD', field: 'targetCompanyTier', value: v })
                   }
-                  onContinue={() => dispatch({ type: 'NEXT_STEP' })}
+                  onContinue={() => {
+                    dispatch({ type: 'NEXT_STEP' });
+                    fetchBenchmarkData();
+                  }}
                 />
               )}
             </BlurFade>
           </div>
         </div>
+      )}
+
+      {state.step >= 1 && state.step <= 5 && (
+        <OnboardingDotNav currentStep={state.step} totalSteps={5} />
       )}
     </div>
   );
