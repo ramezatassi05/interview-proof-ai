@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { LiquidButton } from '@/components/ui/liquid-glass-button';
 import { Badge } from '@/components/ui/Badge';
 import { PdfUpload } from '@/components/ui/PdfUpload';
 import { Textarea } from '@/components/ui/Textarea';
@@ -218,9 +219,9 @@ export function ResumeSection({ initialResumeText, initialResumePdfPath }: Resum
                 style={{ height: '500px' }}
                 title="Resume PDF preview"
               />
-              <Button variant="gradient" size="sm" rounded onClick={handleStartEditing}>
+              <LiquidButton variant="gradient" size="sm" onClick={handleStartEditing}>
                 Update Resume
-              </Button>
+              </LiquidButton>
             </div>
           ) : hasResume ? (
             // Text-only mode (legacy users or paste-only)
@@ -234,9 +235,9 @@ export function ResumeSection({ initialResumeText, initialResumePdfPath }: Resum
               <p className="text-xs text-[var(--text-muted)]">
                 {resumeText.length.toLocaleString()} characters
               </p>
-              <Button variant="gradient" size="sm" rounded onClick={handleStartEditing}>
+              <LiquidButton variant="gradient" size="sm" onClick={handleStartEditing}>
                 Update Resume
-              </Button>
+              </LiquidButton>
             </div>
           ) : (
             // No resume at all
@@ -244,9 +245,9 @@ export function ResumeSection({ initialResumeText, initialResumePdfPath }: Resum
               <p className="text-sm text-[var(--text-secondary)]">
                 Upload your resume to use it across all your interview analyses.
               </p>
-              <Button variant="gradient" size="sm" rounded onClick={handleStartEditing}>
+              <LiquidButton variant="gradient" size="sm" onClick={handleStartEditing}>
                 Add Resume
-              </Button>
+              </LiquidButton>
             </div>
           )}
         </CardContent>

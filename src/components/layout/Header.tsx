@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-
 import { Button } from '@/components/ui/Button';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
+import FloatingActionMenu from '@/components/ui/floating-action-menu';
 
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Container } from './Container';
@@ -23,6 +23,7 @@ const NAV_LINKS = [
 export function Header() {
   const { user, loading, signOut } = useAuth();
 
+  const router = useRouter();
   const WAITLIST_MODE = useWaitlistMode();
   const pathname = usePathname();
   const isLanding = pathname === '/';
@@ -141,27 +142,41 @@ export function Header() {
               <div className="h-9 w-20 animate-pulse rounded-lg bg-[var(--header-elevated)]" />
             ) : user ? (
               <div className="flex items-center gap-3">
-                <Link
-                  href="/dashboard"
-                  className="text-sm text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors hidden sm:block"
-                >
-                  Dashboard
-                </Link>
                 <LiquidButton href="/new" variant="gradient" size={null} className="px-4 py-2 text-sm">
                   New Analysis
                 </LiquidButton>
-                <Link href="/account" className="flex items-center gap-1.5 text-xs text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--header-elevated)] border border-[var(--header-border)] text-xs font-mono font-semibold text-[var(--header-text-secondary)]">
-                    {user.email?.[0]?.toUpperCase() ?? 'U'}
-                  </div>
-                  <span className="hidden sm:inline">Account</span>
-                </Link>
-                <button
-                  onClick={() => signOut()}
-                  className="text-xs text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors hidden sm:block"
-                >
-                  Sign Out
-                </button>
+                <FloatingActionMenu
+                  userInitial={user.email?.[0]?.toUpperCase() ?? 'U'}
+                  options={[
+                    {
+                      label: 'Dashboard',
+                      Icon: (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+                        </svg>
+                      ),
+                      onClick: () => router.push('/dashboard'),
+                    },
+                    {
+                      label: 'Account',
+                      Icon: (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+                        </svg>
+                      ),
+                      onClick: () => router.push('/account'),
+                    },
+                    {
+                      label: 'Sign Out',
+                      Icon: (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                      ),
+                      onClick: () => signOut(),
+                    },
+                  ]}
+                />
               </div>
             ) : !WAITLIST_MODE ? (
               <div className="flex items-center gap-2">
@@ -171,11 +186,9 @@ export function Header() {
                 >
                   Login
                 </Link>
-                <Link href="/onboarding">
-                  <Button variant="accent" size="sm">
-                    Get Started
-                  </Button>
-                </Link>
+                <LiquidButton variant="gradient" size="sm" href="/onboarding">
+                  Get Started
+                </LiquidButton>
               </div>
             ) : null}
           </nav>

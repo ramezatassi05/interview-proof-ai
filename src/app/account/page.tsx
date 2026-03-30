@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { LiquidButton } from '@/components/ui/liquid-glass-button';
 import { Badge, riskBandToVariant } from '@/components/ui/Badge';
 import { LoadingOverlay } from '@/components/ui/Spinner';
 import { MagicCard } from '@/components/ui/magic-card';
@@ -164,9 +165,7 @@ export default function AccountPage() {
         <BlurFade delay={0.15}>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="heading-modern text-lg font-semibold text-[var(--text-primary)]">Your Reports</h2>
-            <Link href="/new">
-              <Button variant="gradient" size="sm" rounded>New Analysis</Button>
-            </Link>
+            <LiquidButton variant="gradient" size="sm" href="/new">New Analysis</LiquidButton>
           </div>
         </BlurFade>
 
@@ -177,9 +176,7 @@ export default function AccountPage() {
                 <p className="text-[var(--text-secondary)]">
                   No reports yet. Start your first diagnostic!
                 </p>
-                <Link href="/new">
-                  <Button variant="gradient" className="mt-4" rounded>Start Analysis</Button>
-                </Link>
+                <LiquidButton variant="gradient" size="sm" className="mt-4" href="/new">Start Analysis</LiquidButton>
               </CardContent>
             </Card>
           </BlurFade>
