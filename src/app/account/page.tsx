@@ -13,6 +13,7 @@ import { LoadingOverlay } from '@/components/ui/Spinner';
 import { MagicCard } from '@/components/ui/magic-card';
 import { BlurFade } from '@/components/ui/blur-fade';
 import { NumberTicker } from '@/components/ui/number-ticker';
+import { ResumeSection } from '@/components/account/ResumeSection';
 
 import type { RiskBand, RoundType } from '@/types';
 
@@ -51,6 +52,7 @@ export default function AccountPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState<AccountData | null>(null);
+  const [profileResumeText, setProfileResumeText] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,16 +66,32 @@ export default function AccountPage() {
 
     const fetchAccount = async () => {
       try {
-        const res = await fetch('/api/account');
-        if (!res.ok) {
-          if (res.status === 401) {
-            router.push('/auth/login?redirect=/account');
-            return;
+        const [accountRes, profileRes] = await Promise.allSettled([
+          fetch('/api/account'),
+          fetch('/api/profile'),
+        ]);
+
+        // Handle account data
+        if (accountRes.status === 'fulfilled') {
+          const res = accountRes.value;
+          if (!res.ok) {
+            if (res.status === 401) {
+              router.push('/auth/login?redirect=/account');
+              return;
+            }
+            throw new Error('Failed to fetch account data');
           }
+          const result = await res.json();
+          setData(result.data);
+        } else {
           throw new Error('Failed to fetch account data');
         }
-        const result = await res.json();
-        setData(result.data);
+
+        // Handle profile data (non-critical — if it fails, resume section still works)
+        if (profileRes.status === 'fulfilled' && profileRes.value.ok) {
+          const profileResult = await profileRes.value.json();
+          setProfileResumeText(profileResult.data?.resumeText ?? null);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -129,6 +147,13 @@ export default function AccountPage() {
               </CardContent>
             </Card>
           </MagicCard>
+        </BlurFade>
+
+        {/* Resume Section */}
+        <BlurFade delay={0.1}>
+          <div className="mt-6">
+            <ResumeSection initialResumeText={profileResumeText} />
+          </div>
         </BlurFade>
       </div>
 

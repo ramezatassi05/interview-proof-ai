@@ -91,6 +91,57 @@ export async function GET() {
   }
 }
 
+// Minimal schema for resume-only updates
+const ResumeUpdateSchema = z.object({
+  resumeText: z.string().max(100000),
+});
+
+export async function PATCH(request: Request) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const parsed = ResumeUpdateSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .upsert(
+        { user_id: user.id, resume_text: parsed.data.resumeText },
+        { onConflict: 'user_id' }
+      )
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error('Failed to update resume:', error);
+      return NextResponse.json(
+        { error: 'Failed to save resume', details: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ data: mapRowToProfile(data) });
+  } catch (err) {
+    console.error('Profile PATCH error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
