@@ -831,6 +831,16 @@ h1, h2, h3, h4, h5, h6 {
   animation: gradient-animate 8s linear infinite;
 }
 
+/* MagicUI: orbiting-circles */
+@keyframes orbit {
+  0% { transform: rotate(calc(var(--angle) * 1deg)) translateY(calc(var(--radius) * 1px)) rotate(calc(var(--angle) * -1deg)); }
+  100% { transform: rotate(calc(var(--angle) * 1deg + 360deg)) translateY(calc(var(--radius) * 1px)) rotate(calc((var(--angle) * -1deg) - 360deg)); }
+}
+
+.animate-orbit {
+  animation: orbit calc(var(--duration) * 1s) linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-border-beam,
   .animate-shimmer-slide,

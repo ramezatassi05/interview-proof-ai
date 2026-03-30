@@ -1,3 +1,77 @@
+// ============================================
+// Onboarding & User Profile Types
+// ============================================
+
+export type CareerStage = 'student' | 'new_grad' | 'career_changer' | 'experienced_professional';
+export type TargetDomain = 'swe' | 'ds' | 'design' | 'pm' | 'general';
+export type OnboardingPrepUrgency =
+  | 'exploring'
+  | 'active_search'
+  | 'interview_scheduled'
+  | 'interview_this_week';
+
+export type InterviewExperience = 'none' | 'a_few' | 'many';
+export type TargetCompanyTier = 'big_tech' | 'startup' | 'any';
+
+export interface ScoreBreakdownItem {
+  label: string;
+  detail: string;
+  impact: number;
+  sentiment: 'positive' | 'neutral' | 'negative';
+}
+
+export interface FocusAreaItem {
+  id: string;
+  title: string;
+  description: string;
+  reason: string;
+  priority: 'high' | 'medium';
+  signalSources: string[];
+}
+
+export interface AhaScore {
+  readinessEstimate: number;
+  focusAreas: (FocusAreaItem | string)[];
+  timelineMessage: string;
+  breakdown: ScoreBreakdownItem[];
+}
+
+export interface UserProfile {
+  id: string;
+  userId: string;
+  displayName: string | null;
+  careerStage: CareerStage | null;
+  targetRole: string | null;
+  targetDomain: TargetDomain | null;
+  yearsExperience: number | null;
+  prepUrgency: OnboardingPrepUrgency | null;
+  biggestConcern: string | null;
+  interviewExperience: InterviewExperience | null;
+  targetCompanyTier: TargetCompanyTier | null;
+  segment: string | null;
+  resumeText: string | null;
+  onboardingCompleted: boolean;
+  onboardingStep: number;
+  onboardingCompletedAt: string | null;
+  ahaScore: AhaScore | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OnboardingState {
+  step: number;
+  displayName: string;
+  careerStage: CareerStage | null;
+  targetRole: string;
+  targetDomain: TargetDomain | null;
+  yearsExperience: number | null;
+  prepUrgency: OnboardingPrepUrgency | null;
+  biggestConcern: string;
+  resumeText: string;
+  interviewExperience: InterviewExperience | null;
+  targetCompanyTier: TargetCompanyTier | null;
+}
+
 // Database enums
 export type RoundType = 'technical' | 'behavioral' | 'research';
 export type RiskBand = 'Low' | 'Medium' | 'High';
