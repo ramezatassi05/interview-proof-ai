@@ -163,7 +163,7 @@ export default function AccountPage() {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="heading-modern text-lg font-semibold text-[var(--text-primary)]">Your Reports</h2>
             <Link href="/new">
-              <Button size="sm" rounded>New Analysis</Button>
+              <Button variant="gradient" size="sm" rounded>New Analysis</Button>
             </Link>
           </div>
         </BlurFade>
@@ -176,7 +176,7 @@ export default function AccountPage() {
                   No reports yet. Start your first diagnostic!
                 </p>
                 <Link href="/new">
-                  <Button className="mt-4" rounded>Start Analysis</Button>
+                  <Button variant="gradient" className="mt-4" rounded>Start Analysis</Button>
                 </Link>
               </CardContent>
             </Card>

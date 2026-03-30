@@ -184,7 +184,7 @@ export function ResumeSection({ initialResumeText }: ResumeSectionProps) {
               <p className="text-xs text-[var(--text-muted)]">
                 {resumeText.length.toLocaleString()} characters
               </p>
-              <Button variant="primary" size="sm" rounded onClick={handleStartEditing}>
+              <Button variant="gradient" size="sm" rounded onClick={handleStartEditing}>
                 Update Resume
               </Button>
             </div>
@@ -193,7 +193,7 @@ export function ResumeSection({ initialResumeText }: ResumeSectionProps) {
               <p className="text-sm text-[var(--text-secondary)]">
                 Upload your resume to use it across all your interview analyses.
               </p>
-              <Button size="sm" onClick={handleStartEditing}>
+              <Button variant="gradient" size="sm" rounded onClick={handleStartEditing}>
                 Add Resume
               </Button>
             </div>
