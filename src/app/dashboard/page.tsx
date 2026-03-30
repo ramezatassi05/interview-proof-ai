@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { Badge, riskBandToVariant } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NumberTicker } from '@/components/ui/number-ticker';
@@ -17,6 +15,9 @@ import { MagicCard } from '@/components/ui/magic-card';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { DotPattern } from '@/components/ui/dot-pattern';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { ShineBorder } from '@/components/ui/shine-border';
+import RadialOrbitalTimeline from '@/components/ui/radial-orbital-timeline';
+import type { OrbitalNode } from '@/components/ui/radial-orbital-timeline';
 import type { RiskBand, RoundType, AggregateInsightStats } from '@/types';
 
 interface ReportSummary {
@@ -37,7 +38,6 @@ interface AccountData {
   creditBalance: number;
   reports: ReportSummary[];
 }
-
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -72,45 +72,148 @@ function getScoreColor(score: number): string {
   return 'var(--color-danger)';
 }
 
-function ScoreSparkline({ scores }: { scores: number[] }) {
-  const width = 120;
-  const height = 40;
-  const padding = 4;
-  const min = Math.min(...scores) - 5;
-  const max = Math.max(...scores) + 5;
-  const range = max - min || 1;
+/* ── Icons (inline SVGs) ── */
 
-  const points = scores.map((score, i) => {
-    const x = padding + (i / (scores.length - 1)) * (width - padding * 2);
-    const y = height - padding - ((score - min) / range) * (height - padding * 2);
-    return `${x},${y}`;
-  });
-
-  const trending = scores[scores.length - 1] >= scores[0];
-  const color = trending ? 'var(--color-success)' : 'var(--color-danger)';
-
+function IconNewAnalysis() {
   return (
-    <svg width={width} height={height} className="mt-1">
-      <polyline
-        points={points.join(' ')}
-        fill="none"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* End dot */}
-      {points.length > 0 && (
-        <circle
-          cx={points[points.length - 1].split(',')[0]}
-          cy={points[points.length - 1].split(',')[1]}
-          r={3}
-          fill={color}
-        />
-      )}
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
     </svg>
   );
 }
+
+function IconReports() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+    </svg>
+  );
+}
+
+function IconStudy() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
+    </svg>
+  );
+}
+
+function IconRisk() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+    </svg>
+  );
+}
+
+function IconGoal() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+    </svg>
+  );
+}
+
+function IconAccount() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    </svg>
+  );
+}
+
+/* ── Center Hub ── */
+
+function CenterHub({
+  initial,
+  avgScore,
+  totalReports,
+}: {
+  initial: string;
+  avgScore: number | null;
+  totalReports: number;
+}) {
+  return (
+    <div className="relative flex flex-col items-center justify-center animate-orbital-breathe">
+      {/* Gradient avatar circle */}
+      <div className="relative flex h-20 w-20 items-center justify-center rounded-full overflow-hidden">
+        <ShineBorder
+          shineColor={['#6366F1', '#818CF8', '#a78bfa']}
+          borderWidth={2}
+          duration={8}
+        />
+        <div
+          className="flex h-full w-full items-center justify-center rounded-full text-2xl font-bold text-white"
+          style={{ background: 'var(--accent-gradient)' }}
+        >
+          {initial}
+        </div>
+      </div>
+
+      {/* Score */}
+      <div className="mt-2 text-center">
+        <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+          {avgScore !== null ? <NumberTicker value={avgScore} /> : '\u2014'}
+        </p>
+        <p className="text-[10px] font-medium tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>
+          {totalReports > 0 ? 'Avg Score' : 'Your Hub'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ── Mobile Node Card ── */
+
+function MobileNodeCard({
+  node,
+  onNavigate,
+}: {
+  node: OrbitalNode;
+  onNavigate: (href: string) => void;
+}) {
+  return (
+    <MagicCard className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-4 cursor-pointer transition-all duration-200 hover:border-[var(--border-accent)]">
+      <div
+        className="flex items-center gap-3"
+        onClick={() => node.href && onNavigate(node.href)}
+      >
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+          style={{
+            backgroundColor: `color-mix(in srgb, ${node.color ?? 'var(--accent-primary)'} 15%, var(--bg-card))`,
+            color: node.color ?? 'var(--accent-primary)',
+          }}
+        >
+          {node.icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              {node.title}
+            </p>
+            {node.badge && (
+              <span
+                className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-white"
+                style={{ backgroundColor: node.color ?? 'var(--accent-primary)' }}
+              >
+                {node.badge}
+              </span>
+            )}
+          </div>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            {node.description}
+          </p>
+        </div>
+        <svg className="h-4 w-4 shrink-0" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
+      </div>
+    </MagicCard>
+  );
+}
+
+/* ── Dashboard Page ── */
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -172,7 +275,7 @@ export default function DashboardPage() {
     [scoredReports]
   );
 
-  const recentReports = useMemo(() => data?.reports.slice(0, 5) ?? [], [data]);
+  const recentReports = useMemo(() => data?.reports.slice(0, 3) ?? [], [data]);
 
   // Reports created this week (Monday-based)
   const reportsThisWeek = useMemo(() => {
@@ -186,15 +289,6 @@ export default function DashboardPage() {
     return data.reports.filter((r) => new Date(r.createdAt) >= monday).length;
   }, [data]);
 
-  // Last 5 scored reports for sparkline (oldest first)
-  const sparklineScores = useMemo(() => {
-    const scored = scoredReports
-      .slice(0, 5)
-      .map((r) => r.readinessScore as number)
-      .reverse();
-    return scored.length >= 2 ? scored : [];
-  }, [scoredReports]);
-
   const greeting = getGreeting();
   const firstName = data?.name
     ? data.name.split(/\s+/)[0].charAt(0).toUpperCase() + data.name.split(/\s+/)[0].slice(1).toLowerCase()
@@ -202,49 +296,157 @@ export default function DashboardPage() {
       ? extractFirstName(data.email)
       : '';
 
-  // Subtitle based on user's data
   const subtitle = useMemo(() => {
     if (!data || totalReports === 0) return 'Ready to start your interview prep journey?';
     if (avgScore !== null && insights?.avgReadinessScore) {
       const diff = avgScore - insights.avgReadinessScore;
       if (diff > 5) return `You're scoring ${diff} points above average. Keep it up!`;
-      if (diff < -5) return `${totalReports} report${totalReports !== 1 ? 's' : ''} analyzed. Let's close the gap.`;
+      if (diff < -5)
+        return `${totalReports} report${totalReports !== 1 ? 's' : ''} analyzed. Let's close the gap.`;
     }
     return `${totalReports} report${totalReports !== 1 ? 's' : ''} analyzed. ${avgScore !== null ? `Avg score: ${avgScore}.` : ''}`;
   }, [data, totalReports, avgScore, insights]);
 
+  const weeklyGoal = 3;
+
+  const handleNavigate = (href: string) => {
+    router.push(href);
+  };
+
+  /* ── Build orbital nodes ── */
+  const orbitalNodes: OrbitalNode[] = useMemo(() => {
+    const nodes: OrbitalNode[] = [
+      // Inner ring
+      {
+        id: 'new-analysis',
+        title: 'New Analysis',
+        description: 'Upload resume + JD to get your interview diagnostic.',
+        icon: <IconNewAnalysis />,
+        href: '/new',
+        color: 'var(--accent-primary)',
+        ring: 'inner',
+        energyLevel: 100,
+      },
+      {
+        id: 'reports',
+        title: 'My Reports',
+        description: 'View all your interview diagnostics and scores.',
+        icon: <IconReports />,
+        href: '/account',
+        color: 'var(--accent-primary)',
+        ring: 'inner',
+        badge: totalReports > 0 ? totalReports : undefined,
+        energyLevel: totalReports > 0 ? 50 : 10,
+        relatedIds: ['new-analysis', 'study-plans'],
+        previewContent:
+          recentReports.length > 0 ? (
+            <div className="space-y-2">
+              {recentReports.slice(0, 2).map((r) => (
+                <div
+                  key={r.id}
+                  className="flex items-center justify-between text-xs"
+                >
+                  <span style={{ color: 'var(--text-secondary)' }} className="truncate max-w-[130px]">
+                    {r.companyName ?? 'Report'} &middot;{' '}
+                    {r.roundType.charAt(0).toUpperCase() + r.roundType.slice(1)}
+                  </span>
+                  {r.readinessScore !== null && (
+                    <span className="font-bold" style={{ color: getScoreColor(r.readinessScore) }}>
+                      {r.readinessScore}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : undefined,
+      },
+      {
+        id: 'study-plans',
+        title: 'Study Plans',
+        description: 'Personalized study roadmaps tailored to your gaps.',
+        icon: <IconStudy />,
+        href: '/study-intelligence',
+        color: 'var(--color-success)',
+        ring: 'inner',
+        energyLevel: 30,
+        relatedIds: ['reports', 'risk-sim'],
+      },
+      // Outer ring
+      {
+        id: 'risk-sim',
+        title: 'Risk Simulator',
+        description: 'Identify and address your top interview rejection risks.',
+        icon: <IconRisk />,
+        href: '/risk-simulation',
+        color: 'var(--color-warning)',
+        ring: 'outer',
+        energyLevel: 30,
+        relatedIds: ['reports', 'study-plans'],
+      },
+      {
+        id: 'weekly-goal',
+        title: 'Weekly Goal',
+        description:
+          reportsThisWeek >= weeklyGoal
+            ? 'Goal reached! You\'re on fire.'
+            : reportsThisWeek > 0
+              ? `${weeklyGoal - reportsThisWeek} more to hit your goal this week.`
+              : 'Run your first analysis this week.',
+        icon: <IconGoal />,
+        href: '/new',
+        color: reportsThisWeek >= weeklyGoal ? 'var(--color-success)' : 'var(--accent-secondary)',
+        ring: 'outer',
+        badge: `${reportsThisWeek}/${weeklyGoal}`,
+        energyLevel: Math.round((reportsThisWeek / weeklyGoal) * 80),
+        relatedIds: ['new-analysis'],
+        previewContent: (
+          <div>
+            <ProgressBar
+              value={reportsThisWeek}
+              max={weeklyGoal}
+              variant="accent"
+              size="sm"
+              showValue={false}
+            />
+            <p className="mt-1.5 text-[10px]" style={{ color: 'var(--text-muted)' }}>
+              {reportsThisWeek}/{weeklyGoal} analyses this week
+            </p>
+          </div>
+        ),
+      },
+      {
+        id: 'account',
+        title: 'Account',
+        description: 'Settings, history, and credits.',
+        icon: <IconAccount />,
+        href: '/account',
+        color: 'var(--accent-secondary)',
+        ring: 'outer',
+        badge: data?.creditBalance !== undefined && data.creditBalance > 0 ? data.creditBalance : undefined,
+        energyLevel: 10,
+      },
+    ];
+    return nodes;
+  }, [totalReports, recentReports, reportsThisWeek, weeklyGoal, data?.creditBalance]);
+
+  const initial = firstName ? firstName.charAt(0).toUpperCase() : '?';
+
+  /* ── Loading ── */
   if (authLoading || loading) {
     return (
       <AppLayout showIntelligencePanel={false}>
-        {/* Greeting skeleton */}
         <div className="relative mb-8 overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-8">
           <Skeleton className="h-8 w-56" />
           <Skeleton className="mt-3 h-5 w-80" />
         </div>
-        {/* Stats skeleton */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-28 rounded-2xl" />
-          ))}
-        </div>
-        {/* Goal skeleton */}
-        <Skeleton className="mb-8 h-20 rounded-2xl" />
-        {/* Actions skeleton */}
-        <div className="mb-8 flex gap-3">
-          <Skeleton className="h-11 w-36 rounded-full" />
-          <Skeleton className="h-11 w-32 rounded-full" />
-        </div>
-        {/* Reports skeleton */}
-        <Skeleton className="mb-4 h-6 w-36" />
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-20 rounded-2xl" />
-          ))}
+        <div className="flex items-center justify-center py-24">
+          <Skeleton className="h-[400px] w-[400px] rounded-full" />
         </div>
       </AppLayout>
     );
   }
 
+  /* ── Error ── */
   if (!data) {
     return (
       <AppLayout showIntelligencePanel={false}>
@@ -256,13 +458,11 @@ export default function DashboardPage() {
     );
   }
 
-  const weeklyGoal = 3;
-
   return (
     <AppLayout showIntelligencePanel={false}>
-      {/* Personalized Greeting Header */}
+      {/* ── Greeting Header ── */}
       <BlurFade delay={0}>
-        <div className="relative mb-8 overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-8">
+        <div className="relative mb-6 overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-8">
           <DotPattern className="opacity-20 [mask-image:linear-gradient(to_bottom,white,transparent)]" />
           <div className="relative">
             <h1 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl">
@@ -275,196 +475,114 @@ export default function DashboardPage() {
         </div>
       </BlurFade>
 
-      {/* Stats Row */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Total Reports */}
-        <BlurFade delay={0.05}>
-          <MagicCard className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-[var(--text-primary)]">
-                  {totalReports > 0 ? <NumberTicker value={totalReports} /> : '0'}
-                </p>
-                <p className="text-xs text-[var(--text-muted)]">Total Reports</p>
-              </div>
-            </div>
-          </MagicCard>
-        </BlurFade>
-
-        {/* Average Score */}
-        <BlurFade delay={0.1}>
-          <MagicCard className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-warning)]/10 text-[var(--color-warning)]">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p
-                  className="text-2xl font-bold"
-                  style={{ color: avgScore !== null ? getScoreColor(avgScore) : 'var(--text-primary)' }}
-                >
-                  {avgScore !== null ? <NumberTicker value={avgScore} /> : '\u2014'}
-                </p>
-                <p className="text-xs text-[var(--text-muted)]">Avg Score</p>
-              </div>
-            </div>
-            {sparklineScores.length > 0 && <ScoreSparkline scores={sparklineScores} />}
-          </MagicCard>
-        </BlurFade>
-
-        {/* This Week */}
-        <BlurFade delay={0.2}>
-          <MagicCard className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-success)]/10 text-[var(--color-success)]">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-[var(--text-primary)]">
-                  {reportsThisWeek > 0 ? <NumberTicker value={reportsThisWeek} /> : '0'}
-                </p>
-                <p className="text-xs text-[var(--text-muted)]">This Week</p>
-              </div>
-            </div>
-          </MagicCard>
-        </BlurFade>
-      </div>
-
-      {/* Weekly Goal */}
-      <BlurFade delay={0.25}>
-        <Card className="mb-8">
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-[var(--text-primary)]">Weekly Goal</span>
-                <Badge variant={reportsThisWeek >= weeklyGoal ? 'success' : 'default'}>
-                  {reportsThisWeek}/{weeklyGoal}
-                </Badge>
-              </div>
-              <p className="text-xs text-[var(--text-muted)]">
-                {reportsThisWeek >= weeklyGoal
-                  ? 'Goal reached! You\'re on fire.'
-                  : reportsThisWeek > 0
-                    ? `${weeklyGoal - reportsThisWeek} more to hit your goal`
-                    : 'Run your first analysis this week'}
-              </p>
-            </div>
-            <ProgressBar
-              value={reportsThisWeek}
-              max={weeklyGoal}
-              variant="accent"
-              size="sm"
-              showValue={false}
-            />
-          </CardContent>
-        </Card>
-      </BlurFade>
-
-      {/* Quick Actions */}
-      <BlurFade delay={0.3}>
-        <div className="mb-8 flex flex-wrap gap-3">
-          <Link href="/new">
-            <Button variant="gradient" rounded>
-              New Analysis
-            </Button>
-          </Link>
+      {/* ── Desktop: Orbital Hub ── */}
+      <BlurFade delay={0.1}>
+        <div className="hidden md:flex items-center justify-center py-8">
+          <RadialOrbitalTimeline
+            nodes={orbitalNodes}
+            innerRadius={160}
+            outerRadius={250}
+            className="h-[580px] w-full max-w-[600px]"
+            onNavigate={handleNavigate}
+            centerContent={
+              <CenterHub
+                initial={initial}
+                avgScore={avgScore}
+                totalReports={totalReports}
+              />
+            }
+          />
         </div>
       </BlurFade>
 
-      {/* Recent Reports */}
-      <div>
-        <BlurFade delay={0.35}>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)]">Recent Reports</h2>
-            {totalReports > 5 && (
+      {/* ── Mobile: Hub Card + Grid ── */}
+      <div className="md:hidden">
+        {/* Center hub card */}
+        <BlurFade delay={0.05}>
+          <div className="mb-6 flex flex-col items-center rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6">
+            <CenterHub initial={initial} avgScore={avgScore} totalReports={totalReports} />
+          </div>
+        </BlurFade>
+
+        {/* Node grid */}
+        <div className="mb-6 grid grid-cols-2 gap-3">
+          {orbitalNodes.map((node, i) => (
+            <BlurFade key={node.id} delay={0.1 + i * 0.05}>
+              <MobileNodeCard node={node} onNavigate={handleNavigate} />
+            </BlurFade>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Recent Reports Strip ── */}
+      <BlurFade delay={0.3}>
+        <div className="mt-2">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">Recent Reports</h2>
+            {totalReports > 3 && (
               <Link
                 href="/account"
-                className="text-sm text-[var(--accent-primary)] hover:underline"
+                className="text-xs text-[var(--accent-primary)] hover:underline"
               >
                 View all
               </Link>
             )}
           </div>
-        </BlurFade>
 
-        {recentReports.length === 0 ? (
-          <BlurFade delay={0.4}>
-            <div className="relative overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-12 text-center">
+          {recentReports.length === 0 ? (
+            <div className="relative overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-10 text-center">
               <BorderBeam size={250} duration={12} delay={0} />
               <div className="relative">
-                <p className="text-lg font-medium text-[var(--text-primary)]">
-                  No reports yet
-                </p>
-                <p className="mt-2 text-[var(--text-secondary)]">
+                <p className="text-sm font-medium text-[var(--text-primary)]">No reports yet</p>
+                <p className="mt-1 text-xs text-[var(--text-secondary)]">
                   Upload your resume and job description to get your first diagnostic.
                 </p>
                 <Link href="/new">
-                  <Button variant="gradient" rounded className="mt-6">
+                  <button
+                    className="mt-4 rounded-full px-5 py-2 text-xs font-semibold text-white transition-all hover:brightness-110"
+                    style={{ background: 'var(--accent-gradient)' }}
+                  >
                     Start Your First Analysis
-                  </Button>
+                  </button>
                 </Link>
               </div>
             </div>
-          </BlurFade>
-        ) : (
-          <div className="space-y-3">
-            {recentReports.map((report, i) => (
-              <BlurFade key={report.id} delay={0.4 + i * 0.05}>
-                <Link href={`/r/${report.id}${report.paidUnlocked ? '/full' : ''}`}>
-                  <MagicCard className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] transition-colors duration-200 hover:border-[var(--border-accent)]">
-                    <div className="flex items-center justify-between p-4">
+          ) : (
+            <div className="space-y-2">
+              {recentReports.map((report) => (
+                <Link key={report.id} href={`/r/${report.id}${report.paidUnlocked ? '/full' : ''}`}>
+                  <MagicCard className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] transition-colors duration-200 hover:border-[var(--border-accent)]">
+                    <div className="flex items-center justify-between px-4 py-3">
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-[var(--text-primary)]">
+                        <p className="text-sm font-medium text-[var(--text-primary)]">
                           {report.companyName ? `${report.companyName} ` : ''}
-                          {report.roundType.charAt(0).toUpperCase() + report.roundType.slice(1)}{' '}
-                          Interview
+                          {report.roundType.charAt(0).toUpperCase() + report.roundType.slice(1)} Interview
                         </p>
-                        <div className="mt-1 flex items-center gap-2">
-                          <span className="text-xs text-[var(--text-muted)]">
-                            {getRelativeDate(report.createdAt)}
-                          </span>
-                          {report.top3Risks.length > 0 && (
-                            <>
-                              <span className="text-xs text-[var(--text-muted)]">&middot;</span>
-                              <span className="truncate text-xs text-[var(--text-secondary)]">
-                                {report.top3Risks[0].title}
-                              </span>
-                            </>
-                          )}
-                        </div>
+                        <span className="text-xs text-[var(--text-muted)]">
+                          {getRelativeDate(report.createdAt)}
+                        </span>
                       </div>
-                      <div className="ml-4 flex flex-shrink-0 items-center gap-3">
+                      <div className="ml-4 flex shrink-0 items-center gap-2">
                         {report.readinessScore !== null && (
                           <span
-                            className="text-lg font-bold"
+                            className="text-base font-bold"
                             style={{ color: getScoreColor(report.readinessScore) }}
                           >
                             {report.readinessScore}
                           </span>
                         )}
                         {report.riskBand && (
-                          <Badge variant={riskBandToVariant(report.riskBand)}>
-                            {report.riskBand}
-                          </Badge>
+                          <Badge variant={riskBandToVariant(report.riskBand)}>{report.riskBand}</Badge>
                         )}
                       </div>
                     </div>
                   </MagicCard>
                 </Link>
-              </BlurFade>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </BlurFade>
     </AppLayout>
   );
 }

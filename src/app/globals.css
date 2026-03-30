@@ -841,13 +841,49 @@ h1, h2, h3, h4, h5, h6 {
   animation: orbit calc(var(--duration) * 1s) linear infinite;
 }
 
+/* ====== ORBITAL DASHBOARD KEYFRAMES ====== */
+
+@keyframes orbital-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--pulse-color, rgba(99, 102, 241, 0.4));
+  }
+  50% {
+    box-shadow: 0 0 20px 6px var(--pulse-color, rgba(99, 102, 241, 0.15));
+  }
+}
+
+@keyframes orbital-ring-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes orbital-center-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.animate-orbital-pulse {
+  animation: orbital-pulse 2.5s ease-in-out infinite;
+}
+
+.animate-orbital-ring-spin {
+  animation: orbital-ring-spin 120s linear infinite;
+}
+
+.animate-orbital-breathe {
+  animation: orbital-center-breathe 4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-border-beam,
   .animate-shimmer-slide,
   .animate-marquee,
   .animate-marquee-vertical,
   .animate-spin-around,
-  .animate-gradient {
+  .animate-gradient,
+  .animate-orbital-pulse,
+  .animate-orbital-ring-spin,
+  .animate-orbital-breathe {
     animation: none !important;
   }
 
