@@ -53,6 +53,7 @@ function mapRowToProfile(row: Record<string, unknown>): UserProfile {
     targetCompanyTier: row.target_company_tier as UserProfile['targetCompanyTier'],
     segment: row.segment as string | null,
     resumeText: row.resume_text as string | null,
+    resumePdfPath: row.resume_pdf_path as string | null,
     targetCountries: (row.target_countries as string[]) ?? [],
     targetCities: (row.target_cities as string[]) ?? [],
     onboardingCompleted: row.onboarding_completed as boolean,

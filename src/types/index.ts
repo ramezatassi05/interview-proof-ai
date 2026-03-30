@@ -50,6 +50,7 @@ export interface UserProfile {
   targetCompanyTier: TargetCompanyTier | null;
   segment: string | null;
   resumeText: string | null;
+  resumePdfPath: string | null;
   targetCountries: string[] | null;
   targetCities: string[] | null;
   onboardingCompleted: boolean;

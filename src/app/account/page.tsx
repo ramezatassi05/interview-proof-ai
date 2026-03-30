@@ -53,6 +53,7 @@ export default function AccountPage() {
   const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState<AccountData | null>(null);
   const [profileResumeText, setProfileResumeText] = useState<string | null>(null);
+  const [profileResumePdfPath, setProfileResumePdfPath] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,6 +92,7 @@ export default function AccountPage() {
         if (profileRes.status === 'fulfilled' && profileRes.value.ok) {
           const profileResult = await profileRes.value.json();
           setProfileResumeText(profileResult.data?.resumeText ?? null);
+          setProfileResumePdfPath(profileResult.data?.resumePdfPath ?? null);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -152,7 +154,7 @@ export default function AccountPage() {
         {/* Resume Section */}
         <BlurFade delay={0.1}>
           <div className="mt-6">
-            <ResumeSection initialResumeText={profileResumeText} />
+            <ResumeSection initialResumeText={profileResumeText} initialResumePdfPath={profileResumePdfPath} />
           </div>
         </BlurFade>
       </div>

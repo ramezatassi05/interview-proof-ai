@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -14,31 +14,91 @@ const PREVIEW_CHAR_LIMIT = 500;
 
 interface ResumeSectionProps {
   initialResumeText: string | null;
+  initialResumePdfPath: string | null;
 }
 
-export function ResumeSection({ initialResumeText }: ResumeSectionProps) {
+export function ResumeSection({ initialResumeText, initialResumePdfPath }: ResumeSectionProps) {
   const [resumeText, setResumeText] = useState<string | null>(initialResumeText);
+  const [resumePdfPath, setResumePdfPath] = useState<string | null>(initialResumePdfPath);
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [loadingPdf, setLoadingPdf] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [inputMode, setInputMode] = useState<'pdf' | 'paste'>('pdf');
   const [draftText, setDraftText] = useState('');
+  const [draftFile, setDraftFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
   const hasResume = !!resumeText && resumeText.length > 0;
+  const hasPdf = !!resumePdfPath;
   const isLong = hasResume && resumeText.length > PREVIEW_CHAR_LIMIT;
+
+  const fetchSignedUrl = useCallback(async () => {
+    if (!resumePdfPath) return;
+    setLoadingPdf(true);
+    try {
+      const res = await fetch('/api/profile/resume-pdf');
+      if (!res.ok) throw new Error('Failed to load PDF');
+      const data = await res.json();
+      setSignedUrl(data.data.signedUrl);
+    } catch {
+      setSignedUrl(null);
+    } finally {
+      setLoadingPdf(false);
+    }
+  }, [resumePdfPath]);
+
+  useEffect(() => {
+    if (resumePdfPath) {
+      fetchSignedUrl();
+    }
+  }, [resumePdfPath, fetchSignedUrl]);
 
   const handleStartEditing = () => {
     setDraftText(resumeText || '');
+    setDraftFile(null);
     setInputMode('pdf');
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     setDraftText('');
+    setDraftFile(null);
     setIsEditing(false);
   };
 
   const handleSave = async () => {
+    // If we have a PDF file, upload it via the new endpoint
+    if (draftFile) {
+      setIsSaving(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', draftFile);
+
+        const res = await fetch('/api/profile/resume-upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to upload resume');
+
+        setResumeText(data.data.text);
+        setResumePdfPath(data.data.resumePdfPath);
+        setSignedUrl(null); // Will refetch
+        setIsEditing(false);
+        setDraftText('');
+        setDraftFile(null);
+        toast.success('Resume saved successfully');
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to save resume');
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
+
+    // Text-only save (paste mode)
     if (draftText.length < 50) {
       toast.error('Resume must be at least 50 characters');
       return;
@@ -75,6 +135,10 @@ export function ResumeSection({ initialResumeText }: ResumeSectionProps) {
     }
   };
 
+  const handleFileSelected = (file: File | null) => {
+    setDraftFile(file);
+  };
+
   // Edit mode
   if (isEditing) {
     return (
@@ -105,7 +169,10 @@ export function ResumeSection({ initialResumeText }: ResumeSectionProps) {
 
               {/* Input area */}
               {inputMode === 'pdf' ? (
-                <PdfUpload onTextExtracted={handlePdfExtracted} />
+                <PdfUpload
+                  onTextExtracted={handlePdfExtracted}
+                  onFileSelected={handleFileSelected}
+                />
               ) : (
                 <Textarea
                   value={draftText}
@@ -137,7 +204,7 @@ export function ResumeSection({ initialResumeText }: ResumeSectionProps) {
                 <Button
                   size="sm"
                   onClick={handleSave}
-                  disabled={isSaving || draftText.length < 50}
+                  disabled={isSaving || (!draftFile && draftText.length < 50)}
                   loading={isSaving}
                 >
                   {isSaving ? 'Saving...' : 'Save Resume'}
@@ -163,24 +230,45 @@ export function ResumeSection({ initialResumeText }: ResumeSectionProps) {
           </div>
         </CardHeader>
         <CardContent>
-          {hasResume ? (
+          {hasPdf ? (
+            // PDF preview mode
             <div className="space-y-3">
-              {/* Resume preview */}
-              <div className="rounded-lg bg-[var(--bg-elevated)] p-3">
-                <p className="whitespace-pre-wrap text-xs leading-relaxed text-[var(--text-secondary)]">
-                  {isExpanded ? resumeText : resumeText.slice(0, PREVIEW_CHAR_LIMIT)}
-                  {isLong && !isExpanded && '...'}
-                </p>
-                {isLong && (
-                  <button
-                    type="button"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="mt-2 text-xs font-medium text-[var(--accent-primary)] hover:underline"
-                  >
-                    {isExpanded ? 'Show less' : 'Show more'}
-                  </button>
-                )}
-              </div>
+              {loadingPdf ? (
+                <div className="flex h-[500px] items-center justify-center rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)]">
+                  <div className="text-center">
+                    <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent-primary)] border-t-transparent" />
+                    <p className="mt-3 text-sm text-[var(--text-secondary)]">Loading preview...</p>
+                  </div>
+                </div>
+              ) : signedUrl ? (
+                <iframe
+                  src={signedUrl}
+                  className="w-full rounded-lg border border-[var(--border-default)]"
+                  style={{ height: '500px' }}
+                  title="Resume PDF preview"
+                />
+              ) : (
+                // Signed URL failed — show text fallback
+                <TextFallback
+                  resumeText={resumeText}
+                  isExpanded={isExpanded}
+                  isLong={isLong}
+                  onToggleExpand={() => setIsExpanded(!isExpanded)}
+                />
+              )}
+              <Button variant="gradient" size="sm" rounded onClick={handleStartEditing}>
+                Update Resume
+              </Button>
+            </div>
+          ) : hasResume ? (
+            // Text-only mode (legacy users or paste-only)
+            <div className="space-y-3">
+              <TextFallback
+                resumeText={resumeText}
+                isExpanded={isExpanded}
+                isLong={isLong}
+                onToggleExpand={() => setIsExpanded(!isExpanded)}
+              />
               <p className="text-xs text-[var(--text-muted)]">
                 {resumeText.length.toLocaleString()} characters
               </p>
@@ -189,6 +277,7 @@ export function ResumeSection({ initialResumeText }: ResumeSectionProps) {
               </Button>
             </div>
           ) : (
+            // No resume at all
             <div className="space-y-3">
               <p className="text-sm text-[var(--text-secondary)]">
                 Upload your resume to use it across all your interview analyses.
@@ -201,5 +290,37 @@ export function ResumeSection({ initialResumeText }: ResumeSectionProps) {
         </CardContent>
       </Card>
     </MagicCard>
+  );
+}
+
+function TextFallback({
+  resumeText,
+  isExpanded,
+  isLong,
+  onToggleExpand,
+}: {
+  resumeText: string | null;
+  isExpanded: boolean;
+  isLong: boolean;
+  onToggleExpand: () => void;
+}) {
+  if (!resumeText) return null;
+
+  return (
+    <div className="rounded-lg bg-[var(--bg-elevated)] p-3">
+      <p className="whitespace-pre-wrap text-xs leading-relaxed text-[var(--text-secondary)]">
+        {isExpanded ? resumeText : resumeText.slice(0, PREVIEW_CHAR_LIMIT)}
+        {isLong && !isExpanded && '...'}
+      </p>
+      {isLong && (
+        <button
+          type="button"
+          onClick={onToggleExpand}
+          className="mt-2 text-xs font-medium text-[var(--accent-primary)] hover:underline"
+        >
+          {isExpanded ? 'Show less' : 'Show more'}
+        </button>
+      )}
+    </div>
   );
 }

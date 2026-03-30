@@ -4,12 +4,13 @@ import { useCallback, useState, useRef } from 'react';
 
 interface PdfUploadProps {
   onTextExtracted: (text: string) => void;
+  onFileSelected?: (file: File | null) => void;
   onManualEntry?: () => void;
   error?: string;
   disabled?: boolean;
 }
 
-export function PdfUpload({ onTextExtracted, onManualEntry, error, disabled }: PdfUploadProps) {
+export function PdfUpload({ onTextExtracted, onFileSelected, onManualEntry, error, disabled }: PdfUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -48,6 +49,7 @@ export function PdfUpload({ onTextExtracted, onManualEntry, error, disabled }: P
         }
 
         onTextExtracted(data.data.text);
+        onFileSelected?.(file);
       } catch (err) {
         setUploadError(err instanceof Error ? err.message : 'Failed to parse PDF');
         setFileName(null);
@@ -55,7 +57,7 @@ export function PdfUpload({ onTextExtracted, onManualEntry, error, disabled }: P
         setIsUploading(false);
       }
     },
-    [onTextExtracted]
+    [onTextExtracted, onFileSelected]
   );
 
   const handleDrop = useCallback(
@@ -99,6 +101,7 @@ export function PdfUpload({ onTextExtracted, onManualEntry, error, disabled }: P
     setFileName(null);
     setUploadError(null);
     onTextExtracted('');
+    onFileSelected?.(null);
     if (inputRef.current) {
       inputRef.current.value = '';
     }
