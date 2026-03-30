@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -20,8 +20,8 @@ interface ResumeSectionProps {
 export function ResumeSection({ initialResumeText, initialResumePdfPath }: ResumeSectionProps) {
   const [resumeText, setResumeText] = useState<string | null>(initialResumeText);
   const [resumePdfPath, setResumePdfPath] = useState<string | null>(initialResumePdfPath);
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const [loadingPdf, setLoadingPdf] = useState(false);
+  // Cache-bust key so the iframe reloads after a new upload
+  const [pdfVersion, setPdfVersion] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [inputMode, setInputMode] = useState<'pdf' | 'paste'>('pdf');
   const [draftText, setDraftText] = useState('');
@@ -32,27 +32,6 @@ export function ResumeSection({ initialResumeText, initialResumePdfPath }: Resum
   const hasResume = !!resumeText && resumeText.length > 0;
   const hasPdf = !!resumePdfPath;
   const isLong = hasResume && resumeText.length > PREVIEW_CHAR_LIMIT;
-
-  const fetchSignedUrl = useCallback(async () => {
-    if (!resumePdfPath) return;
-    setLoadingPdf(true);
-    try {
-      const res = await fetch('/api/profile/resume-pdf');
-      if (!res.ok) throw new Error('Failed to load PDF');
-      const data = await res.json();
-      setSignedUrl(data.data.signedUrl);
-    } catch {
-      setSignedUrl(null);
-    } finally {
-      setLoadingPdf(false);
-    }
-  }, [resumePdfPath]);
-
-  useEffect(() => {
-    if (resumePdfPath) {
-      fetchSignedUrl();
-    }
-  }, [resumePdfPath, fetchSignedUrl]);
 
   const handleStartEditing = () => {
     setDraftText(resumeText || '');
@@ -85,7 +64,7 @@ export function ResumeSection({ initialResumeText, initialResumePdfPath }: Resum
 
         setResumeText(data.data.text);
         setResumePdfPath(data.data.resumePdfPath);
-        setSignedUrl(null); // Will refetch
+        setPdfVersion((v) => v + 1);
         setIsEditing(false);
         setDraftText('');
         setDraftFile(null);
@@ -231,31 +210,14 @@ export function ResumeSection({ initialResumeText, initialResumePdfPath }: Resum
         </CardHeader>
         <CardContent>
           {hasPdf ? (
-            // PDF preview mode
+            // PDF preview mode — proxy through our own API to avoid CORS issues
             <div className="space-y-3">
-              {loadingPdf ? (
-                <div className="flex h-[500px] items-center justify-center rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)]">
-                  <div className="text-center">
-                    <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent-primary)] border-t-transparent" />
-                    <p className="mt-3 text-sm text-[var(--text-secondary)]">Loading preview...</p>
-                  </div>
-                </div>
-              ) : signedUrl ? (
-                <iframe
-                  src={signedUrl}
-                  className="w-full rounded-lg border border-[var(--border-default)]"
-                  style={{ height: '500px' }}
-                  title="Resume PDF preview"
-                />
-              ) : (
-                // Signed URL failed — show text fallback
-                <TextFallback
-                  resumeText={resumeText}
-                  isExpanded={isExpanded}
-                  isLong={isLong}
-                  onToggleExpand={() => setIsExpanded(!isExpanded)}
-                />
-              )}
+              <iframe
+                src={`/api/profile/resume-pdf?v=${pdfVersion}`}
+                className="w-full rounded-lg border border-[var(--border-default)] bg-white"
+                style={{ height: '500px' }}
+                title="Resume PDF preview"
+              />
               <Button variant="gradient" size="sm" rounded onClick={handleStartEditing}>
                 Update Resume
               </Button>

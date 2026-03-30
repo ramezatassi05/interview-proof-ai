@@ -25,20 +25,28 @@ export async function GET() {
       return NextResponse.json({ error: 'No resume PDF found' }, { status: 404 });
     }
 
-    // Generate a signed URL (5 minutes expiry)
-    const { data: signedData, error: signError } = await serviceClient.storage
+    // Download the PDF file from Supabase Storage
+    const { data: fileData, error: downloadError } = await serviceClient.storage
       .from('resumes')
-      .createSignedUrl(profile.resume_pdf_path, 300);
+      .download(profile.resume_pdf_path);
 
-    if (signError || !signedData?.signedUrl) {
-      console.error('Signed URL error:', signError);
+    if (downloadError || !fileData) {
+      console.error('Storage download error:', downloadError);
       return NextResponse.json(
-        { error: 'Failed to generate resume preview URL' },
+        { error: 'Failed to load resume PDF' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ data: { signedUrl: signedData.signedUrl } });
+    // Stream the PDF directly with proper headers
+    const buffer = Buffer.from(await fileData.arrayBuffer());
+    return new NextResponse(buffer, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'inline; filename="resume.pdf"',
+        'Cache-Control': 'private, max-age=300',
+      },
+    });
   } catch (err) {
     console.error('Resume PDF GET error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
