@@ -27,7 +27,7 @@ const PrepPreferencesSchema = z.object({
 });
 
 const CreateReportSchema = z.object({
-  resumeText: z.string().min(50, 'Resume text too short'),
+  resumeText: z.string().min(50, 'Resume text too short').optional(),
   jobDescriptionText: z.string().min(50, 'Job description too short'),
   roundType: z.enum(['technical', 'behavioral', 'research']),
   prepPreferences: PrepPreferencesSchema.optional(),
@@ -66,7 +66,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { resumeText, jobDescriptionText, roundType, prepPreferences } = validation.data;
+    const { resumeText: bodyResumeText, jobDescriptionText, roundType, prepPreferences } =
+      validation.data;
+
+    // Resolve resume text: use body if provided, otherwise fetch from user profile
+    let resumeText = bodyResumeText;
+    if (!resumeText) {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('resume_text')
+        .eq('user_id', user.id)
+        .single();
+
+      resumeText = profile?.resume_text ?? undefined;
+
+      if (!resumeText || resumeText.length < 50) {
+        return NextResponse.json(
+          { error: 'No resume found. Please upload your resume in Account settings.' },
+          { status: 400 }
+        );
+      }
+    }
 
     // Create report
     const { data: report, error: insertError } = await supabase

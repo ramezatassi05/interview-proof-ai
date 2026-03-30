@@ -193,7 +193,7 @@ class APIClient {
   }
 
   async createReport(input: {
-    resumeText: string;
+    resumeText?: string;
     jobDescriptionText: string;
     roundType: RoundType;
     prepPreferences?: PrepPreferences;

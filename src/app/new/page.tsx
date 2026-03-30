@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { api, APIRequestError } from '@/lib/api';
 import type { RoundType, PrepPreferences, CareerStage, ExperienceLevel } from '@/types';
@@ -11,14 +12,14 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
-import { PdfUpload } from '@/components/ui/PdfUpload';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { RoundSelector } from '@/components/upload/RoundSelector';
 import { PrepPreferencesForm } from '@/components/upload/PrepPreferencesForm';
 import { AnalysisProgress, DidYouKnowCard } from '@/components/upload/AnalysisProgress';
+import { BlurFade } from '@/components/ui/blur-fade';
 
 interface FormErrors {
-  resumeText?: string;
   jobDescriptionText?: string;
   roundType?: string;
   prepPreferences?: string;
@@ -26,38 +27,42 @@ interface FormErrors {
 }
 
 const STEPS = [
-  { number: 1, label: 'Resume' },
-  { number: 2, label: 'Job Description' },
-  { number: 3, label: 'Interview Type' },
-  { number: 4, label: 'Study Plan' },
+  { number: 1, label: 'Job Description' },
+  { number: 2, label: 'Interview Type' },
+  { number: 3, label: 'Study Plan' },
 ];
 
 export default function NewReportPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
-  const [resumeText, setResumeText] = useState('');
   const [jobDescriptionText, setJobDescriptionText] = useState('');
   const [roundType, setRoundType] = useState<RoundType | null>(null);
   const [prepPreferences, setPrepPreferences] = useState<PrepPreferences | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [manualResume, setManualResume] = useState(false);
   const [profileCareerStage, setProfileCareerStage] = useState<CareerStage | null>(null);
+  const [profileResumeText, setProfileResumeText] = useState<string | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
-  // Fetch user profile to auto-populate experience level from onboarding
+  // Fetch user profile to get resume and auto-populate experience level
   useEffect(() => {
     if (!user) return;
+    setProfileLoading(true);
     fetch('/api/profile')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.data?.careerStage) {
           setProfileCareerStage(data.data.careerStage);
         }
+        setProfileResumeText(data?.data?.resumeText ?? null);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setProfileLoading(false));
   }, [user]);
+
+  const hasResume = !!profileResumeText && profileResumeText.length >= 50;
 
   const defaultExperienceLevel: ExperienceLevel | undefined = profileCareerStage
     ? ({
@@ -77,10 +82,8 @@ export default function NewReportPage() {
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (resumeText.trim().length < 50) {
-      newErrors.resumeText = manualResume
-        ? 'Resume text must be at least 50 characters'
-        : 'Please upload a resume PDF';
+    if (!hasResume) {
+      newErrors.submit = 'Please upload your resume in Account settings before running an analysis.';
     }
 
     if (jobDescriptionText.trim().length < 50) {
@@ -109,9 +112,8 @@ export default function NewReportPage() {
     setErrors({});
 
     try {
-      // Step 1: Create report
+      // Step 1: Create report (server fetches resume from profile)
       const createResult = await api.createReport({
-        resumeText: resumeText.trim(),
         jobDescriptionText: jobDescriptionText.trim(),
         roundType,
         prepPreferences: prepPreferences || undefined,
@@ -149,11 +151,10 @@ export default function NewReportPage() {
 
   // Calculate current step for progress
   const getCurrentStep = () => {
-    if (resumeText.length < 50) return 1;
-    if (jobDescriptionText.length < 50) return 2;
-    if (!roundType) return 3;
-    if (!prepPreferences) return 4;
-    return 5; // All complete
+    if (jobDescriptionText.length < 50) return 1;
+    if (!roundType) return 2;
+    if (!prepPreferences) return 3;
+    return 4; // All complete
   };
 
   const currentStep = getCurrentStep();
@@ -187,10 +188,120 @@ export default function NewReportPage() {
                   New Interview Diagnostic
                 </h1>
                 <p className="mt-2 text-[var(--text-secondary)]">
-                  Upload your resume and paste the job description to get a readiness score and
-                  rejection risks.
+                  Paste the job description for the role you&apos;re targeting to get a readiness
+                  score and rejection risks.
                 </p>
               </div>
+
+              {/* Resume Status Banner */}
+              <BlurFade delay={0.1} inView>
+                <div className="mb-8">
+                  {profileLoading ? (
+                    <div className="animate-pulse rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-16 w-12 rounded bg-[var(--bg-elevated)]" />
+                        <div className="space-y-2">
+                          <div className="h-4 w-40 rounded bg-[var(--bg-elevated)]" />
+                          <div className="h-3 w-24 rounded bg-[var(--bg-elevated)]" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : hasResume ? (
+                    <Link href="/account" className="block">
+                      <div className="group cursor-pointer rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-4 transition-all hover:border-[var(--accent-primary)]/40 hover:shadow-md">
+                        <div className="flex items-center gap-4">
+                          {/* Mini PDF Preview */}
+                          <div className="relative h-[88px] w-[68px] shrink-0 overflow-hidden rounded-md border border-[var(--border-default)] bg-white shadow-sm transition-transform group-hover:scale-[1.02]">
+                            {/* PDF page content */}
+                            <div className="p-1.5">
+                              {profileResumeText!
+                                .split('\n')
+                                .filter((l) => l.trim())
+                                .slice(0, 12)
+                                .map((line, i) => (
+                                  <div
+                                    key={i}
+                                    className="mb-[2px] truncate text-[3.5px] leading-[5px] text-zinc-600"
+                                    style={{
+                                      fontWeight:
+                                        i === 0 ? 700 : line === line.toUpperCase() ? 600 : 400,
+                                      fontSize: i === 0 ? '4.5px' : '3.5px',
+                                    }}
+                                  >
+                                    {line.slice(0, 60)}
+                                  </div>
+                                ))}
+                            </div>
+                            {/* Fade out at bottom */}
+                            <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white to-transparent" />
+                            {/* PDF badge */}
+                            <div className="absolute bottom-1 right-1 rounded-sm bg-red-500 px-1 py-[1px] text-[4px] font-bold text-white">
+                              PDF
+                            </div>
+                          </div>
+
+                          {/* Info */}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold text-[var(--text-primary)]">
+                                Your Resume
+                              </p>
+                              <Badge variant="success">Saved</Badge>
+                            </div>
+                            <p className="mt-1 text-xs text-[var(--text-muted)]">
+                              {profileResumeText!.length.toLocaleString()} characters
+                            </p>
+                            <p className="mt-2 flex items-center gap-1 text-xs font-medium text-[var(--accent-primary)] opacity-0 transition-opacity group-hover:opacity-100">
+                              Click to update
+                              <svg
+                                className="h-3 w-3"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5l7 7-7 7"
+                                />
+                              </svg>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ) : (
+                    <div className="rounded-xl border border-[var(--color-warning)]/20 bg-[var(--color-warning-muted)] p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <svg
+                            className="h-5 w-5 shrink-0 text-[var(--color-warning)]"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                            />
+                          </svg>
+                          <p className="text-sm text-[var(--color-warning)]">
+                            No resume found. Upload your resume before running an analysis.
+                          </p>
+                        </div>
+                        <Link href="/account">
+                          <Button variant="primary" size="sm" type="button">
+                            Upload Resume
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </BlurFade>
 
               {/* Progress Stepper */}
               <div className="mb-8 flex items-center justify-between">
@@ -249,47 +360,6 @@ export default function NewReportPage() {
               </div>
 
               <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Resume</CardTitle>
-                    <CardDescription>Upload your resume as a PDF or paste the text</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {manualResume ? (
-                      <div>
-                        <Textarea
-                          value={resumeText}
-                          onChange={(e) => setResumeText(e.target.value)}
-                          placeholder="Paste your resume text here..."
-                          rows={10}
-                          showCount
-                          error={errors.resumeText}
-                          disabled={isLoading}
-                        />
-                        <p className="mt-2 text-center text-xs text-[var(--text-muted)]">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setManualResume(false);
-                              setResumeText('');
-                            }}
-                            className="text-[var(--accent-primary)] hover:underline"
-                          >
-                            Or upload a PDF instead
-                          </button>
-                        </p>
-                      </div>
-                    ) : (
-                      <PdfUpload
-                        onTextExtracted={setResumeText}
-                        onManualEntry={() => setManualResume(true)}
-                        error={errors.resumeText}
-                        disabled={isLoading}
-                      />
-                    )}
-                  </CardContent>
-                </Card>
-
                 <Card>
                   <CardHeader>
                     <CardTitle>Job Description</CardTitle>
@@ -352,7 +422,13 @@ export default function NewReportPage() {
                 )}
 
                 <div className="flex justify-end">
-                  <Button variant="gradient" type="submit" size="lg" loading={isLoading}>
+                  <Button
+                    variant="gradient"
+                    type="submit"
+                    size="lg"
+                    loading={isLoading}
+                    disabled={!hasResume && !profileLoading}
+                  >
                     Analyze My Readiness
                   </Button>
                 </div>
