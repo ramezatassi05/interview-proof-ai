@@ -181,12 +181,7 @@ export function StepWelcome({ displayName, onContinue }: StepWelcomeProps) {
             animate="visible"
             className="flex flex-col items-center mt-8"
           >
-            <div className="relative">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-sm text-[var(--text-primary)] text-sm font-semibold px-3 py-1 rounded-full border border-[var(--border-default)] shadow-sm">
-                Hi!
-              </span>
-              <InsightOwlWaving size={120} />
-            </div>
+            <InsightOwlWaving size={80} />
           </motion.div>
         </div>
       </div>

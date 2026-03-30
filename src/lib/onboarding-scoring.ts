@@ -6,6 +6,7 @@ import type {
   InterviewExperience,
   TargetCompanyTier,
   TargetDomain,
+  JobMarketData,
 } from '@/types';
 import { extractResumeSignals } from './resume-signals';
 import { selectFocusAreas } from './focus-area-pool';
@@ -25,6 +26,7 @@ export interface OnboardingInput {
   resumeText: string;
   interviewExperience: InterviewExperience | null;
   targetCompanyTier: TargetCompanyTier | null;
+  jobMarketData?: JobMarketData | null;
 }
 
 const CAREER_STAGE_ADJUSTMENTS: Record<CareerStage, number> = {
@@ -182,6 +184,24 @@ export function computeAhaScore(input: OnboardingInput): AhaScore {
       impact: 3,
       sentiment: 'positive',
     });
+  }
+
+  // Job market calibration (from real-time API data)
+  if (input.jobMarketData && !input.jobMarketData.fetchError) {
+    const adj = input.jobMarketData.calibrationAdjustment;
+    if (adj !== 0) {
+      score += adj;
+      const ctx = input.jobMarketData.contexts[0];
+      const detail = ctx
+        ? `${ctx.totalListings} open positions in ${ctx.locationSummary}`
+        : 'Market analysis applied';
+      breakdown.push({
+        label: 'Job Market',
+        detail,
+        impact: adj,
+        sentiment: sentiment(adj),
+      });
+    }
   }
 
   // Clamp to [20, 75] — never show 0 or 100 for an estimate

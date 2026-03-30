@@ -124,52 +124,42 @@ function OnboardingContent() {
   }, [authLoading, user, router]);
 
   // Fetch job market data in background when user reaches Urgency step
-  useEffect(() => {
-    if (
-      state.step === 5 &&
-      state.targetCountries.length > 0 &&
-      !jobMarketData &&
-      !jobFetchTriggered.current
-    ) {
-      jobFetchTriggered.current = true;
-      setJobDataLoading(true);
-      fetch('/api/jobs/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          countries: state.targetCountries,
-          cities: state.targetCities,
-          targetRole: state.targetRole,
-          targetDomain: state.targetDomain,
-          careerStage: state.careerStage,
-        }),
+  const fetchJobData = useCallback(() => {
+    if (jobFetchTriggered.current || state.targetCountries.length === 0) return;
+    jobFetchTriggered.current = true;
+    setJobDataLoading(true);
+    fetch('/api/jobs/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        countries: state.targetCountries,
+        cities: state.targetCities,
+        targetRole: state.targetRole,
+        targetDomain: state.targetDomain,
+        careerStage: state.careerStage,
+      }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.data) setJobMarketData(data.data);
       })
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data?.data) setJobMarketData(data.data);
-        })
-        .catch(() => {
-          // Non-blocking — job data is additive
-        })
-        .finally(() => setJobDataLoading(false));
-    }
+      .catch(() => {
+        // Non-blocking — job data is additive
+      })
+      .finally(() => setJobDataLoading(false));
   }, [
-    state.step,
     state.targetCountries,
     state.targetCities,
     state.targetRole,
     state.targetDomain,
     state.careerStage,
-    jobMarketData,
   ]);
 
-  // Invalidate job data if user goes back and changes locations
-  useEffect(() => {
-    if (state.step < 5 && jobFetchTriggered.current) {
-      jobFetchTriggered.current = false;
-      setJobMarketData(null);
-    }
-  }, [state.step]);
+  // Invalidate job data if user navigates back before the Urgency step
+  const invalidateJobData = useCallback(() => {
+    jobFetchTriggered.current = false;
+    setJobMarketData(null);
+  }, []);
 
   // Auto-advance after career stage selection
   const handleCareerStageChange = useCallback(
@@ -257,7 +247,10 @@ function OnboardingContent() {
       <OnboardingProgress
         currentStep={state.step}
         totalSteps={TOTAL_STEPS}
-        onBack={() => dispatch({ type: 'PREV_STEP' })}
+        onBack={() => {
+          if (state.step <= 5) invalidateJobData();
+          dispatch({ type: 'PREV_STEP' });
+        }}
         showBack={state.step > 0 && state.step < 6}
       />
 
@@ -340,7 +333,10 @@ function OnboardingContent() {
                   onTargetCitiesChange={(v) =>
                     dispatch({ type: 'SET_FIELD', field: 'targetCities', value: v })
                   }
-                  onContinue={() => dispatch({ type: 'NEXT_STEP' })}
+                  onContinue={() => {
+                    dispatch({ type: 'NEXT_STEP' });
+                    fetchJobData();
+                  }}
                 />
               )}
 
