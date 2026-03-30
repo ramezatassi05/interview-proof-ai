@@ -4,7 +4,7 @@
 
 **App:** InterviewProof — job-specific interview diagnostic that identifies rejection risks and prioritizes fixes.
 **Stack:** Next.js 16 (App Router), Supabase (Postgres + pgvector + Auth), Stripe, OpenAI + Claude (hybrid), TypeScript, Tailwind CSS 4
-**Stage:** Post-MVP (Phase 8 complete, ongoing enhancements)
+**Stage:** Post-MVP (Phase 8 + F-001 Onboarding complete)
 **Repo:** `interview-proof-ai`
 
 ## Commands
@@ -53,11 +53,12 @@ src/
 │   ├── s/[token]/                    # Shared report public view
 │   ├── account/                      # Account settings + report history
 │   ├── wallet/                       # Credits wallet (balance, earn, history)
+│   ├── onboarding/                   # 7-step onboarding flow (page.tsx, layout.tsx)
 │   ├── risk-simulation/              # Risk simulation page
 │   ├── study-intelligence/           # Study intelligence page
 │   └── api/                          # All API routes (see below)
 ├── components/
-│   ├── ui/                           # Primitives: Button, Card, Input, Badge, Spinner, Tabs, etc.
+│   ├── ui/                           # Primitives: Button, Card, Input, Badge, Spinner, Tabs, LiquidGlassButton, etc.
 │   ├── layout/                       # Header, Footer, Container, AppLayout, Sidebar
 │   ├── upload/                       # RoundSelector, AnalysisProgress, PrepPreferencesForm
 │   ├── results/                      # ScoreCard, RiskList, PaywallCTA, ExecutiveSummary
@@ -65,6 +66,7 @@ src/
 │   ├── landing/                      # Landing sections (FAQ, BenefitsRisks, Stats, etc.)
 │   ├── credits/                      # CreditsBundleCard, CreditsPurchaseModal, CreditsWrapper
 │   ├── share/                        # ShareModal, SharePreviewCard
+│   ├── onboarding/                   # 10 onboarding step + nav components
 │   └── svg/                          # Animated SVG illustrations (Owl mascot, waves)
 ├── hooks/
 │   ├── useAuth.tsx                   # AuthProvider context + useAuth hook
@@ -79,7 +81,12 @@ src/
 │   ├── openai.ts                     # OpenAI client + model constants
 │   ├── format.ts                     # Duration formatting helpers
 │   ├── highlight.ts                  # Text highlighting for AI feedback
-│   └── insights.ts                   # Aggregate stats + fallback data
+│   ├── insights.ts                   # Aggregate stats + fallback data
+│   ├── onboarding-scoring.ts         # Deterministic Aha score engine (20-75)
+│   ├── focus-area-pool.ts            # Pool-based focus area selection
+│   ├── resume-signals.ts             # Keyword-based resume signal detection
+│   ├── role-suggestions.ts           # 100+ searchable role titles
+│   └── location-data.ts              # 30+ countries, 200+ cities
 ├── server/
 │   ├── pipeline.ts                   # Full analysis pipeline orchestrator
 │   ├── questions.ts                  # LLM question generation, feedback, best answers
@@ -106,7 +113,7 @@ src/
 └── types/index.ts                    # All TypeScript interfaces (single file)
 
 supabase/
-├── migrations/                       # SQL schema migrations (001-009)
+├── migrations/                       # SQL schema migrations (001-024)
 └── seed.sql                          # Initial rubric + question data
 
 scripts/
@@ -145,6 +152,10 @@ agent_docs/                           # AI agent reference documents
 | `/api/account` | GET | Account info |
 | `/api/parse-pdf` | POST | Extract text from PDF upload |
 | `/api/webhook/stripe` | POST | Stripe webhook handler |
+| `/api/onboarding/benchmarks` | POST | Compute onboarding benchmarks (domain multipliers, knowledge stats) |
+| `/api/profile` | GET/POST/PATCH | Profile CRUD (onboarding state, career info, Aha score) |
+| `/api/profile/resume-upload` | POST | Upload resume PDF to Supabase Storage |
+| `/api/profile/resume-pdf` | GET | Retrieve stored resume PDF |
 | `/auth/callback` | GET | Supabase auth callback |
 
 ## Architecture & Key Patterns
@@ -157,6 +168,15 @@ The LLM is the **analyst** (extracts, retrieves, produces structured analysis). 
 - Weighted formula: hardMatch (35%), evidenceDepth (25%), roundReadiness (20%), clarity (10%), companyProxy (10%)
 - Company difficulty adjustment: 1.0-1.5x multiplier based on company tier (FAANG+, Big Tech, etc.)
 - All score breakdowns stored as JSONB for reproducibility
+
+### Onboarding Scoring: Deterministic Client-Side
+
+The onboarding Aha score uses a **separate deterministic scoring engine** (`src/lib/onboarding-scoring.ts`) that runs client-side, independent of the main server scoring engine.
+
+- Clamped output range: 20-75 (never overpromises)
+- Inputs: career stage, prep urgency, interview experience, resume signals, domain
+- Focus areas selected from pool (`src/lib/focus-area-pool.ts`) based on profile signals
+- No LLM involvement — fully deterministic
 
 ### Hybrid LLM Strategy
 
@@ -225,10 +245,11 @@ Signal Strength | Hire Zone | Red Flags | Questions | Execution Roadmap | Coachi
 
 ## Database Schema
 
-**Tables:** `credits_ledger`, `reports`, `runs`, `rubric_chunks`, `question_archetypes`
+**Tables:** `credits_ledger`, `reports`, `runs`, `rubric_chunks`, `question_archetypes`, `user_profiles`, `job_market_cache`
 **Extensions:** pgvector (1536-dim OpenAI embeddings, IVFFlat index)
 **RLS:** Enabled on all tables — users can only access their own data
-**Migrations:** `supabase/migrations/001-009`
+**Migrations:** `supabase/migrations/001-024`
+**Storage:** Supabase Storage `resumes` bucket (private, 5MB limit, PDF only, RLS per user)
 
 Key Postgres functions:
 - `get_user_credit_balance(user_id)` — sum of credits ledger

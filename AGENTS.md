@@ -4,7 +4,7 @@
 **App:** InterviewProof
 **Goal:** Help job candidates understand exactly what will cause rejection in a specific interview so they can fix the highest-impact gaps quickly.
 **Stack:** Next.js 16, Supabase (Postgres + pgvector + Auth + Storage), TypeScript, Stripe, OpenAI/Anthropic LLM, OpenAI Embeddings
-**Current Phase:** Post-MVP (Phase 7)
+**Current Phase:** Post-MVP (F-001 Onboarding complete)
 
 ## 🛠 Commands
 ```bash
@@ -26,20 +26,24 @@ src/
 ├── app/
 │   ├── api/report/          # API routes (create, analyze, [id], unlock, rerun, [id]/pdf)
 │   ├── api/report/[id]/questions/  # Practice question APIs (generate, feedback, best-answer)
+│   ├── api/onboarding/benchmarks/  # Onboarding benchmark computation API
+│   ├── api/profile/         # Profile CRUD (GET/POST/PATCH) + resume-upload + resume-pdf
 │   ├── api/credits/         # Credits history API
 │   ├── api/referral/        # Referral code + stats API
 │   ├── api/insights/        # Aggregate cross-user stats API
 │   ├── auth/                # Auth pages (login, callback)
 │   ├── new/                 # Upload page
+│   ├── onboarding/          # 7-step onboarding flow (page.tsx, layout.tsx)
 │   ├── r/[id]/              # Results + full diagnostic pages
 │   ├── wallet/              # Credits wallet page
 │   └── page.tsx             # Landing page (hero, HireZone preview, stats, FAQ)
 ├── components/
-│   ├── ui/           # Button, Card, Input, Textarea, Badge, Spinner, ProgressBar, Collapsible, ThemeToggle, Tabs, RadialScoreIndicator
+│   ├── ui/           # Button, Card, Input, Textarea, Badge, Spinner, ProgressBar, Collapsible, ThemeToggle, Tabs, RadialScoreIndicator, LiquidGlassButton
 │   ├── layout/       # Header, Footer, Container, AppLayout, Sidebar, IntelligencePanel
 │   ├── upload/       # RoundSelector, AnalysisProgress, PrepPreferencesForm
 │   ├── results/      # ScoreCard, RiskList, RiskItem, PaywallCTA, ExecutiveSummary, StrengthsAndRisks
 │   ├── diagnostic/   # InterviewQuestions, StudyPlan, ScoreBreakdown, ArchetypeCard, RoundForecast, CognitiveRadar, TrajectoryChart, RecruiterView, PriorityActions, PracticeIntelligencePanel, CoachingHub, HireZoneChart
+│   ├── onboarding/   # StepWelcome, StepResumeUpload, StepCareerStage, StepRoleDetails, StepLocation, StepUrgency, StepAhaMoment, OnboardingProgress, OnboardingDotNav
 │   └── landing/      # BenefitsRisks, FAQ, InterviewIntelligenceStats
 ├── hooks/
 │   ├── useAuth.tsx   # Auth context and hook
@@ -51,7 +55,12 @@ src/
 │   ├── api.ts        # API client for frontend
 │   ├── format.ts     # Duration formatting helpers
 │   ├── highlight.ts  # Text highlighting utilities (quote matching, split with highlight)
-│   └── insights.ts   # Interview insights data + fallback aggregate stats
+│   ├── insights.ts   # Interview insights data + fallback aggregate stats
+│   ├── onboarding-scoring.ts  # Deterministic Aha score engine (20-75 range)
+│   ├── focus-area-pool.ts     # Pool-based focus area selection
+│   ├── resume-signals.ts      # Keyword-based resume signal detection
+│   ├── role-suggestions.ts    # 100+ searchable role titles
+│   └── location-data.ts       # 30+ countries, 200+ cities
 ├── server/
 │   ├── scoring/      # Deterministic scoring engine (v0.1) — archetype, forecast, hirezone, evidence, practice
 │   ├── rag/          # Extraction, retrieval, LLM analysis
@@ -61,7 +70,7 @@ src/
 └── types/            # TypeScript interfaces
 
 supabase/
-├── migrations/       # SQL schema migrations (001–005)
+├── migrations/       # SQL schema migrations (001–024)
 └── seed.sql          # Initial rubric + question data
 
 scripts/
@@ -111,9 +120,9 @@ scripts/
 - docs/TechDesign-InterviewProof-MVP.md
 
 ## 🔄 Current State
-**Last Updated:** February 11, 2026
-**Working On:** Phase 8 complete, ongoing bug fixes
-**Recently Completed:** Phase 8 (Interactive Practice, HireZone, Evidence, Coaching, Landing Page) + PDF download fix
+**Last Updated:** March 30, 2026
+**Working On:** Post-F-001 enhancements
+**Recently Completed:** F-001 Seamless Onboarding UI/UX (7-step flow, Aha moment, profile persistence, resume upload)
 **Blocked By:** None
 
 ## 🚀 Roadmap
@@ -258,6 +267,49 @@ scripts/
 
 ### Phase 8 Tab Layout (Full Diagnostic Page)
 9 tabs: Signal Strength | Hire Zone | Red Flags | Questions | Execution Roadmap | Coaching | Cognitive Map | Recruiter View | Practice Intel
+
+### F-001: Seamless Onboarding UI/UX ✅
+
+#### Pages & Layout
+- [x] 7-step onboarding orchestrator with React reducer + localStorage draft persistence (`/onboarding/page.tsx`)
+- [x] Light theme wrapper layout (`/onboarding/layout.tsx`)
+- [x] Landing page Header updated with "Get Started" CTA → `/onboarding` (LiquidGlassButton)
+
+#### Onboarding Steps (10 components in `src/components/onboarding/`)
+- [x] StepWelcome — Owl mascot with parallax animations and ambient gradients
+- [x] StepResumeUpload — PDF resume uploader with text extraction
+- [x] StepCareerStage — 4-card career stage selector (student, new grad, career changer, experienced pro) with auto-advance
+- [x] StepRoleDetails — Role + domain autocomplete (100+ roles across SWE, DS, Design, PM, General)
+- [x] StepLocation — Country/city multi-select (30+ countries, 200+ cities)
+- [x] StepUrgency — Prep urgency, biggest concern, interview experience, target company tier
+- [x] StepAhaMoment — Results screen with orbital timeline, parallax sections, readiness estimate, focus areas
+- [x] OnboardingProgress — Top gradient progress bar with step counter
+- [x] OnboardingDotNav — Right sidebar dot indicators
+- [x] aha-parallax-section — Scroll animation container for feature showcase
+
+#### API Routes
+- [x] POST `/api/onboarding/benchmarks` — Benchmark computation (domain multipliers, knowledge stats, rate-limited)
+- [x] GET/POST/PATCH `/api/profile` — Profile CRUD (onboarding state, career info, Aha score)
+- [x] POST `/api/profile/resume-upload` — Resume PDF upload to Supabase Storage
+- [x] GET `/api/profile/resume-pdf` — Resume PDF retrieval
+
+#### Libraries
+- [x] `onboarding-scoring.ts` — Deterministic Aha score engine (clamped 20-75 range, no LLM)
+- [x] `focus-area-pool.ts` — Pool-based focus area selection (concern detection, resume signals, domain weights)
+- [x] `resume-signals.ts` — Keyword-based resume signal detection (skills, leadership, impact, depth)
+- [x] `role-suggestions.ts` — 100+ searchable role titles with domain mapping
+- [x] `location-data.ts` — 30+ countries, 200+ cities (static client-side data)
+
+#### Database (6 migrations: 019–024)
+- [x] 019 — `user_profiles` table with onboarding state, career stage, segment, Aha score JSONB, RLS
+- [x] 020 — `resume_text` column for extracted PDF content
+- [x] 021 — `interview_experience` + `target_company_tier` columns
+- [x] 022 — `target_countries[]` + `target_cities[]` array columns
+- [x] 023 — `job_market_cache` table for location-based market data
+- [x] 024 — `resume_pdf_path` column + Supabase Storage `resumes` bucket + RLS policies
+
+#### UI Components
+- [x] `LiquidGlassButton` — Glass morphism CTA button with gradient variant
 
 ## 🔧 Key Architecture Decisions
 - **Scoring:** Deterministic weights in `src/server/scoring/engine.ts` (v0.1)
