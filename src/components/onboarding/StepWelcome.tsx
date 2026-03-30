@@ -2,6 +2,7 @@
 
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
 
 interface StepWelcomeProps {
   displayName: string;
@@ -170,6 +171,22 @@ export function StepWelcome({ displayName, onContinue }: StepWelcomeProps) {
                 Let&apos;s Go
               </span>
             </button>
+          </motion.div>
+
+          {/* Owl mascot saying hi */}
+          <motion.div
+            custom={4}
+            variants={fadeUpVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col items-center mt-8"
+          >
+            <div className="relative">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-sm text-[var(--text-primary)] text-sm font-semibold px-3 py-1 rounded-full border border-[var(--border-default)] shadow-sm">
+                Hi!
+              </span>
+              <InsightOwlWaving size={120} />
+            </div>
           </motion.div>
         </div>
       </div>
