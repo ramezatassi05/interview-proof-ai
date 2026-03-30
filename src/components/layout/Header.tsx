@@ -165,11 +165,19 @@ export function Header() {
                 </button>
               </div>
             ) : !WAITLIST_MODE ? (
-              <Link href="/auth/login">
-                <Button variant="accent" size="sm">
-                  Sign In
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/auth/login"
+                  className="text-sm text-[var(--header-text-secondary)] hover:text-[var(--header-text)] transition-colors"
+                >
+                  Login
+                </Link>
+                <Link href="/onboarding">
+                  <Button variant="accent" size="sm">
+                    Get Started
+                  </Button>
+                </Link>
+              </div>
             ) : null}
           </nav>
         </div>
