@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/Button';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
 import FloatingActionMenu from '@/components/ui/floating-action-menu';
 
