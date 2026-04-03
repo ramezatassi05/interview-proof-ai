@@ -41,6 +41,7 @@ interface StepAhaMomentProps {
   targetCities?: string[];
   onComplete: () => void;
   loading?: boolean;
+  error?: string | null;
 }
 
 const DOMAIN_LABELS: Record<TargetDomain, string> = {
@@ -346,6 +347,7 @@ export function StepAhaMoment({
   targetCities,
   onComplete,
   loading,
+  error,
 }: StepAhaMomentProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, watchDrag: true, duration: 30 });
   const [activeIndex, setActiveIndex] = useState(0);
@@ -395,7 +397,11 @@ export function StepAhaMoment({
     benchmarkData.knowledgeStats.totalRubricChunks > 0;
 
   const handleComplete = () => {
-    fireConfetti();
+    try {
+      fireConfetti();
+    } catch {
+      // Non-critical — continue with onboarding completion
+    }
     onComplete();
   };
 
@@ -920,6 +926,7 @@ export function StepAhaMoment({
                       'Start Your First Analysis'
                     )}
                   </ShimmerButton>
+                  {error && <p className="text-center text-xs text-red-500">{error}</p>}
                   <p className="text-center text-xs text-zinc-400">Takes about 2 minutes</p>
                 </BlurFade>
               </div>

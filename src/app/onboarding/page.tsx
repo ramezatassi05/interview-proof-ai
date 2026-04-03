@@ -101,6 +101,7 @@ function OnboardingContent() {
     return init;
   });
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [profileChecked, setProfileChecked] = useState(false);
   const [jobMarketData, setJobMarketData] = useState<JobMarketData | null>(null);
   const [jobDataLoading, setJobDataLoading] = useState(false);
@@ -275,6 +276,7 @@ function OnboardingContent() {
   const handleComplete = useCallback(async () => {
     if (!user) return;
     setSaving(true);
+    setSaveError(null);
 
     try {
       const res = await fetch('/api/profile', {
@@ -300,6 +302,7 @@ function OnboardingContent() {
 
       if (!res.ok) {
         console.error('Failed to save profile:', await res.text());
+        setSaveError('Something went wrong saving your profile. Please try again.');
         setSaving(false);
         return;
       }
@@ -315,6 +318,7 @@ function OnboardingContent() {
       router.push(redirectTarget);
     } catch (err) {
       console.error('Onboarding completion error:', err);
+      setSaveError('Something went wrong. Please try again.');
       setSaving(false);
     }
   }, [user, state, ahaScore, router, redirectTarget]);
@@ -369,6 +373,7 @@ function OnboardingContent() {
               targetCities={state.targetCities}
               onComplete={handleComplete}
               loading={saving}
+              error={saveError}
             />
           )}
         </BlurFade>
