@@ -61,7 +61,6 @@ export const COUNTRIES: Country[] = [
   { code: 'MY', name: 'Malaysia', region: 'Asia-Pacific', flag: '🇲🇾' },
   // Middle East & Africa
   { code: 'AE', name: 'UAE', region: 'Middle East & Africa', flag: '🇦🇪' },
-  { code: 'IL', name: 'Israel', region: 'Middle East & Africa', flag: '🇮🇱' },
   { code: 'SA', name: 'Saudi Arabia', region: 'Middle East & Africa', flag: '🇸🇦' },
   { code: 'NG', name: 'Nigeria', region: 'Middle East & Africa', flag: '🇳🇬' },
   { code: 'ZA', name: 'South Africa', region: 'Middle East & Africa', flag: '🇿🇦' },
@@ -81,7 +80,6 @@ export const POPULAR_COUNTRY_CODES: string[] = [
   'NL',
   'FR',
   'IE',
-  'IL',
   'AE',
 ];
 
@@ -231,10 +229,6 @@ export const CITIES_BY_COUNTRY: Record<string, City[]> = {
   AE: [
     { name: 'Dubai', label: 'Dubai' },
     { name: 'Abu Dhabi', label: 'Abu Dhabi' },
-  ],
-  IL: [
-    { name: 'Tel Aviv', label: 'Tel Aviv' },
-    { name: 'Haifa', label: 'Haifa' },
   ],
   SA: [
     { name: 'Riyadh', label: 'Riyadh' },
