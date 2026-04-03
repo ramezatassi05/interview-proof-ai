@@ -14,6 +14,10 @@ const DOMAIN_KEYWORDS: Record<TargetDomain, string> = {
   ds: 'data scientist',
   design: 'product designer',
   pm: 'product manager',
+  security: 'cybersecurity engineer',
+  cloud: 'cloud engineer',
+  marketing: 'marketing manager',
+  business: 'business analyst',
   general: 'tech',
 };
 
@@ -83,17 +87,14 @@ export async function searchJobs(params: {
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    const res = await fetch(
-      `https://${RAPIDAPI_HOST}/search?${searchParams.toString()}`,
-      {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-key': apiKey,
-          'x-rapidapi-host': RAPIDAPI_HOST,
-        },
-        signal: controller.signal,
-      }
-    );
+    const res = await fetch(`https://${RAPIDAPI_HOST}/search?${searchParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': apiKey,
+        'x-rapidapi-host': RAPIDAPI_HOST,
+      },
+      signal: controller.signal,
+    });
 
     if (!res.ok) return null;
 
@@ -129,7 +130,8 @@ export async function searchJobs(params: {
     return {
       totalListings: jobs.length,
       locationSummary: location,
-      roleSummary: params.targetRole || (params.targetDomain ? DOMAIN_KEYWORDS[params.targetDomain] : 'tech'),
+      roleSummary:
+        params.targetRole || (params.targetDomain ? DOMAIN_KEYWORDS[params.targetDomain] : 'tech'),
       topEmployers,
       salaryRange,
       isInternshipOnly: isStudent,

@@ -45,7 +45,7 @@ export function InsightsTab({
       {/* Recruiter View */}
       {recruiterSimulation && (
         <BlurFade delay={0.05}>
-          <section>
+          <section data-tour-step="insights-recruiter">
             <h2 className="section-label mb-4">Recruiter View</h2>
             <RecruiterView simulation={recruiterSimulation} companyName={companyName} />
           </section>

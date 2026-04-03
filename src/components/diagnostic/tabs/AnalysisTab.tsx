@@ -36,7 +36,7 @@ export function AnalysisTab({
       {/* Red Flags */}
       {allRisks && allRisks.length > 0 && (
         <BlurFade delay={0.05}>
-          <section>
+          <section data-tour-step="analysis-red-flags">
             <h2 className="section-label mb-4">
               {companyName ? `${companyName} ` : ''}Red Flags ({allRisks.length})
             </h2>
@@ -83,7 +83,7 @@ export function AnalysisTab({
       {/* Signal Strength */}
       {scoreBreakdown && (
         <BlurFade delay={0.25}>
-          <section>
+          <section data-tour-step="analysis-signal-strength">
             <h2 className="section-label mb-4">Signal Strength</h2>
             <ScoreBreakdown
               breakdown={scoreBreakdown}

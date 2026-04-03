@@ -10,7 +10,22 @@ const TIMEOUT_MS = 5000;
 
 // Adzuna uses lowercase 2-letter country codes in the URL
 const ADZUNA_SUPPORTED_COUNTRIES = new Set([
-  'at', 'au', 'be', 'br', 'ca', 'de', 'fr', 'gb', 'in', 'it', 'nl', 'nz', 'pl', 'sg', 'us', 'za',
+  'at',
+  'au',
+  'be',
+  'br',
+  'ca',
+  'de',
+  'fr',
+  'gb',
+  'in',
+  'it',
+  'nl',
+  'nz',
+  'pl',
+  'sg',
+  'us',
+  'za',
 ]);
 
 const DOMAIN_KEYWORDS: Record<TargetDomain, string> = {
@@ -18,6 +33,10 @@ const DOMAIN_KEYWORDS: Record<TargetDomain, string> = {
   ds: 'data scientist',
   design: 'product designer',
   pm: 'product manager',
+  security: 'cybersecurity engineer',
+  cloud: 'cloud engineer',
+  marketing: 'marketing manager',
+  business: 'business analyst',
   general: 'tech',
 };
 
@@ -54,7 +73,9 @@ export async function searchJobsAdzuna(params: {
   if (!supportedCountry) return null;
 
   const isStudent = params.careerStage === 'student';
-  const roleQuery = params.targetRole.trim() || (params.targetDomain ? DOMAIN_KEYWORDS[params.targetDomain] : 'software');
+  const roleQuery =
+    params.targetRole.trim() ||
+    (params.targetDomain ? DOMAIN_KEYWORDS[params.targetDomain] : 'software');
   const query = isStudent ? `${roleQuery} internship` : roleQuery;
 
   const locationQuery =
@@ -123,7 +144,8 @@ export async function searchJobsAdzuna(params: {
     return {
       totalListings: totalCount,
       locationSummary,
-      roleSummary: params.targetRole || (params.targetDomain ? DOMAIN_KEYWORDS[params.targetDomain] : 'tech'),
+      roleSummary:
+        params.targetRole || (params.targetDomain ? DOMAIN_KEYWORDS[params.targetDomain] : 'tech'),
       topEmployers,
       salaryRange,
       isInternshipOnly: isStudent,

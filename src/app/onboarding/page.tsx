@@ -18,7 +18,10 @@ import { OnboardingProgress } from '@/components/onboarding/OnboardingProgress';
 import { StepWelcome } from '@/components/onboarding/StepWelcome';
 import { StepResumeUpload } from '@/components/onboarding/StepResumeUpload';
 import { StepCareerStage } from '@/components/onboarding/StepCareerStage';
-import { StepRoleDetails } from '@/components/onboarding/StepRoleDetails';
+import {
+  StepRoleDetails,
+  type StepRoleDetailsHandle,
+} from '@/components/onboarding/StepRoleDetails';
 import { StepLocation } from '@/components/onboarding/StepLocation';
 import { StepUrgency } from '@/components/onboarding/StepUrgency';
 import { StepAhaMoment } from '@/components/onboarding/StepAhaMoment';
@@ -31,7 +34,11 @@ const STORAGE_KEY = 'ip_onboarding_draft';
 // ── State Machine ──────────────────────────────────────────────
 
 type Action =
-  | { type: 'SET_FIELD'; field: keyof OnboardingState; value: OnboardingState[keyof OnboardingState] }
+  | {
+      type: 'SET_FIELD';
+      field: keyof OnboardingState;
+      value: OnboardingState[keyof OnboardingState];
+    }
   | { type: 'NEXT_STEP' }
   | { type: 'PREV_STEP' }
   | { type: 'RESTORE'; state: OnboardingState };
@@ -40,8 +47,8 @@ const initialState: OnboardingState = {
   step: 0,
   displayName: '',
   careerStage: null,
-  targetRole: '',
-  targetDomain: 'swe',
+  targetRoles: [],
+  targetDomains: [],
   yearsExperience: null,
   prepUrgency: null,
   biggestConcern: '',
@@ -79,7 +86,15 @@ function OnboardingContent() {
     if (typeof window === 'undefined') return init;
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return { ...init, ...JSON.parse(saved), step: 0 } as OnboardingState;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Migrate old single-role format to array
+        if (typeof parsed.targetRole === 'string' && !parsed.targetRoles) {
+          parsed.targetRoles = parsed.targetRole ? [parsed.targetRole] : [];
+          delete parsed.targetRole;
+        }
+        return { ...init, ...parsed, step: 0 } as OnboardingState;
+      }
     } catch {
       // Ignore parse errors
     }
@@ -94,6 +109,7 @@ function OnboardingContent() {
   const isFirstRender = useRef(true);
   const jobFetchTriggered = useRef(false);
   const benchmarkFetchTriggered = useRef(false);
+  const roleDetailsRef = useRef<StepRoleDetailsHandle>(null);
   const redirectTarget = searchParams.get('redirect') ?? '/new';
 
   // Persist to localStorage on every change (skip initial render)
@@ -135,7 +151,7 @@ function OnboardingContent() {
     fetch('/api/profile')
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
-        if (json?.data?.onboardingCompleted) {
+        if (json?.data?.onboardingCompleted && searchParams.get('force') !== 'true') {
           router.replace(redirectTarget);
         } else {
           setProfileChecked(true);
@@ -157,8 +173,8 @@ function OnboardingContent() {
       body: JSON.stringify({
         countries: state.targetCountries,
         cities: state.targetCities,
-        targetRole: state.targetRole,
-        targetDomain: state.targetDomain,
+        targetRoles: state.targetRoles,
+        targetDomains: state.targetDomains,
         careerStage: state.careerStage,
       }),
     })
@@ -173,8 +189,8 @@ function OnboardingContent() {
   }, [
     state.targetCountries,
     state.targetCities,
-    state.targetRole,
-    state.targetDomain,
+    state.targetRoles,
+    state.targetDomains,
     state.careerStage,
   ]);
 
@@ -201,8 +217,8 @@ function OnboardingContent() {
       body: JSON.stringify({
         targetCompanyTier: state.targetCompanyTier,
         careerStage: state.careerStage,
-        targetDomain: state.targetDomain,
-        targetRole: state.targetRole,
+        targetDomains: state.targetDomains,
+        targetRoles: state.targetRoles,
         yearsExperience: state.yearsExperience,
       }),
     })
@@ -217,36 +233,31 @@ function OnboardingContent() {
   }, [
     state.targetCompanyTier,
     state.careerStage,
-    state.targetDomain,
-    state.targetRole,
+    state.targetDomains,
+    state.targetRoles,
     state.yearsExperience,
   ]);
 
   // Auto-advance after career stage selection
-  const handleCareerStageChange = useCallback(
-    (stage: CareerStage) => {
-      dispatch({ type: 'SET_FIELD', field: 'careerStage', value: stage });
-      // Auto-advance after brief delay for visual feedback
-      setTimeout(() => dispatch({ type: 'NEXT_STEP' }), 300);
-    },
-    []
-  );
+  const handleCareerStageChange = useCallback((stage: CareerStage) => {
+    dispatch({ type: 'SET_FIELD', field: 'careerStage', value: stage });
+    // Auto-advance after brief delay for visual feedback
+    setTimeout(() => dispatch({ type: 'NEXT_STEP' }), 300);
+  }, []);
 
   // Build benchmark domain weights map for focus area selection
   const benchmarkDomainWeights =
     benchmarkData?.benchmarkTargets && benchmarkData.benchmarkTargets.length > 0
-      ? Object.fromEntries(
-          benchmarkData.benchmarkTargets.map((t) => [t.domain, t.targetScore])
-        )
+      ? Object.fromEntries(benchmarkData.benchmarkTargets.map((t) => [t.domain, t.targetScore]))
       : null;
 
   // Compute aha score from current state
   const ahaScore: AhaScore = computeAhaScore({
     careerStage: state.careerStage,
-    targetDomain: state.targetDomain,
+    targetDomains: state.targetDomains,
     yearsExperience: state.yearsExperience,
     prepUrgency: state.prepUrgency,
-    targetRole: state.targetRole,
+    targetRoles: state.targetRoles,
     biggestConcern: state.biggestConcern,
     resumeText: state.resumeText,
     interviewExperience: state.interviewExperience,
@@ -267,8 +278,8 @@ function OnboardingContent() {
         body: JSON.stringify({
           displayName: state.displayName,
           careerStage: state.careerStage,
-          targetRole: state.targetRole || undefined,
-          targetDomain: state.targetDomain || undefined,
+          targetRoles: state.targetRoles,
+          targetDomains: state.targetDomains,
           yearsExperience: state.yearsExperience,
           prepUrgency: state.prepUrgency,
           biggestConcern: state.biggestConcern || undefined,
@@ -318,6 +329,8 @@ function OnboardingContent() {
         currentStep={state.step}
         totalSteps={TOTAL_STEPS}
         onBack={() => {
+          // If on step 3 (role details), let sub-step handle back first
+          if (state.step === 3 && roleDetailsRef.current?.handleBack()) return;
           if (state.step <= 5) invalidateJobData();
           if (state.step <= 6) invalidateBenchmarkData();
           dispatch({ type: 'PREV_STEP' });
@@ -339,8 +352,8 @@ function OnboardingContent() {
               ahaScore={ahaScore}
               displayName={state.displayName}
               careerStage={state.careerStage}
-              targetRole={state.targetRole}
-              targetDomain={state.targetDomain}
+              targetRoles={state.targetRoles}
+              targetDomains={state.targetDomains}
               prepUrgency={state.prepUrgency}
               biggestConcern={state.biggestConcern}
               jobMarketData={jobMarketData}
@@ -357,7 +370,9 @@ function OnboardingContent() {
       ) : (
         /* Content area — centered with padding for progress bar */
         <div className="flex-1 flex items-center justify-center px-6 pt-20 pb-12">
-          <div className={`w-full ${state.step === 2 ? 'max-w-5xl' : 'max-w-lg'}`}>
+          <div
+            className={`w-full ${state.step === 2 ? 'max-w-5xl' : state.step === 3 || state.step === 4 ? 'max-w-4xl' : 'max-w-lg'}`}
+          >
             <BlurFade key={state.step} duration={0.3} delay={0}>
               {state.step === 1 && (
                 <StepResumeUpload
@@ -371,23 +386,21 @@ function OnboardingContent() {
               )}
 
               {state.step === 2 && (
-                <StepCareerStage
-                  value={state.careerStage}
-                  onChange={handleCareerStageChange}
-                />
+                <StepCareerStage value={state.careerStage} onChange={handleCareerStageChange} />
               )}
 
               {state.step === 3 && (
                 <StepRoleDetails
+                  ref={roleDetailsRef}
                   careerStage={state.careerStage}
-                  targetRole={state.targetRole}
-                  targetDomain={state.targetDomain}
+                  targetRoles={state.targetRoles}
+                  targetDomains={state.targetDomains}
                   yearsExperience={state.yearsExperience}
-                  onTargetRoleChange={(v) =>
-                    dispatch({ type: 'SET_FIELD', field: 'targetRole', value: v })
+                  onTargetRolesChange={(v) =>
+                    dispatch({ type: 'SET_FIELD', field: 'targetRoles', value: v })
                   }
-                  onTargetDomainChange={(v) =>
-                    dispatch({ type: 'SET_FIELD', field: 'targetDomain', value: v })
+                  onTargetDomainsChange={(v) =>
+                    dispatch({ type: 'SET_FIELD', field: 'targetDomains', value: v })
                   }
                   onYearsExperienceChange={(v) =>
                     dispatch({ type: 'SET_FIELD', field: 'yearsExperience', value: v })

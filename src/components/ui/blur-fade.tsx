@@ -13,10 +13,11 @@ interface BlurFadeProps {
   duration?: number;
   delay?: number;
   offset?: number;
-  direction?: 'up' | 'down';
+  direction?: 'up' | 'down' | 'left' | 'right';
   inView?: boolean;
   inViewMargin?: string;
   blur?: string;
+  isVisible?: boolean;
 }
 
 export function BlurFade({
@@ -30,18 +31,24 @@ export function BlurFade({
   inView = false,
   inViewMargin = '-50px',
   blur = '6px',
+  isVisible,
 }: BlurFadeProps) {
   const ref = useRef(null);
   const inViewResult = useInView(ref, { once: true, margin: inViewMargin as `${number}px` });
-  const isInView = !inView || inViewResult;
+  const isInView = isVisible !== undefined ? isVisible : !inView || inViewResult;
+
+  const isHorizontal = direction === 'left' || direction === 'right';
+  const axis = isHorizontal ? 'x' : 'y';
+  const sign = direction === 'right' || direction === 'down' ? -1 : 1;
 
   const defaultVariants: Variants = {
     hidden: {
-      [direction === 'up' ? 'y' : 'y']: direction === 'up' ? offset : -offset,
+      [axis]: sign * offset,
       opacity: 0,
       filter: `blur(${blur})`,
     },
     visible: {
+      x: 0,
       y: 0,
       opacity: 1,
       filter: 'blur(0px)',

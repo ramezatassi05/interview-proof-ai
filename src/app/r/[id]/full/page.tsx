@@ -28,6 +28,7 @@ import { AnalysisTab } from '@/components/diagnostic/tabs/AnalysisTab';
 import { PracticeTab } from '@/components/diagnostic/tabs/PracticeTab';
 import { StrategyTab } from '@/components/diagnostic/tabs/StrategyTab';
 import { InsightsTab } from '@/components/diagnostic/tabs/InsightsTab';
+import { TourProvider, useTourContext } from '@/components/tour';
 
 type ReportData = GetReportResponse['data'];
 
@@ -236,87 +237,24 @@ export default function FullDiagnosticPage() {
     <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
       <Header />
 
-      <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl space-y-6">
-          {/* Report Toolbar */}
-          <ReportToolbar
-            companyName={companyName}
-            jobTitle={report.extractedJD?.jobTitle}
-            roundType={report.roundType}
-            reportId={reportId}
-            canRerun={canRerun}
-            rerunning={rerunning}
-            onShare={() => setShareModalOpen(true)}
-            onRerun={handleRerun}
-          />
-
-          {/* Rerun status */}
-          {rerunning && (
-            <div className="flex items-center gap-3 rounded-lg border border-[var(--border-accent)]/30 bg-[var(--bg-card)] px-4 py-3">
-              <svg
-                className="h-4 w-4 animate-spin text-[var(--color-accent)]"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-              <span className="text-sm text-[var(--text-secondary)]">
-                Running full analysis pipeline...
-                {elapsedSeconds >= 5 && (
-                  <span className="ml-1 text-[var(--text-muted)]">({elapsedSeconds}s)</span>
-                )}
-              </span>
-            </div>
-          )}
-
-          {rerunError && (
-            <div className="rounded-lg border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] px-4 py-3 text-sm text-[var(--color-danger)]">
-              {rerunError}
-            </div>
-          )}
-
-          {rerunDelta && <DeltaView delta={rerunDelta} />}
-
-          {/* Hero Dashboard */}
-          <DiagnosticDashboard
-            readinessScore={report.readinessScore!}
-            riskBand={report.riskBand!}
-            totalRisks={report.allRisks?.length ?? 0}
-            roundType={report.roundType}
-            scoreBreakdown={report.scoreBreakdown}
-            evidenceContext={di?.evidenceContext}
-            companyName={companyName}
-            jobTitle={report.extractedJD?.jobTitle}
-            conversionLikelihood={di?.executiveScores?.conversionLikelihood}
-            technicalFit={di?.executiveScores?.technicalFit}
-            priorEmploymentSignal={di?.priorEmploymentSignal}
-            hireZoneAnalysis={di?.hireZoneAnalysis}
-            priorityAction={report.personalizedCoaching?.priorityActions?.[0]}
-            onTabSwitch={handleTabSwitch}
-          />
-
-          {/* Tabbed Sections */}
-          <DiagnosticTabs
-            activeTab={activeTab as TabId}
-            onTabChange={(tab) => switchTab(tab)}
-            tabs={tabs}
-          >
-            {renderTabContent()}
-          </DiagnosticTabs>
-        </div>
-      </main>
+      <TourProvider>
+        <DiagnosticPageContent
+          report={report}
+          reportId={reportId}
+          canRerun={canRerun}
+          rerunning={rerunning}
+          rerunError={rerunError}
+          rerunDelta={rerunDelta}
+          elapsedSeconds={elapsedSeconds}
+          setShareModalOpen={setShareModalOpen}
+          handleRerun={handleRerun}
+          activeTab={activeTab}
+          switchTab={switchTab}
+          handleTabSwitch={handleTabSwitch}
+          tabs={tabs}
+          renderTabContent={renderTabContent}
+        />
+      </TourProvider>
 
       <Footer />
 
@@ -330,5 +268,158 @@ export default function FullDiagnosticPage() {
         companyName={companyName}
       />
     </div>
+  );
+}
+
+/** Inner component that can access TourProvider context */
+function DiagnosticPageContent({
+  report,
+  reportId,
+  canRerun,
+  rerunning,
+  rerunError,
+  rerunDelta,
+  elapsedSeconds,
+  setShareModalOpen,
+  handleRerun,
+  activeTab,
+  switchTab,
+  handleTabSwitch,
+  tabs,
+  renderTabContent,
+}: {
+  report: ReportData;
+  reportId: string;
+  canRerun: boolean;
+  rerunning: boolean;
+  rerunError: string | null;
+  rerunDelta: DeltaComparison | null;
+  elapsedSeconds: number;
+  setShareModalOpen: (open: boolean) => void;
+  handleRerun: () => void;
+  activeTab: string;
+  switchTab: (tab: TabId) => void;
+  handleTabSwitch: (tab: string) => void;
+  tabs: { id: TabId; label: string; icon: React.ReactNode }[];
+  renderTabContent: () => React.ReactNode;
+}) {
+  const tour = useTourContext();
+  const di = report.diagnosticIntelligence;
+  const companyName = report.extractedJD?.companyName;
+
+  // Notify tour of tab changes
+  const onTabChange = useCallback(
+    (tab: string) => {
+      switchTab(tab as TabId);
+      handleTabSwitch(tab);
+      tour.notifyTabChange(tab);
+    },
+    [switchTab, handleTabSwitch, tour]
+  );
+
+  return (
+    <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl space-y-6">
+        {/* Report Toolbar + Tour replay button */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <ReportToolbar
+              companyName={companyName}
+              jobTitle={report.extractedJD?.jobTitle}
+              roundType={report.roundType}
+              reportId={reportId}
+              canRerun={canRerun}
+              rerunning={rerunning}
+              onShare={() => setShareModalOpen(true)}
+              onRerun={handleRerun}
+            />
+          </div>
+          {!tour.state.isActive && (
+            <button
+              onClick={tour.replayTour}
+              className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[var(--border-default)] bg-[var(--bg-card)] px-3 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-accent)] hover:text-[var(--accent-primary)]"
+              title="Replay diagnostic tour"
+            >
+              <svg
+                className="h-3.5 w-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+                />
+              </svg>
+              Tour
+            </button>
+          )}
+        </div>
+
+        {/* Rerun status */}
+        {rerunning && (
+          <div className="flex items-center gap-3 rounded-lg border border-[var(--border-accent)]/30 bg-[var(--bg-card)] px-4 py-3">
+            <svg
+              className="h-4 w-4 animate-spin text-[var(--color-accent)]"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+            <span className="text-sm text-[var(--text-secondary)]">
+              Running full analysis pipeline...
+              {elapsedSeconds >= 5 && (
+                <span className="ml-1 text-[var(--text-muted)]">({elapsedSeconds}s)</span>
+              )}
+            </span>
+          </div>
+        )}
+
+        {rerunError && (
+          <div className="rounded-lg border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] px-4 py-3 text-sm text-[var(--color-danger)]">
+            {rerunError}
+          </div>
+        )}
+
+        {rerunDelta && <DeltaView delta={rerunDelta} />}
+
+        {/* Hero Dashboard */}
+        <DiagnosticDashboard
+          readinessScore={report.readinessScore!}
+          riskBand={report.riskBand!}
+          totalRisks={report.allRisks?.length ?? 0}
+          roundType={report.roundType}
+          scoreBreakdown={report.scoreBreakdown}
+          evidenceContext={di?.evidenceContext}
+          companyName={companyName}
+          jobTitle={report.extractedJD?.jobTitle}
+          conversionLikelihood={di?.executiveScores?.conversionLikelihood}
+          technicalFit={di?.executiveScores?.technicalFit}
+          priorEmploymentSignal={di?.priorEmploymentSignal}
+          hireZoneAnalysis={di?.hireZoneAnalysis}
+          priorityAction={report.personalizedCoaching?.priorityActions?.[0]}
+          onTabSwitch={onTabChange}
+        />
+
+        {/* Tabbed Sections */}
+        <DiagnosticTabs activeTab={activeTab as TabId} onTabChange={onTabChange} tabs={tabs}>
+          {renderTabContent()}
+        </DiagnosticTabs>
+      </div>
+    </main>
   );
 }

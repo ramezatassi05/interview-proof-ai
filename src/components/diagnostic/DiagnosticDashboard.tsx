@@ -94,7 +94,7 @@ export function DiagnosticDashboard({
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
         {/* Left: Radial Score */}
         <BlurFade delay={0.05}>
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-3" data-tour-step="readiness-score">
             <RadialScoreIndicator
               score={readinessScore}
               size="xl"
@@ -115,13 +115,21 @@ export function DiagnosticDashboard({
         {/* Right: Metrics + Risk snapshot */}
         <div className="flex-1 space-y-5">
           {/* 3 metric cards */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3" data-tour-step="metric-cards">
             <BlurFade delay={0.1}>
               <MetricCard
                 title="Conversion Likelihood"
                 value={`${passProbability}%`}
-                variant={passProbability >= 60 ? 'success' : passProbability >= 40 ? 'warning' : 'danger'}
-                subtitle={passProbability >= 70 ? 'Strong' : passProbability >= 50 ? 'Moderate' : 'Needs Work'}
+                variant={
+                  passProbability >= 60 ? 'success' : passProbability >= 40 ? 'warning' : 'danger'
+                }
+                subtitle={
+                  passProbability >= 70
+                    ? 'Strong'
+                    : passProbability >= 50
+                      ? 'Moderate'
+                      : 'Needs Work'
+                }
               />
             </BlurFade>
             <BlurFade delay={0.16}>
@@ -129,9 +137,15 @@ export function DiagnosticDashboard({
                 title="Technical Fit"
                 value={`${technicalStrength}%`}
                 variant={
-                  technicalStrength >= 70 ? 'success' : technicalStrength >= 40 ? 'warning' : 'danger'
+                  technicalStrength >= 70
+                    ? 'success'
+                    : technicalStrength >= 40
+                      ? 'warning'
+                      : 'danger'
                 }
-                subtitle={technicalStrength >= 70 ? 'High' : technicalStrength >= 40 ? 'Medium' : 'Low'}
+                subtitle={
+                  technicalStrength >= 70 ? 'High' : technicalStrength >= 40 ? 'Medium' : 'Low'
+                }
               />
             </BlurFade>
             <BlurFade delay={0.22}>
@@ -150,12 +164,23 @@ export function DiagnosticDashboard({
 
           {/* Risk snapshot */}
           <BlurFade delay={0.28}>
-            <div className="flex items-center gap-2 text-sm">
-              <svg className="h-4 w-4 text-[var(--color-danger)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <div className="flex items-center gap-2 text-sm" data-tour-step="risk-snapshot">
+              <svg
+                className="h-4 w-4 text-[var(--color-danger)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
               </svg>
               <span className="text-[var(--text-secondary)]">
-                <span className="font-semibold text-[var(--text-primary)]">{totalRisks}</span> risk{totalRisks !== 1 ? 's' : ''} identified
+                <span className="font-semibold text-[var(--text-primary)]">{totalRisks}</span> risk
+                {totalRisks !== 1 ? 's' : ''} identified
               </span>
               {onTabSwitch && (
                 <button
@@ -173,7 +198,10 @@ export function DiagnosticDashboard({
       {/* Priority Action CTA */}
       {priorityAction && (
         <BlurFade delay={0.32}>
-          <div className="relative mt-6 overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-elevated)] px-5 py-4">
+          <div
+            className="relative mt-6 overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-elevated)] px-5 py-4"
+            data-tour-step="priority-action"
+          >
             <BorderBeam size={150} duration={12} />
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">

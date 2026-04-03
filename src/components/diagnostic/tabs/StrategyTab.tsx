@@ -45,7 +45,7 @@ export function StrategyTab({
       {/* Priority Actions */}
       {priorityActions && priorityActions.length > 0 && (
         <BlurFade delay={0.05}>
-          <section>
+          <section data-tour-step="strategy-actions">
             <h2 className="section-label mb-4">Priority Actions</h2>
             <PriorityActions actions={priorityActions} companyName={companyName} />
           </section>

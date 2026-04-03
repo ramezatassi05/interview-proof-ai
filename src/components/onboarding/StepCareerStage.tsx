@@ -57,9 +57,7 @@ export function StepCareerStage({ value, onChange }: StepCareerStageProps) {
       <h2 className="heading-modern text-2xl sm:text-3xl font-bold text-gray-900 mb-2 text-center">
         What best describes you?
       </h2>
-      <p className="text-gray-500 mb-10 text-center">
-        This helps us tailor your prep experience.
-      </p>
+      <p className="text-gray-500 mb-10 text-center">This helps us tailor your prep experience.</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
         {stages.map((stage) => {
@@ -77,8 +75,8 @@ export function StepCareerStage({ value, onChange }: StepCareerStageProps) {
                   h-full w-full cursor-pointer transition-all duration-200
                   ${
                     isSelected
-                      ? '!border-orange-400 !bg-orange-50/80 !shadow-lg !shadow-orange-400/15 ring-2 ring-orange-400/30'
-                      : 'hover:!shadow-md'
+                      ? '!border-orange-400 !bg-orange-50/80 !shadow-lg !shadow-orange-400/15 ring-2 ring-orange-400/30 hover:-translate-y-0.5'
+                      : 'hover:!shadow-lg hover:-translate-y-1 hover:scale-[1.02]'
                   }
                 `}
               >
@@ -89,9 +87,7 @@ export function StepCareerStage({ value, onChange }: StepCareerStageProps) {
                   >
                     {stage.label}
                   </span>
-                  <span className="text-sm text-gray-500 leading-relaxed">
-                    {stage.description}
-                  </span>
+                  <span className="text-sm text-gray-500 leading-relaxed">{stage.description}</span>
                 </div>
               </GlowCard>
             </button>

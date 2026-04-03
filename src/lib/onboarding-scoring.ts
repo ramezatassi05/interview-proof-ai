@@ -18,10 +18,10 @@ import { selectFocusAreas } from './focus-area-pool';
 
 export interface OnboardingInput {
   careerStage: CareerStage | null;
-  targetDomain: TargetDomain | null;
+  targetDomains: TargetDomain[];
   yearsExperience: number | null;
   prepUrgency: OnboardingPrepUrgency | null;
-  targetRole: string;
+  targetRoles: string[];
   biggestConcern: string;
   resumeText: string;
   interviewExperience: InterviewExperience | null;
@@ -164,7 +164,7 @@ export function computeAhaScore(input: OnboardingInput): AhaScore {
   }
 
   // Bonus for having a target role (shows focus)
-  const hasRole = input.targetRole.trim().length > 0;
+  const hasRole = input.targetRoles.length > 0 && input.targetRoles[0].trim().length > 0;
   if (hasRole) {
     score += 5;
     breakdown.push({

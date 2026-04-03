@@ -17,8 +17,8 @@ import type { ResumeSignals } from './resume-signals';
 
 export interface SelectionContext {
   careerStage: CareerStage;
-  targetDomain: TargetDomain;
-  targetRole: string;
+  targetDomains: TargetDomain[];
+  targetRoles: string[];
   yearsExperience: number | null;
   prepUrgency: OnboardingPrepUrgency | null;
   biggestConcern: string;
@@ -73,8 +73,7 @@ function parseRoleSeniority(role: string): string | null {
 function parseRoleSpecialization(role: string): string | null {
   const lower = role.toLowerCase();
   if (/\b(frontend|front[- ]end|ui|react|vue|angular)\b/.test(lower)) return 'frontend';
-  if (/\b(backend|back[- ]end|server|api|infrastructure|platform)\b/.test(lower))
-    return 'backend';
+  if (/\b(backend|back[- ]end|server|api|infrastructure|platform)\b/.test(lower)) return 'backend';
   if (/\b(full[- ]?stack)\b/.test(lower)) return 'fullstack';
   if (/\b(mobile|ios|android|react native|flutter)\b/.test(lower)) return 'mobile';
   if (/\b(ml|machine learning|ai|data scientist)\b/.test(lower)) return 'ml';
@@ -114,11 +113,16 @@ const DOMAIN_LABELS: Record<TargetDomain, string> = {
   ds: 'Data Science',
   design: 'Design',
   pm: 'Product Management',
+  security: 'Cybersecurity',
+  cloud: 'Cloud & DevOps',
+  marketing: 'Marketing',
+  business: 'Business & Consulting',
   general: 'tech',
 };
 
 function roleOrDomain(ctx: SelectionContext): string {
-  return ctx.targetRole || DOMAIN_LABELS[ctx.targetDomain];
+  if (ctx.targetRoles.length > 0) return ctx.targetRoles.join(' & ');
+  return ctx.targetDomains.map((d) => DOMAIN_LABELS[d]).join(' & ') || 'tech';
 }
 
 function isBenchmarkTopDomain(ctx: SelectionContext, ...domains: string[]): boolean {
@@ -137,7 +141,17 @@ const ALL_STAGES: CareerStage[] = [
   'career_changer',
   'experienced_professional',
 ];
-const ALL_DOMAINS: TargetDomain[] = ['swe', 'ds', 'design', 'pm', 'general'];
+const ALL_DOMAINS: TargetDomain[] = [
+  'swe',
+  'ds',
+  'design',
+  'pm',
+  'security',
+  'cloud',
+  'marketing',
+  'business',
+  'general',
+];
 
 const POOL: FocusAreaCandidate[] = [
   // ═══ ALGORITHMS & CODING ═══
@@ -146,7 +160,8 @@ const POOL: FocusAreaCandidate[] = [
     title: 'Core algorithms & problem-solving patterns',
     defaultDescription:
       "We'll pinpoint which coding patterns trip you up and build targeted drills around them.",
-    defaultReason: 'Coding interviews are the most common filter — getting sharp here pays off fast.',
+    defaultReason:
+      'Coding interviews are the most common filter — getting sharp here pays off fast.',
     eligibility: { stages: ['student', 'new_grad', 'career_changer'], domains: ['swe', 'general'] },
     baseWeight: 7,
     boosts: [
@@ -163,8 +178,7 @@ const POOL: FocusAreaCandidate[] = [
       {
         signal: 'urgency',
         condition: (ctx) =>
-          ctx.prepUrgency === 'interview_this_week' ||
-          ctx.prepUrgency === 'interview_scheduled',
+          ctx.prepUrgency === 'interview_this_week' || ctx.prepUrgency === 'interview_scheduled',
         weight: 2,
       },
       {
@@ -196,7 +210,8 @@ const POOL: FocusAreaCandidate[] = [
     title: 'Advanced problem-solving & optimization',
     defaultDescription:
       'Level up from brute-force to optimal solutions — the gap that separates good from great in coding rounds.',
-    defaultReason: 'At your level, interviewers expect more than a working solution — they want elegance.',
+    defaultReason:
+      'At your level, interviewers expect more than a working solution — they want elegance.',
     eligibility: {
       stages: ['experienced_professional', 'new_grad'],
       domains: ['swe', 'general'],
@@ -263,7 +278,8 @@ const POOL: FocusAreaCandidate[] = [
       },
     ],
     reasonVariants: {
-      concern: () => 'You flagged system design — we\'ll make sure you have a framework before you walk in.',
+      concern: () =>
+        "You flagged system design — we'll make sure you have a framework before you walk in.",
       resume: (ctx) =>
         `Your ${ctx.resumeSignals?.detectedSkills.includes('backend') ? 'backend' : 'technical'} background is a great foundation — now let's structure it for the interview format.`,
     },
@@ -295,8 +311,7 @@ const POOL: FocusAreaCandidate[] = [
       {
         signal: 'resume',
         condition: (ctx) =>
-          ctx.resumeSignals !== null &&
-          ctx.resumeSignals.detectedSkills.includes('system_design'),
+          ctx.resumeSignals !== null && ctx.resumeSignals.detectedSkills.includes('system_design'),
         weight: 2,
       },
       {
@@ -345,8 +360,7 @@ const POOL: FocusAreaCandidate[] = [
       },
       {
         signal: 'resume',
-        condition: (ctx) =>
-          ctx.resumeSignals !== null && !ctx.resumeSignals.hasQuantifiedImpact,
+        condition: (ctx) => ctx.resumeSignals !== null && !ctx.resumeSignals.hasQuantifiedImpact,
         weight: 2,
       },
       {
@@ -378,8 +392,7 @@ const POOL: FocusAreaCandidate[] = [
     boosts: [
       {
         signal: 'resume',
-        condition: (ctx) =>
-          ctx.resumeSignals !== null && ctx.resumeSignals.hasLeadershipSignals,
+        condition: (ctx) => ctx.resumeSignals !== null && ctx.resumeSignals.hasLeadershipSignals,
         weight: 3,
       },
       {
@@ -400,11 +413,11 @@ const POOL: FocusAreaCandidate[] = [
     ],
     descriptionVariants: {
       resume: () =>
-        'Your resume shows leadership experience — we\'ll help you structure those stories with the quantified impact interviewers want to hear.',
+        "Your resume shows leadership experience — we'll help you structure those stories with the quantified impact interviewers want to hear.",
     },
     reasonVariants: {
       resume: () =>
-        'We detected leadership signals in your resume — interviewers will probe here, so let\'s make your stories airtight.',
+        "We detected leadership signals in your resume — interviewers will probe here, so let's make your stories airtight.",
     },
   },
 
@@ -432,7 +445,7 @@ const POOL: FocusAreaCandidate[] = [
     ],
     descriptionVariants: {
       concern: () =>
-        'You told us the career switch explanation worries you — that\'s exactly why we\'ll focus on making your story bulletproof.',
+        "You told us the career switch explanation worries you — that's exactly why we'll focus on making your story bulletproof.",
       role: (ctx) =>
         `We'll help you connect your prior experience directly to what ${roleOrDomain(ctx)} teams actually value.`,
     },
@@ -443,7 +456,7 @@ const POOL: FocusAreaCandidate[] = [
     defaultDescription:
       'Map your existing expertise to the competencies hiring managers evaluate — your past career is an asset, not a liability.',
     defaultReason:
-      'Interviewers need you to make the connection for them — they won\'t do it on their own.',
+      "Interviewers need you to make the connection for them — they won't do it on their own.",
     eligibility: { stages: ['career_changer'], domains: ALL_DOMAINS },
     baseWeight: 7,
     boosts: [
@@ -455,14 +468,13 @@ const POOL: FocusAreaCandidate[] = [
       },
       {
         signal: 'resume',
-        condition: (ctx) =>
-          ctx.resumeSignals !== null && ctx.resumeSignals.hasQuantifiedImpact,
+        condition: (ctx) => ctx.resumeSignals !== null && ctx.resumeSignals.hasQuantifiedImpact,
         weight: 2,
       },
     ],
     descriptionVariants: {
       resume: () =>
-        'Your resume shows real professional depth — we\'ll help you translate that experience into the language your new field uses.',
+        "Your resume shows real professional depth — we'll help you translate that experience into the language your new field uses.",
     },
   },
 
@@ -524,7 +536,7 @@ const POOL: FocusAreaCandidate[] = [
     ],
     descriptionVariants: {
       role: (ctx) =>
-        `${roleOrDomain(ctx)} interviews typically include ${ctx.targetDomain === 'swe' ? 'coding, system design, and behavioral rounds' : ctx.targetDomain === 'pm' ? 'product sense, analytical, and behavioral rounds' : ctx.targetDomain === 'ds' ? 'technical, case study, and behavioral rounds' : ctx.targetDomain === 'design' ? 'portfolio review, design exercise, and behavioral rounds' : 'multiple round types'} — we'll break down exactly what to expect in each.`,
+        `${roleOrDomain(ctx)} interviews typically include ${ctx.targetDomains.includes('swe') ? 'coding, system design, and behavioral rounds' : ctx.targetDomains.includes('pm') ? 'product sense, analytical, and behavioral rounds' : ctx.targetDomains.includes('ds') ? 'technical, case study, and behavioral rounds' : ctx.targetDomains.includes('design') ? 'portfolio review, design exercise, and behavioral rounds' : 'multiple round types'} — we'll break down exactly what to expect in each.`,
     },
     reasonVariants: {
       experience: () =>
@@ -559,7 +571,7 @@ const POOL: FocusAreaCandidate[] = [
         `${roleOrDomain(ctx)} roles at Big Tech companies have a specific rubric — we'll show you exactly what the bar looks like and how to clear it.`,
     },
     reasonVariants: {
-      tier: () => 'You\'re targeting Big Tech — so we\'ll calibrate everything to that bar.',
+      tier: () => "You're targeting Big Tech — so we'll calibrate everything to that bar.",
     },
   },
 
@@ -656,7 +668,7 @@ const POOL: FocusAreaCandidate[] = [
     ],
     reasonVariants: {
       resume: () =>
-        'Your resume shows ML experience — interviewers will go deeper here. Let\'s make sure you can articulate your decisions.',
+        "Your resume shows ML experience — interviewers will go deeper here. Let's make sure you can articulate your decisions.",
     },
   },
   {
@@ -666,13 +678,15 @@ const POOL: FocusAreaCandidate[] = [
       'Learn to frame technical analyses in terms of business outcomes — the skill that separates data scientists from data analysts.',
     defaultReason:
       'Companies hire data scientists to drive decisions, not produce notebooks. Showing business sense is the differentiator.',
-    eligibility: { stages: ['new_grad', 'experienced_professional', 'career_changer'], domains: ['ds'] },
+    eligibility: {
+      stages: ['new_grad', 'experienced_professional', 'career_changer'],
+      domains: ['ds'],
+    },
     baseWeight: 5,
     boosts: [
       {
         signal: 'resume',
-        condition: (ctx) =>
-          ctx.resumeSignals !== null && ctx.resumeSignals.hasQuantifiedImpact,
+        condition: (ctx) => ctx.resumeSignals !== null && ctx.resumeSignals.hasQuantifiedImpact,
         weight: 2,
       },
       {
@@ -734,8 +748,7 @@ const POOL: FocusAreaCandidate[] = [
     boosts: [
       {
         signal: 'resume',
-        condition: (ctx) =>
-          ctx.resumeSignals !== null && ctx.resumeSignals.hasLeadershipSignals,
+        condition: (ctx) => ctx.resumeSignals !== null && ctx.resumeSignals.hasLeadershipSignals,
         weight: 3,
       },
     ],
@@ -748,7 +761,7 @@ const POOL: FocusAreaCandidate[] = [
     defaultDescription:
       'Practice structuring product sense questions — from identifying user pain to proposing solutions to measuring success.',
     defaultReason:
-      'Product sense is the #1 thing PM interviewers assess. It\'s learnable — and we\'ll drill it.',
+      "Product sense is the #1 thing PM interviewers assess. It's learnable — and we'll drill it.",
     eligibility: { stages: ['student', 'new_grad'], domains: ['pm'] },
     baseWeight: 8,
     boosts: [
@@ -764,8 +777,7 @@ const POOL: FocusAreaCandidate[] = [
     title: 'Product strategy & vision articulation',
     defaultDescription:
       'Learn to think and communicate at the strategy level — roadmap rationale, competitive positioning, and long-term bets.',
-    defaultReason:
-      'Senior PM interviews test whether you can see the forest, not just the trees.',
+    defaultReason: 'Senior PM interviews test whether you can see the forest, not just the trees.',
     eligibility: {
       stages: ['experienced_professional'],
       domains: ['pm'],
@@ -828,7 +840,7 @@ const POOL: FocusAreaCandidate[] = [
     ],
     reasonVariants: {
       concern: () =>
-        'You mentioned anxiety — this isn\'t fluffy advice. We\'ll give you practical techniques that reduce stress and improve performance.',
+        "You mentioned anxiety — this isn't fluffy advice. We'll give you practical techniques that reduce stress and improve performance.",
     },
   },
 
@@ -870,28 +882,26 @@ const POOL: FocusAreaCandidate[] = [
     defaultDescription:
       'Show interviewers concrete evidence of your abilities — portfolio projects, certifications, and quantified contributions that remove doubt.',
     defaultReason:
-      'As a career changer, you need proof points. We\'ll help you identify and present the strongest ones.',
+      "As a career changer, you need proof points. We'll help you identify and present the strongest ones.",
     eligibility: { stages: ['career_changer'], domains: ALL_DOMAINS },
     baseWeight: 6,
     boosts: [
       {
         signal: 'resume',
-        condition: (ctx) =>
-          ctx.resumeSignals !== null && ctx.resumeSignals.resumeDepth === 'thin',
+        condition: (ctx) => ctx.resumeSignals !== null && ctx.resumeSignals.resumeDepth === 'thin',
         weight: 4,
       },
       {
         signal: 'resume',
-        condition: (ctx) =>
-          ctx.resumeSignals !== null && ctx.resumeSignals.hasOpenSource,
+        condition: (ctx) => ctx.resumeSignals !== null && ctx.resumeSignals.hasOpenSource,
         weight: 2,
       },
     ],
     descriptionVariants: {
       resume_thin: () =>
-        'Your resume is lean right now — we\'ll help you highlight the evidence that matters most and identify gaps to fill before interview day.',
+        "Your resume is lean right now — we'll help you highlight the evidence that matters most and identify gaps to fill before interview day.",
       resume_oss: () =>
-        'Your open source contributions are a great credibility signal — we\'ll help you frame them as evidence of professional-grade work.',
+        "Your open source contributions are a great credibility signal — we'll help you frame them as evidence of professional-grade work.",
     },
   },
 
@@ -901,8 +911,7 @@ const POOL: FocusAreaCandidate[] = [
     title: 'Executive presence in interviews',
     defaultDescription:
       'Project confidence, structure, and gravitas in every interaction — from the first handshake to the closing question.',
-    defaultReason:
-      'At the senior level, how you carry yourself signals as much as what you say.',
+    defaultReason: 'At the senior level, how you carry yourself signals as much as what you say.',
     eligibility: {
       stages: ['experienced_professional'],
       domains: ALL_DOMAINS,
@@ -942,8 +951,7 @@ const POOL: FocusAreaCandidate[] = [
       {
         signal: 'urgency',
         condition: (ctx) =>
-          ctx.prepUrgency === 'interview_this_week' ||
-          ctx.prepUrgency === 'interview_scheduled',
+          ctx.prepUrgency === 'interview_this_week' || ctx.prepUrgency === 'interview_scheduled',
         weight: 2,
       },
     ],
@@ -954,7 +962,7 @@ const POOL: FocusAreaCandidate[] = [
     id: 'startup_readiness',
     title: 'Startup interview patterns',
     defaultDescription:
-      'Startups value scrappiness, ownership, and speed. We\'ll help you tell stories that prove you can wear multiple hats and ship fast.',
+      "Startups value scrappiness, ownership, and speed. We'll help you tell stories that prove you can wear multiple hats and ship fast.",
     defaultReason:
       'Startup interviews are less structured but more opinionated — the wrong framing gets you filtered fast.',
     eligibility: { stages: ALL_STAGES, domains: ALL_DOMAINS },
@@ -968,7 +976,7 @@ const POOL: FocusAreaCandidate[] = [
     ],
     reasonVariants: {
       tier: () =>
-        'You\'re targeting startups — we\'ll focus on the ownership and velocity stories they actually care about.',
+        "You're targeting startups — we'll focus on the ownership and velocity stories they actually care about.",
     },
   },
 
@@ -989,8 +997,7 @@ const POOL: FocusAreaCandidate[] = [
     boosts: [
       {
         signal: 'resume',
-        condition: (ctx) =>
-          ctx.resumeSignals !== null && !ctx.resumeSignals.hasQuantifiedImpact,
+        condition: (ctx) => ctx.resumeSignals !== null && !ctx.resumeSignals.hasQuantifiedImpact,
         weight: 5,
       },
       {
@@ -1001,7 +1008,7 @@ const POOL: FocusAreaCandidate[] = [
     ],
     reasonVariants: {
       resume: () =>
-        'We didn\'t find quantified results in your resume — adding numbers to your stories will make them dramatically more convincing.',
+        "We didn't find quantified results in your resume — adding numbers to your stories will make them dramatically more convincing.",
     },
   },
 ];
@@ -1023,8 +1030,8 @@ export const SIGNAL_SOURCE_LABELS: Record<string, string> = {
 export function selectFocusAreas(
   input: {
     careerStage: CareerStage | null;
-    targetDomain: TargetDomain | null;
-    targetRole: string;
+    targetDomains: TargetDomain[];
+    targetRoles: string[];
     yearsExperience: number | null;
     prepUrgency: OnboardingPrepUrgency | null;
     biggestConcern: string;
@@ -1036,12 +1043,13 @@ export function selectFocusAreas(
   resumeSignals: ResumeSignals | null
 ): FocusAreaItem[] {
   const stage = input.careerStage ?? 'new_grad';
-  const domain = input.targetDomain ?? 'general';
+  const domains =
+    input.targetDomains.length > 0 ? input.targetDomains : (['general'] as TargetDomain[]);
 
   const ctx: SelectionContext = {
     careerStage: stage,
-    targetDomain: domain,
-    targetRole: input.targetRole,
+    targetDomains: domains,
+    targetRoles: input.targetRoles,
     yearsExperience: input.yearsExperience,
     prepUrgency: input.prepUrgency,
     biggestConcern: input.biggestConcern,
@@ -1050,17 +1058,23 @@ export function selectFocusAreas(
     resumeSignals,
     benchmarkDomainWeights: input.benchmarkDomainWeights ?? null,
     concernCategory: detectConcernCategory(input.biggestConcern),
-    roleSeniority: parseRoleSeniority(input.targetRole),
-    roleSpecialization: parseRoleSpecialization(input.targetRole),
+    roleSeniority: parseRoleSeniority(input.targetRoles[0] || ''),
+    roleSpecialization: parseRoleSpecialization(input.targetRoles[0] || ''),
   };
 
   // 1. Filter by eligibility
   const eligible = POOL.filter((c) => {
     if (!c.eligibility.stages.includes(stage)) return false;
-    if (!c.eligibility.domains.includes(domain)) return false;
-    if (c.eligibility.minYears !== undefined && (input.yearsExperience ?? 0) < c.eligibility.minYears)
+    if (!c.eligibility.domains.some((d) => domains.includes(d))) return false;
+    if (
+      c.eligibility.minYears !== undefined &&
+      (input.yearsExperience ?? 0) < c.eligibility.minYears
+    )
       return false;
-    if (c.eligibility.maxYears !== undefined && (input.yearsExperience ?? 0) > c.eligibility.maxYears)
+    if (
+      c.eligibility.maxYears !== undefined &&
+      (input.yearsExperience ?? 0) > c.eligibility.maxYears
+    )
       return false;
     return true;
   });
@@ -1103,7 +1117,7 @@ export function selectFocusAreas(
             ctx.resumeSignals?.resumeDepth === 'thin' &&
             firedSignals.includes('resume')) ||
           (key === 'resume_oss' && ctx.resumeSignals?.hasOpenSource) ||
-          (key === 'role' && ctx.targetRole)
+          (key === 'role' && ctx.targetRoles.length > 0)
         ) {
           description = fn(ctx);
           break;

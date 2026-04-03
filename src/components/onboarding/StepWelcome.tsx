@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { InsightOwlWaving } from '@/components/svg/InsightOwlMascot';
+import { LiquidButton } from '@/components/ui/liquid-glass-button';
 
 interface StepWelcomeProps {
   displayName: string;
@@ -16,7 +17,7 @@ function ElegantShape({
   width = 400,
   height = 100,
   rotate = 0,
-  gradient = 'from-orange-200/[0.08]',
+  gradient = 'from-orange-200/[0.18]',
 }: {
   className?: string;
   delay?: number;
@@ -49,10 +50,10 @@ function ElegantShape({
             'absolute inset-0 rounded-full',
             'bg-gradient-to-r to-transparent',
             gradient,
-            'backdrop-blur-[2px] border-2 border-black/[0.06]',
-            'shadow-[0_8px_32px_0_rgba(251,146,60,0.08)]',
+            'backdrop-blur-[2px] border-2 border-black/[0.10]',
+            'shadow-[0_8px_32px_0_rgba(251,146,60,0.15)]',
             'after:absolute after:inset-0 after:rounded-full',
-            'after:bg-[radial-gradient(circle_at_50%_50%,rgba(251,146,60,0.06),transparent_70%)]'
+            'after:bg-[radial-gradient(circle_at_50%_50%,rgba(251,146,60,0.12),transparent_70%)]'
           )}
         />
       </motion.div>
@@ -64,22 +65,64 @@ function ElegantShape({
 
 const PERCH_SCORES: Record<string, number> = {
   // Flat horizontal top stroke — best perches
-  z: 10, t: 9, f: 8,
+  z: 10,
+  t: 9,
+  f: 8,
   // Relatively flat-ish tops at x-height
-  x: 7, r: 7, n: 6, a: 6, u: 6,
+  x: 7,
+  r: 7,
+  n: 6,
+  a: 6,
+  u: 6,
   // Rounded/curved tops — poor perches
-  m: 5, w: 5, e: 5, c: 5, s: 4, o: 3, v: 3,
+  m: 5,
+  w: 5,
+  e: 5,
+  c: 5,
+  s: 4,
+  o: 3,
+  v: 3,
   // Uppercase with flat horizontal tops
-  T: 10, Z: 10, E: 9, F: 9, H: 9, I: 8,
-  N: 8, M: 7, B: 7, D: 7, P: 7, R: 7, K: 7, L: 7, W: 5,
+  T: 10,
+  Z: 10,
+  E: 9,
+  F: 9,
+  H: 9,
+  I: 8,
+  N: 8,
+  M: 7,
+  B: 7,
+  D: 7,
+  P: 7,
+  R: 7,
+  K: 7,
+  L: 7,
+  W: 5,
   // Uppercase pointy or round
-  A: 3, V: 3, O: 3, Q: 3, C: 4, S: 3, U: 4, G: 4, X: 6, Y: 5,
+  A: 3,
+  V: 3,
+  O: 3,
+  Q: 3,
+  C: 4,
+  S: 3,
+  U: 4,
+  G: 4,
+  X: 6,
+  Y: 5,
   // Ascenders — owl floats too high, unnatural
-  h: 5, d: 4, b: 4, k: 4, l: 3,
+  h: 5,
+  d: 4,
+  b: 4,
+  k: 4,
+  l: 3,
   // Dot on top or narrow — no perch surface
-  i: 2, j: 2,
+  i: 2,
+  j: 2,
   // Descenders
-  y: 4, g: 4, p: 4, q: 4,
+  y: 4,
+  g: 4,
+  p: 4,
+  q: 4,
 };
 
 function findBestPerchIndex(name: string): number {
@@ -168,7 +211,7 @@ export function StepWelcome({ displayName, onContinue }: StepWelcomeProps) {
           width={600}
           height={140}
           rotate={12}
-          gradient="from-orange-300/[0.15]"
+          gradient="from-orange-300/[0.30]"
           className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]"
         />
         <ElegantShape
@@ -176,7 +219,7 @@ export function StepWelcome({ displayName, onContinue }: StepWelcomeProps) {
           width={500}
           height={120}
           rotate={-15}
-          gradient="from-pink-300/[0.12]"
+          gradient="from-pink-300/[0.25]"
           className="right-[-5%] md:right-[0%] top-[70%] md:top-[75%]"
         />
         <ElegantShape
@@ -184,7 +227,7 @@ export function StepWelcome({ displayName, onContinue }: StepWelcomeProps) {
           width={300}
           height={80}
           rotate={-8}
-          gradient="from-purple-300/[0.12]"
+          gradient="from-purple-300/[0.25]"
           className="left-[5%] md:left-[10%] bottom-[5%] md:bottom-[10%]"
         />
         <ElegantShape
@@ -192,7 +235,7 @@ export function StepWelcome({ displayName, onContinue }: StepWelcomeProps) {
           width={200}
           height={60}
           rotate={20}
-          gradient="from-amber-200/[0.10]"
+          gradient="from-amber-200/[0.22]"
           className="right-[15%] md:right-[20%] top-[10%] md:top-[15%]"
         />
         <ElegantShape
@@ -200,7 +243,7 @@ export function StepWelcome({ displayName, onContinue }: StepWelcomeProps) {
           width={150}
           height={40}
           rotate={-25}
-          gradient="from-rose-200/[0.10]"
+          gradient="from-rose-200/[0.22]"
           className="left-[20%] md:left-[25%] top-[5%] md:top-[10%]"
         />
       </div>
@@ -267,14 +310,9 @@ export function StepWelcome({ displayName, onContinue }: StepWelcomeProps) {
             animate="visible"
             className="flex justify-center"
           >
-            <button
-              onClick={onContinue}
-              className="group relative rounded-full bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 p-[2px] cursor-pointer"
-            >
-              <span className="flex items-center justify-center rounded-full bg-black px-10 py-3.5 text-base font-semibold text-white transition-colors group-hover:bg-black/90">
-                Let&apos;s Go
-              </span>
-            </button>
+            <LiquidButton variant="gradient" size="xxl" onClick={onContinue}>
+              Let&apos;s Go
+            </LiquidButton>
           </motion.div>
         </div>
       </div>

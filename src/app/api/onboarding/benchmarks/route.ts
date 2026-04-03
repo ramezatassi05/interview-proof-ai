@@ -24,8 +24,8 @@ import type {
 const RequestSchema = z.object({
   targetCompanyTier: z.enum(['big_tech', 'startup', 'any']),
   careerStage: z.enum(['student', 'new_grad', 'career_changer', 'experienced_professional']),
-  targetDomain: z.enum(['swe', 'ds', 'design', 'pm', 'general']).nullable(),
-  targetRole: z.string().max(200).default(''),
+  targetDomains: z.array(z.enum(['swe', 'ds', 'design', 'pm', 'general'])).default([]),
+  targetRoles: z.array(z.string().max(200)).max(3).default([]),
   yearsExperience: z.number().nullable().default(null),
 });
 
@@ -42,10 +42,7 @@ function mapTierToBenchmarkTier(tier: TargetCompanyTier): CompanyTier {
   }
 }
 
-function mapToSeniority(
-  stage: CareerStage,
-  yearsExperience: number | null
-): InferredSeniority {
+function mapToSeniority(stage: CareerStage, yearsExperience: number | null): InferredSeniority {
   switch (stage) {
     case 'student':
       return 'Intern';
@@ -62,7 +59,7 @@ function mapToSeniority(
   }
 }
 
-function mapToRoleType(domain: TargetDomain | null, targetRole: string): RoleType {
+function mapToRoleType(domains: TargetDomain[], targetRole: string): RoleType {
   // Try to infer from target role text first
   if (targetRole) {
     const lower = targetRole.toLowerCase();
@@ -75,12 +72,12 @@ function mapToRoleType(domain: TargetDomain | null, targetRole: string): RoleTyp
     if (/\b(data analyst|analytics|bi|business intelligence)\b/.test(lower)) return 'data';
     if (/\b(devops|sre|site reliability|cloud|infrastructure)\b/.test(lower)) return 'devops_infra';
     if (/\b(security|cybersecurity|appsec)\b/.test(lower)) return 'security';
-    if (/\b(manager|director|vp|head of|engineering manager|em)\b/.test(lower))
-      return 'management';
+    if (/\b(manager|director|vp|head of|engineering manager|em)\b/.test(lower)) return 'management';
   }
 
-  // Fall back to domain mapping
-  switch (domain) {
+  // Fall back to first domain mapping
+  const primary = domains[0] ?? null;
+  switch (primary) {
     case 'ds':
       return 'data';
     case 'pm':
@@ -101,8 +98,9 @@ const TIER_DISPLAY_LABELS: Record<string, string> = {
 
 // ── Domain mapping for knowledge stats queries ────────────────
 
-function mapDomainForQuery(domain: TargetDomain | null): string | null {
-  switch (domain) {
+function mapDomainForQuery(domains: TargetDomain[]): string | null {
+  const primary = domains[0] ?? null;
+  switch (primary) {
     case 'swe':
       return 'swe';
     case 'ds':
@@ -159,67 +157,75 @@ export async function POST(request: Request) {
     // Map onboarding inputs to benchmark params
     const benchmarkTier = mapTierToBenchmarkTier(input.targetCompanyTier);
     const seniority = mapToSeniority(input.careerStage, input.yearsExperience);
-    const roleType = mapToRoleType(input.targetDomain, input.targetRole);
+    const roleType = mapToRoleType(input.targetDomains, input.targetRoles[0] || '');
     const tierLabel = TIER_DISPLAY_LABELS[benchmarkTier];
     const seniorityLabel = seniority;
-    const dbDomain = mapDomainForQuery(input.targetDomain);
+    const dbDomain = mapDomainForQuery(input.targetDomains);
 
     const serviceClient = await createServiceClient();
 
     // Run benchmark + knowledge stats queries in parallel
-    const [benchmarkResult, rubricTotal, rubricDomain, questionTotal, questionDomain, companiesResult] =
-      await Promise.all([
-        // Benchmark targets via RPC
-        serviceClient.rpc('get_competency_benchmarks', {
-          p_tier: benchmarkTier,
-          p_seniority: seniority,
-          p_role_type: roleType,
-          p_company_name: null,
-        }),
+    const [
+      benchmarkResult,
+      rubricTotal,
+      rubricDomain,
+      questionTotal,
+      questionDomain,
+      companiesResult,
+    ] = await Promise.all([
+      // Benchmark targets via RPC
+      serviceClient.rpc('get_competency_benchmarks', {
+        p_tier: benchmarkTier,
+        p_seniority: seniority,
+        p_role_type: roleType,
+        p_company_name: null,
+      }),
 
-        // Knowledge stats: total rubric chunks
-        serviceClient
-          .from('rubric_chunks')
-          .select('id', { count: 'exact', head: true })
-          .eq('is_active', true),
+      // Knowledge stats: total rubric chunks
+      serviceClient
+        .from('rubric_chunks')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_active', true),
 
-        // Knowledge stats: domain-filtered rubric chunks
-        dbDomain
-          ? serviceClient
-              .from('rubric_chunks')
-              .select('id', { count: 'exact', head: true })
-              .eq('is_active', true)
-              .eq('domain', dbDomain)
-          : Promise.resolve({ count: 0, error: null }),
+      // Knowledge stats: domain-filtered rubric chunks
+      dbDomain
+        ? serviceClient
+            .from('rubric_chunks')
+            .select('id', { count: 'exact', head: true })
+            .eq('is_active', true)
+            .eq('domain', dbDomain)
+        : Promise.resolve({ count: 0, error: null }),
 
-        // Knowledge stats: total question archetypes
-        serviceClient
-          .from('question_archetypes')
-          .select('id', { count: 'exact', head: true })
-          .eq('is_active', true),
+      // Knowledge stats: total question archetypes
+      serviceClient
+        .from('question_archetypes')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_active', true),
 
-        // Knowledge stats: domain-filtered question archetypes
-        dbDomain
-          ? serviceClient
-              .from('question_archetypes')
-              .select('id', { count: 'exact', head: true })
-              .eq('is_active', true)
-              .eq('domain', dbDomain)
-          : Promise.resolve({ count: 0, error: null }),
+      // Knowledge stats: domain-filtered question archetypes
+      dbDomain
+        ? serviceClient
+            .from('question_archetypes')
+            .select('id', { count: 'exact', head: true })
+            .eq('is_active', true)
+            .eq('domain', dbDomain)
+        : Promise.resolve({ count: 0, error: null }),
 
-        // Knowledge stats: distinct calibrated companies
-        serviceClient
-          .from('competency_benchmarks')
-          .select('company_name')
-          .not('company_name', 'is', null),
-      ]);
+      // Knowledge stats: distinct calibrated companies
+      serviceClient
+        .from('competency_benchmarks')
+        .select('company_name')
+        .not('company_name', 'is', null),
+    ]);
 
     // Process benchmark targets
     let benchmarkTargets: OnboardingBenchmarkTarget[] = [];
     const roleDomainMultipliers = ROLE_DOMAIN_MULTIPLIERS[roleType];
 
     if (benchmarkResult.data && benchmarkResult.data.length > 0) {
-      benchmarkTargets = (benchmarkResult.data as { domain: string; target_score: number; confidence: string }[])
+      benchmarkTargets = (
+        benchmarkResult.data as { domain: string; target_score: number; confidence: string }[]
+      )
         .map((row) => {
           const roleMultiplier = roleDomainMultipliers[row.domain] ?? 1.0;
           return {
@@ -234,7 +240,8 @@ export async function POST(request: Request) {
         .slice(0, 3);
     } else {
       // Fallback to calibrated in-memory benchmarks
-      const baseBenchmarks = CALIBRATED_BASE_BENCHMARKS[seniority] ?? CALIBRATED_BASE_BENCHMARKS.Unknown;
+      const baseBenchmarks =
+        CALIBRATED_BASE_BENCHMARKS[seniority] ?? CALIBRATED_BASE_BENCHMARKS.Unknown;
       benchmarkTargets = Object.entries(baseBenchmarks)
         .map(([domain, score]) => {
           const roleMultiplier = roleDomainMultipliers[domain] ?? 1.0;

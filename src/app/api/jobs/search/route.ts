@@ -12,8 +12,8 @@ const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 const RequestSchema = z.object({
   countries: z.array(z.string().max(5)).min(1).max(10),
   cities: z.array(z.string().max(100)).max(20).default([]),
-  targetRole: z.string().max(200).default(''),
-  targetDomain: z.enum(['swe', 'ds', 'design', 'pm', 'general']).nullable().default(null),
+  targetRoles: z.array(z.string().max(200)).max(3).default([]),
+  targetDomains: z.array(z.enum(['swe', 'ds', 'design', 'pm', 'general'])).default([]),
   careerStage: z
     .enum(['student', 'new_grad', 'career_changer', 'experienced_professional'])
     .nullable()
@@ -24,8 +24,8 @@ function buildCacheKey(input: z.infer<typeof RequestSchema>): string {
   const raw = JSON.stringify({
     c: input.countries.sort(),
     ci: input.cities.sort(),
-    r: input.targetRole.toLowerCase().trim(),
-    d: input.targetDomain,
+    r: input.targetRoles.map((r) => r.toLowerCase().trim()).sort(),
+    d: [...input.targetDomains].sort(),
     s: input.careerStage,
   });
   return crypto.createHash('sha256').update(raw).digest('hex').slice(0, 32);
@@ -84,10 +84,12 @@ async function getCachedResult(cacheKey: string): Promise<JobMarketData | null> 
 async function setCachedResult(cacheKey: string, result: JobMarketData): Promise<void> {
   try {
     const supabase = await createServiceClient();
-    await supabase.from('job_market_cache').upsert(
-      { cache_key: cacheKey, response_data: result, created_at: new Date().toISOString() },
-      { onConflict: 'cache_key' }
-    );
+    await supabase
+      .from('job_market_cache')
+      .upsert(
+        { cache_key: cacheKey, response_data: result, created_at: new Date().toISOString() },
+        { onConflict: 'cache_key' }
+      );
   } catch {
     // Non-critical — skip cache write
   }
@@ -141,11 +143,14 @@ export async function POST(request: Request) {
     // Try JSearch first, then Adzuna fallback
     let context: JobMarketContext | null = null;
 
+    const primaryDomain = input.targetDomains[0] ?? null;
+    const primaryRole = input.targetRoles[0] || '';
+
     context = await searchJobs({
       countries: input.countries,
       cities: input.cities,
-      targetRole: input.targetRole,
-      targetDomain: input.targetDomain,
+      targetRole: primaryRole,
+      targetDomain: primaryDomain,
       careerStage: input.careerStage,
     });
 
@@ -153,8 +158,8 @@ export async function POST(request: Request) {
       context = await searchJobsAdzuna({
         countries: input.countries,
         cities: input.cities,
-        targetRole: input.targetRole,
-        targetDomain: input.targetDomain,
+        targetRole: primaryRole,
+        targetDomain: primaryDomain,
         careerStage: input.careerStage,
       });
     }
@@ -165,7 +170,9 @@ export async function POST(request: Request) {
       contexts: context ? [context] : [],
       aggregateListings: context?.totalListings ?? 0,
       calibrationAdjustment,
-      fetchError: context ? undefined : 'Unable to fetch job market data. Score uses baseline estimate.',
+      fetchError: context
+        ? undefined
+        : 'Unable to fetch job market data. Score uses baseline estimate.',
     };
 
     // Cache the result (even empty results to avoid hammering)

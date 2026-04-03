@@ -3,7 +3,16 @@
 // ============================================
 
 export type CareerStage = 'student' | 'new_grad' | 'career_changer' | 'experienced_professional';
-export type TargetDomain = 'swe' | 'ds' | 'design' | 'pm' | 'general';
+export type TargetDomain =
+  | 'swe'
+  | 'ds'
+  | 'design'
+  | 'pm'
+  | 'security'
+  | 'cloud'
+  | 'marketing'
+  | 'business'
+  | 'general';
 export type OnboardingPrepUrgency =
   | 'exploring'
   | 'active_search'
@@ -41,8 +50,8 @@ export interface UserProfile {
   userId: string;
   displayName: string | null;
   careerStage: CareerStage | null;
-  targetRole: string | null;
-  targetDomain: TargetDomain | null;
+  targetRoles: string[];
+  targetDomains: TargetDomain[];
   yearsExperience: number | null;
   prepUrgency: OnboardingPrepUrgency | null;
   biggestConcern: string | null;
@@ -65,8 +74,8 @@ export interface OnboardingState {
   step: number;
   displayName: string;
   careerStage: CareerStage | null;
-  targetRole: string;
-  targetDomain: TargetDomain | null;
+  targetRoles: string[];
+  targetDomains: TargetDomain[];
   yearsExperience: number | null;
   prepUrgency: OnboardingPrepUrgency | null;
   biggestConcern: string;
@@ -533,12 +542,12 @@ export type BenchmarkMatchLevel = 'company' | 'tier' | 'fallback';
 
 export interface CompetencyHeatmapEntry {
   domain: string;
-  rawScore: number;               // 0-100
+  rawScore: number; // 0-100
   yourLevel: CompetencyLevel;
   targetBenchmark: CompetencyLevel;
-  targetScore: number;            // numeric target for gap math
+  targetScore: number; // numeric target for gap math
   gapStatus: GapStatus;
-  gapPoints: number;              // max(0, target - raw)
+  gapPoints: number; // max(0, target - raw)
   benchmarkSource?: BenchmarkMatchLevel;
   benchmarkConfidence?: BenchmarkConfidence;
 }
@@ -546,7 +555,7 @@ export interface CompetencyHeatmapEntry {
 export interface CompetencyHeatmapData {
   entries: CompetencyHeatmapEntry[];
   inferredSeniority: InferredSeniority;
-  seniorityLabel: string;         // e.g. "L6 / Senior Level"
+  seniorityLabel: string; // e.g. "L6 / Senior Level"
   totalDomains: number;
   criticalGaps: number;
   warningGaps: number;
@@ -558,12 +567,7 @@ export interface CompetencyHeatmapData {
 }
 
 // Company Difficulty Context
-export type CompanyTier =
-  | 'FAANG_PLUS'
-  | 'BIG_TECH'
-  | 'UNICORN'
-  | 'GROWTH'
-  | 'STANDARD';
+export type CompanyTier = 'FAANG_PLUS' | 'BIG_TECH' | 'UNICORN' | 'GROWTH' | 'STANDARD';
 export type CompetitionLevel = 'extreme' | 'very_high' | 'high' | 'moderate';
 
 export interface CompanyDifficultyContext {
@@ -874,4 +878,3 @@ export interface FeedbackResponse {
   wouldRecommend?: 'yes' | 'no' | 'maybe';
   createdAt: string;
 }
-

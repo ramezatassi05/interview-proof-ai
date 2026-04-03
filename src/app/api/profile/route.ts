@@ -17,8 +17,11 @@ const FocusAreaItemSchema = z.object({
 const ProfileSchema = z.object({
   displayName: z.string().max(100).optional(),
   careerStage: z.enum(['student', 'new_grad', 'career_changer', 'experienced_professional']),
-  targetRole: z.string().max(200).optional(),
-  targetDomain: z.enum(['swe', 'ds', 'design', 'pm', 'general']).optional(),
+  targetRoles: z.array(z.string().max(200)).max(3).default([]).optional(),
+  targetDomains: z
+    .array(z.enum(['swe', 'ds', 'design', 'pm', 'general']))
+    .default([])
+    .optional(),
   yearsExperience: z.number().int().min(0).max(50).nullable().optional(),
   prepUrgency: z.enum(['exploring', 'active_search', 'interview_scheduled', 'interview_this_week']),
   biggestConcern: z.string().max(500).optional(),
@@ -44,8 +47,8 @@ function mapRowToProfile(row: Record<string, unknown>): UserProfile {
     userId: row.user_id as string,
     displayName: row.display_name as string | null,
     careerStage: row.career_stage as UserProfile['careerStage'],
-    targetRole: row.target_role as string | null,
-    targetDomain: row.target_domain as UserProfile['targetDomain'],
+    targetRoles: (row.target_roles as string[]) ?? [],
+    targetDomains: (row.target_domains as UserProfile['targetDomains']) ?? [],
     yearsExperience: row.years_experience as number | null,
     prepUrgency: row.prep_urgency as UserProfile['prepUrgency'],
     biggestConcern: row.biggest_concern as string | null,
@@ -125,10 +128,7 @@ export async function PATCH(request: Request) {
 
     const { data, error } = await supabase
       .from('user_profiles')
-      .upsert(
-        { user_id: user.id, resume_text: parsed.data.resumeText },
-        { onConflict: 'user_id' }
-      )
+      .upsert({ user_id: user.id, resume_text: parsed.data.resumeText }, { onConflict: 'user_id' })
       .select('*')
       .single();
 
@@ -178,8 +178,8 @@ export async function POST(request: Request) {
       user_id: user.id,
       display_name: input.displayName ?? null,
       career_stage: input.careerStage,
-      target_role: input.targetRole ?? null,
-      target_domain: input.targetDomain ?? null,
+      target_roles: input.targetRoles ?? [],
+      target_domains: input.targetDomains ?? [],
       years_experience: input.yearsExperience ?? null,
       prep_urgency: input.prepUrgency,
       biggest_concern: input.biggestConcern ?? null,

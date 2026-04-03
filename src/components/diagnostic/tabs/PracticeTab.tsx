@@ -28,10 +28,8 @@ export function PracticeTab({
       {/* Interview Questions */}
       {interviewQuestions && interviewQuestions.length > 0 && (
         <BlurFade delay={0.05}>
-          <section>
-            <h2 className="section-label mb-4">
-              Practice Questions ({interviewQuestions.length})
-            </h2>
+          <section data-tour-step="practice-questions">
+            <h2 className="section-label mb-4">Practice Questions ({interviewQuestions.length})</h2>
             <InterviewQuestions
               questions={interviewQuestions}
               companyName={companyName}

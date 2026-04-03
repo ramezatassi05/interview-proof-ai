@@ -29,15 +29,12 @@ export function ReportToolbar({
 
   return (
     <div
+      data-tour-step="report-toolbar"
       className={`
         flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between
         rounded-xl border border-[var(--border-default)] px-4 py-3 sm:px-5
         transition-all duration-200
-        ${
-          isSticky
-            ? 'glass shadow-lg'
-            : 'bg-[var(--bg-card)]'
-        }
+        ${isSticky ? 'glass shadow-lg' : 'bg-[var(--bg-card)]'}
       `}
     >
       {/* Report context */}
