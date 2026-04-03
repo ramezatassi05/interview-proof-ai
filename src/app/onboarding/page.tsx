@@ -151,7 +151,12 @@ function OnboardingContent() {
     fetch('/api/profile')
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
-        if (json?.data?.onboardingCompleted && searchParams.get('force') !== 'true') {
+        const DEMO_EMAILS = ['ramezfatassi@gmail.com'];
+        if (
+          json?.data?.onboardingCompleted &&
+          searchParams.get('force') !== 'true' &&
+          !DEMO_EMAILS.includes(user.email ?? '')
+        ) {
           router.replace(redirectTarget);
         } else {
           setProfileChecked(true);
