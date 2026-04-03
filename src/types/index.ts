@@ -21,6 +21,9 @@ export type OnboardingPrepUrgency =
 
 export type InterviewExperience = 'none' | 'a_few' | 'many';
 export type TargetCompanyTier = 'big_tech' | 'startup' | 'any';
+export type PracticePain = 'ramble' | 'freeze' | 'no_benchmark' | 'no_offers';
+export type InterviewMotivation = 'dream_role' | 'break_in' | 'stop_dreading';
+export type ConfidenceDrop = 'system_design' | 'behavioral' | 'coding' | 'everything';
 
 export interface ScoreBreakdownItem {
   label: string;
@@ -57,6 +60,9 @@ export interface UserProfile {
   biggestConcern: string | null;
   interviewExperience: InterviewExperience | null;
   targetCompanyTier: TargetCompanyTier | null;
+  practicePain: PracticePain | null;
+  interviewMotivation: InterviewMotivation | null;
+  confidenceDrop: ConfidenceDrop | null;
   segment: string | null;
   resumeText: string | null;
   resumePdfPath: string | null;
@@ -82,6 +88,9 @@ export interface OnboardingState {
   resumeText: string;
   interviewExperience: InterviewExperience | null;
   targetCompanyTier: TargetCompanyTier | null;
+  practicePain: PracticePain | null;
+  interviewMotivation: InterviewMotivation | null;
+  confidenceDrop: ConfidenceDrop | null;
   targetCountries: string[];
   targetCities: string[];
 }

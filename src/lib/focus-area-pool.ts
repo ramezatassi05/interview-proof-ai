@@ -10,6 +10,9 @@ import type {
   FocusAreaItem,
   InterviewExperience,
   TargetCompanyTier,
+  PracticePain,
+  InterviewMotivation,
+  ConfidenceDrop,
 } from '@/types';
 import type { ResumeSignals } from './resume-signals';
 
@@ -1027,6 +1030,39 @@ export const SIGNAL_SOURCE_LABELS: Record<string, string> = {
 
 // ── Selection Algorithm ────────────────────────────────────────
 
+// Derive legacy interviewExperience from new practicePain field
+function deriveLegacyInterviewExperience(
+  practicePain: PracticePain | null
+): InterviewExperience | null {
+  switch (practicePain) {
+    case 'freeze':
+    case 'no_benchmark':
+      return 'none';
+    case 'ramble':
+      return 'a_few';
+    case 'no_offers':
+      return 'many';
+    default:
+      return null;
+  }
+}
+
+// Derive legacy biggestConcern from new confidenceDrop field
+function deriveLegacyConcern(confidenceDrop: ConfidenceDrop | null): string {
+  switch (confidenceDrop) {
+    case 'system_design':
+      return 'System design';
+    case 'behavioral':
+      return 'Behavioral stories';
+    case 'coding':
+      return 'Coding articulation';
+    case 'everything':
+      return 'Overall confidence';
+    default:
+      return '';
+  }
+}
+
 export function selectFocusAreas(
   input: {
     careerStage: CareerStage | null;
@@ -1037,6 +1073,9 @@ export function selectFocusAreas(
     biggestConcern: string;
     interviewExperience: InterviewExperience | null;
     targetCompanyTier: TargetCompanyTier | null;
+    practicePain?: PracticePain | null;
+    interviewMotivation?: InterviewMotivation | null;
+    confidenceDrop?: ConfidenceDrop | null;
     resumeText: string;
     benchmarkDomainWeights?: Record<string, number> | null;
   },
@@ -1046,18 +1085,23 @@ export function selectFocusAreas(
   const domains =
     input.targetDomains.length > 0 ? input.targetDomains : (['general'] as TargetDomain[]);
 
+  // Derive legacy field values from new pain-based fields when available
+  const interviewExperience =
+    deriveLegacyInterviewExperience(input.practicePain ?? null) ?? input.interviewExperience;
+  const biggestConcern = deriveLegacyConcern(input.confidenceDrop ?? null) || input.biggestConcern;
+
   const ctx: SelectionContext = {
     careerStage: stage,
     targetDomains: domains,
     targetRoles: input.targetRoles,
     yearsExperience: input.yearsExperience,
     prepUrgency: input.prepUrgency,
-    biggestConcern: input.biggestConcern,
-    interviewExperience: input.interviewExperience,
+    biggestConcern,
+    interviewExperience,
     targetCompanyTier: input.targetCompanyTier,
     resumeSignals,
     benchmarkDomainWeights: input.benchmarkDomainWeights ?? null,
-    concernCategory: detectConcernCategory(input.biggestConcern),
+    concernCategory: detectConcernCategory(biggestConcern),
     roleSeniority: parseRoleSeniority(input.targetRoles[0] || ''),
     roleSpecialization: parseRoleSpecialization(input.targetRoles[0] || ''),
   };

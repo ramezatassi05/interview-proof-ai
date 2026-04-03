@@ -8,8 +8,9 @@ import type {
   CareerStage,
   OnboardingState,
   AhaScore,
-  InterviewExperience,
-  TargetCompanyTier,
+  PracticePain,
+  InterviewMotivation,
+  ConfidenceDrop,
   JobMarketData,
   OnboardingBenchmarkData,
 } from '@/types';
@@ -24,12 +25,33 @@ import {
 } from '@/components/onboarding/StepRoleDetails';
 import { StepLocation } from '@/components/onboarding/StepLocation';
 import { StepUrgency } from '@/components/onboarding/StepUrgency';
+import { StepPracticePain } from '@/components/onboarding/StepPracticePain';
+import { StepMotivation } from '@/components/onboarding/StepMotivation';
+import { StepConfidence } from '@/components/onboarding/StepConfidence';
 import { StepAhaMoment } from '@/components/onboarding/StepAhaMoment';
 import { BlurFade } from '@/components/ui/blur-fade';
 import { OnboardingDotNav } from '@/components/onboarding/OnboardingDotNav';
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 10;
 const STORAGE_KEY = 'ip_onboarding_draft';
+
+// ── Derived legacy fields ─────────────────────────────────────
+// Maps new pain-based fields to old field values for downstream scoring/focus-area compatibility
+
+function deriveBiggestConcern(confidenceDrop: ConfidenceDrop | null): string {
+  switch (confidenceDrop) {
+    case 'system_design':
+      return 'System design';
+    case 'behavioral':
+      return 'Behavioral stories';
+    case 'coding':
+      return 'Coding articulation';
+    case 'everything':
+      return 'Overall confidence';
+    default:
+      return '';
+  }
+}
 
 // ── State Machine ──────────────────────────────────────────────
 
@@ -55,6 +77,9 @@ const initialState: OnboardingState = {
   resumeText: '',
   interviewExperience: null,
   targetCompanyTier: null,
+  practicePain: null,
+  interviewMotivation: null,
+  confidenceDrop: null,
   targetCountries: [],
   targetCities: [],
 };
@@ -111,6 +136,7 @@ function OnboardingContent() {
   const jobFetchTriggered = useRef(false);
   const benchmarkFetchTriggered = useRef(false);
   const roleDetailsRef = useRef<StepRoleDetailsHandle>(null);
+  const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const redirectTarget = searchParams.get('redirect') ?? '/new';
 
   // Persist to localStorage on every change (skip initial render)
@@ -125,6 +151,13 @@ function OnboardingContent() {
       // Ignore storage errors (private browsing, quota)
     }
   }, [state]);
+
+  // Clean up auto-advance timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
+    };
+  }, []);
 
   // Set display name from auth user
   useEffect(() => {
@@ -212,16 +245,16 @@ function OnboardingContent() {
     setBenchmarkData(null);
   }, []);
 
-  // Fetch benchmark data in background when user advances past Urgency step
+  // Fetch benchmark data in background when user advances to Aha step
   const fetchBenchmarkData = useCallback(() => {
-    if (benchmarkFetchTriggered.current || !state.targetCompanyTier || !state.careerStage) return;
+    if (benchmarkFetchTriggered.current || !state.careerStage) return;
     benchmarkFetchTriggered.current = true;
     setBenchmarkLoading(true);
     fetch('/api/onboarding/benchmarks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        targetCompanyTier: state.targetCompanyTier,
+        targetCompanyTier: state.targetCompanyTier ?? 'any',
         careerStage: state.careerStage,
         targetDomains: state.targetDomains,
         targetRoles: state.targetRoles,
@@ -244,12 +277,56 @@ function OnboardingContent() {
     state.yearsExperience,
   ]);
 
+  // Auto-advance helper: set field, show feedback, then advance after delay
+  const autoAdvance = useCallback(
+    (field: keyof OnboardingState, value: OnboardingState[keyof OnboardingState], delay = 1200) => {
+      if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
+      dispatch({ type: 'SET_FIELD', field, value });
+      autoAdvanceTimer.current = setTimeout(() => dispatch({ type: 'NEXT_STEP' }), delay);
+    },
+    []
+  );
+
   // Auto-advance after career stage selection
   const handleCareerStageChange = useCallback((stage: CareerStage) => {
     dispatch({ type: 'SET_FIELD', field: 'careerStage', value: stage });
     // Auto-advance after brief delay for visual feedback
     setTimeout(() => dispatch({ type: 'NEXT_STEP' }), 300);
   }, []);
+
+  // Auto-advance handlers for pain-based steps
+  const handleUrgencyChange = useCallback(
+    (v: OnboardingState['prepUrgency']) => autoAdvance('prepUrgency', v, 1000),
+    [autoAdvance]
+  );
+
+  const handlePracticePainChange = useCallback(
+    (v: PracticePain) => autoAdvance('practicePain', v),
+    [autoAdvance]
+  );
+
+  const handleMotivationChange = useCallback(
+    (v: InterviewMotivation) => autoAdvance('interviewMotivation', v),
+    [autoAdvance]
+  );
+
+  const handleConfidenceChange = useCallback(
+    (v: ConfidenceDrop) => {
+      if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
+      dispatch({ type: 'SET_FIELD', field: 'confidenceDrop', value: v });
+      // Also derive biggestConcern for downstream compatibility
+      dispatch({
+        type: 'SET_FIELD',
+        field: 'biggestConcern',
+        value: deriveBiggestConcern(v),
+      });
+      autoAdvanceTimer.current = setTimeout(() => {
+        dispatch({ type: 'NEXT_STEP' });
+        fetchBenchmarkData();
+      }, 1200);
+    },
+    [fetchBenchmarkData]
+  );
 
   // Build benchmark domain weights map for focus area selection
   const benchmarkDomainWeights =
@@ -268,6 +345,9 @@ function OnboardingContent() {
     resumeText: state.resumeText,
     interviewExperience: state.interviewExperience,
     targetCompanyTier: state.targetCompanyTier,
+    practicePain: state.practicePain,
+    interviewMotivation: state.interviewMotivation,
+    confidenceDrop: state.confidenceDrop,
     jobMarketData,
     benchmarkDomainWeights,
   });
@@ -293,6 +373,9 @@ function OnboardingContent() {
           resumeText: state.resumeText || undefined,
           interviewExperience: state.interviewExperience || undefined,
           targetCompanyTier: state.targetCompanyTier || undefined,
+          practicePain: state.practicePain || undefined,
+          interviewMotivation: state.interviewMotivation || undefined,
+          confidenceDrop: state.confidenceDrop || undefined,
           targetCountries: state.targetCountries,
           targetCities: state.targetCities,
           ahaScore,
@@ -338,17 +421,19 @@ function OnboardingContent() {
         currentStep={state.step}
         totalSteps={TOTAL_STEPS}
         onBack={() => {
+          // Cancel any pending auto-advance
+          if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
           // If on step 3 (role details), let sub-step handle back first
           if (state.step === 3 && roleDetailsRef.current?.handleBack()) return;
           if (state.step <= 5) invalidateJobData();
-          if (state.step <= 6) invalidateBenchmarkData();
+          if (state.step <= 9) invalidateBenchmarkData();
           dispatch({ type: 'PREV_STEP' });
         }}
-        showBack={state.step > 0 && state.step < 6}
+        showBack={state.step > 0 && state.step < 9}
       />
 
-      {/* Steps 0 + 6 render full-screen — skip constrained wrapper */}
-      {state.step === 0 || state.step === 6 ? (
+      {/* Steps 0 + 9 render full-screen — skip constrained wrapper */}
+      {state.step === 0 || state.step === 9 ? (
         <BlurFade key={state.step} duration={0.3} delay={0}>
           {state.step === 0 && (
             <StepWelcome
@@ -356,7 +441,7 @@ function OnboardingContent() {
               onContinue={() => dispatch({ type: 'NEXT_STEP' })}
             />
           )}
-          {state.step === 6 && (
+          {state.step === 9 && (
             <StepAhaMoment
               ahaScore={ahaScore}
               displayName={state.displayName}
@@ -438,36 +523,32 @@ function OnboardingContent() {
 
               {state.step === 5 && (
                 <StepUrgency
-                  careerStage={state.careerStage}
                   prepUrgency={state.prepUrgency}
-                  biggestConcern={state.biggestConcern}
-                  interviewExperience={state.interviewExperience}
-                  targetCompanyTier={state.targetCompanyTier}
-                  onPrepUrgencyChange={(v) =>
-                    dispatch({ type: 'SET_FIELD', field: 'prepUrgency', value: v })
-                  }
-                  onBiggestConcernChange={(v) =>
-                    dispatch({ type: 'SET_FIELD', field: 'biggestConcern', value: v })
-                  }
-                  onInterviewExperienceChange={(v: InterviewExperience) =>
-                    dispatch({ type: 'SET_FIELD', field: 'interviewExperience', value: v })
-                  }
-                  onTargetCompanyTierChange={(v: TargetCompanyTier) =>
-                    dispatch({ type: 'SET_FIELD', field: 'targetCompanyTier', value: v })
-                  }
-                  onContinue={() => {
-                    dispatch({ type: 'NEXT_STEP' });
-                    fetchBenchmarkData();
-                  }}
+                  onPrepUrgencyChange={handleUrgencyChange}
                 />
+              )}
+
+              {state.step === 6 && (
+                <StepPracticePain value={state.practicePain} onChange={handlePracticePainChange} />
+              )}
+
+              {state.step === 7 && (
+                <StepMotivation
+                  value={state.interviewMotivation}
+                  onChange={handleMotivationChange}
+                />
+              )}
+
+              {state.step === 8 && (
+                <StepConfidence value={state.confidenceDrop} onChange={handleConfidenceChange} />
               )}
             </BlurFade>
           </div>
         </div>
       )}
 
-      {state.step >= 1 && state.step <= 5 && (
-        <OnboardingDotNav currentStep={state.step} totalSteps={5} />
+      {state.step >= 1 && state.step <= 8 && (
+        <OnboardingDotNav currentStep={state.step} totalSteps={8} />
       )}
     </div>
   );

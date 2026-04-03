@@ -5,6 +5,9 @@ import type {
   ScoreBreakdownItem,
   InterviewExperience,
   TargetCompanyTier,
+  PracticePain,
+  InterviewMotivation,
+  ConfidenceDrop,
   TargetDomain,
   JobMarketData,
 } from '@/types';
@@ -26,6 +29,9 @@ export interface OnboardingInput {
   resumeText: string;
   interviewExperience: InterviewExperience | null;
   targetCompanyTier: TargetCompanyTier | null;
+  practicePain: PracticePain | null;
+  interviewMotivation: InterviewMotivation | null;
+  confidenceDrop: ConfidenceDrop | null;
   jobMarketData?: JobMarketData | null;
   benchmarkDomainWeights?: Record<string, number> | null;
 }
@@ -54,6 +60,46 @@ const COMPANY_TIER_ADJUSTMENTS: Record<TargetCompanyTier, number> = {
   big_tech: -3,
   startup: 2,
   any: 0,
+};
+
+const PRACTICE_PAIN_ADJUSTMENTS: Record<PracticePain, number> = {
+  ramble: -2,
+  freeze: -5,
+  no_benchmark: -3,
+  no_offers: 2,
+};
+
+const MOTIVATION_ADJUSTMENTS: Record<InterviewMotivation, number> = {
+  dream_role: 0,
+  break_in: -2,
+  stop_dreading: -3,
+};
+
+const CONFIDENCE_DROP_ADJUSTMENTS: Record<ConfidenceDrop, number> = {
+  system_design: 0,
+  behavioral: 0,
+  coding: 0,
+  everything: -2,
+};
+
+const PRACTICE_PAIN_LABELS: Record<PracticePain, string> = {
+  ramble: 'Loses structure under pressure',
+  freeze: 'Freezes on unseen questions',
+  no_benchmark: 'No strong-answer benchmark',
+  no_offers: 'Experienced but not converting',
+};
+
+const MOTIVATION_LABELS: Record<InterviewMotivation, string> = {
+  dream_role: 'Targeting dream role',
+  break_in: 'Breaking into industry',
+  stop_dreading: 'Overcoming interview anxiety',
+};
+
+const CONFIDENCE_DROP_LABELS: Record<ConfidenceDrop, string> = {
+  system_design: 'System design gap',
+  behavioral: 'Behavioral storytelling',
+  coding: 'Code articulation',
+  everything: 'Broad confidence gap',
 };
 
 const TIMELINE_MESSAGES: Record<OnboardingPrepUrgency, string> = {
@@ -139,8 +185,18 @@ export function computeAhaScore(input: OnboardingInput): AhaScore {
     });
   }
 
-  // Interview experience adjustment
-  if (input.interviewExperience) {
+  // Practice pain adjustment (replaces interview experience when available)
+  if (input.practicePain) {
+    const impact = PRACTICE_PAIN_ADJUSTMENTS[input.practicePain];
+    score += impact;
+    breakdown.push({
+      label: 'Practice Style',
+      detail: PRACTICE_PAIN_LABELS[input.practicePain],
+      impact,
+      sentiment: sentiment(impact),
+    });
+  } else if (input.interviewExperience) {
+    // Legacy fallback
     const impact = INTERVIEW_EXP_ADJUSTMENTS[input.interviewExperience];
     score += impact;
     breakdown.push({
@@ -151,8 +207,18 @@ export function computeAhaScore(input: OnboardingInput): AhaScore {
     });
   }
 
-  // Company tier adjustment
-  if (input.targetCompanyTier) {
+  // Motivation adjustment (replaces company tier when available)
+  if (input.interviewMotivation) {
+    const impact = MOTIVATION_ADJUSTMENTS[input.interviewMotivation];
+    score += impact;
+    breakdown.push({
+      label: 'Motivation',
+      detail: MOTIVATION_LABELS[input.interviewMotivation],
+      impact,
+      sentiment: sentiment(impact),
+    });
+  } else if (input.targetCompanyTier) {
+    // Legacy fallback
     const impact = COMPANY_TIER_ADJUSTMENTS[input.targetCompanyTier];
     score += impact;
     breakdown.push({
@@ -175,16 +241,39 @@ export function computeAhaScore(input: OnboardingInput): AhaScore {
     });
   }
 
-  // Bonus for identifying a concern (shows self-awareness)
-  const hasConcern = input.biggestConcern.trim().length > 0;
-  if (hasConcern) {
+  // Confidence drop adjustment (replaces concern bonus when available)
+  if (input.confidenceDrop) {
+    // Self-awareness bonus for identifying a specific area
     score += 3;
     breakdown.push({
       label: 'Self-Awareness',
-      detail: 'Key concern identified',
+      detail: CONFIDENCE_DROP_LABELS[input.confidenceDrop],
       impact: 3,
       sentiment: 'positive',
     });
+    // Additional penalty for broad confidence gap
+    const dropImpact = CONFIDENCE_DROP_ADJUSTMENTS[input.confidenceDrop];
+    if (dropImpact !== 0) {
+      score += dropImpact;
+      breakdown.push({
+        label: 'Confidence Gap',
+        detail: 'Broad gap across areas',
+        impact: dropImpact,
+        sentiment: sentiment(dropImpact),
+      });
+    }
+  } else {
+    // Legacy fallback
+    const hasConcern = input.biggestConcern.trim().length > 0;
+    if (hasConcern) {
+      score += 3;
+      breakdown.push({
+        label: 'Self-Awareness',
+        detail: 'Key concern identified',
+        impact: 3,
+        sentiment: 'positive',
+      });
+    }
   }
 
   // Job market calibration (from real-time API data)

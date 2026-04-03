@@ -22,7 +22,7 @@ import type {
 // ── Request Validation ────────────────────────────────────────
 
 const RequestSchema = z.object({
-  targetCompanyTier: z.enum(['big_tech', 'startup', 'any']),
+  targetCompanyTier: z.enum(['big_tech', 'startup', 'any']).default('any'),
   careerStage: z.enum(['student', 'new_grad', 'career_changer', 'experienced_professional']),
   targetDomains: z.array(z.enum(['swe', 'ds', 'design', 'pm', 'general'])).default([]),
   targetRoles: z.array(z.string().max(200)).max(3).default([]),

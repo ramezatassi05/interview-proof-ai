@@ -28,6 +28,12 @@ const ProfileSchema = z.object({
   resumeText: z.string().max(100000).optional(),
   interviewExperience: z.enum(['none', 'a_few', 'many']).nullable().optional(),
   targetCompanyTier: z.enum(['big_tech', 'startup', 'any']).nullable().optional(),
+  practicePain: z.enum(['ramble', 'freeze', 'no_benchmark', 'no_offers']).nullable().optional(),
+  interviewMotivation: z.enum(['dream_role', 'break_in', 'stop_dreading']).nullable().optional(),
+  confidenceDrop: z
+    .enum(['system_design', 'behavioral', 'coding', 'everything'])
+    .nullable()
+    .optional(),
   targetCountries: z.array(z.string().max(5)).max(10).optional(),
   targetCities: z.array(z.string().max(100)).max(20).optional(),
   ahaScore: z
@@ -54,6 +60,9 @@ function mapRowToProfile(row: Record<string, unknown>): UserProfile {
     biggestConcern: row.biggest_concern as string | null,
     interviewExperience: row.interview_experience as UserProfile['interviewExperience'],
     targetCompanyTier: row.target_company_tier as UserProfile['targetCompanyTier'],
+    practicePain: (row.practice_pain as UserProfile['practicePain']) ?? null,
+    interviewMotivation: (row.interview_motivation as UserProfile['interviewMotivation']) ?? null,
+    confidenceDrop: (row.confidence_drop as UserProfile['confidenceDrop']) ?? null,
     segment: row.segment as string | null,
     resumeText: row.resume_text as string | null,
     resumePdfPath: row.resume_pdf_path as string | null,
@@ -186,6 +195,9 @@ export async function POST(request: Request) {
       resume_text: input.resumeText ?? null,
       interview_experience: input.interviewExperience ?? null,
       target_company_tier: input.targetCompanyTier ?? null,
+      practice_pain: input.practicePain ?? null,
+      interview_motivation: input.interviewMotivation ?? null,
+      confidence_drop: input.confidenceDrop ?? null,
       target_countries: input.targetCountries ?? [],
       target_cities: input.targetCities ?? [],
       segment,
