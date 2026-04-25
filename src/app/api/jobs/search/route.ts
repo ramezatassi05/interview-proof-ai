@@ -13,11 +13,16 @@ const RequestSchema = z.object({
   countries: z.array(z.string().max(5)).min(1).max(10),
   cities: z.array(z.string().max(100)).max(20).default([]),
   targetRoles: z.array(z.string().max(200)).max(3).default([]),
-  targetDomains: z.array(z.enum(['swe', 'ds', 'design', 'pm', 'general'])).default([]),
+  targetDomains: z
+    .array(
+      z.enum(['swe', 'ds', 'design', 'pm', 'security', 'cloud', 'marketing', 'business', 'general'])
+    )
+    .default([]),
   careerStage: z
     .enum(['student', 'new_grad', 'career_changer', 'experienced_professional'])
     .nullable()
     .default(null),
+  yearsExperience: z.number().int().min(0).max(50).nullable().default(null),
 });
 
 function buildCacheKey(input: z.infer<typeof RequestSchema>): string {
@@ -27,6 +32,7 @@ function buildCacheKey(input: z.infer<typeof RequestSchema>): string {
     r: input.targetRoles.map((r) => r.toLowerCase().trim()).sort(),
     d: [...input.targetDomains].sort(),
     s: input.careerStage,
+    y: input.yearsExperience,
   });
   return crypto.createHash('sha256').update(raw).digest('hex').slice(0, 32);
 }
@@ -140,39 +146,43 @@ export async function POST(request: Request) {
       return NextResponse.json({ data: cached });
     }
 
-    // Try JSearch first, then Adzuna fallback
-    let context: JobMarketContext | null = null;
-
+    // Build role list: use targetRoles if provided, otherwise fall back to domain keyword
     const primaryDomain = input.targetDomains[0] ?? null;
-    const primaryRole = input.targetRoles[0] || '';
+    const roles: string[] = input.targetRoles.length > 0 ? input.targetRoles : [''];
 
-    context = await searchJobs({
-      countries: input.countries,
-      cities: input.cities,
-      targetRole: primaryRole,
-      targetDomain: primaryDomain,
-      careerStage: input.careerStage,
-    });
-
-    if (!context) {
-      context = await searchJobsAdzuna({
+    // Search all roles in parallel — each tries JSearch then Adzuna fallback
+    const searchPromises = roles.map(async (role): Promise<JobMarketContext | null> => {
+      const searchParams = {
         countries: input.countries,
         cities: input.cities,
-        targetRole: primaryRole,
+        targetRole: role,
         targetDomain: primaryDomain,
         careerStage: input.careerStage,
-      });
-    }
+        yearsExperience: input.yearsExperience,
+      };
 
-    const calibrationAdjustment = computeCalibration(context);
+      const jsearchResult = await searchJobs(searchParams);
+      if (jsearchResult) return jsearchResult;
+      return searchJobsAdzuna(searchParams);
+    });
+
+    const settled = await Promise.allSettled(searchPromises);
+    const contexts: JobMarketContext[] = settled
+      .filter((r): r is PromiseFulfilledResult<JobMarketContext | null> => r.status === 'fulfilled')
+      .map((r) => r.value)
+      .filter((ctx): ctx is JobMarketContext => ctx !== null);
+
+    const aggregateListings = contexts.reduce((sum, ctx) => sum + ctx.totalListings, 0);
+    const calibrationAdjustment = computeCalibration(contexts[0] ?? null);
 
     const result: JobMarketData = {
-      contexts: context ? [context] : [],
-      aggregateListings: context?.totalListings ?? 0,
+      contexts,
+      aggregateListings,
       calibrationAdjustment,
-      fetchError: context
-        ? undefined
-        : 'Unable to fetch job market data. Score uses baseline estimate.',
+      fetchError:
+        contexts.length > 0
+          ? undefined
+          : 'Unable to fetch job market data. Score uses baseline estimate.',
     };
 
     // Cache the result (even empty results to avoid hammering)

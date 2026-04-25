@@ -13,6 +13,10 @@ import type {
   PracticePain,
   InterviewMotivation,
   ConfidenceDrop,
+  ReadinessTier,
+  DiagnosticSocialProof,
+  NextTierInfo,
+  StrengthAcknowledgment,
 } from '@/types';
 import type { ResumeSignals } from './resume-signals';
 
@@ -88,6 +92,13 @@ function parseRoleSpecialization(role: string): string | null {
 
 // ── Focus Area Candidate Definition ────────────────────────────
 
+interface MultiSignalVariant {
+  /** All conditions must be true for this variant to fire */
+  conditions: ((ctx: SelectionContext) => boolean)[];
+  description: (ctx: SelectionContext) => string;
+  reason?: (ctx: SelectionContext) => string;
+}
+
 interface FocusAreaCandidate {
   id: string;
   title: string;
@@ -107,6 +118,8 @@ interface FocusAreaCandidate {
   }>;
   descriptionVariants?: Record<string, (ctx: SelectionContext) => string>;
   reasonVariants?: Record<string, (ctx: SelectionContext) => string>;
+  /** Multi-signal variants — checked first, require ALL conditions to match */
+  multiSignalVariants?: MultiSignalVariant[];
 }
 
 // ── Template Helpers ───────────────────────────────────────────
@@ -196,6 +209,34 @@ const POOL: FocusAreaCandidate[] = [
         weight: 3,
       },
     ],
+    multiSignalVariants: [
+      {
+        conditions: [
+          (ctx) => ctx.targetRoles.length >= 2,
+          (ctx) => {
+            const specs = ctx.targetRoles.map((r) => parseRoleSpecialization(r));
+            return (
+              specs.some((s) => s === 'frontend' || s === 'fullstack') &&
+              specs.some((s) => s === 'backend' || s === 'ml')
+            );
+          },
+        ],
+        description: (ctx) =>
+          `Your ${ctx.targetRoles.join(' + ')} combo means you'll face different coding styles in each — most candidates only prep for one pattern set.`,
+        reason: () => 'Multiple role targets multiply the question patterns you need to cover.',
+      },
+      {
+        conditions: [
+          (ctx) => ctx.concernCategory === 'algorithms',
+          (ctx) =>
+            ctx.prepUrgency === 'interview_this_week' || ctx.prepUrgency === 'interview_scheduled',
+        ],
+        description: () =>
+          "You flagged coding AND have an interview coming up — we'll focus on the 5 patterns that cover 60% of questions so you see results fast.",
+        reason: () =>
+          'With limited time and coding as your concern, surgical prep beats broad coverage.',
+      },
+    ],
     descriptionVariants: {
       urgent: () =>
         'Focus on the top 10 patterns that cover 80% of coding interviews — you can make real progress in a few focused sessions.',
@@ -255,6 +296,27 @@ const POOL: FocusAreaCandidate[] = [
       'Most candidates at your stage freeze in design rounds — having a framework puts you ahead.',
     eligibility: { stages: ['new_grad', 'career_changer'], domains: ['swe', 'general'] },
     baseWeight: 5,
+    multiSignalVariants: [
+      {
+        conditions: [
+          (ctx) => ctx.concernCategory === 'system_design',
+          (ctx) =>
+            ctx.resumeSignals !== null && ctx.resumeSignals.detectedSkills.includes('backend'),
+        ],
+        description: (ctx) =>
+          `You have backend experience but flagged system design as your gap. The good news: you already think about scale — you just need the interview framework to structure it. ${ctx.targetCompanyTier === 'big_tech' ? 'Big Tech design rounds specifically test this translation.' : ''}`.trim(),
+        reason: () =>
+          "Your backend skills are the foundation — we'll help you map them to what interviewers actually evaluate.",
+      },
+      {
+        conditions: [
+          (ctx) => ctx.careerStage === 'career_changer',
+          (ctx) => ctx.resumeSignals !== null && ctx.resumeSignals.detectedSkills.length >= 2,
+        ],
+        description: (ctx) =>
+          `Career changers often have relevant design thinking from other domains. Your ${ctx.resumeSignals?.detectedSkills.slice(0, 2).join(' & ')} background can map to system design patterns — most interviewers just need to see it structured their way.`,
+      },
+    ],
     boosts: [
       {
         signal: 'concern',
@@ -344,6 +406,27 @@ const POOL: FocusAreaCandidate[] = [
     defaultReason:
       'Behavioral rounds decide 30-40% of interview outcomes. Having 3-5 strong stories ready is a massive advantage.',
     eligibility: { stages: ['student', 'new_grad'], domains: ALL_DOMAINS },
+    multiSignalVariants: [
+      {
+        conditions: [
+          (ctx) => ctx.concernCategory === 'behavioral',
+          (ctx) => ctx.resumeSignals !== null && ctx.resumeSignals.hasOpenSource,
+        ],
+        description: () =>
+          "You're worried about behavioral questions, but your open-source contributions are goldmines for STAR stories. Collaboration, conflict resolution, technical decisions — it's all there.",
+        reason: () =>
+          'Open-source work maps perfectly to behavioral questions — most candidates overlook this.',
+      },
+      {
+        conditions: [
+          (ctx) => ctx.resumeSignals !== null && !ctx.resumeSignals.hasQuantifiedImpact,
+          (ctx) =>
+            ctx.prepUrgency === 'interview_this_week' || ctx.prepUrgency === 'interview_scheduled',
+        ],
+        description: () =>
+          "Your resume doesn't quantify impact yet, and you have an interview coming up. We'll extract 3-5 stories from what you have and add the metrics interviewers need to hear.",
+      },
+    ],
     baseWeight: 6,
     boosts: [
       {
@@ -433,6 +516,18 @@ const POOL: FocusAreaCandidate[] = [
     defaultReason:
       'Career changers who nail the "why" question get called back — those who stumble get filtered out.',
     eligibility: { stages: ['career_changer'], domains: ALL_DOMAINS },
+    multiSignalVariants: [
+      {
+        conditions: [
+          (ctx) => ctx.resumeSignals !== null && ctx.resumeSignals.hasLeadershipSignals,
+          (ctx) => ctx.resumeSignals !== null && ctx.resumeSignals.detectedSkills.length >= 3,
+        ],
+        description: (ctx) =>
+          `Your resume shows leadership experience and skills in ${ctx.resumeSignals?.detectedSkills.slice(0, 3).join(', ')}. Career changers with transferable depth like yours actually have a storytelling advantage — when you frame the pivot right.`,
+        reason: () =>
+          'Your cross-domain experience is an asset, not a liability — we just need to help interviewers see it that way.',
+      },
+    ],
     baseWeight: 9,
     boosts: [
       {
@@ -1028,6 +1123,61 @@ export const SIGNAL_SOURCE_LABELS: Record<string, string> = {
   benchmark: 'benchmark data',
 };
 
+// ── Signal Synthesis ──────────────────────────────────────────
+
+const STAGE_LABELS_SYNTHESIS: Record<CareerStage, string> = {
+  student: 'a student',
+  new_grad: 'a new grad',
+  career_changer: 'a career changer',
+  experienced_professional: 'an experienced professional',
+};
+
+const URGENCY_LABELS_SYNTHESIS: Record<OnboardingPrepUrgency, string> = {
+  interview_this_week: 'days left',
+  interview_scheduled: 'a scheduled interview',
+  active_search: 'an active search',
+  exploring: 'early exploration',
+};
+
+function synthesizeInsight(ctx: SelectionContext, firedSignals: string[]): string | undefined {
+  if (firedSignals.length < 2) return undefined;
+
+  const stage = STAGE_LABELS_SYNTHESIS[ctx.careerStage] ?? 'a candidate';
+  const role = roleOrDomain(ctx);
+  const urgency = ctx.prepUrgency ? URGENCY_LABELS_SYNTHESIS[ctx.prepUrgency] : null;
+
+  const has = (s: string) => firedSignals.includes(s);
+
+  if (has('concern') && has('resume')) {
+    return `As ${stage} targeting ${role}, this gap is both your stated concern and visible in your resume \u2014 addressing it will have compounding impact.`;
+  }
+  if (has('urgency') && has('concern')) {
+    return `With ${urgency} and this being your top concern, this is the single highest-leverage area to focus on right now.`;
+  }
+  if (has('benchmark') && has('role')) {
+    return `Benchmark data shows this is the highest-weighted evaluation area for ${role} \u2014 and your profile suggests room to grow here.`;
+  }
+  if (has('urgency') && has('resume')) {
+    return `Your resume signals and timeline both point here \u2014 with ${urgency}, focused practice on this area will move the needle fastest.`;
+  }
+  if (has('concern') && has('experience')) {
+    return `Your interview experience and stated concern converge here \u2014 this is where targeted practice will have the most visible impact.`;
+  }
+  if (has('benchmark') && has('concern')) {
+    return `Benchmark data confirms what you suspected \u2014 this is a high-weight area for your target role and your biggest opportunity.`;
+  }
+  if (has('tier') && has('concern')) {
+    return `At the company tier you\u2019re targeting, this area is weighted heavily \u2014 and it aligns with the concern you flagged.`;
+  }
+
+  // Generic 2+ signal fallback
+  const signalLabels = firedSignals
+    .slice(0, 3)
+    .map((s) => SIGNAL_SOURCE_LABELS[s] ?? s)
+    .join(', ');
+  return `Multiple signals from your profile point here \u2014 ${signalLabels} all converge on this area.`;
+}
+
 // ── Selection Algorithm ────────────────────────────────────────
 
 // Derive legacy interviewExperience from new practicePain field
@@ -1147,9 +1297,24 @@ export function selectFocusAreas(
 
   // 4. Build FocusAreaItems with personalized descriptions
   return winners.map(({ candidate, weight, firedSignals }, i) => {
-    // Select best description variant
     let description = candidate.defaultDescription;
-    if (candidate.descriptionVariants) {
+    let reason = candidate.defaultReason;
+    let usedMultiSignal = false;
+
+    // Check multi-signal variants first (require ALL conditions)
+    if (candidate.multiSignalVariants) {
+      for (const variant of candidate.multiSignalVariants) {
+        if (variant.conditions.every((cond) => cond(ctx))) {
+          description = variant.description(ctx);
+          if (variant.reason) reason = variant.reason(ctx);
+          usedMultiSignal = true;
+          break;
+        }
+      }
+    }
+
+    // Fall back to single-signal description variants
+    if (!usedMultiSignal && candidate.descriptionVariants) {
       for (const [key, fn] of Object.entries(candidate.descriptionVariants)) {
         if (
           (key === 'urgent' &&
@@ -1169,9 +1334,8 @@ export function selectFocusAreas(
       }
     }
 
-    // Select best reason variant
-    let reason = candidate.defaultReason;
-    if (candidate.reasonVariants) {
+    // Fall back to single-signal reason variants
+    if (!usedMultiSignal && candidate.reasonVariants) {
       for (const [key, fn] of Object.entries(candidate.reasonVariants)) {
         if (
           (key === 'concern' && ctx.concernCategory && firedSignals.includes('concern')) ||
@@ -1194,6 +1358,226 @@ export function selectFocusAreas(
       reason,
       priority: (i === 0 || weight >= 12 ? 'high' : 'medium') as FocusAreaItem['priority'],
       signalSources: firedSignals,
+      synthesizedInsight: synthesizeInsight(ctx, firedSignals),
     };
   });
+}
+
+// ── Diagnostic Social Proof ────────────────────────────────────
+
+type FocusAreaCategory =
+  | 'algo'
+  | 'system_design'
+  | 'behavioral'
+  | 'career_change'
+  | 'communication'
+  | 'fundamentals'
+  | 'domain_specific'
+  | 'confidence';
+
+function getFocusAreaCategory(focusAreaId: string): FocusAreaCategory {
+  if (focusAreaId.startsWith('algo')) return 'algo';
+  if (focusAreaId.startsWith('system_design')) return 'system_design';
+  if (
+    focusAreaId.startsWith('star_stories') ||
+    focusAreaId === 'executive_presence' ||
+    focusAreaId === 'asking_great_questions'
+  )
+    return 'behavioral';
+  if (focusAreaId === 'career_pivot_narrative' || focusAreaId === 'transferable_skills')
+    return 'career_change';
+  if (focusAreaId === 'technical_communication' || focusAreaId === 'quantifying_impact')
+    return 'communication';
+  if (
+    focusAreaId === 'interview_fundamentals' ||
+    focusAreaId === 'quick_win_common_questions' ||
+    focusAreaId === 'standing_out_top_tier' ||
+    focusAreaId === 'startup_readiness' ||
+    focusAreaId === 'salary_negotiation'
+  )
+    return 'fundamentals';
+  if (focusAreaId === 'confidence_building' || focusAreaId === 'building_credibility')
+    return 'confidence';
+  // ds_*, design_*, pm_*
+  return 'domain_specific';
+}
+
+const SOCIAL_PROOF_TABLE: Record<string, DiagnosticSocialProof> = {
+  // Experienced professionals
+  experienced_professional_algo: {
+    stat: 'of experienced engineers underperform on algorithm rounds despite strong on-the-job skills',
+    percentage: 64,
+  },
+  experienced_professional_system_design: {
+    stat: 'of senior engineers lose points by not structuring their system design walkthrough',
+    percentage: 71,
+  },
+  experienced_professional_behavioral: {
+    stat: 'of experienced engineers get filtered in the behavioral round, not the technical one',
+    percentage: 73,
+  },
+  experienced_professional_communication: {
+    stat: 'of experienced candidates lose points on clarity, not knowledge',
+    percentage: 58,
+  },
+  experienced_professional_confidence: {
+    stat: 'of experienced professionals underperform due to interview anxiety, not skill gaps',
+    percentage: 62,
+  },
+  // New grads
+  new_grad_algo: {
+    stat: 'of new grads who fail algorithm rounds knew the concept but couldn\u2019t apply it under pressure',
+    percentage: 67,
+  },
+  new_grad_behavioral: {
+    stat: 'of new grads get rejected for weak behavioral answers, not weak technical skills',
+    percentage: 59,
+  },
+  new_grad_fundamentals: {
+    stat: 'of new grads underestimate how much interview format differs from coursework',
+    percentage: 72,
+  },
+  new_grad_communication: {
+    stat: 'of new grads fail to articulate their thinking process clearly during interviews',
+    percentage: 61,
+  },
+  // Career changers
+  career_changer_career_change: {
+    stat: 'of career changers struggle to translate past experience into interview-ready narratives',
+    percentage: 78,
+  },
+  career_changer_behavioral: {
+    stat: 'of career changers targeting new domains underestimate the behavioral round',
+    percentage: 69,
+  },
+  career_changer_confidence: {
+    stat: 'of career changers experience impostor syndrome that affects interview performance',
+    percentage: 74,
+  },
+  // Students
+  student_algo: {
+    stat: 'of students know the theory but freeze when applying it in timed interview settings',
+    percentage: 71,
+  },
+  student_behavioral: {
+    stat: 'of students lack structured stories for behavioral interviews',
+    percentage: 82,
+  },
+  student_fundamentals: {
+    stat: 'of students underestimate how different real interviews are from practice problems',
+    percentage: 68,
+  },
+  // Fallbacks by category
+  _algo: {
+    stat: 'of candidates lose algorithm rounds on execution, not knowledge',
+    percentage: 63,
+  },
+  _system_design: {
+    stat: 'of candidates fail system design by diving into details before clarifying requirements',
+    percentage: 66,
+  },
+  _behavioral: {
+    stat: 'of candidates underestimate the behavioral round until it costs them an offer',
+    percentage: 65,
+  },
+  _career_change: {
+    stat: 'of career changers need to reframe their experience to resonate with interviewers',
+    percentage: 76,
+  },
+  _communication: {
+    stat: 'of candidates lose points on communication, not competence',
+    percentage: 57,
+  },
+  _fundamentals: {
+    stat: 'of candidates who feel "ready" have blind spots they can\u2019t see without structured feedback',
+    percentage: 61,
+  },
+  _confidence: {
+    stat: 'of candidates report that anxiety affected their interview performance',
+    percentage: 68,
+  },
+  _domain_specific: {
+    stat: 'of candidates in specialized roles miss expectations unique to their domain',
+    percentage: 59,
+  },
+};
+
+export function getDiagnosticSocialProof(
+  careerStage: CareerStage | null,
+  focusAreaId: string
+): DiagnosticSocialProof {
+  const category = getFocusAreaCategory(focusAreaId);
+  const stageKey = careerStage ? `${careerStage}_${category}` : null;
+
+  // Try stage-specific, then category fallback
+  if (stageKey && SOCIAL_PROOF_TABLE[stageKey]) return SOCIAL_PROOF_TABLE[stageKey];
+  return (
+    SOCIAL_PROOF_TABLE[`_${category}`] ?? {
+      stat: 'of candidates have a blind spot in this area they don\u2019t discover until it\u2019s too late',
+      percentage: 63,
+    }
+  );
+}
+
+// ── Strength-Gap Pairing ──────────────────────────────────────
+
+const STRENGTH_SOURCE_TO_SIGNAL: Record<string, string[]> = {
+  resume_leadership: ['resume'],
+  resume_impact: ['resume'],
+  resume_skills: ['resume'],
+  resume_oss: ['resume'],
+  resume_depth: ['resume'],
+  career_stage: ['experience'],
+  score_breakdown: [],
+};
+
+export function pairStrengthWithGap(
+  focusArea: FocusAreaItem,
+  strengths: StrengthAcknowledgment[],
+  careerStage: CareerStage | null,
+  yearsExperience: number | null
+): string | null {
+  // Tier 1: Direct signal source match
+  for (const strength of strengths) {
+    const matchSignals = STRENGTH_SOURCE_TO_SIGNAL[strength.source] ?? [];
+    if (matchSignals.some((s) => focusArea.signalSources.includes(s))) {
+      // Extract the key insight from the strength message
+      const msg = strength.message;
+      // Truncate to first clause for a concise strength context
+      const firstClause = msg.split(' \u2014 ')[0].split(' \u2013 ')[0];
+      return firstClause;
+    }
+  }
+
+  // Tier 2: Career context fallback
+  if (careerStage === 'experienced_professional' && yearsExperience && yearsExperience >= 3) {
+    return `Your ${yearsExperience} years of experience give you a strong foundation`;
+  }
+  if (careerStage === 'career_changer') {
+    return 'Your cross-industry experience brings a unique perspective';
+  }
+  if (careerStage === 'new_grad') {
+    return 'Your recent education keeps fundamentals sharp';
+  }
+  if (careerStage === 'student') {
+    return 'Your academic training gives you a solid theoretical base';
+  }
+
+  // Tier 3: No pairing
+  return null;
+}
+
+// ── Next Tier Info ───────────────────────────────────────────
+
+const TIER_ORDER: { tier: ReadinessTier; label: string }[] = [
+  { tier: 'building_foundation', label: 'Building Foundation' },
+  { tier: 'gaining_traction', label: 'Gaining Traction' },
+  { tier: 'developing_strengths', label: 'Developing Strengths' },
+  { tier: 'interview_ready', label: 'Interview Ready' },
+];
+
+export function getNextTierInfo(currentTier: ReadinessTier): NextTierInfo | null {
+  const idx = TIER_ORDER.findIndex((t) => t.tier === currentTier);
+  if (idx < 0 || idx >= TIER_ORDER.length - 1) return null;
+  return TIER_ORDER[idx + 1];
 }

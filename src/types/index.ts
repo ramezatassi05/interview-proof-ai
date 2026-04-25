@@ -39,13 +39,27 @@ export interface FocusAreaItem {
   reason: string;
   priority: 'high' | 'medium';
   signalSources: string[];
+  synthesizedInsight?: string;
 }
+
+export type ReadinessTier =
+  | 'building_foundation'
+  | 'gaining_traction'
+  | 'developing_strengths'
+  | 'interview_ready';
 
 export interface AhaScore {
   readinessEstimate: number;
+  readinessTier: ReadinessTier;
+  readinessTierLabel: string;
   focusAreas: (FocusAreaItem | string)[];
   timelineMessage: string;
   breakdown: ScoreBreakdownItem[];
+}
+
+export interface StrengthAcknowledgment {
+  message: string;
+  source: string;
 }
 
 export interface UserProfile {
@@ -142,6 +156,65 @@ export interface OnboardingBenchmarkData {
   tierLabel: string;
   seniorityLabel: string;
   fetchError?: string;
+}
+
+// ── Aha Moment Insight Data (Enhanced Onboarding) ────────────
+
+export interface CohortPercentile {
+  percentile: number;
+  cohortSize: number;
+  cohortLabel: string;
+  isBlended: boolean;
+}
+
+export type InsightCategory = 'gap' | 'contradiction' | 'hidden_strength' | 'risk';
+
+export interface AhaInsightData {
+  insight: string;
+  insightCategory: InsightCategory;
+  sampleQuestion?: string;
+  cohort: CohortPercentile;
+  retrievedDomains: string[];
+  fetchError?: string;
+}
+
+export interface OnboardingTrajectoryPoint {
+  sessions: number;
+  projectedScore: number;
+  label: string;
+}
+
+export interface CategoryProjection {
+  key: string;
+  label: string;
+  currentPct: number;
+  projectedPct: number;
+  gainPct: number;
+}
+
+export interface OnboardingTrajectory {
+  current: number;
+  projections: OnboardingTrajectoryPoint[];
+  intermediatePoints: OnboardingTrajectoryPoint[];
+  categoryBreakdown7: CategoryProjection[];
+  percentImprovement7: number;
+  riskBullets: string[];
+}
+
+export interface EmotionalAnchor {
+  message: string;
+  followUp: string;
+  source: 'confidenceDrop' | 'practicePain' | 'interviewMotivation';
+}
+
+export interface DiagnosticSocialProof {
+  stat: string;
+  percentage: number;
+}
+
+export interface NextTierInfo {
+  tier: ReadinessTier;
+  label: string;
 }
 
 // Database enums

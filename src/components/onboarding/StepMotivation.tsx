@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { TypingAnimation } from '@/components/ui/typing-animation';
 import type { InterviewMotivation } from '@/types';
 
 interface StepMotivationProps {
@@ -33,6 +34,10 @@ const options: MotivationOption[] = [
   },
 ];
 
+export const MOTIVATION_FEEDBACK: Record<InterviewMotivation, string> = Object.fromEntries(
+  options.map((o) => [o.value, o.feedback])
+) as Record<InterviewMotivation, string>;
+
 export function StepMotivation({ value, onChange }: StepMotivationProps) {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
@@ -51,14 +56,18 @@ export function StepMotivation({ value, onChange }: StepMotivationProps) {
       </p>
 
       <div className="w-full max-w-md space-y-3">
-        {options.map((opt) => {
+        {options.map((opt, index) => {
           const isSelected = value === opt.value;
           return (
-            <button
+            <motion.button
               key={opt.value}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: 'easeOut', delay: index * 0.08 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => handleSelect(opt.value)}
               className={`
-                w-full px-5 py-4 rounded-xl border-2 text-left text-sm font-medium transition-all duration-200
+                w-full px-5 py-4 rounded-xl border-2 text-left text-sm font-medium transition-colors duration-200
                 ${
                   isSelected
                     ? 'border-orange-400 bg-orange-50 text-orange-700 shadow-md shadow-orange-400/10'
@@ -67,23 +76,31 @@ export function StepMotivation({ value, onChange }: StepMotivationProps) {
               `}
             >
               {opt.label}
-            </button>
+            </motion.button>
           );
         })}
       </div>
 
       <AnimatePresence>
         {feedbackMessage && (
-          <motion.p
+          <motion.div
             key={feedbackMessage}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="text-sm text-[var(--text-secondary)] mt-6 text-center max-w-sm italic"
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="mt-6 text-center max-w-sm"
           >
-            {feedbackMessage}
-          </motion.p>
+            <TypingAnimation
+              as="p"
+              duration={30}
+              showCursor={false}
+              startOnView={false}
+              className="text-sm text-[var(--text-secondary)] italic leading-relaxed"
+            >
+              {feedbackMessage}
+            </TypingAnimation>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

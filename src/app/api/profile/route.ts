@@ -19,7 +19,9 @@ const ProfileSchema = z.object({
   careerStage: z.enum(['student', 'new_grad', 'career_changer', 'experienced_professional']),
   targetRoles: z.array(z.string().max(200)).max(3).default([]).optional(),
   targetDomains: z
-    .array(z.enum(['swe', 'ds', 'design', 'pm', 'general']))
+    .array(
+      z.enum(['swe', 'ds', 'design', 'pm', 'security', 'cloud', 'marketing', 'business', 'general'])
+    )
     .default([])
     .optional(),
   yearsExperience: z.number().int().min(0).max(50).nullable().optional(),

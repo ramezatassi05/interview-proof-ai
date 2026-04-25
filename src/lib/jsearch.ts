@@ -5,6 +5,7 @@
 
 import type { JobMarketContext, CareerStage, TargetDomain } from '@/types';
 import { getCountryByCode } from './location-data';
+import { getSeniorityModifier } from './seniority';
 
 const RAPIDAPI_HOST = 'jsearch.p.rapidapi.com';
 const TIMEOUT_MS = 5000;
@@ -43,11 +44,17 @@ interface JSearchResponse {
 function buildQuery(
   targetRole: string,
   targetDomain: TargetDomain | null,
-  careerStage: CareerStage | null
+  careerStage: CareerStage | null,
+  yearsExperience: number | null
 ): string {
   const base = targetRole.trim() || (targetDomain ? DOMAIN_KEYWORDS[targetDomain] : 'software');
-  const isStudent = careerStage === 'student';
-  return isStudent ? `${base} internship` : base;
+  const modifier = getSeniorityModifier(careerStage, yearsExperience);
+
+  if (!modifier) return base;
+  // "intern" appended (e.g. "software engineer intern") for better API results
+  if (modifier === 'intern') return `${base} intern`;
+  // All others prepended (e.g. "junior software engineer", "senior data scientist")
+  return `${modifier} ${base}`;
 }
 
 function buildLocationString(countries: string[], cities: string[]): string {
@@ -64,11 +71,17 @@ export async function searchJobs(params: {
   targetRole: string;
   targetDomain: TargetDomain | null;
   careerStage: CareerStage | null;
+  yearsExperience: number | null;
 }): Promise<JobMarketContext | null> {
   const apiKey = process.env.RAPIDAPI_KEY;
   if (!apiKey) return null;
 
-  const query = buildQuery(params.targetRole, params.targetDomain, params.careerStage);
+  const query = buildQuery(
+    params.targetRole,
+    params.targetDomain,
+    params.careerStage,
+    params.yearsExperience
+  );
   const location = buildLocationString(params.countries, params.cities);
   const isStudent = params.careerStage === 'student';
 

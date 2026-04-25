@@ -2,6 +2,7 @@ import type {
   CareerStage,
   OnboardingPrepUrgency,
   AhaScore,
+  ReadinessTier,
   ScoreBreakdownItem,
   InterviewExperience,
   TargetCompanyTier,
@@ -138,6 +139,19 @@ const COMPANY_TIER_LABELS: Record<TargetCompanyTier, string> = {
   startup: 'Startup target',
   any: 'Open to all',
 };
+
+const TIER_THRESHOLDS: { max: number; tier: ReadinessTier; label: string }[] = [
+  { max: 29, tier: 'building_foundation', label: 'Building Foundation' },
+  { max: 49, tier: 'gaining_traction', label: 'Gaining Traction' },
+  { max: 69, tier: 'developing_strengths', label: 'Developing Strengths' },
+  { max: 75, tier: 'interview_ready', label: 'Interview Ready' },
+];
+
+function getReadinessTier(score: number): { tier: ReadinessTier; label: string } {
+  const entry =
+    TIER_THRESHOLDS.find((t) => score <= t.max) ?? TIER_THRESHOLDS[TIER_THRESHOLDS.length - 1];
+  return { tier: entry.tier, label: entry.label };
+}
 
 function sentiment(impact: number): ScoreBreakdownItem['sentiment'] {
   if (impact > 0) return 'positive';
@@ -281,9 +295,12 @@ export function computeAhaScore(input: OnboardingInput): AhaScore {
     const adj = input.jobMarketData.calibrationAdjustment;
     if (adj !== 0) {
       score += adj;
-      const ctx = input.jobMarketData.contexts[0];
-      const detail = ctx
-        ? `${ctx.totalListings} open positions in ${ctx.locationSummary}`
+      const contexts = input.jobMarketData.contexts;
+      const totalListings = input.jobMarketData.aggregateListings;
+      const locationSummary = contexts[0]?.locationSummary;
+      const rolesSearched = contexts.length;
+      const detail = locationSummary
+        ? `${totalListings} open position${totalListings !== 1 ? 's' : ''} in ${locationSummary}${rolesSearched > 1 ? ` across ${rolesSearched} roles` : ''}`
         : 'Market analysis applied';
       breakdown.push({
         label: 'Job Market',
@@ -306,8 +323,12 @@ export function computeAhaScore(input: OnboardingInput): AhaScore {
     ? TIMELINE_MESSAGES[input.prepUrgency]
     : TIMELINE_MESSAGES.exploring;
 
+  const { tier, label } = getReadinessTier(score);
+
   return {
     readinessEstimate: score,
+    readinessTier: tier,
+    readinessTierLabel: label,
     focusAreas,
     timelineMessage,
     breakdown,

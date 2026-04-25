@@ -5,6 +5,7 @@
 
 import type { JobMarketContext, CareerStage, TargetDomain } from '@/types';
 import { getCountryByCode } from './location-data';
+import { getSeniorityModifier } from './seniority';
 
 const TIMEOUT_MS = 5000;
 
@@ -60,6 +61,7 @@ export async function searchJobsAdzuna(params: {
   targetRole: string;
   targetDomain: TargetDomain | null;
   careerStage: CareerStage | null;
+  yearsExperience: number | null;
 }): Promise<JobMarketContext | null> {
   const appId = process.env.ADZUNA_APP_ID;
   const appKey = process.env.ADZUNA_APP_KEY;
@@ -72,11 +74,17 @@ export async function searchJobsAdzuna(params: {
 
   if (!supportedCountry) return null;
 
-  const isStudent = params.careerStage === 'student';
   const roleQuery =
     params.targetRole.trim() ||
     (params.targetDomain ? DOMAIN_KEYWORDS[params.targetDomain] : 'software');
-  const query = isStudent ? `${roleQuery} internship` : roleQuery;
+  const modifier = getSeniorityModifier(params.careerStage, params.yearsExperience);
+  const isStudent = params.careerStage === 'student';
+  let query = roleQuery;
+  if (modifier === 'intern') {
+    query = `${roleQuery} intern`;
+  } else if (modifier) {
+    query = `${modifier} ${roleQuery}`;
+  }
 
   const locationQuery =
     params.cities.length > 0

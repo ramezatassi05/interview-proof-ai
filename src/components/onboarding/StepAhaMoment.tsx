@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion } from 'motion/react';
 import type {
@@ -11,9 +11,17 @@ import type {
   FocusAreaItem,
   JobMarketData,
   OnboardingBenchmarkData,
+  AhaInsightData,
+  ConfidenceDrop,
+  PracticePain,
+  InterviewMotivation,
 } from '@/types';
 import { getCountryByCode } from '@/lib/location-data';
 import { SIGNAL_SOURCE_LABELS } from '@/lib/focus-area-pool';
+import { extractResumeSignals } from '@/lib/resume-signals';
+import { computeEmotionalAnchor } from '@/lib/onboarding-emotional-anchor';
+import { computeStrengthAcknowledgments } from '@/lib/onboarding-strength-acknowledgment';
+import { computeOnboardingTrajectory } from '@/lib/onboarding-trajectory';
 import { BlurFade } from '@/components/ui/blur-fade';
 import RadialOrbitalTimeline from '@/components/ui/radial-orbital-timeline';
 import type { OrbitalNode } from '@/components/ui/radial-orbital-timeline';
@@ -24,6 +32,9 @@ import { BorderBeam } from '@/components/ui/border-beam';
 import { ShimmerButton } from '@/components/ui/shimmer-button';
 import { DotPattern } from '@/components/ui/dot-pattern';
 import { fireConfetti } from '@/components/ui/confetti';
+import { TrajectoryGrowthChart } from '@/components/onboarding/charts/TrajectoryGrowthChart';
+import { CategoryImprovementBars } from '@/components/onboarding/charts/CategoryImprovementBars';
+import { TierProgressionTrack } from '@/components/onboarding/charts/TierProgressionTrack';
 
 interface StepAhaMomentProps {
   ahaScore: AhaScore;
@@ -37,12 +48,33 @@ interface StepAhaMomentProps {
   jobDataLoading?: boolean;
   benchmarkData?: OnboardingBenchmarkData | null;
   benchmarkLoading?: boolean;
+  insightData?: AhaInsightData | null;
+  insightLoading?: boolean;
+  confidenceDrop?: ConfidenceDrop | null;
+  practicePain?: PracticePain | null;
+  interviewMotivation?: InterviewMotivation | null;
+  resumeText?: string;
+  yearsExperience?: number | null;
   targetCountries?: string[];
   targetCities?: string[];
   onComplete: () => void;
   loading?: boolean;
   error?: string | null;
 }
+
+const INSIGHT_CATEGORY_LABELS: Record<string, string> = {
+  gap: 'Gap detected',
+  contradiction: 'Contradiction',
+  hidden_strength: 'Hidden strength',
+  risk: 'Risk flag',
+};
+
+const INSIGHT_CATEGORY_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
+  gap: { bg: 'bg-amber-50', text: 'text-amber-600', ring: 'ring-amber-100' },
+  contradiction: { bg: 'bg-rose-50', text: 'text-rose-600', ring: 'ring-rose-100' },
+  hidden_strength: { bg: 'bg-emerald-50', text: 'text-emerald-600', ring: 'ring-emerald-100' },
+  risk: { bg: 'bg-red-50', text: 'text-red-600', ring: 'ring-red-100' },
+};
 
 const DOMAIN_LABELS: Record<TargetDomain, string> = {
   swe: 'Software Engineering',
@@ -343,6 +375,13 @@ export function StepAhaMoment({
   jobDataLoading,
   benchmarkData,
   benchmarkLoading,
+  insightData,
+  insightLoading,
+  confidenceDrop = null,
+  practicePain = null,
+  interviewMotivation = null,
+  resumeText,
+  yearsExperience = null,
   targetCountries,
   targetCities,
   onComplete,
@@ -395,6 +434,67 @@ export function StepAhaMoment({
     benchmarkData &&
     !benchmarkData.fetchError &&
     benchmarkData.knowledgeStats.totalRubricChunks > 0;
+
+  // Derived data for new aha-moment sections
+  const resumeSignals = useMemo(
+    () => (resumeText ? extractResumeSignals(resumeText) : null),
+    [resumeText]
+  );
+
+  const emotionalAnchor = useMemo(
+    () => computeEmotionalAnchor(confidenceDrop, practicePain, interviewMotivation),
+    [confidenceDrop, practicePain, interviewMotivation]
+  );
+
+  const strengthAcks = useMemo(
+    () =>
+      computeStrengthAcknowledgments({
+        careerStage,
+        yearsExperience,
+        resumeSignals,
+        targetDomains,
+        scoreBreakdown: ahaScore.breakdown,
+      }),
+    [careerStage, yearsExperience, resumeSignals, targetDomains, ahaScore.breakdown]
+  );
+
+  const trajectory = useMemo(
+    () =>
+      computeOnboardingTrajectory({
+        currentScore: ahaScore.readinessEstimate,
+        careerStage,
+        yearsExperience,
+        practicePain,
+        confidenceDrop,
+        prepUrgency,
+        resumeSignals,
+        topRubricDomain: benchmarkData?.knowledgeStats.topWeightedDomain ?? null,
+        biggestConcern,
+      }),
+    [
+      ahaScore.readinessEstimate,
+      careerStage,
+      yearsExperience,
+      practicePain,
+      confidenceDrop,
+      prepUrgency,
+      resumeSignals,
+      benchmarkData?.knowledgeStats.topWeightedDomain,
+      biggestConcern,
+    ]
+  );
+
+  const projectedScore7 =
+    trajectory.intermediatePoints[trajectory.intermediatePoints.length - 1]?.projectedScore ??
+    trajectory.current;
+
+  const insightCategoryStyle = insightData
+    ? (INSIGHT_CATEGORY_STYLES[insightData.insightCategory] ?? INSIGHT_CATEGORY_STYLES.gap)
+    : INSIGHT_CATEGORY_STYLES.gap;
+  const hasInsight = Boolean(insightData?.insight && !insightData.fetchError);
+  const hasCohort = Boolean(
+    insightData?.cohort && (insightData.cohort.cohortSize > 0 || insightData.cohort.isBlended)
+  );
 
   const handleComplete = () => {
     try {
@@ -455,6 +555,85 @@ export function StepAhaMoment({
                   isVisible={activeIndex === 0}
                   className="space-y-8"
                 >
+                  {/* Emotional Anchor — "we heard you" mirror moment */}
+                  {emotionalAnchor && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={activeIndex === 0 ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+                      transition={{ duration: 0.45, delay: 0.05, ease: 'easeOut' }}
+                      className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-violet-50/40 p-4"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-500/10 text-indigo-600">
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                          </svg>
+                        </span>
+                        <div className="space-y-1">
+                          <p className="text-sm font-semibold leading-snug text-zinc-800">
+                            {emotionalAnchor.message}
+                          </p>
+                          <p className="text-xs leading-relaxed text-zinc-500">
+                            {emotionalAnchor.followUp}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Strength Acknowledgments — validate before diagnosing */}
+                  {strengthAcks.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-[11px] uppercase tracking-[0.15em] text-zinc-400">
+                        What&apos;s already working
+                      </h4>
+                      <div className="space-y-2">
+                        {strengthAcks.map((strength, i) => (
+                          <motion.div
+                            key={strength.source}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={
+                              activeIndex === 0 ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }
+                            }
+                            transition={{
+                              duration: 0.4,
+                              ease: 'easeOut',
+                              delay: 0.15 + i * 0.1,
+                            }}
+                            className="flex items-start gap-2.5 rounded-xl border border-emerald-100 bg-emerald-50/40 p-3"
+                          >
+                            <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600">
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            </span>
+                            <p className="text-xs leading-relaxed text-zinc-600">
+                              {strength.message}
+                            </p>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Section header */}
                   <div className="text-center">
                     <span className="mb-2 inline-block rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-600">
@@ -548,6 +727,85 @@ export function StepAhaMoment({
                   <p className="text-xs italic leading-relaxed text-zinc-400">
                     {ahaScore.timelineMessage}
                   </p>
+
+                  {/* Aha Insight — diagnostic "they get me" moment */}
+                  {(insightLoading || hasInsight || hasCohort) && (
+                    <div className="space-y-2">
+                      <h4 className="text-[11px] uppercase tracking-[0.15em] text-zinc-400">
+                        What stood out about your profile
+                      </h4>
+                      {insightLoading && !hasInsight ? (
+                        <div className="flex items-center gap-2 rounded-xl border border-zinc-150 bg-zinc-50/60 p-3">
+                          <div className="h-3 w-3 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-500" />
+                          <span className="text-[11px] text-zinc-400">
+                            Cross-referencing benchmarks...
+                          </span>
+                        </div>
+                      ) : (
+                        <motion.div
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={activeIndex === 0 ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+                          transition={{ duration: 0.4, delay: 0.3, ease: 'easeOut' }}
+                          className={`relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white p-4 ring-1 ${insightCategoryStyle.ring}`}
+                        >
+                          {hasInsight && insightData && (
+                            <>
+                              <span
+                                className={`mb-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${insightCategoryStyle.bg} ${insightCategoryStyle.text}`}
+                              >
+                                {INSIGHT_CATEGORY_LABELS[insightData.insightCategory] ?? 'Insight'}
+                              </span>
+                              <p className="text-sm leading-relaxed text-zinc-700">
+                                {insightData.insight}
+                              </p>
+                              {insightData.sampleQuestion && (
+                                <div className="mt-3 rounded-lg border border-zinc-100 bg-zinc-50/60 p-2.5">
+                                  <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                                    Sample question you may face
+                                  </p>
+                                  <p className="text-[11px] leading-relaxed italic text-zinc-600">
+                                    &ldquo;{insightData.sampleQuestion}&rdquo;
+                                  </p>
+                                </div>
+                              )}
+                            </>
+                          )}
+                          {hasCohort && insightData?.cohort && (
+                            <div
+                              className={`flex items-baseline gap-2 ${
+                                hasInsight ? 'mt-3 border-t border-zinc-100 pt-2.5' : ''
+                              }`}
+                            >
+                              <span className="text-2xl font-bold tabular-nums text-indigo-600">
+                                <NumberTicker
+                                  value={insightData.cohort.percentile}
+                                  delay={0.6}
+                                  className="text-2xl font-bold tabular-nums text-indigo-600"
+                                />
+                                <span className="text-sm text-zinc-400">th</span>
+                              </span>
+                              <span className="text-[11px] leading-tight text-zinc-500">
+                                percentile among {insightData.cohort.cohortLabel}
+                                {insightData.cohort.cohortSize > 0 &&
+                                  !insightData.cohort.isBlended && (
+                                    <span className="ml-1 text-zinc-400">
+                                      (n={insightData.cohort.cohortSize})
+                                    </span>
+                                  )}
+                              </span>
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tier Progression — current → projected after 7 sessions */}
+                  <TierProgressionTrack
+                    currentScore={trajectory.current}
+                    projectedScore={projectedScore7}
+                    isVisible={activeIndex === 0}
+                  />
 
                   {/* Job Market Context */}
                   {(jobDataLoading || hasJobData) && (
@@ -763,13 +1021,28 @@ export function StepAhaMoment({
                       Built for You
                     </span>
                     <h3 className="text-xl font-bold text-zinc-900 sm:text-2xl">
-                      Backed by real data
+                      Where you can go from here
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-zinc-500">
-                      Your diagnostic is calibrated against real interview standards — not generic
-                      advice.
+                      Projected readiness with focused prep — calibrated against real interview
+                      standards, not generic advice.
                     </p>
                   </div>
+
+                  {/* Trajectory Growth Chart — main "wow" visual */}
+                  <TrajectoryGrowthChart
+                    trajectory={trajectory}
+                    isVisible={activeIndex === 2}
+                    percentImprovement={trajectory.percentImprovement7}
+                  />
+
+                  {/* Category Improvement Bars — where you'll improve most */}
+                  {trajectory.categoryBreakdown7.length > 0 && (
+                    <CategoryImprovementBars
+                      categories={trajectory.categoryBreakdown7}
+                      isVisible={activeIndex === 2}
+                    />
+                  )}
 
                   {/* Benchmark Targets */}
                   {(benchmarkLoading || hasBenchmarks) && (

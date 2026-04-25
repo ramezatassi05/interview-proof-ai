@@ -13,6 +13,7 @@ import type {
   ConfidenceDrop,
   JobMarketData,
   OnboardingBenchmarkData,
+  AhaInsightData,
 } from '@/types';
 
 import { OnboardingProgress } from '@/components/onboarding/OnboardingProgress';
@@ -24,11 +25,13 @@ import {
   type StepRoleDetailsHandle,
 } from '@/components/onboarding/StepRoleDetails';
 import { StepLocation } from '@/components/onboarding/StepLocation';
-import { StepUrgency } from '@/components/onboarding/StepUrgency';
-import { StepPracticePain } from '@/components/onboarding/StepPracticePain';
-import { StepMotivation } from '@/components/onboarding/StepMotivation';
-import { StepConfidence } from '@/components/onboarding/StepConfidence';
+import { StepUrgency, URGENCY_FEEDBACK } from '@/components/onboarding/StepUrgency';
+import { StepPracticePain, PRACTICE_PAIN_FEEDBACK } from '@/components/onboarding/StepPracticePain';
+import { StepMotivation, MOTIVATION_FEEDBACK } from '@/components/onboarding/StepMotivation';
+import { StepConfidence, CONFIDENCE_FEEDBACK } from '@/components/onboarding/StepConfidence';
 import { StepAhaMoment } from '@/components/onboarding/StepAhaMoment';
+import { FloatingEdgeBubbles } from '@/components/onboarding/FloatingEdgeBubbles';
+import { AnimatePresence } from 'motion/react';
 import { BlurFade } from '@/components/ui/blur-fade';
 import { OnboardingDotNav } from '@/components/onboarding/OnboardingDotNav';
 
@@ -132,9 +135,12 @@ function OnboardingContent() {
   const [jobDataLoading, setJobDataLoading] = useState(false);
   const [benchmarkData, setBenchmarkData] = useState<OnboardingBenchmarkData | null>(null);
   const [benchmarkLoading, setBenchmarkLoading] = useState(false);
+  const [insightData, setInsightData] = useState<AhaInsightData | null>(null);
+  const [insightLoading, setInsightLoading] = useState(false);
   const isFirstRender = useRef(true);
   const jobFetchTriggered = useRef(false);
   const benchmarkFetchTriggered = useRef(false);
+  const insightFetchTriggered = useRef(false);
   const roleDetailsRef = useRef<StepRoleDetailsHandle>(null);
   const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const redirectTarget = searchParams.get('redirect') ?? '/new';
@@ -215,6 +221,7 @@ function OnboardingContent() {
         targetRoles: state.targetRoles,
         targetDomains: state.targetDomains,
         careerStage: state.careerStage,
+        yearsExperience: state.yearsExperience ?? null,
       }),
     })
       .then((res) => (res.ok ? res.json() : null))
@@ -231,6 +238,7 @@ function OnboardingContent() {
     state.targetRoles,
     state.targetDomains,
     state.careerStage,
+    state.yearsExperience,
   ]);
 
   // Invalidate job data if user navigates back before the Urgency step
@@ -243,6 +251,8 @@ function OnboardingContent() {
   const invalidateBenchmarkData = useCallback(() => {
     benchmarkFetchTriggered.current = false;
     setBenchmarkData(null);
+    insightFetchTriggered.current = false;
+    setInsightData(null);
   }, []);
 
   // Fetch benchmark data in background when user advances to Aha step
@@ -277,6 +287,42 @@ function OnboardingContent() {
     state.yearsExperience,
   ]);
 
+  // Fetch aha insights (vector search + LLM) in background alongside benchmarks
+  const fetchInsightData = useCallback(() => {
+    if (insightFetchTriggered.current || !state.careerStage) return;
+    insightFetchTriggered.current = true;
+    setInsightLoading(true);
+    fetch('/api/onboarding/aha-insights', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        careerStage: state.careerStage,
+        targetDomains: state.targetDomains,
+        targetRoles: state.targetRoles,
+        yearsExperience: state.yearsExperience,
+        confidenceDrop: state.confidenceDrop,
+        practicePain: state.practicePain,
+        resumeText: state.resumeText,
+      }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.data) setInsightData(data.data);
+      })
+      .catch(() => {
+        // Non-blocking — insight data is additive
+      })
+      .finally(() => setInsightLoading(false));
+  }, [
+    state.careerStage,
+    state.targetDomains,
+    state.targetRoles,
+    state.yearsExperience,
+    state.confidenceDrop,
+    state.practicePain,
+    state.resumeText,
+  ]);
+
   // Auto-advance helper: set field, show feedback, then advance after delay
   const autoAdvance = useCallback(
     (field: keyof OnboardingState, value: OnboardingState[keyof OnboardingState], delay = 1200) => {
@@ -287,6 +333,9 @@ function OnboardingContent() {
     []
   );
 
+  /** Compute auto-advance delay: typing animation time + read buffer */
+  const typingDelay = (text: string, speed = 30, buffer = 800) => text.length * speed + buffer;
+
   // Auto-advance after career stage selection
   const handleCareerStageChange = useCallback((stage: CareerStage) => {
     dispatch({ type: 'SET_FIELD', field: 'careerStage', value: stage });
@@ -296,17 +345,26 @@ function OnboardingContent() {
 
   // Auto-advance handlers for pain-based steps
   const handleUrgencyChange = useCallback(
-    (v: OnboardingState['prepUrgency']) => autoAdvance('prepUrgency', v, 1000),
+    (v: OnboardingState['prepUrgency']) => {
+      const text = v ? URGENCY_FEEDBACK[v] : '';
+      autoAdvance('prepUrgency', v, typingDelay(text));
+    },
     [autoAdvance]
   );
 
   const handlePracticePainChange = useCallback(
-    (v: PracticePain) => autoAdvance('practicePain', v),
+    (v: PracticePain) => {
+      const text = PRACTICE_PAIN_FEEDBACK[v] ?? '';
+      autoAdvance('practicePain', v, typingDelay(text));
+    },
     [autoAdvance]
   );
 
   const handleMotivationChange = useCallback(
-    (v: InterviewMotivation) => autoAdvance('interviewMotivation', v),
+    (v: InterviewMotivation) => {
+      const text = MOTIVATION_FEEDBACK[v] ?? '';
+      autoAdvance('interviewMotivation', v, typingDelay(text));
+    },
     [autoAdvance]
   );
 
@@ -320,12 +378,14 @@ function OnboardingContent() {
         field: 'biggestConcern',
         value: deriveBiggestConcern(v),
       });
+      const text = CONFIDENCE_FEEDBACK[v] ?? '';
       autoAdvanceTimer.current = setTimeout(() => {
         dispatch({ type: 'NEXT_STEP' });
         fetchBenchmarkData();
-      }, 1200);
+        fetchInsightData();
+      }, typingDelay(text));
     },
-    [fetchBenchmarkData]
+    [fetchBenchmarkData, fetchInsightData]
   );
 
   // Build benchmark domain weights map for focus area selection
@@ -432,6 +492,10 @@ function OnboardingContent() {
         showBack={state.step > 0 && state.step < 9}
       />
 
+      <AnimatePresence>
+        {state.step >= 5 && state.step <= 8 && <FloatingEdgeBubbles key="edge-bubbles" />}
+      </AnimatePresence>
+
       {/* Steps 0 + 9 render full-screen — skip constrained wrapper */}
       {state.step === 0 || state.step === 9 ? (
         <BlurFade key={state.step} duration={0.3} delay={0}>
@@ -454,6 +518,13 @@ function OnboardingContent() {
               jobDataLoading={jobDataLoading}
               benchmarkData={benchmarkData}
               benchmarkLoading={benchmarkLoading}
+              insightData={insightData}
+              insightLoading={insightLoading}
+              confidenceDrop={state.confidenceDrop}
+              practicePain={state.practicePain}
+              interviewMotivation={state.interviewMotivation}
+              resumeText={state.resumeText}
+              yearsExperience={state.yearsExperience}
               targetCountries={state.targetCountries}
               targetCities={state.targetCities}
               onComplete={handleComplete}

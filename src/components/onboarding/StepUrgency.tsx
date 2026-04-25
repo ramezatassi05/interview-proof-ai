@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { TypingAnimation } from '@/components/ui/typing-animation';
 import type { OnboardingPrepUrgency } from '@/types';
 
 interface StepUrgencyProps {
@@ -48,6 +49,10 @@ const urgencyOptions: UrgencyOption[] = [
   },
 ];
 
+export const URGENCY_FEEDBACK: Record<OnboardingPrepUrgency, string> = Object.fromEntries(
+  urgencyOptions.map((o) => [o.value, o.feedback])
+) as Record<OnboardingPrepUrgency, string>;
+
 export function StepUrgency({ prepUrgency, onPrepUrgencyChange }: StepUrgencyProps) {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
@@ -67,14 +72,18 @@ export function StepUrgency({ prepUrgency, onPrepUrgencyChange }: StepUrgencyPro
 
       <div className="w-full max-w-md">
         <div className="grid grid-cols-2 gap-3">
-          {urgencyOptions.map((opt) => {
+          {urgencyOptions.map((opt, index) => {
             const isSelected = prepUrgency === opt.value;
             return (
-              <button
+              <motion.button
                 key={opt.value}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: 'easeOut', delay: index * 0.08 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => handleSelect(opt.value)}
                 className={`
-                  flex flex-col items-center p-4 rounded-xl border-2 text-center transition-all duration-200
+                  flex flex-col items-center p-4 rounded-xl border-2 text-center transition-colors duration-200
                   ${
                     isSelected
                       ? 'border-orange-400 bg-orange-50 shadow-md shadow-orange-400/10'
@@ -89,7 +98,7 @@ export function StepUrgency({ prepUrgency, onPrepUrgencyChange }: StepUrgencyPro
                   {opt.label}
                 </span>
                 <span className="text-xs text-[var(--text-muted)] mt-0.5">{opt.description}</span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -97,16 +106,24 @@ export function StepUrgency({ prepUrgency, onPrepUrgencyChange }: StepUrgencyPro
 
       <AnimatePresence>
         {feedbackMessage && (
-          <motion.p
+          <motion.div
             key={feedbackMessage}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="text-sm text-[var(--text-secondary)] mt-6 text-center max-w-sm italic"
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="mt-6 text-center max-w-sm"
           >
-            {feedbackMessage}
-          </motion.p>
+            <TypingAnimation
+              as="p"
+              duration={30}
+              showCursor={false}
+              startOnView={false}
+              className="text-sm text-[var(--text-secondary)] italic leading-relaxed"
+            >
+              {feedbackMessage}
+            </TypingAnimation>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
