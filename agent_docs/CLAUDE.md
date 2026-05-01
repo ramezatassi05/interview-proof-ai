@@ -49,7 +49,7 @@ src/
 │   ├── new/                          # Upload page (resume + JD + round selection)
 │   ├── dashboard/                    # User dashboard
 │   ├── r/[id]/                       # Results page (score + top 3 risks + paywall)
-│   ├── r/[id]/full/                  # Full diagnostic page (9-tab gated view)
+│   ├── r/[id]/full/                  # Full diagnostic page (4 top-level tabs: analysis/practice/strategy/insights)
 │   ├── s/[token]/                    # Shared report public view
 │   ├── account/                      # Account settings + report history
 │   ├── wallet/                       # Credits wallet (balance, earn, history)
@@ -239,9 +239,11 @@ import { createServiceClient } from '@/lib/supabase/server';
 - `useSyncExternalStore` in ThemeProvider to avoid hydration mismatches
 - Persists to `localStorage`, respects system preference on first visit
 
-### Full Diagnostic Page (9 tabs on `/r/[id]/full`)
+### Full Diagnostic Page — 4 top-level tabs on `/r/[id]/full`
 
-Signal Strength | Hire Zone | Red Flags | Questions | Execution Roadmap | Coaching | Cognitive Map | Recruiter View | Practice Intel
+**Top-level tabs:** `analysis | practice | strategy | insights` (defined in `src/app/r/[id]/full/page.tsx`).
+
+Within those tabs, content sections include: Signal Strength, Hire Zone, Red Flags, Questions, Execution Roadmap, Coaching, Cognitive Map, Recruiter View, Practice Intel. `CoachingHub.tsx` is a Strategy-tab subsection, not a top-level tab.
 
 ## Database Schema
 

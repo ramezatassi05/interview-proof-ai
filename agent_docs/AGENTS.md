@@ -266,7 +266,7 @@ scripts/
 - [x] Bypass paywall check in PDF API route (TEMP, matches full diagnostic page)
 
 ### Phase 8 Tab Layout (Full Diagnostic Page)
-9 tabs: Signal Strength | Hire Zone | Red Flags | Questions | Execution Roadmap | Coaching | Cognitive Map | Recruiter View | Practice Intel
+**4 top-level tabs** in `src/app/r/[id]/full/page.tsx`: `analysis | practice | strategy | insights`. Each tab renders multiple content sections (Signal Strength, Hire Zone, Red Flags, Questions, Execution Roadmap, Coaching, Cognitive Map, Recruiter View, Practice Intel) — those 9 labels describe sections, not top-level tabs. `CoachingHub.tsx` is a Strategy-tab subsection, not a top-level tab.
 
 ### F-001: Seamless Onboarding UI/UX ✅
 
