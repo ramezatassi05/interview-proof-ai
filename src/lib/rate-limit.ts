@@ -55,10 +55,24 @@ export async function checkRateLimit({
 
 /**
  * Returns a 429 Too Many Requests response.
+ *
+ * Body shape is standardized across the API so clients can detect
+ * rate-limited responses programmatically:
+ *   {
+ *     error: 'Rate limit exceeded',
+ *     code: 'rate_limited',
+ *     retryAfterSeconds: <number>
+ *   }
+ *
+ * Also sets the `Retry-After` HTTP header.
  */
 export function rateLimitResponse(retryAfterSeconds = 60): NextResponse {
   return NextResponse.json(
-    { error: 'Too many requests. Please try again later.' },
+    {
+      error: 'Rate limit exceeded',
+      code: 'rate_limited',
+      retryAfterSeconds,
+    },
     {
       status: 429,
       headers: { 'Retry-After': String(retryAfterSeconds) },

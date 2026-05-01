@@ -17,6 +17,7 @@ import { runAnswerFeedback, AnswerFeedbackError } from '@/server/agents/answer-f
 import { AgentContextNotFoundError } from '@/server/agents/context-loader';
 import { rowToAgentSession } from '@/lib/agent/types';
 import type { AgentSessionRow } from '@/lib/agent/types';
+import { recordAuditEvent } from '@/lib/agent/audit';
 
 export const maxDuration = 30;
 
@@ -79,10 +80,18 @@ export async function POST(request: NextRequest) {
     const allowed = await checkRateLimit({
       prefix: 'agent:answer-feedback',
       identifier: user.id,
-      maxRequests: 30,
+      maxRequests: 60,
       windowSeconds: 3600,
     });
-    if (!allowed) return rateLimitResponse(3600);
+    if (!allowed) {
+      await recordAuditEvent({
+        userId: user.id,
+        eventType: 'rate_limited',
+        agentKind: 'answer_feedback',
+        metadata: { prefix: 'agent:answer-feedback', retry_after_seconds: 3600 },
+      });
+      return rateLimitResponse(3600);
+    }
 
     let sessionId: string;
     if (providedSessionId) {

@@ -18,6 +18,7 @@ import { z } from 'zod';
 import { CLAUDE_MODELS, getAnthropicClient } from '@/lib/anthropic';
 import { actionRequiresExternalSend, AGENT_ACTION_TYPES } from '@/lib/agent/types';
 import { validateActionPayload } from '@/lib/agent/actions';
+import { runAgentCall } from '@/lib/agent/audit';
 import type { AgentActionType } from '@/lib/agent/types';
 import type { OrchestratorEvidenceRef, OrchestratorNextAction, OrchestratorOutput } from '@/types';
 import { loadAgentContext } from './context-loader';
@@ -124,22 +125,40 @@ export async function runPrepOrchestrator(
   // 2) Build prompts
   const { prompt: userPrompt } = buildUserPrompt(context, userMessage);
 
-  // 3) Call Claude with prompt caching on the system block
+  // 3) Call Claude with prompt caching on the system block. Wrapped in
+  // runAgentCall so audit events (started/completed/failed) are emitted with
+  // tokens + duration metadata.
   const client = getAnthropicClient();
   let response: Anthropic.Messages.Message;
   try {
-    response = await client.messages.create({
-      model: CLAUDE_MODELS.reasoning,
-      max_tokens: 2048,
-      system: [
-        {
-          type: 'text',
-          text: SYSTEM_PROMPT,
-          cache_control: { type: 'ephemeral' },
-        },
-      ],
-      messages: [{ role: 'user', content: userPrompt }],
-    });
+    const wrapped = await runAgentCall(
+      {
+        userId,
+        sessionId,
+        agentKind: 'orchestrator',
+        model: CLAUDE_MODELS.reasoning,
+      },
+      async () => {
+        const value = await client.messages.create({
+          model: CLAUDE_MODELS.reasoning,
+          max_tokens: 2048,
+          system: [
+            {
+              type: 'text',
+              text: SYSTEM_PROMPT,
+              cache_control: { type: 'ephemeral' },
+            },
+          ],
+          messages: [{ role: 'user', content: userPrompt }],
+        });
+        return {
+          value,
+          tokensIn: value.usage?.input_tokens ?? 0,
+          tokensOut: value.usage?.output_tokens ?? 0,
+        };
+      }
+    );
+    response = wrapped.result;
   } catch (err) {
     throw new OrchestratorError('LLM call failed', { cause: err });
   }

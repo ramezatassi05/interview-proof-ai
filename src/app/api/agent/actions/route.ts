@@ -10,6 +10,7 @@ import {
 } from '@/lib/agent/types';
 import type { AgentActionRow, AgentActionType } from '@/lib/agent/types';
 import { validateActionPayload } from '@/lib/agent/actions';
+import { recordAuditEvent } from '@/lib/agent/audit';
 
 const CreateSchema = z.object({
   actionType: z.enum(AGENT_ACTION_TYPES as unknown as [string, ...string[]]),
@@ -44,7 +45,14 @@ export async function POST(request: NextRequest) {
       maxRequests: 60,
       windowSeconds: 3600,
     });
-    if (!allowed) return rateLimitResponse(3600);
+    if (!allowed) {
+      await recordAuditEvent({
+        userId: user.id,
+        eventType: 'rate_limited',
+        metadata: { prefix: 'agent_action_write', retry_after_seconds: 3600 },
+      });
+      return rateLimitResponse(3600);
+    }
 
     const body = await request.json();
     const parsed = CreateSchema.safeParse(body);
@@ -107,6 +115,14 @@ export async function POST(request: NextRequest) {
       console.error('agent_actions insert error:', error);
       return NextResponse.json({ error: 'Failed to create action' }, { status: 500 });
     }
+
+    await recordAuditEvent({
+      userId: user.id,
+      actionId: (row as AgentActionRow).id,
+      sessionId: parsed.data.sessionId ?? null,
+      eventType: 'action_drafted',
+      metadata: { action_type: actionType },
+    });
 
     return NextResponse.json({ data: rowToAgentAction(row as AgentActionRow) }, { status: 201 });
   } catch (err) {

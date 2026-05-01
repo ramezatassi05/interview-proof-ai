@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { AGENT_KINDS, AGENT_SESSION_STATUSES, rowToAgentSession } from '@/lib/agent/types';
 import type { AgentSessionRow } from '@/lib/agent/types';
+import { recordAuditEvent } from '@/lib/agent/audit';
 
 const CreateSchema = z.object({
   agentKind: z.enum(AGENT_KINDS as unknown as [string, ...string[]]),
@@ -15,6 +16,12 @@ const ListQuerySchema = z.object({
   agentKind: z.enum(AGENT_KINDS as unknown as [string, ...string[]]).optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),
   cursor: z.string().datetime().optional(),
+  // M9 soft-delete: archived sessions are filtered out by default. Pass
+  // `?archived=true` to surface them (e.g. for restoration UIs).
+  archived: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => v === 'true'),
 });
 
 export async function POST(request: NextRequest) {
@@ -34,7 +41,14 @@ export async function POST(request: NextRequest) {
       maxRequests: 30,
       windowSeconds: 3600,
     });
-    if (!allowed) return rateLimitResponse(3600);
+    if (!allowed) {
+      await recordAuditEvent({
+        userId: user.id,
+        eventType: 'rate_limited',
+        metadata: { prefix: 'agent_session_create', retry_after_seconds: 3600 },
+      });
+      return rateLimitResponse(3600);
+    }
 
     const body = await request.json();
     const parsed = CreateSchema.safeParse(body);
@@ -72,7 +86,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create session' }, { status: 500 });
     }
 
-    return NextResponse.json({ data: rowToAgentSession(row as AgentSessionRow) }, { status: 201 });
+    const sessionRow = row as AgentSessionRow;
+    await recordAuditEvent({
+      userId: user.id,
+      sessionId: sessionRow.id,
+      eventType: 'session_created',
+      agentKind: sessionRow.agent_kind,
+      metadata: {
+        agent_kind: sessionRow.agent_kind,
+        report_id: parsed.data.reportId ?? null,
+      },
+    });
+
+    return NextResponse.json({ data: rowToAgentSession(sessionRow) }, { status: 201 });
   } catch (err) {
     console.error('POST /api/agent/sessions error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -96,7 +122,14 @@ export async function GET(request: NextRequest) {
       maxRequests: 240,
       windowSeconds: 3600,
     });
-    if (!allowed) return rateLimitResponse(60);
+    if (!allowed) {
+      await recordAuditEvent({
+        userId: user.id,
+        eventType: 'rate_limited',
+        metadata: { prefix: 'agent_read', retry_after_seconds: 60 },
+      });
+      return rateLimitResponse(60);
+    }
 
     const url = new URL(request.url);
     const parsed = ListQuerySchema.safeParse({
@@ -104,6 +137,7 @@ export async function GET(request: NextRequest) {
       agentKind: url.searchParams.get('agentKind') ?? undefined,
       limit: url.searchParams.get('limit') ?? undefined,
       cursor: url.searchParams.get('cursor') ?? undefined,
+      archived: url.searchParams.get('archived') ?? undefined,
     });
     if (!parsed.success) {
       return NextResponse.json(
@@ -122,6 +156,10 @@ export async function GET(request: NextRequest) {
     if (parsed.data.status) query = query.eq('status', parsed.data.status);
     if (parsed.data.agentKind) query = query.eq('agent_kind', parsed.data.agentKind);
     if (parsed.data.cursor) query = query.lt('created_at', parsed.data.cursor);
+    // Default: exclude archived sessions. Only include them if explicitly requested.
+    if (!parsed.data.archived) {
+      query = query.is('archived_at', null);
+    }
 
     const { data, error } = await query;
     if (error) {

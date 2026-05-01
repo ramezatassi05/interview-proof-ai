@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { CLAUDE_MODELS, getAnthropicClient } from '@/lib/anthropic';
 import { actionRequiresExternalSend } from '@/lib/agent/types';
 import { validateActionPayload } from '@/lib/agent/actions';
+import { runAgentCall } from '@/lib/agent/audit';
 import type { PrepPlanAgentDay, PrepPlanAgentOutput, PrepPlanTaskCategory } from '@/types';
 import { loadAgentContext } from './context-loader';
 import { buildUserPrompt, SYSTEM_PROMPT } from './prompts/prep-plan';
@@ -125,18 +126,34 @@ export async function runPrepPlan(args: RunPrepPlanArgs): Promise<RunPrepPlanRes
   const client = getAnthropicClient();
   let response: Anthropic.Messages.Message;
   try {
-    response = await client.messages.create({
-      model: CLAUDE_MODELS.reasoning,
-      max_tokens: 2048,
-      system: [
-        {
-          type: 'text',
-          text: SYSTEM_PROMPT,
-          cache_control: { type: 'ephemeral' },
-        },
-      ],
-      messages: [{ role: 'user', content: userPrompt }],
-    });
+    const wrapped = await runAgentCall(
+      {
+        userId,
+        sessionId,
+        agentKind: 'prep_plan',
+        model: CLAUDE_MODELS.reasoning,
+      },
+      async () => {
+        const value = await client.messages.create({
+          model: CLAUDE_MODELS.reasoning,
+          max_tokens: 2048,
+          system: [
+            {
+              type: 'text',
+              text: SYSTEM_PROMPT,
+              cache_control: { type: 'ephemeral' },
+            },
+          ],
+          messages: [{ role: 'user', content: userPrompt }],
+        });
+        return {
+          value,
+          tokensIn: value.usage?.input_tokens ?? 0,
+          tokensOut: value.usage?.output_tokens ?? 0,
+        };
+      }
+    );
+    response = wrapped.result;
   } catch (err) {
     throw new PrepPlanAgentError('LLM call failed', { cause: err });
   }

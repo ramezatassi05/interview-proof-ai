@@ -15,6 +15,7 @@ import { runReadinessCoach, ReadinessCoachError } from '@/server/agents/readines
 import { AgentContextNotFoundError } from '@/server/agents/context-loader';
 import { rowToAgentSession } from '@/lib/agent/types';
 import type { AgentSessionRow } from '@/lib/agent/types';
+import { recordAuditEvent } from '@/lib/agent/audit';
 
 const BodySchema = z
   .object({
@@ -70,7 +71,15 @@ export async function POST(request: NextRequest) {
       maxRequests: 30,
       windowSeconds: 3600,
     });
-    if (!allowed) return rateLimitResponse(3600);
+    if (!allowed) {
+      await recordAuditEvent({
+        userId: user.id,
+        eventType: 'rate_limited',
+        agentKind: 'readiness_coach',
+        metadata: { prefix: 'agent:readiness-coach', retry_after_seconds: 3600 },
+      });
+      return rateLimitResponse(3600);
+    }
 
     // Always create a fresh session per readiness-coach invocation — these are
     // single-shot explanations, not multi-turn conversations.

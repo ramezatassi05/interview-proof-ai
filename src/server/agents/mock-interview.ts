@@ -18,6 +18,7 @@ import { z } from 'zod';
 import { CLAUDE_MODELS, getAnthropicClient } from '@/lib/anthropic';
 import { actionRequiresExternalSend } from '@/lib/agent/types';
 import { validateActionPayload } from '@/lib/agent/actions';
+import { runAgentCall } from '@/lib/agent/audit';
 import type {
   MockInterviewFinalReport,
   MockInterviewQuestion,
@@ -240,18 +241,34 @@ export async function runMockInterview(
 
     let response: Anthropic.Messages.Message;
     try {
-      response = await client.messages.create({
-        model: CLAUDE_MODELS.reasoning,
-        max_tokens: 2048,
-        system: [
-          {
-            type: 'text',
-            text: QUESTION_SET_SYSTEM_PROMPT,
-            cache_control: { type: 'ephemeral' },
-          },
-        ],
-        messages: [{ role: 'user', content: userPrompt }],
-      });
+      const wrapped = await runAgentCall(
+        {
+          userId,
+          sessionId,
+          agentKind: 'mock_interview',
+          model: CLAUDE_MODELS.reasoning,
+        },
+        async () => {
+          const value = await client.messages.create({
+            model: CLAUDE_MODELS.reasoning,
+            max_tokens: 2048,
+            system: [
+              {
+                type: 'text',
+                text: QUESTION_SET_SYSTEM_PROMPT,
+                cache_control: { type: 'ephemeral' },
+              },
+            ],
+            messages: [{ role: 'user', content: userPrompt }],
+          });
+          return {
+            value,
+            tokensIn: value.usage?.input_tokens ?? 0,
+            tokensOut: value.usage?.output_tokens ?? 0,
+          };
+        }
+      );
+      response = wrapped.result;
     } catch (err) {
       throw new MockInterviewError('Question-set LLM call failed', { cause: err });
     }
@@ -328,18 +345,34 @@ export async function runMockInterview(
 
     let response: Anthropic.Messages.Message;
     try {
-      response = await client.messages.create({
-        model: CLAUDE_MODELS.reasoning,
-        max_tokens: 3072,
-        system: [
-          {
-            type: 'text',
-            text: FINAL_REPORT_SYSTEM_PROMPT,
-            cache_control: { type: 'ephemeral' },
-          },
-        ],
-        messages: [{ role: 'user', content: finalUserPrompt }],
-      });
+      const wrapped = await runAgentCall(
+        {
+          userId,
+          sessionId,
+          agentKind: 'mock_interview',
+          model: CLAUDE_MODELS.reasoning,
+        },
+        async () => {
+          const value = await client.messages.create({
+            model: CLAUDE_MODELS.reasoning,
+            max_tokens: 3072,
+            system: [
+              {
+                type: 'text',
+                text: FINAL_REPORT_SYSTEM_PROMPT,
+                cache_control: { type: 'ephemeral' },
+              },
+            ],
+            messages: [{ role: 'user', content: finalUserPrompt }],
+          });
+          return {
+            value,
+            tokensIn: value.usage?.input_tokens ?? 0,
+            tokensOut: value.usage?.output_tokens ?? 0,
+          };
+        }
+      );
+      response = wrapped.result;
     } catch (err) {
       throw new MockInterviewError('Final-report LLM call failed', { cause: err });
     }
@@ -488,18 +521,34 @@ export async function runMockInterview(
 
   let response: Anthropic.Messages.Message;
   try {
-    response = await client.messages.create({
-      model: CLAUDE_MODELS.reasoning,
-      max_tokens: 2048,
-      system: [
-        {
-          type: 'text',
-          text: TURN_EVAL_SYSTEM_PROMPT,
-          cache_control: { type: 'ephemeral' },
-        },
-      ],
-      messages: [{ role: 'user', content: turnPrompt }],
-    });
+    const wrapped = await runAgentCall(
+      {
+        userId,
+        sessionId,
+        agentKind: 'mock_interview',
+        model: CLAUDE_MODELS.reasoning,
+      },
+      async () => {
+        const value = await client.messages.create({
+          model: CLAUDE_MODELS.reasoning,
+          max_tokens: 2048,
+          system: [
+            {
+              type: 'text',
+              text: TURN_EVAL_SYSTEM_PROMPT,
+              cache_control: { type: 'ephemeral' },
+            },
+          ],
+          messages: [{ role: 'user', content: turnPrompt }],
+        });
+        return {
+          value,
+          tokensIn: value.usage?.input_tokens ?? 0,
+          tokensOut: value.usage?.output_tokens ?? 0,
+        };
+      }
+    );
+    response = wrapped.result;
   } catch (err) {
     throw new MockInterviewError('Turn-eval LLM call failed', { cause: err });
   }

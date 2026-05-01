@@ -5,6 +5,16 @@ import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { AGENT_ACTION_STATUSES, rowToAgentAction } from '@/lib/agent/types';
 import type { AgentActionRow, AgentActionStatus } from '@/lib/agent/types';
 import { assertTransitionAllowed, validateActionPayload } from '@/lib/agent/actions';
+import { recordAuditEvent, type AgentAuditEventType } from '@/lib/agent/audit';
+
+const STATUS_TO_AUDIT_EVENT: Record<string, AgentAuditEventType | null> = {
+  drafted: 'action_drafted',
+  awaiting_approval: 'action_awaiting_approval',
+  approved: 'action_approved',
+  rejected: 'action_rejected',
+  completed: 'action_completed',
+  failed: 'action_failed',
+};
 
 const PatchSchema = z.object({
   status: z.enum(AGENT_ACTION_STATUSES as unknown as [string, ...string[]]),
@@ -71,7 +81,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       maxRequests: 60,
       windowSeconds: 3600,
     });
-    if (!allowed) return rateLimitResponse(3600);
+    if (!allowed) {
+      await recordAuditEvent({
+        userId: user.id,
+        eventType: 'rate_limited',
+        metadata: { prefix: 'agent_action_write', retry_after_seconds: 3600 },
+      });
+      return rateLimitResponse(3600);
+    }
 
     const body = await request.json();
     const parsed = PatchSchema.safeParse(body);
@@ -159,6 +176,21 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (error || !updated) {
       console.error('agent_actions update error:', error);
       return NextResponse.json({ error: 'Failed to update action' }, { status: 500 });
+    }
+
+    const auditEventType = STATUS_TO_AUDIT_EVENT[requestedStatus];
+    if (auditEventType) {
+      await recordAuditEvent({
+        userId: user.id,
+        actionId: id,
+        sessionId: current.session_id ?? null,
+        eventType: auditEventType,
+        metadata: {
+          from_status: current.status,
+          to_status: requestedStatus,
+          ...(parsed.data.error !== undefined ? { error: parsed.data.error } : {}),
+        },
+      });
     }
 
     return NextResponse.json({ data: rowToAgentAction(updated as AgentActionRow) });

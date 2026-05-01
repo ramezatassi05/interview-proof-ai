@@ -328,3 +328,49 @@ scripts/
 - Do NOT skip tests
 - Do NOT bypass failing hooks
 - Do NOT let LLM be scoring authority (deterministic only)
+
+## Data Retention & Privacy (Agentic Platform)
+
+The agentic platform stores user-scoped data across the following tables, all
+protected by Supabase RLS so users can only read their own rows:
+
+- `agent_sessions` — one row per agent conversation (orchestrator, readiness
+  coach, mock interview, prep plan, resume evidence, etc.)
+- `agent_messages` — full transcript of user / agent / system messages
+- `agent_actions` — proposed actions in the approval queue (drafted →
+  awaiting_approval → approved → completed/rejected/failed)
+- `user_memory` — long-lived per-user notes the agents may attach
+- `practice_sessions`, `practice_answers` — practice attempts and feedback
+- `prep_plans`, `prep_plan_tasks` — generated study plans and task progress
+- `opportunities` — user-tracked job opportunities (CRUD via /opportunities)
+- `agent_audit_events` — append-only audit trail of action transitions,
+  session lifecycle, agent LLM calls, and rate-limit hits
+
+### Retention defaults
+
+- **Drafted actions** auto-expire after 7 days via the
+  `/api/cron/cleanup-stale-actions` job (status flips to `failed` with
+  `error='auto_expired_after_7_days'`; an `action_failed` audit event is
+  emitted).
+- **Sessions** are soft-deleted on user request — the DELETE endpoint sets
+  `archived_at` and flips status to `archived`; messages, actions, and
+  audit rows remain queryable.
+- **Audit events** are kept indefinitely (no TTL today).
+- **Messages, actions, plans, practice answers** are kept indefinitely;
+  users can hard-delete by closing their account, which cascades via
+  `ON DELETE CASCADE` on `auth.users`.
+
+### Cross-user isolation
+
+No user content is shared across users. RLS enforces `user_id = auth.uid()`
+on every read. The single exception is `company_research_cache`, which is
+explicitly shared (research about a company is not user-specific) and is
+documented as such in migration 032.
+
+### Service-role usage
+
+Two files are permitted to use `createServiceClient` (bypassing RLS):
+- `src/lib/agent/audit.ts` — append-only audit inserts
+- `src/app/api/cron/cleanup-stale-actions/route.ts` — daily sweep job
+
+Any new use of `createServiceClient` outside these files should be reviewed.

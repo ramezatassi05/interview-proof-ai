@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { AGENT_SESSION_STATUSES, rowToAgentMessage, rowToAgentSession } from '@/lib/agent/types';
 import type { AgentMessageRow, AgentSessionRow } from '@/lib/agent/types';
+import { recordAuditEvent } from '@/lib/agent/audit';
 
 const PatchSchema = z.object({
   status: z.enum(AGENT_SESSION_STATUSES as unknown as [string, ...string[]]),
@@ -33,7 +34,14 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       maxRequests: 240,
       windowSeconds: 3600,
     });
-    if (!allowed) return rateLimitResponse(60);
+    if (!allowed) {
+      await recordAuditEvent({
+        userId: user.id,
+        eventType: 'rate_limited',
+        metadata: { prefix: 'agent_read', retry_after_seconds: 60 },
+      });
+      return rateLimitResponse(60);
+    }
 
     const { data: sessionRow } = await supabase
       .from('agent_sessions')
@@ -78,7 +86,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       maxRequests: 60,
       windowSeconds: 3600,
     });
-    if (!allowed) return rateLimitResponse(3600);
+    if (!allowed) {
+      await recordAuditEvent({
+        userId: user.id,
+        sessionId: id,
+        eventType: 'rate_limited',
+        metadata: { prefix: 'agent_session_write', retry_after_seconds: 3600 },
+      });
+      return rateLimitResponse(3600);
+    }
 
     const body = await request.json();
     const parsed = PatchSchema.safeParse(body);
@@ -123,11 +139,22 @@ export async function DELETE(
       maxRequests: 60,
       windowSeconds: 3600,
     });
-    if (!allowed) return rateLimitResponse(3600);
+    if (!allowed) {
+      await recordAuditEvent({
+        userId: user.id,
+        sessionId: id,
+        eventType: 'rate_limited',
+        metadata: { prefix: 'agent_session_write', retry_after_seconds: 3600 },
+      });
+      return rateLimitResponse(3600);
+    }
 
+    // M9: soft-delete. Mark archived_at + flip status to 'archived' so the
+    // session disappears from the default list view but messages, actions,
+    // and the audit trail remain queryable for restoration / review.
     const { data: row, error } = await supabase
       .from('agent_sessions')
-      .update({ status: 'archived' })
+      .update({ status: 'archived', archived_at: new Date().toISOString() })
       .eq('id', id)
       .eq('user_id', user.id)
       .select()
@@ -137,7 +164,16 @@ export async function DELETE(
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ data: rowToAgentSession(row as AgentSessionRow) });
+    const sessionRow = row as AgentSessionRow;
+    await recordAuditEvent({
+      userId: user.id,
+      sessionId: sessionRow.id,
+      eventType: 'session_archived',
+      agentKind: sessionRow.agent_kind,
+      metadata: { agent_kind: sessionRow.agent_kind },
+    });
+
+    return NextResponse.json({ data: rowToAgentSession(sessionRow) });
   } catch (err) {
     console.error('DELETE /api/agent/sessions/[id] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

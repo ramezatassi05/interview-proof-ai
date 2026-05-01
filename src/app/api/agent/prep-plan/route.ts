@@ -15,6 +15,7 @@ import { runPrepPlan, PrepPlanAgentError } from '@/server/agents/prep-plan';
 import { AgentContextNotFoundError } from '@/server/agents/context-loader';
 import { rowToAgentSession } from '@/lib/agent/types';
 import type { AgentSessionRow } from '@/lib/agent/types';
+import { recordAuditEvent } from '@/lib/agent/audit';
 
 export const maxDuration = 60;
 
@@ -81,7 +82,15 @@ export async function POST(request: NextRequest) {
       maxRequests: 10,
       windowSeconds: 3600,
     });
-    if (!allowed) return rateLimitResponse(3600);
+    if (!allowed) {
+      await recordAuditEvent({
+        userId: user.id,
+        eventType: 'rate_limited',
+        agentKind: 'prep_plan',
+        metadata: { prefix: 'agent:prep-plan', retry_after_seconds: 3600 },
+      });
+      return rateLimitResponse(3600);
+    }
 
     const { data: newSession, error: createErr } = await supabase
       .from('agent_sessions')
