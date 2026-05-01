@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/feedback-emails",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-stale-actions",
+      "schedule": "0 6 * * *"
     }
   ]
 }
