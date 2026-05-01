@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
@@ -6,6 +7,63 @@ import { AGENT_ACTION_STATUSES, rowToAgentAction } from '@/lib/agent/types';
 import type { AgentActionRow, AgentActionStatus } from '@/lib/agent/types';
 import { assertTransitionAllowed, validateActionPayload } from '@/lib/agent/actions';
 import { recordAuditEvent, type AgentAuditEventType } from '@/lib/agent/audit';
+
+const PROPOSED_MEMORY_KINDS = new Set(['weakness', 'preference', 'goal']);
+
+interface ProposedMemoryEntry {
+  kind: string;
+  key: string;
+  value: string;
+}
+
+interface EvidenceRefBlock {
+  kind?: unknown;
+  entries?: unknown;
+}
+
+async function applyProposedMemoryUpserts(args: {
+  supabase: SupabaseClient;
+  userId: string;
+  actionId: string;
+  evidenceRefs: unknown[];
+}): Promise<void> {
+  const { supabase, userId, actionId, evidenceRefs } = args;
+  const block = evidenceRefs.find(
+    (r): r is EvidenceRefBlock =>
+      typeof r === 'object' &&
+      r !== null &&
+      (r as EvidenceRefBlock).kind === 'proposed_memory_upserts'
+  );
+  if (!block || !Array.isArray(block.entries)) return;
+
+  const rows = (block.entries as unknown[])
+    .filter(
+      (e): e is ProposedMemoryEntry =>
+        typeof e === 'object' &&
+        e !== null &&
+        typeof (e as ProposedMemoryEntry).kind === 'string' &&
+        PROPOSED_MEMORY_KINDS.has((e as ProposedMemoryEntry).kind) &&
+        typeof (e as ProposedMemoryEntry).key === 'string' &&
+        typeof (e as ProposedMemoryEntry).value === 'string'
+    )
+    .map((e) => ({
+      user_id: userId,
+      kind: e.kind,
+      key: e.key.slice(0, 100),
+      value_json: { value: e.value.slice(0, 800) },
+      source_action_id: actionId,
+    }));
+
+  if (rows.length === 0) return;
+
+  const { error } = await supabase
+    .from('user_memory')
+    .upsert(rows, { onConflict: 'user_id,kind,key' });
+
+  if (error) {
+    console.error('[agent_actions] memory upsert error:', error);
+  }
+}
 
 const STATUS_TO_AUDIT_EVENT: Record<string, AgentAuditEventType | null> = {
   drafted: 'action_drafted',
@@ -190,6 +248,23 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           to_status: requestedStatus,
           ...(parsed.data.error !== undefined ? { error: parsed.data.error } : {}),
         },
+      });
+    }
+
+    // Side effect: when a debrief's summarize_progress action transitions to
+    // `approved`, apply the proposed user_memory upserts that the agent put
+    // in evidence_refs_json. Best-effort — a memory write failure is logged
+    // but does not fail the approval (the action is already updated).
+    if (
+      current.action_type === 'summarize_progress' &&
+      requestedStatus === 'approved' &&
+      Array.isArray(current.evidence_refs_json)
+    ) {
+      await applyProposedMemoryUpserts({
+        supabase,
+        userId: user.id,
+        actionId: id,
+        evidenceRefs: current.evidence_refs_json,
       });
     }
 

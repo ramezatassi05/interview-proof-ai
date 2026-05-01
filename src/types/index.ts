@@ -1331,6 +1331,27 @@ export interface OpportunityTrackerOutput {
   evidenceSignals: string[];
 }
 
+export type DebriefMemoryKind = 'weakness' | 'preference' | 'goal';
+
+export interface DebriefProposedMemory {
+  kind: DebriefMemoryKind;
+  key: string;
+  value: string;
+}
+
+export interface DebriefPracticeEvidence {
+  practiceAnswerId: string;
+  observation: string;
+}
+
+export interface DebriefOutput {
+  summary: string;
+  whatWentWell: string[];
+  whatToImprove: string[];
+  proposedMemory: DebriefProposedMemory[];
+  evidenceFromPractice: DebriefPracticeEvidence[];
+}
+
 // --- Approval modal (M8) ---
 
 export interface ApprovalModalProps {
