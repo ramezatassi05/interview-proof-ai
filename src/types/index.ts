@@ -1300,6 +1300,18 @@ export interface CompanyResearchOutput {
   expiresAt: string;
 }
 
+export interface RecruiterCommDraft {
+  subject: string;
+  body: string;
+  tone: string;
+}
+
+export interface RecruiterCommOutput {
+  primary: RecruiterCommDraft;
+  alternatives: RecruiterCommDraft[];
+  rationale: string;
+}
+
 // --- Approval modal (M8) ---
 
 export interface ApprovalModalProps {
