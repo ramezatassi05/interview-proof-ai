@@ -236,14 +236,7 @@ export default function FullDiagnosticPage() {
         return hasBeenMounted('strategy') ? (
           <StrategyTab
             priorityActions={report.personalizedCoaching?.priorityActions}
-            archetypeProfile={di?.archetypeProfile}
-            roundForecasts={di?.roundForecasts}
-            trajectoryProjection={di?.trajectoryProjection}
-            evidenceContext={di?.evidenceContext}
-            personalizedCoaching={report.personalizedCoaching}
-            companyDifficulty={di?.companyDifficulty}
             cognitiveRiskMap={di?.cognitiveRiskMap}
-            userRoundType={report.roundType}
             companyName={companyName}
           />
         ) : null;
@@ -275,6 +268,15 @@ export default function FullDiagnosticPage() {
             latestSession={coachData?.latestSession ?? null}
             cognitiveRiskMap={di?.cognitiveRiskMap}
             prepPlan={null}
+            reportData={report}
+            archetypeProfile={di?.archetypeProfile}
+            roundForecasts={di?.roundForecasts}
+            trajectoryProjection={di?.trajectoryProjection}
+            evidenceContext={di?.evidenceContext}
+            personalizedCoaching={report.personalizedCoaching}
+            companyDifficulty={di?.companyDifficulty}
+            userRoundType={report.roundType}
+            companyName={companyName}
             onJumpToPractice={() => switchTab('practice')}
             onRetry={loadCoachData}
           />

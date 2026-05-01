@@ -3,10 +3,17 @@
 import type {
   AgentAction,
   AgentSession,
+  ArchetypeProfile,
   CognitiveRiskMap,
+  CompanyDifficultyContext,
+  EvidenceContext,
+  InterviewRoundForecasts,
+  PersonalizedCoaching,
   PracticeProgress,
   PrepPlan,
+  TrajectoryProjection,
 } from '@/types';
+import type { GetReportResponse } from '@/lib/api';
 import { BlurFade } from '@/components/ui/blur-fade';
 import { TodaysActionCard } from '@/components/diagnostic/coach/TodaysActionCard';
 import { WeakestAreasPanel } from '@/components/diagnostic/coach/WeakestAreasPanel';
@@ -14,6 +21,10 @@ import { ActivePrepPlanPanel } from '@/components/diagnostic/coach/ActivePrepPla
 import { PracticeTrendPanel } from '@/components/diagnostic/coach/PracticeTrendPanel';
 import { PendingApprovalsList } from '@/components/diagnostic/coach/PendingApprovalsList';
 import { CoachChatStub } from '@/components/diagnostic/coach/CoachChatStub';
+import { CoachingHub } from '@/components/diagnostic/CoachingHub';
+import { IntelligencePanel } from '@/components/layout/IntelligencePanel';
+
+type ReportData = GetReportResponse['data'];
 
 interface CoachTabProps {
   reportId: string;
@@ -24,6 +35,15 @@ interface CoachTabProps {
   latestSession: AgentSession | null;
   cognitiveRiskMap?: CognitiveRiskMap;
   prepPlan: PrepPlan | null;
+  reportData?: ReportData | null;
+  archetypeProfile?: ArchetypeProfile;
+  roundForecasts?: InterviewRoundForecasts;
+  trajectoryProjection?: TrajectoryProjection;
+  evidenceContext?: EvidenceContext;
+  personalizedCoaching?: PersonalizedCoaching;
+  companyDifficulty?: CompanyDifficultyContext;
+  userRoundType?: string;
+  companyName?: string;
   onJumpToPractice?: () => void;
   onRetry?: () => void;
 }
@@ -45,6 +65,15 @@ export function CoachTab({
   latestSession,
   cognitiveRiskMap,
   prepPlan,
+  reportData,
+  archetypeProfile,
+  roundForecasts,
+  trajectoryProjection,
+  evidenceContext,
+  personalizedCoaching,
+  companyDifficulty,
+  userRoundType,
+  companyName,
   onJumpToPractice,
   onRetry,
 }: CoachTabProps) {
@@ -74,35 +103,61 @@ export function CoachTab({
   const progress = practiceProgress ?? ZERO_PROGRESS;
 
   return (
-    <div className="space-y-6">
-      <BlurFade delay={0.05}>
-        <TodaysActionCard
-          pendingActions={pendingActions}
-          practiceProgress={progress}
-          cognitiveRiskMap={cognitiveRiskMap}
-          onJumpToPractice={onJumpToPractice}
-        />
-      </BlurFade>
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="min-w-0 space-y-6">
+        <BlurFade delay={0.05}>
+          <TodaysActionCard
+            pendingActions={pendingActions}
+            practiceProgress={progress}
+            cognitiveRiskMap={cognitiveRiskMap}
+            onJumpToPractice={onJumpToPractice}
+          />
+        </BlurFade>
 
-      <BlurFade delay={0.1}>
-        <WeakestAreasPanel cognitiveRiskMap={cognitiveRiskMap} />
-      </BlurFade>
+        <BlurFade delay={0.1}>
+          <WeakestAreasPanel cognitiveRiskMap={cognitiveRiskMap} />
+        </BlurFade>
 
-      <BlurFade delay={0.15}>
-        <ActivePrepPlanPanel prepPlan={prepPlan} />
-      </BlurFade>
+        <BlurFade delay={0.15}>
+          <ActivePrepPlanPanel prepPlan={prepPlan} />
+        </BlurFade>
 
-      <BlurFade delay={0.2}>
-        <PracticeTrendPanel practiceProgress={progress} />
-      </BlurFade>
+        <BlurFade delay={0.2}>
+          <PracticeTrendPanel practiceProgress={progress} />
+        </BlurFade>
 
-      <BlurFade delay={0.25}>
-        <PendingApprovalsList pendingActions={pendingActions} />
-      </BlurFade>
+        {archetypeProfile && (
+          <BlurFade delay={0.225}>
+            <section>
+              <h2 className="section-label mb-4">Coaching Hub</h2>
+              <CoachingHub
+                archetypeProfile={archetypeProfile}
+                roundForecasts={roundForecasts}
+                trajectoryProjection={trajectoryProjection}
+                evidenceContext={evidenceContext}
+                personalizedCoaching={personalizedCoaching}
+                companyDifficulty={companyDifficulty}
+                userRoundType={userRoundType}
+                companyName={companyName}
+              />
+            </section>
+          </BlurFade>
+        )}
 
-      <BlurFade delay={0.3}>
-        <CoachChatStub reportId={reportId} latestSession={latestSession} />
-      </BlurFade>
+        <BlurFade delay={0.25}>
+          <PendingApprovalsList pendingActions={pendingActions} />
+        </BlurFade>
+
+        <BlurFade delay={0.3}>
+          <CoachChatStub reportId={reportId} latestSession={latestSession} />
+        </BlurFade>
+      </div>
+
+      <aside className="hidden lg:block">
+        <div className="sticky top-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
+          <IntelligencePanel activeTab="coach" reportData={reportData} />
+        </div>
+      </aside>
     </div>
   );
 }

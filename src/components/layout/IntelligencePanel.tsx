@@ -58,8 +58,99 @@ export function IntelligencePanel({ activeTab, reportData }: IntelligencePanelPr
       {/* Coaching Tab Content */}
       {activeTab === 'archetype' && <CoachingIntelligence reportData={reportData} />}
 
+      {/* Coach Tab Content (M5/D6) */}
+      {activeTab === 'coach' && <CoachIntelligence reportData={reportData} />}
+
       {/* Quick Actions - Always visible */}
       <QuickActions reportData={reportData} />
+    </div>
+  );
+}
+
+function CoachIntelligence({ reportData }: { reportData: ReportData }) {
+  const di = reportData.diagnosticIntelligence;
+  const archetype = di?.archetypeProfile;
+  const cognitive = di?.cognitiveRiskMap;
+  const allRisks = reportData.allRisks ?? [];
+  const topRisk = allRisks[0] ?? null;
+  const score = reportData.readinessScore ?? null;
+  const band = reportData.riskBand ?? null;
+
+  const weakestDimension = cognitive
+    ? ([
+        { label: 'Analytical reasoning', value: cognitive.dimensions.analyticalReasoning },
+        { label: 'Communication', value: cognitive.dimensions.communicationClarity },
+        { label: 'Technical depth', value: cognitive.dimensions.technicalDepth },
+        { label: 'Adaptability', value: cognitive.dimensions.adaptability },
+        { label: 'Problem structuring', value: cognitive.dimensions.problemStructuring },
+      ]
+        .filter((d): d is { label: string; value: number } => typeof d.value === 'number')
+        .sort((a, b) => a.value - b.value)[0] ?? null)
+    : null;
+
+  return (
+    <div className="space-y-4">
+      {/* Today's snapshot */}
+      <div className="rounded-xl bg-[var(--bg-elevated)] p-4">
+        <span className="text-xs font-medium text-[var(--text-muted)]">Today&apos;s snapshot</span>
+        <div className="mt-2 flex items-baseline gap-2">
+          {score !== null ? (
+            <>
+              <span className="text-2xl font-bold text-[var(--accent-primary)]">{score}</span>
+              <span className="text-xs text-[var(--text-secondary)]">readiness</span>
+            </>
+          ) : (
+            <span className="text-sm text-[var(--text-muted)]">No score yet</span>
+          )}
+        </div>
+        {band && (
+          <p className="mt-1 text-xs text-[var(--text-secondary)] uppercase tracking-wide">
+            {band} band
+          </p>
+        )}
+      </div>
+
+      {/* Top risk */}
+      {topRisk && (
+        <div className="rounded-xl bg-[var(--bg-elevated)] p-4">
+          <span className="text-xs font-medium text-[var(--text-muted)]">Top weakest area</span>
+          <p className="mt-1 text-sm font-medium text-[var(--text-primary)] line-clamp-2">
+            {topRisk.title}
+          </p>
+          <p className="mt-1 text-xs text-[var(--text-secondary)] line-clamp-3">
+            {topRisk.rationale}
+          </p>
+        </div>
+      )}
+
+      {/* Weakest cognitive dimension */}
+      {weakestDimension && (
+        <div className="rounded-xl bg-[var(--bg-elevated)] p-4">
+          <span className="text-xs font-medium text-[var(--text-muted)]">Weakest dimension</span>
+          <div className="mt-1 flex items-center justify-between">
+            <span className="text-sm font-medium text-[var(--text-primary)]">
+              {weakestDimension.label}
+            </span>
+            <span className="text-xs font-medium text-[var(--accent-primary)]">
+              {Math.round(weakestDimension.value * 100)}%
+            </span>
+          </div>
+          <div className="mt-2 h-1.5 w-full rounded-full bg-[var(--accent-primary)]/10">
+            <div
+              className="h-full rounded-full bg-[var(--accent-primary)]"
+              style={{ width: `${Math.round(weakestDimension.value * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Archetype hint */}
+      {archetype && (
+        <div className="rounded-xl bg-[var(--accent-primary)]/5 p-4">
+          <span className="text-xs font-medium text-[var(--accent-primary)]">Your archetype</span>
+          <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{archetype.label}</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -301,7 +392,9 @@ function CoachingIntelligence({ reportData }: { reportData: ReportData }) {
     <div className="space-y-4">
       {/* Archetype card */}
       <div className="rounded-xl bg-[var(--accent-primary)]/5 p-4">
-        <span className="text-xs font-medium text-[var(--accent-primary)]">Candidate Archetype</span>
+        <span className="text-xs font-medium text-[var(--accent-primary)]">
+          Candidate Archetype
+        </span>
         <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{archetype.label}</p>
         <div className="mt-2 flex items-center justify-between">
           <span className="text-xs text-[var(--text-muted)]">Confidence</span>
@@ -318,7 +411,9 @@ function CoachingIntelligence({ reportData }: { reportData: ReportData }) {
       {/* Improvement potential */}
       {trajectory && (
         <div className="rounded-xl bg-[var(--bg-card)] p-4">
-          <span className="text-xs font-medium text-[var(--text-muted)]">{trajectory.milestone3Day ?? 14}-Day Potential</span>
+          <span className="text-xs font-medium text-[var(--text-muted)]">
+            {trajectory.milestone3Day ?? 14}-Day Potential
+          </span>
           <div className="mt-2 flex items-center gap-2">
             <svg
               className="h-4 w-4 text-[var(--color-success)]"
