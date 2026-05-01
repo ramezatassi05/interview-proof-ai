@@ -1312,6 +1312,25 @@ export interface RecruiterCommOutput {
   rationale: string;
 }
 
+export interface OpportunityTrackerProposedChanges {
+  stage?: OpportunityStage;
+  interviewDate?: string;
+  notes?: string;
+}
+
+export interface OpportunityTrackerPrepRecommendation {
+  needsPrepPlan: boolean;
+  reason: string;
+  suggestedFocus: string[];
+}
+
+export interface OpportunityTrackerOutput {
+  summary: string;
+  proposedChanges: OpportunityTrackerProposedChanges;
+  prepRecommendation: OpportunityTrackerPrepRecommendation;
+  evidenceSignals: string[];
+}
+
 // --- Approval modal (M8) ---
 
 export interface ApprovalModalProps {
