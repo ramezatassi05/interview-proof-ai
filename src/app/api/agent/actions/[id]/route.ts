@@ -4,11 +4,14 @@ import { createClient } from '@/lib/supabase/server';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { AGENT_ACTION_STATUSES, rowToAgentAction } from '@/lib/agent/types';
 import type { AgentActionRow, AgentActionStatus } from '@/lib/agent/types';
-import { assertTransitionAllowed } from '@/lib/agent/actions';
+import { assertTransitionAllowed, validateActionPayload } from '@/lib/agent/actions';
 
 const PatchSchema = z.object({
   status: z.enum(AGENT_ACTION_STATUSES as unknown as [string, ...string[]]),
   resultJson: z.record(z.string(), z.unknown()).optional(),
+  // Optional payload override allowed only on awaiting_approval → approved
+  // transition. Re-validated against the action_type schema before persisting.
+  payloadJson: z.record(z.string(), z.unknown()).optional(),
   error: z.string().optional(),
 });
 
@@ -115,6 +118,29 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const nowIso = new Date().toISOString();
     if (requestedStatus === 'approved') {
       update.approved_at = nowIso;
+      // Allow user-supplied payload edits at the moment of approval, e.g. the
+      // approval modal merging a chosen resume-bullet alternative or an
+      // inline-edited recruiter reply. Re-validated against the action_type
+      // schema; rejected if invalid.
+      if (parsed.data.payloadJson !== undefined) {
+        const v = validateActionPayload(current.action_type, parsed.data.payloadJson);
+        if (!v.ok) {
+          return NextResponse.json(
+            { error: 'Invalid payload', details: v.error, code: 'invalid_payload' },
+            { status: 400 }
+          );
+        }
+        update.payload_json = v.payload;
+      }
+    } else if (parsed.data.payloadJson !== undefined) {
+      // payload_json edits are only permitted on the approval transition.
+      return NextResponse.json(
+        {
+          error: 'payload_json updates only allowed on awaiting_approval → approved transition',
+          code: 'payload_update_not_allowed',
+        },
+        { status: 400 }
+      );
     }
     if (requestedStatus === 'completed' || requestedStatus === 'failed') {
       update.completed_at = nowIso;

@@ -1279,3 +1279,12 @@ export interface ResumeEvidenceOutput {
   alternatives: ResumeBulletAlternative[];
   critiqueOfOriginal: string;
 }
+
+// --- Approval modal (M8) ---
+
+export interface ApprovalModalProps {
+  open: boolean;
+  onClose: () => void;
+  actionId: string | null;
+  onResolved?: () => void;
+}
