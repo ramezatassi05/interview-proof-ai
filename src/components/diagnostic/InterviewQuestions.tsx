@@ -709,23 +709,9 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
       const q = state.allQuestions[poolIndex];
       setLoadingFeedback((prev) => ({ ...prev, [poolIndex]: true }));
 
-      // M4: fire-and-forget mirror of the answer to the server. Idempotent on
-      // failure — the /questions/feedback route also dual-writes server-side,
-      // so the canonical row gets written regardless of whether this fetch
-      // resolves. localStorage write still happens above via setState. We do
-      // NOT await this so feedback fetch isn't slowed by it.
-      fetch(`/api/report/${reportId}/practice-answers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          questionIndex: poolIndex,
-          questionText: q.question,
-          mappedRiskId: q.mappedRiskId ?? null,
-          answerText: answer,
-        }),
-      }).catch((err) => {
-        console.error('Practice answer mirror failed:', err);
-      });
+      // M4: server-side persistence happens inside /questions/feedback after
+      // computing feedback (single row per submit, with score + feedback
+      // attached). No client-side mirror — would create a redundant row.
 
       try {
         const res = await api.getAnswerFeedback(reportId, {
