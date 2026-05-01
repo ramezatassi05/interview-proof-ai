@@ -1172,3 +1172,31 @@ export interface CoachTabData {
   practiceProgress: PracticeProgress;
   latestSession: AgentSession | null;
 }
+
+// --- Prep Orchestrator output (M6) ---
+
+export type OrchestratorEvidenceKind =
+  | 'risk'
+  | 'practiceAnswer'
+  | 'jdRequirement'
+  | 'resumeBullet'
+  | 'memoryEntry';
+
+export interface OrchestratorEvidenceRef {
+  kind: OrchestratorEvidenceKind;
+  id: string;
+}
+
+export interface OrchestratorNextAction {
+  title: string;
+  rationale: string;
+  actionType: AgentActionType;
+  payload: Record<string, unknown>;
+}
+
+export interface OrchestratorOutput {
+  summary: string;
+  nextAction: OrchestratorNextAction;
+  supportingActions: OrchestratorNextAction[];
+  evidenceRefs: OrchestratorEvidenceRef[];
+}
