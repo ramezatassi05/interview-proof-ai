@@ -960,3 +960,199 @@ export interface FeedbackResponse {
   wouldRecommend?: 'yes' | 'no' | 'maybe';
   createdAt: string;
 }
+
+// ============================================
+// Agentic Platform Types (M2 — Agent Persistence)
+// ============================================
+
+export type AgentKind =
+  | 'orchestrator'
+  | 'readiness_coach'
+  | 'answer_feedback'
+  | 'mock_interview'
+  | 'prep_plan'
+  | 'resume_evidence'
+  | 'company_research'
+  | 'recruiter_comm'
+  | 'opportunity_tracker'
+  | 'post_interview_debrief'
+  | 'application_materials';
+
+export type AgentSessionStatus = 'active' | 'archived' | 'completed';
+export type AgentMessageRole = 'user' | 'agent' | 'system' | 'tool';
+
+export type AgentActionType =
+  | 'recommend_drill'
+  | 'start_mock_interview'
+  | 'score_answer'
+  | 'draft_recruiter_reply'
+  | 'rewrite_resume_bullet'
+  | 'create_company_brief'
+  | 'update_prep_plan'
+  | 'propose_opportunity_update'
+  | 'summarize_progress';
+
+export type AgentActionStatus =
+  | 'drafted'
+  | 'awaiting_approval'
+  | 'approved'
+  | 'rejected'
+  | 'completed'
+  | 'failed';
+
+export interface AgentSession {
+  id: string;
+  userId: string;
+  reportId?: string | null;
+  agentKind: AgentKind;
+  status: AgentSessionStatus;
+  lastMessageAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AgentMessage {
+  id: string;
+  sessionId: string;
+  role: AgentMessageRole;
+  contentJson: Record<string, unknown>;
+  tokensIn?: number | null;
+  tokensOut?: number | null;
+  createdAt: string;
+}
+
+export interface AgentAction {
+  id: string;
+  userId: string;
+  sessionId?: string | null;
+  reportId?: string | null;
+  actionType: AgentActionType;
+  payloadJson: Record<string, unknown>;
+  status: AgentActionStatus;
+  resultJson?: Record<string, unknown> | null;
+  evidenceRefsJson?: unknown[] | null;
+  requiresExternalSend: boolean;
+  approvedAt?: string | null;
+  completedAt?: string | null;
+  error?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type UserMemoryKind = 'weakness' | 'preference' | 'interview_date' | 'goal' | 'custom';
+
+export interface UserMemory {
+  id: string;
+  userId: string;
+  kind: UserMemoryKind;
+  key: string;
+  valueJson: Record<string, unknown>;
+  sourceActionId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// --- Practice persistence ---
+
+export type PracticeSessionMode = 'drill' | 'mock' | 'timed';
+
+export interface PracticeSession {
+  id: string;
+  userId: string;
+  reportId: string;
+  mode: PracticeSessionMode;
+  startedAt: string;
+  endedAt?: string | null;
+  summaryJson?: Record<string, unknown> | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PracticeAnswerRecord {
+  id: string;
+  practiceSessionId: string;
+  reportId: string;
+  userId: string;
+  questionIndex: number;
+  questionText: string;
+  mappedRiskId?: string | null;
+  answerText: string;
+  feedbackJson?: Record<string, unknown> | null;
+  score?: number | null;
+  attemptNumber: number;
+  createdAt: string;
+}
+
+// --- Prep planning ---
+
+export type PrepPlanStatus = 'active' | 'archived' | 'completed';
+export type PrepPlanTaskCategory =
+  | 'practice'
+  | 'study'
+  | 'behavioral'
+  | 'technical'
+  | 'company_research'
+  | 'review'
+  | 'rest';
+export type PrepPlanTaskStatus = 'pending' | 'in_progress' | 'done' | 'skipped';
+
+export interface PrepPlan {
+  id: string;
+  userId: string;
+  reportId?: string | null;
+  opportunityId?: string | null;
+  targetDate?: string | null;
+  status: PrepPlanStatus;
+  planJson: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PrepPlanTask {
+  id: string;
+  prepPlanId: string;
+  dayOffset: number;
+  title: string;
+  description?: string | null;
+  category: PrepPlanTaskCategory;
+  estimatedMinutes?: number | null;
+  status: PrepPlanTaskStatus;
+  evidenceRefsJson?: unknown[] | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// --- Opportunity pipeline ---
+
+export type OpportunityStage =
+  | 'applied'
+  | 'recruiter_screen'
+  | 'phone_screen'
+  | 'onsite'
+  | 'offer'
+  | 'rejected'
+  | 'withdrawn';
+
+export interface Opportunity {
+  id: string;
+  userId: string;
+  companyName: string;
+  roleTitle: string;
+  stage: OpportunityStage;
+  interviewDate?: string | null;
+  notes?: string | null;
+  archived: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// --- Shared company research cache ---
+
+export interface CompanyResearchCacheEntry {
+  id: string;
+  companyNameNormalized: string;
+  researchJson: Record<string, unknown>;
+  sourcesJson?: unknown[] | null;
+  expiresAt: string;
+  createdAt: string;
+}
