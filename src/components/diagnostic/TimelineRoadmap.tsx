@@ -1,30 +1,18 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { DailyPlan, DetailedTask } from '@/types';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Badge } from '@/components/ui/Badge';
+import { usePrepPlanTaskSync } from '@/hooks/usePrepPlanTaskSync';
 
 interface TimelineRoadmapProps {
   dailyPlans: DailyPlan[];
   reportId: string;
 }
 
+// localStorage key prefix retained for offline-first hydration (M4 dual-write).
 const STORAGE_PREFIX = 'interviewproof-timeline-';
-
-function loadCompletedTasks(reportId: string): Set<string> {
-  if (typeof window === 'undefined') return new Set();
-  try {
-    const stored = localStorage.getItem(`${STORAGE_PREFIX}${reportId}`);
-    if (stored) return new Set(JSON.parse(stored));
-  } catch { /* ignore */ }
-  return new Set();
-}
-
-function saveCompletedTasks(reportId: string, completed: Set<string>) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(`${STORAGE_PREFIX}${reportId}`, JSON.stringify([...completed]));
-}
 
 function getDayStatus(
   tasks: DetailedTask[],
@@ -55,7 +43,26 @@ const STATUS_CONFIG = {
 };
 
 export function TimelineRoadmap({ dailyPlans, reportId }: TimelineRoadmapProps) {
-  const [completed, setCompleted] = useState(() => loadCompletedTasks(reportId));
+  const clientTasks = useMemo(
+    () =>
+      dailyPlans.flatMap((day) =>
+        day.tasks.map((t) => ({
+          id: t.id,
+          title: t.task,
+          description: t.description,
+          category: t.category,
+          dayOffset: Math.max(0, day.dayNumber - 1),
+          estimatedMinutes: t.timeEstimateMinutes,
+        }))
+      ),
+    [dailyPlans]
+  );
+
+  const { completed, toggleTask } = usePrepPlanTaskSync({
+    reportId,
+    storagePrefix: STORAGE_PREFIX,
+    clientTasks,
+  });
 
   const totalTasks = dailyPlans.reduce((sum, day) => sum + day.tasks.length, 0);
   const completedCount = dailyPlans.reduce(
@@ -63,19 +70,6 @@ export function TimelineRoadmap({ dailyPlans, reportId }: TimelineRoadmapProps) 
     0
   );
   const overallPercent = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
-
-  const toggleTask = useCallback(
-    (taskId: string) => {
-      setCompleted((prev) => {
-        const next = new Set(prev);
-        if (next.has(taskId)) next.delete(taskId);
-        else next.add(taskId);
-        saveCompletedTasks(reportId, next);
-        return next;
-      });
-    },
-    [reportId]
-  );
 
   // Auto-expand: first non-complete day, or last day
   const firstActiveDayIndex = dailyPlans.findIndex(
@@ -106,7 +100,13 @@ export function TimelineRoadmap({ dailyPlans, reportId }: TimelineRoadmapProps) 
             {overallPercent}%
           </span>
         </div>
-        <ProgressBar value={overallPercent} max={100} variant="accent" showValue={false} size="md" />
+        <ProgressBar
+          value={overallPercent}
+          max={100}
+          variant="accent"
+          showValue={false}
+          size="md"
+        />
         <p className="mt-2 text-xs text-[var(--text-muted)]">
           {completedCount} of {totalTasks} tasks completed
         </p>

@@ -123,6 +123,111 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 }
 
+const PatchSchema = z.object({
+  sessionId: z.string().uuid(),
+  summary: z.record(z.string(), z.unknown()).optional(),
+});
+
+/**
+ * PATCH /api/report/[id]/practice-session — close an open practice session.
+ *
+ * Request body: `{ sessionId: uuid, summary?: object }`. Sets `ended_at = now()`
+ * (and merges optional `summary` into `summary_json`) on the matching open
+ * session for the authenticated user + this report. Idempotent: if the session
+ * is already closed (or does not exist for this user) returns 404.
+ */
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id: reportId } = await params;
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const allowed = await checkRateLimit({
+      prefix: 'practice_session_end',
+      identifier: `user:${user.id}`,
+      maxRequests: 60,
+      windowSeconds: 3600,
+    });
+    if (!allowed) return rateLimitResponse(3600);
+
+    const owns = await verifyReportOwnership(supabase, reportId, user.id);
+    if (!owns) {
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+    }
+
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
+    const parsed = PatchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid request', details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { sessionId, summary } = parsed.data;
+
+    // Read current row to merge summary_json without overwriting prior keys.
+    const { data: existing } = await supabase
+      .from('practice_sessions')
+      .select()
+      .eq('id', sessionId)
+      .eq('user_id', user.id)
+      .eq('report_id', reportId)
+      .is('ended_at', null)
+      .single();
+
+    if (!existing) {
+      // Either the session doesn't exist, doesn't belong to this user/report,
+      // or is already closed. Surface as 404 to avoid leaking which.
+      return NextResponse.json({ error: 'Open session not found' }, { status: 404 });
+    }
+
+    const existingRow = existing as PracticeSessionRow;
+    const mergedSummary =
+      summary !== undefined
+        ? { ...(existingRow.summary_json ?? {}), ...summary }
+        : existingRow.summary_json;
+
+    const { data: updated, error: updateErr } = await supabase
+      .from('practice_sessions')
+      .update({
+        ended_at: new Date().toISOString(),
+        summary_json: mergedSummary,
+      })
+      .eq('id', sessionId)
+      .eq('user_id', user.id)
+      .eq('report_id', reportId)
+      .is('ended_at', null)
+      .select()
+      .single();
+
+    if (updateErr || !updated) {
+      console.error('practice_sessions PATCH error:', updateErr);
+      return NextResponse.json({ error: 'Failed to close practice session' }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      data: rowToPracticeSession(updated as PracticeSessionRow),
+    });
+  } catch (err) {
+    console.error('PATCH /api/report/[id]/practice-session error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
 /**
  * GET /api/report/[id]/practice-session — return the latest open practice
  * session for the authenticated user + this report. If none exists, lazily
