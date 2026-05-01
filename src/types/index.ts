@@ -1352,6 +1352,25 @@ export interface DebriefOutput {
   evidenceFromPractice: DebriefPracticeEvidence[];
 }
 
+export interface ApplicationMaterialsBulletOutput {
+  mode: 'bullet';
+  originalBullet: string;
+  rewrittenBullet: string;
+  evidence: string;
+  rationale: string;
+}
+
+export interface ApplicationMaterialsCoverLetterOutput {
+  mode: 'cover_letter';
+  subject: string;
+  body: string;
+  rationale: string;
+}
+
+export type ApplicationMaterialsOutput =
+  | ApplicationMaterialsBulletOutput
+  | ApplicationMaterialsCoverLetterOutput;
+
 // --- Approval modal (M8) ---
 
 export interface ApprovalModalProps {
