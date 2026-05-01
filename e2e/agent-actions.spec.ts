@@ -3,8 +3,12 @@ import { test, expect } from '@playwright/test';
 test.describe('Agent actions API smoke', () => {
   test('Unauthenticated requests are rejected (sanity check)', async ({ playwright }) => {
     // Fresh request context with NO storage state — should hit 401 on
-    // auth-protected endpoints.
-    const ctx = await playwright.request.newContext();
+    // auth-protected endpoints. Pass an explicit empty storageState because
+    // @playwright/test 1.59.x inherits the project's storageState into
+    // playwright.request.newContext() unless overridden.
+    const ctx = await playwright.request.newContext({
+      storageState: { cookies: [], origins: [] },
+    });
     const res = await ctx.get('/api/agent/sessions');
     expect(res.status()).toBe(401);
     await ctx.dispose();
