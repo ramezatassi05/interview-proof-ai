@@ -1164,3 +1164,11 @@ export interface CompanyResearchCacheEntry {
   expiresAt: string;
   createdAt: string;
 }
+
+// --- Coach tab aggregate (M5) ---
+
+export interface CoachTabData {
+  pendingActions: AgentAction[];
+  practiceProgress: PracticeProgress;
+  latestSession: AgentSession | null;
+}

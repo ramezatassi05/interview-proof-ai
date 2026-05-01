@@ -12,6 +12,13 @@ import type {
   ExtractedJD,
   QuestionFeedbackResponse,
   BestAnswerResponse,
+  AgentAction,
+  AgentMessage,
+  AgentMessageRole,
+  AgentSession,
+  AgentKind,
+  PracticeProgress,
+  CoachTabData,
 } from '@/types';
 
 const API_BASE = '/api';
@@ -130,6 +137,28 @@ export interface ShareResponse {
     shareEnabled: boolean;
     shareUrl: string;
   };
+}
+
+export interface AgentActionsListResponse {
+  data: AgentAction[];
+  nextCursor: string | null;
+}
+
+export interface AgentSessionsListResponse {
+  data: AgentSession[];
+  nextCursor: string | null;
+}
+
+export interface AgentSessionResponse {
+  data: AgentSession;
+}
+
+export interface AgentMessageResponse {
+  data: AgentMessage;
+}
+
+export interface PracticeProgressResponse {
+  data: PracticeProgress;
 }
 
 // Routes that run the full LLM pipeline and need longer timeouts
@@ -366,6 +395,74 @@ class APIClient {
     });
   }
 
+  // ============================================
+  // Coach tab (M5)
+  // ============================================
+
+  async getPracticeProgress(reportId: string): Promise<PracticeProgressResponse> {
+    return this.request<PracticeProgressResponse>(`/report/${reportId}/practice-progress`);
+  }
+
+  async listPendingAgentActions(): Promise<AgentActionsListResponse> {
+    return this.request<AgentActionsListResponse>(
+      `/agent/actions?status=awaiting_approval&limit=50`
+    );
+  }
+
+  async listAgentSessions(params: {
+    agentKind?: AgentKind;
+    limit?: number;
+  }): Promise<AgentSessionsListResponse> {
+    const search = new URLSearchParams();
+    if (params.agentKind) search.set('agentKind', params.agentKind);
+    if (params.limit) search.set('limit', String(params.limit));
+    const qs = search.toString();
+    return this.request<AgentSessionsListResponse>(`/agent/sessions${qs ? `?${qs}` : ''}`);
+  }
+
+  async createAgentSession(input: {
+    agentKind: AgentKind;
+    reportId?: string;
+  }): Promise<AgentSessionResponse> {
+    return this.request<AgentSessionResponse>('/agent/sessions', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async appendAgentMessage(
+    sessionId: string,
+    input: {
+      role: AgentMessageRole;
+      contentJson: Record<string, unknown>;
+      tokensIn?: number;
+      tokensOut?: number;
+    }
+  ): Promise<AgentMessageResponse> {
+    return this.request<AgentMessageResponse>(`/agent/sessions/${sessionId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  /**
+   * Composite Coach loader — fans out the three reads the Coach tab needs in
+   * parallel and returns a single aggregate. Errors on any leg propagate.
+   */
+  async getCoachData(reportId: string): Promise<{ data: CoachTabData }> {
+    const [pending, progress, sessions] = await Promise.all([
+      this.listPendingAgentActions(),
+      this.getPracticeProgress(reportId),
+      this.listAgentSessions({ agentKind: 'orchestrator', limit: 1 }),
+    ]);
+    return {
+      data: {
+        pendingActions: pending.data,
+        practiceProgress: progress.data,
+        latestSession: sessions.data[0] ?? null,
+      },
+    };
+  }
 }
 
 export class APIRequestError extends Error {

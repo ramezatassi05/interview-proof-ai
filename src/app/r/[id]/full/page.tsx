@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useLazyTab } from '@/hooks/useLazyTab';
 import { api, APIRequestError, GetReportResponse } from '@/lib/api';
-import type { DeltaComparison } from '@/types';
+import type { CoachTabData, DeltaComparison } from '@/types';
 
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -19,6 +19,7 @@ import {
   BookOpenIcon,
   TargetIcon,
   EyeIcon,
+  CoachIcon,
 } from '@/components/diagnostic/DiagnosticTabs';
 import type { TabId } from '@/components/diagnostic/DiagnosticTabs';
 import { DeltaView } from '@/components/diagnostic/DeltaView';
@@ -28,6 +29,7 @@ import { AnalysisTab } from '@/components/diagnostic/tabs/AnalysisTab';
 import { PracticeTab } from '@/components/diagnostic/tabs/PracticeTab';
 import { StrategyTab } from '@/components/diagnostic/tabs/StrategyTab';
 import { InsightsTab } from '@/components/diagnostic/tabs/InsightsTab';
+import { CoachTab } from '@/components/diagnostic/tabs/CoachTab';
 import { TourProvider, useTourContext } from '@/components/tour';
 
 type ReportData = GetReportResponse['data'];
@@ -49,6 +51,12 @@ export default function FullDiagnosticPage() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const { activeTab, switchTab, hasBeenMounted } = useLazyTab('analysis');
+
+  // Coach tab data — fetched lazily on first visit.
+  const [coachData, setCoachData] = useState<CoachTabData | null>(null);
+  const [coachLoading, setCoachLoading] = useState(false);
+  const [coachError, setCoachError] = useState<string | null>(null);
+  const [coachLoadAttempted, setCoachLoadAttempted] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -81,6 +89,33 @@ export default function FullDiagnosticPage() {
 
     fetchReport();
   }, [reportId, user, authLoading, router]);
+
+  const loadCoachData = useCallback(async () => {
+    setCoachLoading(true);
+    setCoachError(null);
+    try {
+      const result = await api.getCoachData(reportId);
+      setCoachData(result.data);
+    } catch (err) {
+      const msg =
+        err instanceof APIRequestError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : 'Failed to load coach data.';
+      setCoachError(msg);
+    } finally {
+      setCoachLoading(false);
+      setCoachLoadAttempted(true);
+    }
+  }, [reportId]);
+
+  // Lazy-load coach data on first visit to the Coach tab.
+  useEffect(() => {
+    if (activeTab !== 'coach') return;
+    if (coachLoadAttempted || coachLoading) return;
+    void loadCoachData();
+  }, [activeTab, coachLoadAttempted, coachLoading, loadCoachData]);
 
   // Elapsed-time timer during rerun
   useEffect(() => {
@@ -169,6 +204,7 @@ export default function FullDiagnosticPage() {
     { id: 'practice' as TabId, label: 'Practice', icon: <BookOpenIcon /> },
     { id: 'strategy' as TabId, label: 'Strategy', icon: <TargetIcon /> },
     { id: 'insights' as TabId, label: 'Insights', icon: <EyeIcon /> },
+    { id: 'coach' as TabId, label: 'Coach', icon: <CoachIcon /> },
   ];
 
   // Render active tab content with lazy mounting
@@ -226,6 +262,21 @@ export default function FullDiagnosticPage() {
             conversionLikelihood={di?.executiveScores?.conversionLikelihood}
             technicalFit={di?.executiveScores?.technicalFit}
             priorEmploymentSignal={di?.priorEmploymentSignal}
+          />
+        ) : null;
+      case 'coach':
+        return hasBeenMounted('coach') ? (
+          <CoachTab
+            reportId={reportId}
+            loading={coachLoading}
+            error={coachError}
+            pendingActions={coachData?.pendingActions ?? []}
+            practiceProgress={coachData?.practiceProgress ?? null}
+            latestSession={coachData?.latestSession ?? null}
+            cognitiveRiskMap={di?.cognitiveRiskMap}
+            prepPlan={null}
+            onJumpToPractice={() => switchTab('practice')}
+            onRetry={loadCoachData}
           />
         ) : null;
       default:
