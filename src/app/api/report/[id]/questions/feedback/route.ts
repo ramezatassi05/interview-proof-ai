@@ -75,6 +75,76 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       report.round_type
     );
 
+    // M4: dual-write — persist this answer + feedback to practice_answers so
+    // it survives localStorage clears and is visible across browsers. Wrapped
+    // in try/catch and never blocks the feedback response shape.
+    try {
+      // Find latest open session for this user/report; lazily create one in drill mode.
+      let practiceSessionId: string | null = null;
+      const { data: openSessions } = await supabase
+        .from('practice_sessions')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('report_id', reportId)
+        .is('ended_at', null)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (openSessions && openSessions.length > 0) {
+        practiceSessionId = openSessions[0].id as string;
+      } else {
+        const { data: createdSession, error: sessionErr } = await supabase
+          .from('practice_sessions')
+          .insert({ user_id: user.id, report_id: reportId, mode: 'drill' })
+          .select('id')
+          .single();
+        if (sessionErr || !createdSession) {
+          throw sessionErr ?? new Error('lazy session create returned no row');
+        }
+        practiceSessionId = createdSession.id as string;
+      }
+
+      // attempt_number = max(prior attempts for user/report/questionIndex) + 1
+      const { data: priorAttempts } = await supabase
+        .from('practice_answers')
+        .select('attempt_number')
+        .eq('user_id', user.id)
+        .eq('report_id', reportId)
+        .eq('question_index', parsed.data.questionIndex)
+        .order('attempt_number', { ascending: false })
+        .limit(1);
+
+      const attemptNumber =
+        priorAttempts && priorAttempts.length > 0
+          ? (priorAttempts[0].attempt_number as number) + 1
+          : 1;
+
+      const score =
+        typeof feedback.score === 'number' && feedback.score >= 0 && feedback.score <= 100
+          ? Math.round(feedback.score)
+          : null;
+
+      const { error: insertErr } = await supabase.from('practice_answers').insert({
+        practice_session_id: practiceSessionId,
+        report_id: reportId,
+        user_id: user.id,
+        question_index: parsed.data.questionIndex,
+        question_text: parsed.data.questionText,
+        mapped_risk_id: null,
+        answer_text: parsed.data.userAnswer,
+        feedback_json: feedback as unknown as Record<string, unknown>,
+        score,
+        attempt_number: attemptNumber,
+      });
+
+      if (insertErr) {
+        console.error('practice_answers dual-write insert error:', insertErr);
+      }
+    } catch (persistErr) {
+      // Log + swallow — feedback delivery must never be blocked by persistence.
+      console.error('practice_answers dual-write failed:', persistErr);
+    }
+
     return NextResponse.json({ data: feedback });
   } catch (error) {
     console.error('Question feedback error:', error);

@@ -1083,6 +1083,14 @@ export interface PracticeAnswerRecord {
   createdAt: string;
 }
 
+export interface PracticeProgress {
+  answersAttempted: number;
+  avgScore: number | null;
+  scoreTrend: 'improving' | 'flat' | 'declining';
+  weakestRiskIds: string[];
+  lastPracticedAt: string | null;
+}
+
 // --- Prep planning ---
 
 export type PrepPlanStatus = 'active' | 'archived' | 'completed';

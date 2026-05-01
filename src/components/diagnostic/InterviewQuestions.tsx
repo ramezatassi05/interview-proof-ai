@@ -555,6 +555,7 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [isBackfilling, setIsBackfilling] = useState(false);
   const backfillRan = useRef(false);
+  const hydrationRan = useRef(false);
 
   const handleCopyQuestion = useCallback((text: string, poolIndex: number) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -568,6 +569,77 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
   useEffect(() => {
     saveState(reportId, state);
   }, [reportId, state]);
+
+  // M4: hydrate from server on mount. Server is source of truth on conflicts —
+  // for any (questionIndex), the latest server attempt wins over localStorage.
+  useEffect(() => {
+    if (hydrationRan.current) return;
+    hydrationRan.current = true;
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/report/${reportId}/practice-answers`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (!res.ok) return; // silent — client falls back to localStorage
+        const json = (await res.json()) as {
+          data?: Array<{
+            questionIndex: number;
+            questionText: string;
+            answerText: string;
+            attemptNumber: number;
+            feedbackJson: unknown;
+            score: number | null;
+            createdAt: string;
+          }>;
+        };
+        const rows = json.data ?? [];
+        if (rows.length === 0) return;
+
+        // For each questionIndex, keep only the latest attempt (highest
+        // attemptNumber, tie-break by createdAt).
+        const latestByIndex = new Map<number, (typeof rows)[number]>();
+        for (const row of rows) {
+          const existing = latestByIndex.get(row.questionIndex);
+          if (
+            !existing ||
+            row.attemptNumber > existing.attemptNumber ||
+            (row.attemptNumber === existing.attemptNumber && row.createdAt > existing.createdAt)
+          ) {
+            latestByIndex.set(row.questionIndex, row);
+          }
+        }
+
+        setState((prev) => {
+          const mergedAnswers = { ...prev.answers };
+          const mergedFeedback = { ...prev.feedback };
+          const submitted = new Set(prev.submittedIndices);
+
+          for (const [idx, row] of latestByIndex.entries()) {
+            // Only hydrate question indexes that exist in the local pool;
+            // out-of-range answers (e.g., from a question that was regenerated
+            // away) are ignored for hydration but still in DB for analytics.
+            if (idx >= prev.allQuestions.length) continue;
+            mergedAnswers[idx] = row.answerText;
+            if (row.feedbackJson && typeof row.feedbackJson === 'object') {
+              mergedFeedback[idx] = row.feedbackJson as QuestionFeedbackResponse;
+            }
+            submitted.add(idx);
+          }
+
+          return {
+            ...prev,
+            answers: mergedAnswers,
+            feedback: mergedFeedback,
+            submittedIndices: Array.from(submitted),
+          };
+        });
+      } catch (err) {
+        console.error('Practice answer hydration failed:', err);
+      }
+    })();
+  }, [reportId]);
 
   // Client-side backfill: if pool < 100, auto-generate more questions in batches
   useEffect(() => {
@@ -636,6 +708,25 @@ export function InterviewQuestions({ questions, companyName, reportId }: Intervi
       // Fetch feedback
       const q = state.allQuestions[poolIndex];
       setLoadingFeedback((prev) => ({ ...prev, [poolIndex]: true }));
+
+      // M4: fire-and-forget mirror of the answer to the server. Idempotent on
+      // failure — the /questions/feedback route also dual-writes server-side,
+      // so the canonical row gets written regardless of whether this fetch
+      // resolves. localStorage write still happens above via setState. We do
+      // NOT await this so feedback fetch isn't slowed by it.
+      fetch(`/api/report/${reportId}/practice-answers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionIndex: poolIndex,
+          questionText: q.question,
+          mappedRiskId: q.mappedRiskId ?? null,
+          answerText: answer,
+        }),
+      }).catch((err) => {
+        console.error('Practice answer mirror failed:', err);
+      });
+
       try {
         const res = await api.getAnswerFeedback(reportId, {
           questionIndex: poolIndex,
