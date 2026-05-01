@@ -4,8 +4,11 @@
  * recordAuditEvent writes an append-only row into agent_audit_events. We use
  * createServiceClient so inserts succeed regardless of RLS context — the
  * audit table intentionally has no INSERT policy, so service-role bypass is
- * the only write path. This file is one of two approved sites for
- * createServiceClient (the other is the cron cleanup route).
+ * the only write path. This file is one of the approved sites for
+ * createServiceClient (alongside src/lib/rate-limit.ts,
+ * src/lib/agent/company-cache.ts,
+ * src/app/api/cron/cleanup-stale-actions/route.ts, and
+ * src/app/api/webhook/**).
  *
  * runAgentCall is a thin wrapper that records `agent_call_started`,
  * `agent_call_completed` (with token + duration metadata), or

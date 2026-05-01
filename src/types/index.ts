@@ -1280,6 +1280,26 @@ export interface ResumeEvidenceOutput {
   critiqueOfOriginal: string;
 }
 
+export interface CompanyResearchSourceRef {
+  title: string;
+  url?: string;
+  snippet?: string;
+}
+
+export interface CompanyResearchOutput {
+  summary: string;
+  mission: string;
+  recentNews: string[];
+  productAreas: string[];
+  hiringSignals: string[];
+  cultureSignals: string[];
+  interviewerHints: string[];
+  sources: CompanyResearchSourceRef[];
+  cacheHit: boolean;
+  cachedAt: string;
+  expiresAt: string;
+}
+
 // --- Approval modal (M8) ---
 
 export interface ApprovalModalProps {
