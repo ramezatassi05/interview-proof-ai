@@ -1200,3 +1200,82 @@ export interface OrchestratorOutput {
   supportingActions: OrchestratorNextAction[];
   evidenceRefs: OrchestratorEvidenceRef[];
 }
+
+// --- Specialist agent outputs (M7) ---
+
+export interface ReadinessCoachDrill {
+  title: string;
+  focus: string;
+  why: string;
+}
+
+export interface ReadinessCoachEvidenceQuote {
+  source: 'resume' | 'jd' | 'analysis';
+  quote: string;
+}
+
+export interface ReadinessCoachOutput {
+  summary: string;
+  whyItMatters: string;
+  recommendedDrills: ReadinessCoachDrill[];
+  evidenceQuotes: ReadinessCoachEvidenceQuote[];
+}
+
+export interface AnswerFeedbackAgentSummary {
+  encouragement: string;
+  topStrengths: string[];
+  topImprovements: string[];
+  suggestedFollowupDrill: { title: string; focus: string } | null;
+}
+
+export interface MockInterviewQuestion {
+  id: string;
+  prompt: string;
+  mappedRiskId: string | null;
+  rationale: string;
+}
+
+export interface MockInterviewTurnEvaluation {
+  feedbackShort: string;
+  followUpQuestion: string | null;
+  advanceToNext: boolean;
+  currentScore: number;
+}
+
+export interface MockInterviewFinalReport {
+  overallScore: number;
+  perQuestionScores: number[];
+  summary: string;
+  topStrengths: string[];
+  topImprovements: string[];
+  nextSteps: { title: string; rationale: string }[];
+}
+
+export interface PrepPlanAgentTask {
+  title: string;
+  description: string;
+  category: PrepPlanTaskCategory;
+  estimatedMinutes: number;
+}
+
+export interface PrepPlanAgentDay {
+  dayOffset: number;
+  focus: string;
+  tasks: PrepPlanAgentTask[];
+}
+
+export interface PrepPlanAgentOutput {
+  overview: string;
+  days: PrepPlanAgentDay[];
+}
+
+export interface ResumeBulletAlternative {
+  bullet: string;
+  rationale: string;
+  evidenceAlignment: string;
+}
+
+export interface ResumeEvidenceOutput {
+  alternatives: ResumeBulletAlternative[];
+  critiqueOfOriginal: string;
+}
