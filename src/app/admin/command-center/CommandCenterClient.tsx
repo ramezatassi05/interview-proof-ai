@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Badge, severityToVariant } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 type CompanyAgentKind =
   | 'ceo_orchestrator'
@@ -23,6 +24,11 @@ interface CompanyMetricsSnapshot {
   capturedAt: string;
 }
 
+interface EvidenceRef {
+  label: string;
+  source: string;
+}
+
 interface CompanyAction {
   id: string;
   sessionId: string | null;
@@ -33,7 +39,9 @@ interface CompanyAction {
   priority: 'low' | 'medium' | 'high' | 'critical';
   status: 'drafted' | 'awaiting_approval' | 'approved' | 'rejected' | 'completed' | 'failed';
   triggeredBy?: 'user' | 'cron' | 'agent';
+  payloadJson?: Record<string, unknown> | null;
   resultJson?: Record<string, unknown> | null;
+  evidenceRefsJson?: EvidenceRef[] | null;
   completedAt?: string | null;
   error?: string | null;
   createdAt: string;
@@ -168,33 +176,54 @@ function ApprovalRow({
   action,
   pending,
   onTransition,
+  onOpenDetail,
 }: {
   action: CompanyAction;
   pending: boolean;
   onTransition: (id: string, status: 'approved' | 'rejected') => void;
+  onOpenDetail: (action: CompanyAction) => void;
 }) {
   return (
-    <div className="border border-[var(--border-default)] bg-[var(--bg-card)] px-4 py-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <PriorityBadge priority={action.priority} />
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
-          {agentMeta(action.agentKind).label}
-        </span>
-        {action.triggeredBy === 'cron' && <Badge variant="default">Autonomous</Badge>}
-        <span className="ml-auto text-[10px] tabular-nums text-[var(--text-muted)]">
-          {relativeTime(action.createdAt)}
-        </span>
-      </div>
-      <h3
-        className="mt-2 truncate text-sm font-semibold text-[var(--text-primary)]"
-        title={action.title}
+    <div className="border border-[var(--border-default)] bg-[var(--bg-card)]">
+      <button
+        type="button"
+        onClick={() => onOpenDetail(action)}
+        className="block w-full px-4 py-3 text-left transition-colors hover:bg-[var(--bg-elevated)] focus:bg-[var(--bg-elevated)] focus:outline-none"
+        aria-label={`View full details for ${action.title}`}
       >
-        {action.title}
-      </h3>
-      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--text-secondary)]">
-        {action.rationale}
-      </p>
-      <div className="mt-3 flex items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <PriorityBadge priority={action.priority} />
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
+            {agentMeta(action.agentKind).label}
+          </span>
+          {action.triggeredBy === 'cron' && <Badge variant="default">Autonomous</Badge>}
+          <span className="ml-auto text-[10px] tabular-nums text-[var(--text-muted)]">
+            {relativeTime(action.createdAt)}
+          </span>
+        </div>
+        <h3
+          className="mt-2 truncate text-sm font-semibold text-[var(--text-primary)]"
+          title={action.title}
+        >
+          {action.title}
+        </h3>
+        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+          {action.rationale}
+        </p>
+        <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
+          View full
+          <svg
+            className="h-3 w-3"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+      </button>
+      <div className="flex items-center justify-end gap-2 border-t border-[var(--border-default)] px-4 py-2">
         <Button
           variant="ghost"
           size="sm"
@@ -213,6 +242,162 @@ function ApprovalRow({
         </Button>
       </div>
     </div>
+  );
+}
+
+function humanizeKey(key: string): string {
+  return key
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function PayloadField({ label, value }: { label: string; value: unknown }) {
+  if (value === null || value === undefined || value === '') return null;
+
+  let body: React.ReactNode;
+  if (typeof value === 'string') {
+    body = (
+      <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-[var(--text-secondary)]">
+        {value}
+      </p>
+    );
+  } else if (typeof value === 'number' || typeof value === 'boolean') {
+    body = <p className="text-sm tabular-nums text-[var(--text-secondary)]">{String(value)}</p>;
+  } else if (Array.isArray(value) && value.every((v) => typeof v === 'string')) {
+    body = (
+      <ul className="list-disc pl-5 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {(value as string[]).map((item, idx) => (
+          <li key={idx}>{item}</li>
+        ))}
+      </ul>
+    );
+  } else {
+    body = (
+      <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words border border-[var(--border-default)] bg-[var(--bg-primary)] p-2 text-[11px] leading-relaxed text-[var(--text-secondary)]">
+        {JSON.stringify(value, null, 2)}
+      </pre>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <SectionLabel>{humanizeKey(label)}</SectionLabel>
+      {body}
+    </div>
+  );
+}
+
+function ApprovalDetailModal({
+  action,
+  open,
+  onOpenChange,
+  pending,
+  onTransition,
+}: {
+  action: CompanyAction | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  pending: boolean;
+  onTransition: (id: string, status: 'approved' | 'rejected') => void;
+}) {
+  if (!action) return null;
+
+  const payloadEntries = action.payloadJson
+    ? Object.entries(action.payloadJson).filter(
+        ([, v]) => v !== null && v !== undefined && v !== ''
+      )
+    : [];
+  const evidence = action.evidenceRefsJson ?? [];
+  const isAwaiting = action.status === 'awaiting_approval';
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="mb-4">
+          <div className="flex flex-wrap items-center gap-2 pr-8">
+            <PriorityBadge priority={action.priority} />
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
+              {agentMeta(action.agentKind).label}
+            </span>
+            {action.triggeredBy === 'cron' && <Badge variant="default">Autonomous</Badge>}
+            <StatusBadge status={action.status} />
+            <span className="ml-auto text-[10px] tabular-nums text-[var(--text-muted)]">
+              {relativeTime(action.createdAt)}
+            </span>
+          </div>
+          <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+            {humanizeKey(action.actionType)}
+          </p>
+          <DialogTitle className="mt-1 break-words">{action.title}</DialogTitle>
+        </DialogHeader>
+
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Rationale</SectionLabel>
+            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-[var(--text-secondary)]">
+              {action.rationale}
+            </p>
+          </div>
+
+          {payloadEntries.length > 0 && (
+            <div className="flex flex-col gap-4 border-t border-[var(--border-default)] pt-4">
+              {payloadEntries.map(([key, value]) => (
+                <PayloadField key={key} label={key} value={value} />
+              ))}
+            </div>
+          )}
+
+          {evidence.length > 0 && (
+            <div className="flex flex-col gap-2 border-t border-[var(--border-default)] pt-4">
+              <SectionLabel>Evidence</SectionLabel>
+              <ul className="flex flex-col gap-1.5">
+                {evidence.map((ref, idx) => (
+                  <li
+                    key={idx}
+                    className="flex flex-wrap items-baseline gap-x-2 text-xs text-[var(--text-secondary)]"
+                  >
+                    <span className="font-semibold text-[var(--text-primary)]">{ref.label}</span>
+                    <span className="text-[var(--text-muted)]">·</span>
+                    <span className="break-all font-mono text-[11px] text-[var(--text-muted)]">
+                      {ref.source}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {action.error && (
+            <div className="border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] px-3 py-2">
+              <SectionLabel>Error</SectionLabel>
+              <p className="mt-1 text-xs text-[var(--color-danger)]">{action.error}</p>
+            </div>
+          )}
+        </div>
+
+        {isAwaiting && (
+          <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 flex items-center justify-end gap-2 border-t border-[var(--border-default)] bg-[var(--bg-card)] px-6 py-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onTransition(action.id, 'rejected')}
+              disabled={pending}
+            >
+              Reject
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              loading={pending}
+              onClick={() => onTransition(action.id, 'approved')}
+            >
+              Approve
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -246,7 +431,13 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
   const [approvalError, setApprovalError] = useState<string | null>(null);
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
   const [recentExecutions, setRecentExecutions] = useState<CompanyAction[]>([]);
+  const [openActionId, setOpenActionId] = useState<string | null>(null);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const openAction = useMemo(
+    () => actions.find((a) => a.id === openActionId) ?? null,
+    [actions, openActionId]
+  );
 
   const metrics = brief.metrics;
   const activeAgent = agentMeta(selectedAgent);
@@ -652,6 +843,7 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
                       action={action}
                       pending={pendingActionId === action.id}
                       onTransition={transitionAction}
+                      onOpenDetail={(a) => setOpenActionId(a.id)}
                     />
                   ))
                 )}
@@ -674,6 +866,16 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
           </aside>
         </section>
       </div>
+
+      <ApprovalDetailModal
+        action={openAction}
+        open={!!openAction}
+        onOpenChange={(next) => {
+          if (!next) setOpenActionId(null);
+        }}
+        pending={openAction ? pendingActionId === openAction.id : false}
+        onTransition={transitionAction}
+      />
     </main>
   );
 }
