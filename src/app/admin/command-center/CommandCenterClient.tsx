@@ -389,6 +389,8 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
       setBrief(json.data);
       setActions(json.data.pendingActions);
       if (json.data.decisions) setDecisions(json.data.decisions);
+      // brief.tasks flows through to TaskKanban via initialTasks prop, which
+      // resyncs on change — so approving a create_task action lights the board.
     } finally {
       setRefreshing(false);
     }

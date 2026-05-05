@@ -146,7 +146,12 @@ export function TaskKanban({ initialTasks }: { initialTasks?: CompanyTask[] }) {
   }, []);
 
   useEffect(() => {
-    if (!initialTasks) void fetchTasks();
+    if (initialTasks) {
+      setTasks(initialTasks);
+      setLoading(false);
+    } else {
+      void fetchTasks();
+    }
   }, [initialTasks, fetchTasks]);
 
   const grouped = useMemo(() => {

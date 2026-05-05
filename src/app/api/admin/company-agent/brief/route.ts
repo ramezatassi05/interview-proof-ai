@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { requireAdminUser } from '@/lib/admin';
 import { loadCompanyMetrics } from '@/server/agents/company/company-metrics';
-import { publicCompanyAction } from '@/server/agents/company/types';
-import type { CompanyAgentActionRow } from '@/server/agents/company/types';
+import { publicCompanyAction, publicCompanyTask } from '@/server/agents/company/types';
+import type { CompanyAgentActionRow, CompanyTaskRow } from '@/server/agents/company/types';
 import { getHeartbeats } from '@/server/agents/company/heartbeats';
 import { loadSpendLast30dCents } from '@/server/agents/company/spend';
 
@@ -24,7 +24,7 @@ export async function GET() {
       userId: auth.user.id,
     });
 
-    const [actionsRes, decisionsRes, spend30dCents] = await Promise.all([
+    const [actionsRes, decisionsRes, spend30dCents, tasksRes] = await Promise.all([
       auth.supabase
         .from('company_agent_actions')
         .select()
@@ -39,6 +39,13 @@ export async function GET() {
         .order('decided_at', { ascending: false })
         .limit(10),
       loadSpendLast30dCents({ supabase: auth.supabase, userId: auth.user.id }),
+      auth.supabase
+        .from('company_tasks')
+        .select()
+        .eq('user_id', auth.user.id)
+        .neq('status', 'canceled')
+        .order('updated_at', { ascending: false })
+        .limit(100),
     ]);
 
     const pendingActions = (actionsRes.data ?? []).map((row) =>
@@ -52,6 +59,8 @@ export async function GET() {
       rationale: d.rationale,
       decidedAt: d.decided_at,
     }));
+
+    const tasks = (tasksRes.data ?? []).map((row) => publicCompanyTask(row as CompanyTaskRow));
 
     const heartbeats = getHeartbeats();
 
@@ -68,6 +77,7 @@ export async function GET() {
         metrics,
         pendingActions,
         decisions,
+        tasks,
         heartbeats,
         spend30dCents,
         nextBestQuestions: [
