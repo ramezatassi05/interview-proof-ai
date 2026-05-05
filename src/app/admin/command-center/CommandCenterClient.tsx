@@ -6,10 +6,13 @@ import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { relativeTime } from '@/lib/relative-time';
 import type { CompanyAgentKind } from '@/server/agents/company/types';
-import { AGENT_OPTIONS, agentMeta } from './agents';
+import { agentMeta } from './agents';
 import { SectionLabel, MetricTile, PriorityBadge, StatusBadge, humanizeKey } from './_primitives';
 import { DecisionsStrip, type Decision } from './DecisionsStrip';
 import type { AgentHeartbeat } from '@/server/agents/company/heartbeats';
+import { OrgChartCard } from './OrgChartCard';
+import { AgentDrawer } from './AgentDrawer';
+import { COMPANY_AGENT_KINDS } from '@/server/agents/company/types';
 
 interface CompanyMetricsSnapshot {
   totalUsers: number;
@@ -337,6 +340,7 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
   const [recentExecutions, setRecentExecutions] = useState<CompanyAction[]>([]);
   const [openActionId, setOpenActionId] = useState<string | null>(null);
   const [decisions, setDecisions] = useState<Decision[]>(initialBrief.decisions ?? []);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
   const openAction = useMemo(
@@ -350,6 +354,29 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
     () => actions.filter((a) => a.status === 'awaiting_approval'),
     [actions]
   );
+
+  const pendingByAgent = useMemo(() => {
+    const counts = Object.fromEntries(COMPANY_AGENT_KINDS.map((k) => [k, 0])) as Record<
+      CompanyAgentKind,
+      number
+    >;
+    for (const a of pendingApprovals) counts[a.agentKind] = (counts[a.agentKind] ?? 0) + 1;
+    return counts;
+  }, [pendingApprovals]);
+
+  const openAgentDrawer = useCallback((agent: CompanyAgentKind) => {
+    setSelectedAgent((prev) => {
+      if (prev !== agent) {
+        setSessionId(null);
+        setOutput(null);
+        setMessage('');
+        setError(null);
+      }
+      return agent;
+    });
+    setDrawerOpen(true);
+    setTimeout(() => composerRef.current?.focus(), 50);
+  }, []);
 
   const refreshBrief = useCallback(async () => {
     setRefreshing(true);
@@ -558,184 +585,22 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
               </div>
             </div>
 
-            <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-              <SectionLabel>Leadership</SectionLabel>
-              <div className="mt-3 flex flex-col">
-                {AGENT_OPTIONS.map((agent) => {
-                  const selected = selectedAgent === agent.value;
-                  return (
-                    <button
-                      key={agent.value}
-                      type="button"
-                      onClick={() => setSelectedAgent(agent.value)}
-                      className={`flex flex-col gap-0.5 border-l-2 px-3 py-2.5 text-left transition-colors ${
-                        selected
-                          ? 'border-l-[var(--accent-primary)] bg-[var(--bg-elevated)]'
-                          : 'border-l-transparent hover:bg-[var(--bg-elevated)]/50'
-                      }`}
-                    >
-                      <span
-                        className={`text-sm font-semibold ${
-                          selected ? 'text-[var(--text-primary)]' : 'text-[var(--text-primary)]'
-                        }`}
-                      >
-                        {agent.label}
-                      </span>
-                      <span className="text-[11px] text-[var(--text-muted)]">
-                        {agent.discipline}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-              <SectionLabel>Suggested prompts</SectionLabel>
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {brief.nextBestQuestions.map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => fillPrompt(q)}
-                    className="border border-[var(--border-default)] bg-[var(--bg-primary)] px-2 py-1 text-left text-[11px] text-[var(--text-secondary)] transition-colors hover:border-[var(--border-accent)] hover:text-[var(--text-primary)]"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <OrgChartCard
+              pendingByAgent={pendingByAgent}
+              heartbeats={brief.heartbeats ?? []}
+              onSelect={openAgentDrawer}
+            />
           </aside>
 
-          {/* CENTER — composer + output */}
+          {/* CENTER — Kanban (Step 4) */}
           <section className="order-1 flex flex-col gap-5 lg:order-2">
-            <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-semibold text-[var(--text-primary)]">
-                    {activeAgent.label}
-                  </h2>
-                  <Badge variant="default">Draft-only</Badge>
-                </div>
-                <span className="text-[11px] text-[var(--text-muted)]">
-                  {activeAgent.discipline}
-                </span>
-              </div>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">
-                Output is advisory. External, customer-visible, financial, or production-changing
-                work requires your explicit approval.
+            <div className="flex min-h-[360px] flex-col items-center justify-center gap-3 border border-dashed border-[var(--border-default)] bg-[var(--bg-card)] p-6 text-center">
+              <SectionLabel>Goals · Kanban</SectionLabel>
+              <p className="max-w-md text-sm text-[var(--text-secondary)]">
+                Tap a leader on the left to delegate work. The Kanban board for{' '}
+                <span className="font-mono">company_tasks</span> lands here next — Backlog · Doing ·
+                Blocked · Done.
               </p>
-
-              <textarea
-                ref={composerRef}
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                rows={6}
-                className="mt-4 min-h-[140px] w-full resize-y border border-[var(--border-default)] bg-[var(--bg-primary)] p-3 text-sm leading-relaxed text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--border-accent)]"
-                placeholder={activeAgent.placeholder}
-              />
-
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3 text-[11px] tabular-nums text-[var(--text-muted)]">
-                  <span>{message.length} chars</span>
-                  <span aria-hidden>·</span>
-                  <span>
-                    <kbd className="border border-[var(--border-default)] bg-[var(--bg-primary)] px-1 py-0.5 font-mono text-[10px]">
-                      ⌘↵
-                    </kbd>{' '}
-                    to send
-                  </span>
-                </div>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={loading}
-                  disabled={!message.trim()}
-                  onClick={sendMessage}
-                >
-                  {loading ? 'Working' : 'Send to agent'}
-                </Button>
-              </div>
-
-              {error && (
-                <div className="mt-3 flex items-start justify-between gap-3 border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] px-3 py-2">
-                  <p className="text-xs text-[var(--color-danger)]">{error}</p>
-                  <button
-                    type="button"
-                    onClick={() => setError(null)}
-                    className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-danger)] hover:opacity-80"
-                  >
-                    Dismiss
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-              <div className="flex items-center justify-between gap-2">
-                <SectionLabel>Latest output</SectionLabel>
-                {output && <Badge variant="accent">{agentMeta(output.agentKind).label}</Badge>}
-              </div>
-
-              {!output && !loading && (
-                <div className="mt-6 flex flex-col items-center justify-center gap-2 py-8">
-                  <span className="text-2xl text-[var(--text-muted)]" aria-hidden>
-                    —
-                  </span>
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    Send a message to see the agent&apos;s response.
-                  </p>
-                </div>
-              )}
-
-              {loading && !output && (
-                <div className="mt-6 flex flex-col items-center justify-center gap-2 py-8">
-                  <p className="text-sm text-[var(--text-secondary)]">Drafting response…</p>
-                </div>
-              )}
-
-              {output && (
-                <div className="mt-4 flex flex-col gap-5">
-                  <p className="whitespace-pre-wrap text-sm leading-6 text-[var(--text-secondary)]">
-                    {output.summary}
-                  </p>
-
-                  {output.priorities.length > 0 && (
-                    <div className="border-t border-[var(--border-default)] pt-4">
-                      <SectionLabel>Priorities</SectionLabel>
-                      <ol className="mt-3 flex flex-col gap-2 text-sm text-[var(--text-secondary)]">
-                        {output.priorities.map((priority, idx) => (
-                          <li
-                            key={`${idx}-${priority.slice(0, 24)}`}
-                            className="flex items-start gap-3 border-l-2 border-[var(--accent-primary)] pl-3"
-                          >
-                            <span className="font-mono text-[11px] tabular-nums text-[var(--text-muted)]">
-                              {String(idx + 1).padStart(2, '0')}
-                            </span>
-                            <span>{priority}</span>
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
-                  )}
-
-                  {output.proposedActions.length > 0 && (
-                    <div className="border-t border-[var(--border-default)] pt-4">
-                      <div className="flex items-center justify-between">
-                        <SectionLabel>Proposed actions</SectionLabel>
-                        <span className="text-[11px] text-[var(--text-muted)]">
-                          {output.proposedActions.length} drafted
-                        </span>
-                      </div>
-                      <div className="mt-3 flex flex-col gap-2">
-                        {output.proposedActions.map((action) => (
-                          <ProposedActionRow key={action.id} action={action} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </section>
 
@@ -804,6 +669,25 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
         }}
         pending={openAction ? pendingActionId === openAction.id : false}
         onTransition={transitionAction}
+      />
+
+      <AgentDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        activeAgent={activeAgent}
+        message={message}
+        onMessageChange={setMessage}
+        onSend={sendMessage}
+        loading={loading}
+        error={error}
+        onDismissError={() => setError(null)}
+        output={output}
+        composerRef={composerRef}
+        suggestedPrompts={brief.nextBestQuestions}
+        onPickPrompt={fillPrompt}
+        renderProposedAction={(action) => (
+          <ProposedActionRow key={action.id} action={action as CompanyAction} />
+        )}
       />
     </main>
   );
