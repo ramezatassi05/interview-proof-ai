@@ -61,10 +61,11 @@ function AgentChatContent({
 }) {
   const meta = agentMeta(agentKind);
   const [draft, setDraft] = useState('');
-  const [attachments] = useState<AttachmentMeta[]>([]);
+  const [attachments, setAttachments] = useState<AttachmentMeta[]>([]);
 
   const stream = useAgentStream({ agentKind });
-  const { messages, inFlight, status, error, send, abort, activeSkillId, memoryBumps } = stream;
+  const { messages, inFlight, status, error, send, abort, activeSkillId, memoryBumps, sessionId } =
+    stream;
 
   const busy = status === 'streaming' || status === 'opening';
 
@@ -93,8 +94,10 @@ function AgentChatContent({
   const handleSend = () => {
     const text = draft.trim();
     if (!text) return;
+    const ids = attachments.map((a) => a.id);
     setDraft('');
-    void send({ text, attachmentIds: attachments.map((a) => a.id) });
+    setAttachments([]);
+    void send({ text, attachmentIds: ids });
   };
 
   // If the user closes the dialog mid-stream, the parent will set open=false and
@@ -144,7 +147,15 @@ function AgentChatContent({
       </div>
 
       <div className="border-t border-[var(--border-default)]">
-        <AttachmentTray attachments={attachments} hint="Attachments arrive in M5." />
+        <AttachmentTray
+          attachments={attachments}
+          sessionId={sessionId}
+          onUploaded={(uploaded) =>
+            setAttachments((prev) => [...prev, ...uploaded].slice(-5))
+          }
+          onRemove={(id) => setAttachments((prev) => prev.filter((a) => a.id !== id))}
+          disabled={busy}
+        />
         <Composer
           value={draft}
           onChange={setDraft}

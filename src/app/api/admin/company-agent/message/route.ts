@@ -1,11 +1,90 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import { requireAdminUser } from '@/lib/admin';
+import { createServiceClient } from '@/lib/supabase/server';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { runCeoOrchestratorStream } from '@/server/agents/company/ceo-orchestrator';
 import { COMPANY_AGENT_KINDS } from '@/server/agents/company/types';
 import type { CompanyAgentSessionRow } from '@/server/agents/company/types';
+
+interface AttachmentRow {
+  id: string;
+  user_id: string;
+  session_id: string | null;
+  kind: 'pdf' | 'image' | 'text' | 'file';
+  filename: string;
+  mime_type: string;
+  storage_path: string;
+  extracted_text: string | null;
+}
+
+const IMAGE_MEDIA_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
+
+async function buildAttachmentBlocks(args: {
+  attachmentIds: string[];
+  userId: string;
+  sessionId: string;
+}): Promise<Anthropic.Messages.ContentBlockParam[]> {
+  if (args.attachmentIds.length === 0) return [];
+
+  const service = await createServiceClient();
+
+  const { data: rows, error } = await service
+    .from('company_agent_attachments')
+    .select('id,user_id,session_id,kind,filename,mime_type,storage_path,extracted_text')
+    .in('id', args.attachmentIds)
+    .eq('user_id', args.userId);
+
+  if (error || !rows) {
+    console.error('[company-agent/message] attachment lookup failed:', error);
+    return [];
+  }
+
+  const attachments = rows as AttachmentRow[];
+
+  // Promote any pending rows to this session so history queries can find them.
+  const pendingIds = attachments
+    .filter((a) => a.session_id === null || a.session_id !== args.sessionId)
+    .map((a) => a.id);
+  if (pendingIds.length > 0) {
+    await service
+      .from('company_agent_attachments')
+      .update({ session_id: args.sessionId })
+      .in('id', pendingIds)
+      .eq('user_id', args.userId);
+  }
+
+  const blocks: Anthropic.Messages.ContentBlockParam[] = [];
+  for (const att of attachments) {
+    if (att.kind === 'image') {
+      const mediaType = IMAGE_MEDIA_TYPES.has(att.mime_type) ? att.mime_type : 'image/png';
+      const { data: blob, error: dlError } = await service.storage
+        .from('agent-attachments')
+        .download(att.storage_path);
+      if (dlError || !blob) {
+        console.error('[company-agent/message] image download failed:', dlError);
+        continue;
+      }
+      const buf = Buffer.from(await blob.arrayBuffer());
+      blocks.push({
+        type: 'image',
+        source: {
+          type: 'base64',
+          media_type: mediaType as 'image/png' | 'image/jpeg' | 'image/webp' | 'image/gif',
+          data: buf.toString('base64'),
+        },
+      });
+    } else if (att.extracted_text && att.extracted_text.trim().length > 0) {
+      blocks.push({
+        type: 'text',
+        text: `Attached file "${att.filename}":\n\n${att.extracted_text}`,
+      });
+    }
+  }
+  return blocks;
+}
 
 export const maxDuration = 300;
 
@@ -118,11 +197,22 @@ export async function POST(request: NextRequest) {
       send('session', { sessionId, agentKind });
 
       try {
+        const attachmentBlocks = await buildAttachmentBlocks({
+          attachmentIds,
+          userId: auth.user.id,
+          sessionId,
+        });
+        const messageContent: Anthropic.Messages.ContentBlockParam[] | undefined =
+          attachmentBlocks.length > 0
+            ? [...attachmentBlocks, { type: 'text', text: userMessage }]
+            : undefined;
+
         const result = await runCeoOrchestratorStream(
           {
             userId: auth.user.id,
             sessionId,
             message: userMessage,
+            messageContent,
             attachmentIds,
             requestedAgentKind: agentKind,
             triggeredBy: 'user',
