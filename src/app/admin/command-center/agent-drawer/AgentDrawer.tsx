@@ -16,6 +16,7 @@ interface AgentDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   agentKind: CompanyAgentKind;
+  sessionId?: string | null;
   suggestedPrompts?: string[];
   onActionsCreated?: () => void;
 }
@@ -24,6 +25,7 @@ export function AgentDrawer({
   open,
   onOpenChange,
   agentKind,
+  sessionId,
   suggestedPrompts,
   onActionsCreated,
 }: AgentDrawerProps) {
@@ -36,8 +38,9 @@ export function AgentDrawer({
         </DialogHeader>
         {open && (
           <AgentChatContent
-            key={agentKind}
+            key={`${agentKind}:${sessionId ?? 'new'}`}
             agentKind={agentKind}
+            sessionId={sessionId ?? null}
             suggestedPrompts={suggestedPrompts}
             onActionsCreated={onActionsCreated}
             onClose={() => onOpenChange(false)}
@@ -50,11 +53,13 @@ export function AgentDrawer({
 
 function AgentChatContent({
   agentKind,
+  sessionId: initialSessionId,
   suggestedPrompts,
   onActionsCreated,
   onClose,
 }: {
   agentKind: CompanyAgentKind;
+  sessionId: string | null;
   suggestedPrompts?: string[];
   onActionsCreated?: () => void;
   onClose: () => void;
@@ -63,7 +68,7 @@ function AgentChatContent({
   const [draft, setDraft] = useState('');
   const [attachments, setAttachments] = useState<AttachmentMeta[]>([]);
 
-  const stream = useAgentStream({ agentKind });
+  const stream = useAgentStream({ agentKind, initialSessionId });
   const { messages, inFlight, status, error, send, abort, activeSkillId, memoryBumps, sessionId } =
     stream;
 
