@@ -23,11 +23,11 @@ export function ToolCallCard({ call }: { call: ToolCallView }) {
         ) : (
           <span className={`h-2 w-2 ${accent.dot}`} aria-hidden />
         )}
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+        <span className="text-[11px] font-medium text-[var(--text-secondary)]">
           {statusLabel(call.status)}
         </span>
-        <span className="font-mono text-[12px] text-[var(--text-primary)]">{label}</span>
-        {call.linkedActionId ? <Badge variant="accent">Drafted action</Badge> : null}
+        <span className="text-[12px] font-medium text-[var(--text-primary)]">{label}</span>
+        {call.linkedActionId ? <Badge variant="accent">Waiting on you</Badge> : null}
         {typeof call.latencyMs === 'number' && call.status !== 'running' && (
           <span className="ml-auto text-[10px] tabular-nums text-[var(--text-muted)]">
             {call.latencyMs}ms
@@ -48,7 +48,7 @@ export function ToolCallCard({ call }: { call: ToolCallView }) {
           )}
           {call.status === 'awaiting_approval' && (
             <p className="mt-2 text-[11px] text-[var(--accent-primary)]">
-              Drafted as a pending action — approve in the right rail to execute.
+              I drafted this. Look it over on the right whenever you&apos;re ready and hit approve.
             </p>
           )}
         </div>
@@ -73,13 +73,13 @@ function Section({ label, data }: { label: string; data: Record<string, unknown>
 function statusLabel(status: ToolCallView['status']): string {
   switch (status) {
     case 'running':
-      return 'Using skill';
+      return 'Working on';
     case 'succeeded':
-      return 'Used skill';
+      return 'Pulled';
     case 'awaiting_approval':
-      return 'Awaiting approval';
+      return 'Drafted — needs your OK on';
     case 'failed':
-      return 'Skill failed';
+      return 'Hit a snag with';
   }
 }
 

@@ -11,32 +11,32 @@ export const AGENT_OPTIONS: AgentOption[] = [
   {
     value: 'ceo_orchestrator',
     label: 'CEO Orchestrator',
-    discipline: 'Strategy · prioritization · cross-functional',
-    placeholder: 'What should I focus on this week given current metrics?',
+    discipline: "Helps you decide what matters and points you at the right person",
+    placeholder: 'What should I focus on this week?',
   },
   {
     value: 'executive_assistant',
     label: 'Executive Assistant',
-    discipline: 'Calendar · inbox · meeting prep · follow-ups',
-    placeholder: 'Draft an agenda for the next leadership sync.',
+    discipline: 'Briefings, follow-ups, keeps your week tidy',
+    placeholder: 'Walk me through where things stand right now.',
   },
   {
     value: 'director_marketing',
     label: 'Director of Marketing',
-    discipline: 'Positioning · growth · content · launches',
-    placeholder: 'Propose a 7-day content plan to lift unlock rate.',
+    discipline: 'Positioning, content, growth ideas, launches',
+    placeholder: 'Give me a plan to lift the unlock rate this week.',
   },
   {
     value: 'director_finance',
     label: 'Director of Finance',
-    discipline: 'Revenue · pricing · runway · unit economics',
-    placeholder: 'Review last week’s revenue and flag anomalies.',
+    discipline: 'Revenue, pricing, runway, unit economics',
+    placeholder: "Walk me through last week's revenue.",
   },
   {
     value: 'director_engineering',
     label: 'Director of Engineering',
-    discipline: 'Roadmap · specs · reliability · velocity',
-    placeholder: 'Turn the next roadmap item into a GitHub-ready spec.',
+    discipline: 'Specs, tradeoffs, what we should build next',
+    placeholder: 'Turn the next roadmap item into a spec the team can pick up.',
   },
 ];
 

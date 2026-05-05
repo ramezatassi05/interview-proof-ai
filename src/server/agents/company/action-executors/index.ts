@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
 import { CLAUDE_MODELS, getAnthropicClient } from '@/lib/anthropic';
 import { loadCompanyMetrics } from '../company-metrics';
+import { VOICE_RULES_SHORT } from '../voice';
 import type { CompanyAgentActionRow, CompanyActionType } from '../types';
 
 export interface ExecutionResult {
@@ -46,8 +47,17 @@ async function execDraftBrief(
 ): Promise<ExecutionResult> {
   const metrics = await loadCompanyMetrics({ supabase, userId: action.user_id });
   const content = await generate(
-    `Draft a concise weekly brief for the operator.\nCompany metrics:\n${JSON.stringify(metrics, null, 2)}\n\nAction request:\n${action.title}\n\nRationale:\n${action.rationale}\n\nPayload context:\n${JSON.stringify(action.payload_json, null, 2)}\n\nReturn 4 sections: WINS, RISKS, NEXT STEPS, DECISIONS NEEDED. Each 2-4 bullets, terse.`,
-    'You are the InterviewProof Executive Assistant. Briefs must be scannable in 30 seconds. No fluff.',
+    `Write the CEO a quick weekly update — the kind of thing an EA would say walking into the office Monday morning.
+
+Numbers you can pull from:
+${JSON.stringify(metrics, null, 2)}
+
+What they asked for: ${action.title}
+Context: ${action.rationale}
+Anything extra: ${JSON.stringify(action.payload_json, null, 2)}
+
+Write 3-4 short paragraphs. Cover what's working, what's worrying, what to do next, and anything that needs the CEO to decide. No headers, no labels, no bullets — just the way you'd say it out loud.`,
+    `You are the InterviewProof CEO's Executive Assistant. ${VOICE_RULES_SHORT}`,
     1200
   );
 
@@ -93,8 +103,14 @@ async function execDraftMarketingAsset(
     'format',
   ]);
   const copy = await generate(
-    `Draft marketing copy for InterviewProof.ai.\n\nSpec:\n${summary || JSON.stringify(action.payload_json)}\n\nTitle: ${action.title}\nRationale: ${action.rationale}\n\nReturn the copy only — no preamble. If the channel is unspecified, default to a social post under 280 chars.`,
-    'You are the InterviewProof Director of Marketing. Copy must be specific, evidence-backed, and avoid generic SaaS jargon.',
+    `Draft the marketing copy.
+
+What the CEO asked for: ${action.title}
+Why we're doing it: ${action.rationale}
+Spec / details: ${summary || JSON.stringify(action.payload_json)}
+
+Just give me the copy — no preamble, no "here's a draft" intro. If the channel isn't specified, treat it as a short social post under 280 chars. Be specific. Skip generic SaaS phrases.`,
+    `You are the InterviewProof Director of Marketing. ${VOICE_RULES_SHORT}`,
     900
   );
 
@@ -124,8 +140,17 @@ async function execDraftFinanceMemo(
 ): Promise<ExecutionResult> {
   const metrics = await loadCompanyMetrics({ supabase, userId: action.user_id });
   const memo = await generate(
-    `Draft a finance memo.\n\nMetrics:\n${JSON.stringify(metrics, null, 2)}\n\nRequest: ${action.title}\nRationale: ${action.rationale}\nPayload:\n${JSON.stringify(action.payload_json, null, 2)}\n\nFormat: 1) Situation, 2) Numbers, 3) Recommendation, 4) Risks. Be specific and quantitative.`,
-    'You are the InterviewProof Director of Finance. Memos drive decisions — every claim cites a number.',
+    `Write the CEO a short finance note — the kind of thing you'd Slack them after looking at the numbers.
+
+Numbers:
+${JSON.stringify(metrics, null, 2)}
+
+What they asked: ${action.title}
+Why: ${action.rationale}
+Anything extra: ${JSON.stringify(action.payload_json, null, 2)}
+
+3 short paragraphs. Where things stand, what you'd recommend, what could go wrong. Use real numbers in sentences. No headers, no bullets.`,
+    `You are the InterviewProof Director of Finance. ${VOICE_RULES_SHORT}`,
     1200
   );
 
@@ -153,8 +178,14 @@ async function execDraftEngineeringSpec(
   supabase: SupabaseClient
 ): Promise<ExecutionResult> {
   const spec = await generate(
-    `Draft an engineering spec.\n\nRequest: ${action.title}\nRationale: ${action.rationale}\nPayload:\n${JSON.stringify(action.payload_json, null, 2)}\n\nFormat: Goal, Constraints, Approach, Acceptance Criteria, Estimated Effort.`,
-    'You are the InterviewProof Director of Engineering. Specs are tight and unambiguous.',
+    `Write a short spec the team can pick up and start on.
+
+What the CEO asked for: ${action.title}
+Why: ${action.rationale}
+Anything extra: ${JSON.stringify(action.payload_json, null, 2)}
+
+Walk through what we're building, the constraints to keep in mind, how you'd approach it, what "done" looks like, and a rough size (small / medium / large). Write it as flowing prose, not headers and bullets. Be specific — no hedging.`,
+    `You are the InterviewProof Director of Engineering. ${VOICE_RULES_SHORT}`,
     1500
   );
 
@@ -256,8 +287,12 @@ async function execSummarizeMetrics(
 ): Promise<ExecutionResult> {
   const metrics = await loadCompanyMetrics({ supabase, userId: action.user_id });
   const summary = await generate(
-    `Summarize these metrics in plain English for a busy operator.\n\n${JSON.stringify(metrics, null, 2)}\n\nFlag the single most important number to watch this week and why.`,
-    'You are the InterviewProof Executive Assistant. Be terse.',
+    `Walk the CEO through these numbers in plain English — the kind of thing you'd say in 30 seconds standing at their desk.
+
+${JSON.stringify(metrics, null, 2)}
+
+Then call out the one number to watch this week and why. Keep it short.`,
+    `You are the InterviewProof CEO's Executive Assistant. ${VOICE_RULES_SHORT}`,
     800
   );
   return {

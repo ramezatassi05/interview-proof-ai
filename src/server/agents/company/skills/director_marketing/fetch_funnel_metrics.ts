@@ -5,14 +5,14 @@ export const fetchFunnelMetricsSkill: SkillDefinition = {
   agentKinds: ['director_marketing'],
   kind: 'read',
   ui: {
-    label: 'Fetch funnel metrics',
-    description: 'Pull the latest visitor → report → unlocked-report conversion snapshot.',
+    label: 'Pull the funnel',
+    description: 'Grab the latest funnel numbers — users, reports, unlock rate, rough revenue.',
     icon: 'chart',
   },
   tool: {
     name: 'fetch_funnel_metrics',
     description:
-      'Returns the current marketing funnel snapshot (total users, total reports, unlocked reports, unlock rate, estimated revenue). Always call this before drafting marketing copy or proposing campaigns so claims are grounded in real numbers.',
+      "Pull the latest funnel numbers — total users, total reports, how many got unlocked, the unlock rate, and a rough revenue estimate. Use this before you draft any marketing copy or pitch a campaign — that way you're talking about real numbers, not guessing.",
     input_schema: {
       type: 'object',
       additionalProperties: false,

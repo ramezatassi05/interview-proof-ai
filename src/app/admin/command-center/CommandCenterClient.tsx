@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { relativeTime } from '@/lib/relative-time';
 import type { CompanyAgentKind } from '@/server/agents/company/types';
 import { agentMeta } from './agents';
-import { SectionLabel, MetricTile, PriorityBadge, StatusBadge, humanizeKey } from './_primitives';
+import { SoftLabel, MetricTile, PriorityBadge, StatusBadge } from './_primitives';
+import { friendlyActionType } from './_action-copy';
 import { DecisionsStrip, type Decision } from './DecisionsStrip';
 import type { AgentHeartbeat } from '@/server/agents/company/heartbeats';
 import { OrgChartCard } from './OrgChartCard';
@@ -98,14 +99,14 @@ function ApprovalRow({
         type="button"
         onClick={() => onOpenDetail(action)}
         className="block w-full px-4 py-3 text-left transition-colors hover:bg-[var(--bg-elevated)] focus:bg-[var(--bg-elevated)] focus:outline-none"
-        aria-label={`View full details for ${action.title}`}
+        aria-label={`See the full version of ${action.title}`}
       >
         <div className="flex flex-wrap items-center gap-2">
           <PriorityBadge priority={action.priority} />
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
+          <span className="text-[11px] font-medium text-[var(--accent-primary)]">
             {agentMeta(action.agentKind).label}
           </span>
-          {action.triggeredBy === 'cron' && <Badge variant="default">Autonomous</Badge>}
+          {action.triggeredBy === 'cron' && <Badge variant="default">Acted on its own</Badge>}
           <span className="ml-auto text-[10px] tabular-nums text-[var(--text-muted)]">
             {relativeTime(action.createdAt)}
           </span>
@@ -119,8 +120,8 @@ function ApprovalRow({
         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--text-secondary)]">
           {action.rationale}
         </p>
-        <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
-          View full
+        <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-[var(--accent-primary)]">
+          See the whole thing
           <svg
             className="h-3 w-3"
             fill="none"
@@ -154,6 +155,34 @@ function ApprovalRow({
   );
 }
 
+const FRIENDLY_PAYLOAD_LABELS: Record<string, string> = {
+  body: "What I drafted",
+  copy: "What I drafted",
+  text: "What I drafted",
+  message: "What I drafted",
+  title: "Subject",
+  channel: "Where it goes",
+  audience: "Who it's for",
+  tone: "Tone",
+  goal: "What we're going for",
+  angle: "The angle",
+  format: "Format",
+  description: "What I drafted",
+  decisionText: "The decision",
+  ownerKind: "Who owns it",
+  dueAt: "Due",
+  notes: "Notes",
+  summary: "Summary",
+};
+
+function friendlyPayloadLabel(key: string): string {
+  if (FRIENDLY_PAYLOAD_LABELS[key]) return FRIENDLY_PAYLOAD_LABELS[key];
+  return key
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function PayloadField({ label, value }: { label: string; value: unknown }) {
   if (value === null || value === undefined || value === '') return null;
 
@@ -184,7 +213,7 @@ function PayloadField({ label, value }: { label: string; value: unknown }) {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <SectionLabel>{humanizeKey(label)}</SectionLabel>
+      <SoftLabel>{friendlyPayloadLabel(label)}</SoftLabel>
       {body}
     </div>
   );
@@ -219,24 +248,24 @@ function ApprovalDetailModal({
         <DialogHeader className="mb-4">
           <div className="flex flex-wrap items-center gap-2 pr-8">
             <PriorityBadge priority={action.priority} />
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
+            <span className="text-[11px] font-medium text-[var(--accent-primary)]">
               {agentMeta(action.agentKind).label}
             </span>
-            {action.triggeredBy === 'cron' && <Badge variant="default">Autonomous</Badge>}
+            {action.triggeredBy === 'cron' && <Badge variant="default">Acted on its own</Badge>}
             <StatusBadge status={action.status} />
             <span className="ml-auto text-[10px] tabular-nums text-[var(--text-muted)]">
               {relativeTime(action.createdAt)}
             </span>
           </div>
-          <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-            {humanizeKey(action.actionType)}
+          <p className="mt-3 text-[11px] text-[var(--text-muted)]">
+            {agentMeta(action.agentKind).label} drafted {friendlyActionType(action.actionType)} for you.
           </p>
           <DialogTitle className="mt-1 break-words">{action.title}</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
-            <SectionLabel>Rationale</SectionLabel>
+            <SoftLabel>Why I&apos;m proposing this</SoftLabel>
             <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-[var(--text-secondary)]">
               {action.rationale}
             </p>
@@ -252,7 +281,7 @@ function ApprovalDetailModal({
 
           {evidence.length > 0 && (
             <div className="flex flex-col gap-2 border-t border-[var(--border-default)] pt-4">
-              <SectionLabel>Evidence</SectionLabel>
+              <SoftLabel>What I&apos;m working from</SoftLabel>
               <ul className="flex flex-col gap-1.5">
                 {evidence.map((ref, idx) => (
                   <li
@@ -272,7 +301,7 @@ function ApprovalDetailModal({
 
           {action.error && (
             <div className="border border-[var(--color-danger)]/30 bg-[var(--color-danger-muted)] px-3 py-2">
-              <SectionLabel>Error</SectionLabel>
+              <SoftLabel>Something went wrong</SoftLabel>
               <p className="mt-1 text-xs text-[var(--color-danger)]">{action.error}</p>
             </div>
           )}
@@ -427,13 +456,13 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
         <header className="flex flex-col gap-3 border-b border-[var(--border-default)] pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <Badge variant="accent">Internal · Draft-only</Badge>
+              <Badge variant="accent">Just for you · nothing ships without your OK</Badge>
               <span className="text-[11px] tabular-nums text-[var(--text-muted)]">
-                Snapshot {relativeTime(metrics.capturedAt)}
+                Last refresh {relativeTime(metrics.capturedAt)}
               </span>
             </div>
             <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-3xl">
-              CEO Command Center
+              Your team
             </h1>
           </div>
           <Button
@@ -462,7 +491,7 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
           {/* LEFT RAIL */}
           <aside className="order-2 flex flex-col gap-5 lg:order-1">
             <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-              <SectionLabel>Today</SectionLabel>
+              <SoftLabel>Where things stand</SoftLabel>
               <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
                 {brief.summary}
               </p>
@@ -471,13 +500,13 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
                   <span className="text-[var(--text-secondary)]">
                     {metrics.pendingCompanyActions}
                   </span>{' '}
-                  pending
+                  waiting on you
                 </span>
                 <span>
                   <span className="text-[var(--text-secondary)]">
                     {metrics.activeCompanySessions}
                   </span>{' '}
-                  active sessions
+                  open chats
                 </span>
               </div>
             </div>
@@ -498,13 +527,13 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
           <aside className="order-3 flex flex-col gap-3">
             <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
               <div className="flex items-center justify-between gap-2">
-                <SectionLabel>Pending approvals</SectionLabel>
+                <SoftLabel>Waiting on your OK</SoftLabel>
                 {pendingApprovals.length > 0 && (
                   <Badge variant="accent">{pendingApprovals.length}</Badge>
                 )}
               </div>
               <p className="mt-2 text-[11px] text-[var(--text-muted)]">
-                Drafted by agents · awaiting your decision.
+                Things your team drafted that need a yes or no.
               </p>
               {approvalError && (
                 <p className="mt-2 text-[11px] text-[var(--color-danger)]">{approvalError}</p>
@@ -517,7 +546,7 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
                       —
                     </span>
                     <p className="text-sm text-[var(--text-secondary)]">
-                      Inbox zero — no actions waiting.
+                      All clear — nothing waiting on you.
                     </p>
                   </div>
                 ) : (
@@ -536,9 +565,9 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
 
             {recentExecutions.length > 0 && (
               <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-                <SectionLabel>Recently executed</SectionLabel>
+                <SoftLabel>Just shipped</SoftLabel>
                 <p className="mt-2 text-[11px] text-[var(--text-muted)]">
-                  Approved actions and their results.
+                  Stuff you approved and what came of it.
                 </p>
                 <div className="mt-3 flex flex-col gap-3">
                   {recentExecutions.map((action) => (
@@ -577,8 +606,8 @@ function ExecutedActionRow({ action }: { action: CompanyAction }) {
   return (
     <div className="border border-[var(--border-default)] bg-[var(--bg-elevated)] px-3 py-2.5">
       <div className="flex flex-wrap items-center gap-2">
-        <Badge variant={isFailed ? 'default' : 'accent'}>{isFailed ? 'failed' : 'completed'}</Badge>
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
+        <Badge variant={isFailed ? 'default' : 'accent'}>{isFailed ? 'hit a snag' : 'done'}</Badge>
+        <span className="text-[11px] font-medium text-[var(--accent-primary)]">
           {agentMeta(action.agentKind).label}
         </span>
         <span className="ml-auto text-[10px] tabular-nums text-[var(--text-muted)]">
@@ -596,8 +625,8 @@ function ExecutedActionRow({ action }: { action: CompanyAction }) {
       )}
       {!isFailed && action.resultJson && (
         <details className="mt-2 group">
-          <summary className="cursor-pointer text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)] hover:text-[var(--text-primary)]">
-            View result
+          <summary className="cursor-pointer text-[11px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+            See what came back
           </summary>
           <pre className="mt-2 max-h-72 overflow-auto whitespace-pre-wrap break-words border border-[var(--border-default)] bg-[var(--bg-primary)] p-2 text-[11px] leading-relaxed text-[var(--text-secondary)]">
             {JSON.stringify(action.resultJson, null, 2)}

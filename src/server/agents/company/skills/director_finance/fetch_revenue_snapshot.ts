@@ -5,14 +5,14 @@ export const fetchRevenueSnapshotSkill: SkillDefinition = {
   agentKinds: ['director_finance'],
   kind: 'read',
   ui: {
-    label: 'Fetch revenue snapshot',
-    description: 'Pull current credit purchases, estimated revenue, and unlock economics.',
+    label: 'Pull the revenue picture',
+    description: 'Grab the current revenue picture — credits sold, gross revenue, unlock rate.',
     icon: 'dollar',
   },
   tool: {
     name: 'fetch_revenue_snapshot',
     description:
-      'Returns the current revenue snapshot derived from credits_ledger and reports tables: total credits purchased, estimated gross revenue, unlock rate. Always call this before drafting finance memos or pricing analysis.',
+      "Pull the current revenue picture — credits purchased, rough gross revenue, unlock rate. Use this before any finance write-up or pricing call so you're working from real numbers.",
     input_schema: {
       type: 'object',
       additionalProperties: false,

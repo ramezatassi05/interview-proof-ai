@@ -21,16 +21,16 @@ export function IdentityStrip({ agentKind, memoryCount }: IdentityStripProps) {
         ·
       </span>
       <span className="text-[11px] text-[var(--text-secondary)]">
-        <span className="tabular-nums">{skills.length}</span>{' '}
-        {skills.length === 1 ? 'skill' : 'skills'}
+        Knows how to do <span className="tabular-nums">{skills.length}</span>{' '}
+        {skills.length === 1 ? 'thing' : 'things'}
       </span>
       <span className="text-[11px] text-[var(--text-muted)]" aria-hidden>
         ·
       </span>
       <span className="text-[11px] text-[var(--text-secondary)]">
-        Memory: <span className="tabular-nums">{memoryCount}</span>
+        Remembers <span className="tabular-nums">{memoryCount}</span>
       </span>
-      <Badge variant="default">Draft-only</Badge>
+      <Badge variant="default">Won&apos;t act without your OK</Badge>
       <span className="ml-auto truncate text-[11px] text-[var(--text-muted)]">
         {meta.discipline}
       </span>

@@ -12,14 +12,14 @@ export const rememberSkill: SkillDefinition<RememberInput> = {
   agentKinds: COMPANY_AGENT_KINDS,
   kind: 'write',
   ui: {
-    label: 'Remember',
-    description: 'Save a durable fact about the company so future conversations can recall it.',
+    label: 'Remember this',
+    description: "Hold onto a fact the CEO wants you to keep in mind next time.",
     icon: 'brain',
   },
   tool: {
     name: 'remember',
     description:
-      'Persist a durable fact you want to remember across future conversations with this agent. Use sparingly — only for facts the user has confirmed or explicit decisions, not running speculation.',
+      "Keep a fact in mind for next time you talk to the CEO. Use this when they tell you something worth holding onto — a goal, a number, a preference, a decision. Don't use it for guesses or running thoughts.",
     input_schema: {
       type: 'object',
       additionalProperties: false,
@@ -28,14 +28,14 @@ export const rememberSkill: SkillDefinition<RememberInput> = {
         key: {
           type: 'string',
           description:
-            'Short, stable key for the fact (e.g. "target_gross_margin", "primary_icp"). Reused keys overwrite the prior value.',
+            'A short label for the fact (like "target_gross_margin" or "primary_icp"). If you reuse a label, the new value replaces the old one.',
         },
         value: {
-          description: 'The fact to remember. May be a string, number, or small object.',
+          description: 'The thing to remember — a string, number, or short object.',
         },
         reason: {
           type: 'string',
-          description: 'One short sentence on why this is worth remembering.',
+          description: 'One short sentence on why this is worth keeping.',
         },
       },
     },

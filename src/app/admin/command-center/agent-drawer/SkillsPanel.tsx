@@ -17,16 +17,16 @@ export function SkillsPanel({ agentKind, activeSkillId }: SkillsPanelProps) {
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto border-r border-[var(--border-default)] bg-[var(--bg-card)] p-3 text-sm">
       <div>
-        <SectionLabel>Skills</SectionLabel>
+        <SectionLabel>What they can do</SectionLabel>
         <p className="mt-1 text-[11px] text-[var(--text-muted)]">
-          Curated tools this agent can call. The active one pulses while in use.
+          Things this agent knows how to handle. The one they&apos;re using right now lights up.
         </p>
       </div>
 
       {reads.length > 0 && (
         <div>
-          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-            Read
+          <p className="mb-1.5 text-[11px] font-medium text-[var(--text-secondary)]">
+            Things I can look up
           </p>
           <ul className="flex flex-col gap-1.5">
             {reads.map((s) => (
@@ -44,8 +44,8 @@ export function SkillsPanel({ agentKind, activeSkillId }: SkillsPanelProps) {
 
       {writes.length > 0 && (
         <div>
-          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-            Write · approval-gated
+          <p className="mb-1.5 text-[11px] font-medium text-[var(--text-secondary)]">
+            Things I can draft (you&apos;ll OK before anything happens)
           </p>
           <ul className="flex flex-col gap-1.5">
             {writes.map((s) => (
@@ -63,8 +63,8 @@ export function SkillsPanel({ agentKind, activeSkillId }: SkillsPanelProps) {
 
       {skills.length === 0 && (
         <p className="text-xs text-[var(--text-muted)]">
-          No skills wired yet for this role. Use plain prose; the agent has its full system context
-          but no callable tools.
+          Nothing wired up yet for this role. You can still talk to them — they just don&apos;t have
+          any specific shortcuts.
         </p>
       )}
     </div>

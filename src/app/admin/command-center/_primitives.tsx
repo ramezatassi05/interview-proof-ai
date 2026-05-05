@@ -9,6 +9,15 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Friendlier, sentence-case label for places where SectionLabel's ALL CAPS feels too corporate.
+export function SoftLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[11px] font-medium text-[var(--text-secondary)]">
+      {children}
+    </p>
+  );
+}
+
 export function MetricTile({
   label,
   value,
@@ -39,9 +48,18 @@ export function PriorityBadge({ priority }: { priority: CompanyActionPriority })
   return <Badge variant={severityToVariant(priority)}>{priority}</Badge>;
 }
 
+const STATUS_FRIENDLY: Record<CompanyActionStatus, string> = {
+  drafted: 'draft',
+  awaiting_approval: 'waiting on you',
+  approved: 'approved',
+  rejected: 'passed on',
+  completed: 'done',
+  failed: 'hit a snag',
+};
+
 export function StatusBadge({ status }: { status: CompanyActionStatus }) {
   const isAwaiting = status === 'awaiting_approval';
-  return <Badge variant={isAwaiting ? 'accent' : 'default'}>{status.replace(/_/g, ' ')}</Badge>;
+  return <Badge variant={isAwaiting ? 'accent' : 'default'}>{STATUS_FRIENDLY[status]}</Badge>;
 }
 
 export function humanizeKey(key: string): string {

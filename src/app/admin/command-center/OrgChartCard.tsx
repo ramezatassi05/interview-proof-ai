@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/Badge';
 import type { CompanyAgentKind } from '@/server/agents/company/types';
 import type { AgentHeartbeat } from '@/server/agents/company/heartbeats';
 import { AGENT_OPTIONS } from './agents';
-import { SectionLabel } from './_primitives';
+import { SoftLabel } from './_primitives';
 
 interface OrgChartCardProps {
   pendingByAgent: Record<CompanyAgentKind, number>;
@@ -38,9 +38,9 @@ export function OrgChartCard({ pendingByAgent, heartbeats, onSelect }: OrgChartC
   return (
     <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
       <div className="flex items-center justify-between gap-2">
-        <SectionLabel>Leadership · org chart</SectionLabel>
+        <SoftLabel>Your team</SoftLabel>
         <span className="text-[10px] tabular-nums text-[var(--text-muted)]">
-          Click a node to talk
+          Tap to talk to anyone
         </span>
       </div>
 
@@ -59,7 +59,7 @@ export function OrgChartCard({ pendingByAgent, heartbeats, onSelect }: OrgChartC
             </span>
             <div className="mt-1 flex items-center gap-2">
               {pendingByAgent[ceo.value] > 0 && (
-                <Badge variant="accent">{pendingByAgent[ceo.value]} pending</Badge>
+                <Badge variant="accent">{pendingByAgent[ceo.value]} waiting on you</Badge>
               )}
               <span className="text-[10px] text-[var(--text-muted)]">On demand</span>
             </div>
@@ -87,9 +87,9 @@ export function OrgChartCard({ pendingByAgent, heartbeats, onSelect }: OrgChartC
                 </span>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {pending > 0 ? (
-                    <Badge variant="accent">{pending} pending</Badge>
+                    <Badge variant="accent">{pending} waiting on you</Badge>
                   ) : (
-                    <span className="text-[10px] text-[var(--text-muted)]">No pending</span>
+                    <span className="text-[10px] text-[var(--text-muted)]">All clear</span>
                   )}
                 </div>
                 <span className="text-[10px] tabular-nums text-[var(--text-muted)]">

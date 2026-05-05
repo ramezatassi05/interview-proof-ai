@@ -66,14 +66,14 @@ export async function GET() {
 
     return NextResponse.json({
       data: {
-        title: 'CEO Daily Brief',
+        title: 'Where things stand',
         generatedAt: new Date().toISOString(),
         summary:
           pendingActions.length > 0
-            ? `You have ${pendingActions.length} internal company action${
+            ? `You've got ${pendingActions.length} thing${
                 pendingActions.length === 1 ? '' : 's'
-              } awaiting approval. Start there before assigning new work.`
-            : 'No internal company actions are waiting on you. This is a good moment to assign a focused department task.',
+              } waiting on your OK. Worth clearing those before you hand the team anything new.`
+            : "Nothing's waiting on you right now. Good time to hand the team something to chew on.",
         metrics,
         pendingActions,
         decisions,
@@ -82,9 +82,9 @@ export async function GET() {
         spend30dCents,
         nextBestQuestions: [
           'What should I focus on today?',
-          'Give me a marketing plan for this week.',
-          'Review revenue and conversion.',
-          'Turn the next roadmap item into an engineering spec.',
+          'Give me a plan to lift the unlock rate this week.',
+          "Walk me through last week's revenue.",
+          'Turn the next roadmap item into a spec the team can pick up.',
         ],
       },
     });

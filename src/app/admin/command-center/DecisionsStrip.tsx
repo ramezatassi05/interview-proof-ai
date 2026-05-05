@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { relativeTime } from '@/lib/relative-time';
-import { SectionLabel } from './_primitives';
+import { SoftLabel } from './_primitives';
 
 export interface Decision {
   id: string;
@@ -54,10 +54,10 @@ export function DecisionsStrip({
   return (
     <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
       <div className="flex items-center justify-between gap-2">
-        <SectionLabel>Shared context · recent decisions</SectionLabel>
+        <SoftLabel>What we&apos;ve decided lately</SoftLabel>
         {!composing && (
           <Button variant="ghost" size="sm" onClick={() => setComposing(true)}>
-            + Record decision
+            + Log a decision
           </Button>
         )}
       </div>
@@ -67,14 +67,14 @@ export function DecisionsStrip({
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Decision title (e.g. Freeze new feature work this week)"
+            placeholder="What's the decision? (e.g. No new feature work this week)"
             maxLength={200}
             className="w-full border border-[var(--border-default)] bg-[var(--bg-primary)] px-2 py-1.5 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--border-accent)]"
           />
           <textarea
             value={decisionText}
             onChange={(e) => setDecisionText(e.target.value)}
-            placeholder="What did you decide? One or two sentences."
+            placeholder="A sentence or two on what you decided and why."
             maxLength={2000}
             rows={2}
             className="w-full resize-y border border-[var(--border-default)] bg-[var(--bg-primary)] px-2 py-1.5 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--border-accent)]"
@@ -107,8 +107,7 @@ export function DecisionsStrip({
 
       {decisions.length === 0 && !composing ? (
         <p className="mt-3 text-xs text-[var(--text-muted)]">
-          No decisions logged yet. Use this strip as a running record so every agent has the same
-          context.
+          Nothing logged yet. Drop decisions here so the team stays on the same page.
         </p>
       ) : (
         <ul className="mt-3 flex gap-3 overflow-x-auto pb-1">
