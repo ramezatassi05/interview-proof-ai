@@ -1,16 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Badge, severityToVariant } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-
-type CompanyAgentKind =
-  | 'ceo_orchestrator'
-  | 'executive_assistant'
-  | 'director_marketing'
-  | 'director_finance'
-  | 'director_engineering';
+import { relativeTime } from '@/lib/relative-time';
+import type { CompanyAgentKind } from '@/server/agents/company/types';
+import { AGENT_OPTIONS, agentMeta } from './agents';
+import { SectionLabel, MetricTile, PriorityBadge, StatusBadge, humanizeKey } from './_primitives';
 
 interface CompanyMetricsSnapshot {
   totalUsers: number;
@@ -61,115 +58,12 @@ interface BriefData {
   nextBestQuestions: string[];
 }
 
-interface AgentOption {
-  value: CompanyAgentKind;
-  label: string;
-  discipline: string;
-  placeholder: string;
-}
-
-const AGENT_OPTIONS: AgentOption[] = [
-  {
-    value: 'ceo_orchestrator',
-    label: 'CEO Orchestrator',
-    discipline: 'Strategy · prioritization · cross-functional',
-    placeholder: 'What should I focus on this week given current metrics?',
-  },
-  {
-    value: 'executive_assistant',
-    label: 'Executive Assistant',
-    discipline: 'Calendar · inbox · meeting prep · follow-ups',
-    placeholder: 'Draft an agenda for the next leadership sync.',
-  },
-  {
-    value: 'director_marketing',
-    label: 'Director of Marketing',
-    discipline: 'Positioning · growth · content · launches',
-    placeholder: 'Propose a 7-day content plan to lift unlock rate.',
-  },
-  {
-    value: 'director_finance',
-    label: 'Director of Finance',
-    discipline: 'Revenue · pricing · runway · unit economics',
-    placeholder: 'Review last week’s revenue and flag anomalies.',
-  },
-  {
-    value: 'director_engineering',
-    label: 'Director of Engineering',
-    discipline: 'Roadmap · specs · reliability · velocity',
-    placeholder: 'Turn the next roadmap item into a GitHub-ready spec.',
-  },
-];
-
-function agentMeta(kind: CompanyAgentKind): AgentOption {
-  return AGENT_OPTIONS.find((a) => a.value === kind) ?? AGENT_OPTIONS[0];
-}
-
 function formatMoney(cents: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(cents / 100);
-}
-
-function relativeTime(iso: string): string {
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return '';
-  const diff = Date.now() - then;
-  if (diff < 0) return 'just now';
-  const sec = Math.floor(diff / 1000);
-  if (sec < 45) return 'just now';
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m ago`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const day = Math.floor(hr / 24);
-  if (day < 7) return `${day}d ago`;
-  return new Date(iso).toLocaleDateString();
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-      {children}
-    </p>
-  );
-}
-
-function MetricTile({
-  label,
-  value,
-  caption,
-  emphasis = false,
-}: {
-  label: string;
-  value: string;
-  caption?: string;
-  emphasis?: boolean;
-}) {
-  const valueColor = emphasis ? 'text-[var(--color-warning)]' : 'text-[var(--text-primary)]';
-  const labelColor = emphasis ? 'text-[var(--color-warning)]' : 'text-[var(--text-muted)]';
-  return (
-    <div className="min-w-[140px] flex-1 border border-[var(--border-default)] bg-[var(--bg-card)] px-4 py-3">
-      <p className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${labelColor}`}>
-        {label}
-      </p>
-      <p className={`mt-1.5 text-2xl font-semibold tabular-nums ${valueColor}`}>{value}</p>
-      {caption && (
-        <p className="mt-0.5 text-[10px] text-[var(--text-muted)] tabular-nums">{caption}</p>
-      )}
-    </div>
-  );
-}
-
-function PriorityBadge({ priority }: { priority: CompanyAction['priority'] }) {
-  return <Badge variant={severityToVariant(priority)}>{priority}</Badge>;
-}
-
-function StatusBadge({ status }: { status: CompanyAction['status'] }) {
-  const isAwaiting = status === 'awaiting_approval';
-  return <Badge variant={isAwaiting ? 'accent' : 'default'}>{status.replace(/_/g, ' ')}</Badge>;
 }
 
 function ApprovalRow({
@@ -243,13 +137,6 @@ function ApprovalRow({
       </div>
     </div>
   );
-}
-
-function humanizeKey(key: string): string {
-  return key
-    .replace(/_/g, ' ')
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function PayloadField({ label, value }: { label: string; value: unknown }) {

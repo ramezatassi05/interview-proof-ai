@@ -1,0 +1,52 @@
+import { Badge, severityToVariant } from '@/components/ui/Badge';
+import type { CompanyActionPriority, CompanyActionStatus } from '@/server/agents/company/types';
+
+export function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+      {children}
+    </p>
+  );
+}
+
+export function MetricTile({
+  label,
+  value,
+  caption,
+  emphasis = false,
+}: {
+  label: string;
+  value: string;
+  caption?: string;
+  emphasis?: boolean;
+}) {
+  const valueColor = emphasis ? 'text-[var(--color-warning)]' : 'text-[var(--text-primary)]';
+  const labelColor = emphasis ? 'text-[var(--color-warning)]' : 'text-[var(--text-muted)]';
+  return (
+    <div className="min-w-[140px] flex-1 border border-[var(--border-default)] bg-[var(--bg-card)] px-4 py-3">
+      <p className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${labelColor}`}>
+        {label}
+      </p>
+      <p className={`mt-1.5 text-2xl font-semibold tabular-nums ${valueColor}`}>{value}</p>
+      {caption && (
+        <p className="mt-0.5 text-[10px] text-[var(--text-muted)] tabular-nums">{caption}</p>
+      )}
+    </div>
+  );
+}
+
+export function PriorityBadge({ priority }: { priority: CompanyActionPriority }) {
+  return <Badge variant={severityToVariant(priority)}>{priority}</Badge>;
+}
+
+export function StatusBadge({ status }: { status: CompanyActionStatus }) {
+  const isAwaiting = status === 'awaiting_approval';
+  return <Badge variant={isAwaiting ? 'accent' : 'default'}>{status.replace(/_/g, ' ')}</Badge>;
+}
+
+export function humanizeKey(key: string): string {
+  return key
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
