@@ -1,8 +1,15 @@
 'use client';
 
-import { useCallback, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useReducer, useRef } from 'react';
 import type { CompanyAgentKind } from '@/server/agents/company/types';
-import type { ChatMessage, ChatSegment, StreamStatus, ToolCallStatus, ToolCallView } from './types';
+import type {
+  AttachmentMeta,
+  ChatMessage,
+  ChatSegment,
+  StreamStatus,
+  ToolCallStatus,
+  ToolCallView,
+} from './types';
 
 interface InFlightAssistant {
   id: string;
@@ -252,17 +259,134 @@ interface SendArgs {
 
 interface UseAgentStreamArgs {
   agentKind: CompanyAgentKind;
+  initialSessionId?: string | null;
+  onAttachmentsHydrated?: (atts: AttachmentMeta[]) => void;
 }
 
-export function useAgentStream({ agentKind }: UseAgentStreamArgs) {
+interface HistoryAttachment {
+  id: string;
+  filename: string;
+  kind: 'pdf' | 'image' | 'text' | 'file';
+  byteSize: number;
+  mimeType?: string;
+}
+
+interface HistoryToolCall {
+  id: string;
+  skillId: string;
+  status: ToolCallStatus;
+  input?: Record<string, unknown>;
+  output?: Record<string, unknown>;
+  error?: string;
+  linkedActionId?: string | null;
+  latencyMs?: number;
+}
+
+interface HistoryMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  text: string;
+  toolCalls: HistoryToolCall[];
+  attachments?: HistoryAttachment[];
+  createdAtIso?: string;
+  truncated?: boolean;
+}
+
+function hydrateMessages(rows: HistoryMessage[]): {
+  messages: ChatMessage[];
+  attachments: AttachmentMeta[];
+} {
+  const messages: ChatMessage[] = [];
+  const attachments: AttachmentMeta[] = [];
+  for (const row of rows) {
+    const toolCallViews: ToolCallView[] = row.toolCalls.map((tc) => ({
+      id: tc.id,
+      skillId: tc.skillId,
+      status: tc.status,
+      input: tc.input,
+      output: tc.output,
+      error: tc.error,
+      linkedActionId: tc.linkedActionId ?? null,
+      latencyMs: tc.latencyMs,
+    }));
+    // Build segments: tool cards first, then prose. The live stream typically
+    // fires tool_use blocks before post-tool text, and we don't persist
+    // intra-message ordering, so this matches the common shape.
+    const segments: ChatSegment[] = [];
+    for (const tc of toolCallViews) {
+      segments.push({ kind: 'tool', toolCallId: tc.id });
+    }
+    if (row.text) segments.push({ kind: 'text', text: row.text });
+    const atts = row.attachments ?? [];
+    if (atts.length > 0) {
+      for (const a of atts) {
+        attachments.push({
+          id: a.id,
+          filename: a.filename,
+          kind: a.kind,
+          byteSize: a.byteSize,
+          mimeType: a.mimeType,
+        });
+      }
+    }
+    messages.push({
+      id: row.id,
+      role: row.role,
+      text: row.text,
+      segments,
+      toolCalls: toolCallViews,
+      attachmentIds: atts.map((a) => a.id),
+      createdAtIso: row.createdAtIso,
+      truncated: row.truncated,
+    });
+  }
+  return { messages, attachments };
+}
+
+export function useAgentStream({
+  agentKind,
+  initialSessionId,
+  onAttachmentsHydrated,
+}: UseAgentStreamArgs) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const abortRef = useRef<AbortController | null>(null);
+  const hydratedSessionRef = useRef<string | null>(null);
   // Auto-clear the SkillsPanel pulse 1.5s after the latest activation.
   const skillPulseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skillPulse = useCallback(() => {
     if (skillPulseTimerRef.current) clearTimeout(skillPulseTimerRef.current);
     skillPulseTimerRef.current = setTimeout(() => dispatch({ type: 'clear_active_skill' }), 1500);
   }, []);
+
+  // One-shot hydration when an existing sessionId is provided (drawer reopened
+  // on a prior conversation). Skips for fresh sessions.
+  useEffect(() => {
+    if (!initialSessionId) return;
+    if (hydratedSessionRef.current === initialSessionId) return;
+    hydratedSessionRef.current = initialSessionId;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/admin/company-agent/sessions/${encodeURIComponent(initialSessionId)}/messages`
+        );
+        if (!res.ok || cancelled) return;
+        const json = (await res.json()) as { messages?: HistoryMessage[] };
+        const rows = json.messages ?? [];
+        const { messages, attachments } = hydrateMessages(rows);
+        if (cancelled) return;
+        dispatch({ type: 'reset', sessionId: initialSessionId, messages });
+        if (attachments.length > 0) onAttachmentsHydrated?.(attachments);
+      } catch (err) {
+        if (!cancelled) {
+          console.error('[useAgentStream] hydrate error:', err);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialSessionId, onAttachmentsHydrated]);
 
   const send = useCallback(
     async ({ text, attachmentIds }: SendArgs) => {

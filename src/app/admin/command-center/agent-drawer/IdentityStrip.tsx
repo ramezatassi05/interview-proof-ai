@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import type { CompanyAgentKind } from '@/server/agents/company/types';
 import { agentMeta } from '../agents';
@@ -10,11 +11,126 @@ interface IdentityStripProps {
   memoryCount: number;
 }
 
+interface MemoryRow {
+  id: string;
+  key: string;
+  value_json: unknown;
+  source: string;
+  updated_at: string;
+}
+
+function previewValue(value: unknown): string {
+  if (typeof value === 'string') return value;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
 export function IdentityStrip({ agentKind, memoryCount }: IdentityStripProps) {
   const meta = agentMeta(agentKind);
   const skills = skillsForAgent(agentKind);
+  const [open, setOpen] = useState(false);
+  const [rows, setRows] = useState<MemoryRow[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [localCount, setLocalCount] = useState<number | null>(null);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+  const displayedCount = localCount ?? memoryCount;
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/admin/company-agent/memory?agentKind=${encodeURIComponent(agentKind)}`,
+        { method: 'GET' }
+      );
+      if (!res.ok) {
+        let msg = `Couldn't load memory (${res.status})`;
+        try {
+          const j = (await res.json()) as { error?: string };
+          if (j.error) msg = j.error;
+        } catch {
+          // not JSON
+        }
+        setError(msg);
+        return;
+      }
+      const json = (await res.json()) as { data?: MemoryRow[] };
+      const next = json.data ?? [];
+      setRows(next);
+      setLocalCount(next.length);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Network error');
+    } finally {
+      setLoading(false);
+    }
+  }, [agentKind]);
+
+  useEffect(() => {
+    if (!open) return;
+    void load();
+  }, [open, load]);
+
+  // Close on outside click / escape.
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(target) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(target)
+      ) {
+        setOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  // Reset cached count if the live counter advances past it (a `remember`
+  // landed while popover was closed). Force a refetch next open.
+  useEffect(() => {
+    if (localCount !== null && memoryCount > localCount) {
+      setLocalCount(null);
+      setRows(null);
+    }
+  }, [memoryCount, localCount]);
+
+  const handleDelete = async (key: string) => {
+    setRows((prev) => prev?.filter((r) => r.key !== key) ?? prev);
+    setLocalCount((prev) => (prev === null ? prev : Math.max(0, prev - 1)));
+    try {
+      const res = await fetch(
+        `/api/admin/company-agent/memory?agentKind=${encodeURIComponent(
+          agentKind
+        )}&key=${encodeURIComponent(key)}`,
+        { method: 'DELETE' }
+      );
+      if (!res.ok) {
+        // Refetch to restore correct state on failure.
+        void load();
+      }
+    } catch {
+      void load();
+    }
+  };
+
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-[var(--border-default)] bg-[var(--bg-elevated)] px-4 py-2.5">
+    <div className="relative flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-[var(--border-default)] bg-[var(--bg-elevated)] px-4 py-2.5">
       <Badge variant="accent">{meta.label}</Badge>
       <span className="text-[11px] tabular-nums text-[var(--text-muted)]">Sonnet 4.6</span>
       <span className="text-[11px] text-[var(--text-muted)]" aria-hidden>
@@ -27,13 +143,75 @@ export function IdentityStrip({ agentKind, memoryCount }: IdentityStripProps) {
       <span className="text-[11px] text-[var(--text-muted)]" aria-hidden>
         ·
       </span>
-      <span className="text-[11px] text-[var(--text-secondary)]">
-        Remembers <span className="tabular-nums">{memoryCount}</span>
-      </span>
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="text-[11px] text-[var(--text-secondary)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline"
+        aria-expanded={open}
+        aria-haspopup="dialog"
+      >
+        Remembers <span className="tabular-nums">{displayedCount}</span>
+      </button>
       <Badge variant="default">Won&apos;t act without your OK</Badge>
       <span className="ml-auto truncate text-[11px] text-[var(--text-muted)]">
         {meta.discipline}
       </span>
+
+      {open && (
+        <div
+          ref={popoverRef}
+          role="dialog"
+          aria-label="Agent memory"
+          className="absolute left-4 top-full z-50 mt-1 w-[320px] max-w-[calc(100vw-2rem)] border border-[var(--border-default)] bg-[var(--bg-card)] shadow-lg"
+        >
+          <div className="border-b border-[var(--border-default)] px-3 py-2 text-[11px] font-medium text-[var(--text-secondary)]">
+            What I remember
+          </div>
+          <div className="max-h-[260px] overflow-y-auto">
+            {loading && (
+              <div className="px-3 py-3 text-[11px] text-[var(--text-muted)]">Loading…</div>
+            )}
+            {!loading && error && (
+              <div className="px-3 py-3 text-[11px] text-[var(--color-danger)]">{error}</div>
+            )}
+            {!loading && !error && rows && rows.length === 0 && (
+              <div className="px-3 py-3 text-[11px] text-[var(--text-muted)]">
+                Nothing saved yet.
+              </div>
+            )}
+            {!loading &&
+              !error &&
+              rows &&
+              rows.map((row) => (
+                <div
+                  key={row.id}
+                  className="flex items-start gap-2 border-b border-[var(--border-default)] px-3 py-2 last:border-b-0"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[11px] font-medium text-[var(--text-primary)]">
+                      {row.key}
+                    </div>
+                    <div
+                      className="truncate text-[11px] text-[var(--text-muted)]"
+                      title={previewValue(row.value_json)}
+                    >
+                      {previewValue(row.value_json)}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void handleDelete(row.key)}
+                    className="shrink-0 text-[14px] leading-none text-[var(--text-muted)] hover:text-[var(--color-danger)]"
+                    aria-label={`Forget ${row.key}`}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
