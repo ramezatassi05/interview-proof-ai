@@ -29,7 +29,7 @@ const ProposedActionSchema = z.object({
   rationale: z.string().min(1).max(1000),
   priority: z.enum(['low', 'medium', 'high', 'critical']),
   payload: z.record(z.string(), z.unknown()),
-  requiresApproval: z.literal(true),
+  requiresApproval: z.boolean().optional().default(true),
 });
 
 const CompanyAgentOutputSchema = z.object({

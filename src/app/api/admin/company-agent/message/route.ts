@@ -109,7 +109,13 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (err) {
-    console.error('POST /api/admin/company-agent/message error:', err);
+    const cause =
+      err && typeof err === 'object' && 'cause' in err ? (err as { cause: unknown }).cause : null;
+    console.error(
+      'POST /api/admin/company-agent/message error:',
+      err,
+      cause ? `\n  cause: ${JSON.stringify(cause, null, 2)}` : ''
+    );
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
