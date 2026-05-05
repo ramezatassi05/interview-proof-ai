@@ -1,44 +1,17 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
-import { z } from 'zod';
 import { CLAUDE_MODELS, getAnthropicClient } from '@/lib/anthropic';
-import {
-  COMPANY_ACTION_TYPES,
-  COMPANY_AGENT_KINDS,
-  type CompanyAgentKind,
-  type CompanyAgentOutput,
-  type CompanyAgentTriggeredBy,
-  type CompanyMetricsSnapshot,
-} from './types';
+import type { CompanyAgentKind, CompanyAgentTriggeredBy, CompanyMetricsSnapshot } from './types';
 import type { DirectorContext } from './director-context';
-import { COMPANY_AGENT_OUTPUT_TOOL, COMPANY_AGENT_OUTPUT_TOOL_NAME } from './company-agent-tools';
-import {
-  buildCompanySystemPrompt,
-  buildCompanyUserPrompt,
-  COMPANY_AGENT_VERSION,
-} from './company-agent-prompts';
+import { buildCompanySystemPrompt, COMPANY_AGENT_VERSION } from './company-agent-prompts';
+import { getSkillsForAgent } from './skills';
+import { executeSkill, type ExecuteSkillResult } from './skills/router';
 
-const EvidenceRefSchema = z.object({
-  label: z.string().min(1).max(160),
-  source: z.string().min(1).max(200),
-});
-
-const ProposedActionSchema = z.object({
-  title: z.string().min(1).max(200),
-  actionType: z.enum(COMPANY_ACTION_TYPES),
-  rationale: z.string().min(1).max(1000),
-  priority: z.enum(['low', 'medium', 'high', 'critical']),
-  payload: z.record(z.string(), z.unknown()),
-  requiresApproval: z.boolean().optional().default(true),
-});
-
-const CompanyAgentOutputSchema = z.object({
-  agentKind: z.enum(COMPANY_AGENT_KINDS),
-  summary: z.string().min(1).max(2400),
-  priorities: z.array(z.string().min(1).max(280)).max(5),
-  proposedActions: z.array(ProposedActionSchema).max(5),
-  evidenceRefs: z.array(EvidenceRefSchema).max(8),
-});
+const MAX_TOOL_ITERATIONS = 6;
+const MAX_HISTORY_MESSAGES = 20;
+const MAX_MEMORY_ROWS = 50;
+const STREAM_MAX_TOKENS = 4096;
+const TOOL_RESULT_OUTPUT_CHAR_CAP = 8000;
 
 export class CompanyAgentError extends Error {
   readonly cause?: unknown;
@@ -49,203 +22,453 @@ export class CompanyAgentError extends Error {
   }
 }
 
-export interface RunCompanyAgentArgs {
+export interface StreamCompanyAgentArgs {
   userId: string;
   sessionId: string;
   agentKind: CompanyAgentKind;
   message: string;
+  messageContent?: Anthropic.Messages.ContentBlockParam[];
+  attachmentIds?: string[];
   supabase: SupabaseClient;
   metrics: CompanyMetricsSnapshot;
   directorContext?: DirectorContext;
   triggeredBy?: CompanyAgentTriggeredBy;
+  abortSignal?: AbortSignal;
 }
 
+export interface StreamToolCallStartEvent {
+  id: string;
+  skillId: string;
+  input: Record<string, unknown>;
+}
+
+export interface StreamToolCallCompleteEvent {
+  id: string;
+  skillId: string;
+  status: ExecuteSkillResult['status'];
+  output: Record<string, unknown>;
+  linkedActionId: string | null;
+  error?: string;
+  latencyMs: number;
+}
+
+export interface StreamCompanyAgentResult {
+  messageId: string;
+  text: string;
+  toolCallIds: string[];
+  linkedActionIds: string[];
+  tokensIn: number;
+  tokensOut: number;
+  truncated: boolean;
+}
+
+export interface StreamCompanyAgentCallbacks {
+  onTextDelta?(delta: string): void;
+  onToolCallStart?(event: StreamToolCallStartEvent): void;
+  onToolCallComplete?(event: StreamToolCallCompleteEvent): void;
+  onMemoryUpdated?(event: { key: string }): void;
+  onUsage?(event: { tokensIn: number; tokensOut: number }): void;
+  onComplete?(result: StreamCompanyAgentResult): void;
+}
+
+interface MemoryRow {
+  key: string;
+  value_json: unknown;
+}
+
+async function loadMemory(args: {
+  supabase: SupabaseClient;
+  userId: string;
+  agentKind: CompanyAgentKind;
+}): Promise<MemoryRow[]> {
+  const { data } = await args.supabase
+    .from('company_agent_memory')
+    .select('key,value_json')
+    .eq('user_id', args.userId)
+    .eq('agent_kind', args.agentKind)
+    .order('updated_at', { ascending: false })
+    .limit(MAX_MEMORY_ROWS);
+  return (data as MemoryRow[] | null) ?? [];
+}
+
+interface PriorMessageRow {
+  role: 'user' | 'agent' | 'system' | 'tool';
+  content_json: Record<string, unknown> | null;
+}
+
+async function loadConversationHistory(args: {
+  supabase: SupabaseClient;
+  sessionId: string;
+}): Promise<Anthropic.Messages.MessageParam[]> {
+  const { data } = await args.supabase
+    .from('company_agent_messages')
+    .select('role,content_json')
+    .eq('session_id', args.sessionId)
+    .order('created_at', { ascending: true })
+    .limit(MAX_HISTORY_MESSAGES);
+
+  const rows = (data as PriorMessageRow[] | null) ?? [];
+  const messages: Anthropic.Messages.MessageParam[] = [];
+
+  for (const row of rows) {
+    const content = row.content_json ?? {};
+    const text =
+      typeof (content as { text?: unknown }).text === 'string'
+        ? (content as { text: string }).text
+        : typeof (content as { summary?: unknown }).summary === 'string'
+          ? (content as { summary: string }).summary
+          : '';
+    if (!text.trim()) continue;
+    if (row.role === 'user') {
+      messages.push({ role: 'user', content: text });
+    } else if (row.role === 'agent') {
+      messages.push({ role: 'assistant', content: text });
+    }
+  }
+  return messages;
+}
+
+async function persistUserMessage(args: {
+  supabase: SupabaseClient;
+  sessionId: string;
+  agentKind: CompanyAgentKind;
+  text: string;
+  attachmentIds: string[];
+  triggeredBy: CompanyAgentTriggeredBy;
+}): Promise<string> {
+  const { data, error } = await args.supabase
+    .from('company_agent_messages')
+    .insert({
+      session_id: args.sessionId,
+      role: 'user',
+      agent_kind: args.agentKind,
+      content_json: {
+        kind: 'user',
+        text: args.text,
+        attachmentIds: args.attachmentIds,
+        triggeredBy: args.triggeredBy,
+      },
+    })
+    .select('id')
+    .single();
+
+  if (error || !data) {
+    throw new CompanyAgentError('Failed to persist user message', { cause: error });
+  }
+  return data.id as string;
+}
+
+async function persistAssistantMessage(args: {
+  supabase: SupabaseClient;
+  sessionId: string;
+  agentKind: CompanyAgentKind;
+  text: string;
+  toolCallIds: string[];
+  stopReason: string | null;
+  truncated: boolean;
+  tokensIn: number;
+  tokensOut: number;
+}): Promise<string> {
+  const { data, error } = await args.supabase
+    .from('company_agent_messages')
+    .insert({
+      session_id: args.sessionId,
+      role: 'agent',
+      agent_kind: args.agentKind,
+      content_json: {
+        kind: 'assistant',
+        text: args.text,
+        toolCallIds: args.toolCallIds,
+        stopReason: args.stopReason,
+        truncated: args.truncated,
+        version: COMPANY_AGENT_VERSION,
+      },
+      tokens_in: args.tokensIn,
+      tokens_out: args.tokensOut,
+    })
+    .select('id')
+    .single();
+
+  if (error || !data) {
+    throw new CompanyAgentError('Failed to persist assistant message', { cause: error });
+  }
+  return data.id as string;
+}
+
+async function attachToolCallsToMessage(
+  supabase: SupabaseClient,
+  messageId: string,
+  toolCallRowIds: string[]
+) {
+  if (toolCallRowIds.length === 0) return;
+  await supabase
+    .from('company_agent_tool_calls')
+    .update({ message_id: messageId })
+    .in('id', toolCallRowIds);
+}
+
+async function attachAttachmentsToSession(args: {
+  supabase: SupabaseClient;
+  attachmentIds: string[];
+  userId: string;
+  sessionId: string;
+  messageId: string;
+}) {
+  if (args.attachmentIds.length === 0) return;
+  await args.supabase
+    .from('company_agent_attachments')
+    .update({ session_id: args.sessionId, message_id: args.messageId })
+    .in('id', args.attachmentIds)
+    .eq('user_id', args.userId);
+}
+
+export async function streamCompanyAgent(
+  args: StreamCompanyAgentArgs,
+  callbacks: StreamCompanyAgentCallbacks = {}
+): Promise<StreamCompanyAgentResult> {
+  const triggeredBy: CompanyAgentTriggeredBy = args.triggeredBy ?? 'user';
+  const client = getAnthropicClient();
+
+  const [memory, history] = await Promise.all([
+    loadMemory({ supabase: args.supabase, userId: args.userId, agentKind: args.agentKind }),
+    loadConversationHistory({ supabase: args.supabase, sessionId: args.sessionId }),
+  ]);
+
+  const userMessageId = await persistUserMessage({
+    supabase: args.supabase,
+    sessionId: args.sessionId,
+    agentKind: args.agentKind,
+    text: args.message,
+    attachmentIds: args.attachmentIds ?? [],
+    triggeredBy,
+  });
+  await attachAttachmentsToSession({
+    supabase: args.supabase,
+    attachmentIds: args.attachmentIds ?? [],
+    userId: args.userId,
+    sessionId: args.sessionId,
+    messageId: userMessageId,
+  });
+
+  const systemPrompt = buildCompanySystemPrompt({
+    agentKind: args.agentKind,
+    memory: memory.map((m) => ({ key: m.key, value: m.value_json })),
+    directorSummary: args.directorContext?.summary,
+  });
+
+  const skills = getSkillsForAgent(args.agentKind);
+  const tools = skills.map((s) => s.tool);
+
+  const userContent: Anthropic.Messages.ContentBlockParam[] =
+    args.messageContent && args.messageContent.length > 0
+      ? args.messageContent
+      : [{ type: 'text', text: args.message }];
+
+  const messages: Anthropic.Messages.MessageParam[] = [
+    ...history,
+    { role: 'user', content: userContent },
+  ];
+
+  const toolCallRowIds: string[] = [];
+  const toolUseIds: string[] = [];
+  const linkedActionIds: string[] = [];
+  let aggregatedText = '';
+  let totalTokensIn = 0;
+  let totalTokensOut = 0;
+  let finalStopReason: string | null = null;
+  let truncated = false;
+  const seenMemoryKeys = new Set<string>();
+
+  for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
+    if (args.abortSignal?.aborted) {
+      truncated = true;
+      break;
+    }
+
+    const stream = client.messages.stream({
+      model: CLAUDE_MODELS.reasoning,
+      max_tokens: STREAM_MAX_TOKENS,
+      system: [
+        {
+          type: 'text',
+          text: systemPrompt,
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
+      tools,
+      messages,
+    });
+
+    if (callbacks.onTextDelta) {
+      stream.on('text', (delta) => {
+        aggregatedText += delta;
+        callbacks.onTextDelta!(delta);
+      });
+    } else {
+      stream.on('text', (delta) => {
+        aggregatedText += delta;
+      });
+    }
+
+    const announcedToolStarts = new Set<string>();
+    stream.on('streamEvent', (event) => {
+      if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {
+        const block = event.content_block;
+        if (announcedToolStarts.has(block.id)) return;
+        announcedToolStarts.add(block.id);
+        callbacks.onToolCallStart?.({
+          id: block.id,
+          skillId: block.name,
+          input: {},
+        });
+      }
+    });
+
+    let finalMessage: Anthropic.Messages.Message;
+    try {
+      finalMessage = await stream.finalMessage();
+    } catch (err) {
+      if (args.abortSignal?.aborted) {
+        truncated = true;
+        break;
+      }
+      throw new CompanyAgentError('Anthropic streaming call failed', { cause: err });
+    }
+
+    totalTokensIn += finalMessage.usage?.input_tokens ?? 0;
+    totalTokensOut += finalMessage.usage?.output_tokens ?? 0;
+    callbacks.onUsage?.({
+      tokensIn: totalTokensIn,
+      tokensOut: totalTokensOut,
+    });
+
+    finalStopReason = finalMessage.stop_reason ?? null;
+
+    if (finalMessage.stop_reason !== 'tool_use') {
+      break;
+    }
+
+    const toolUseBlocks = finalMessage.content.filter(
+      (block): block is Anthropic.Messages.ToolUseBlock => block.type === 'tool_use'
+    );
+
+    if (toolUseBlocks.length === 0) {
+      break;
+    }
+
+    const skillResults = await Promise.all(
+      toolUseBlocks.map((block) =>
+        executeSkill({
+          skillId: block.name,
+          toolUseId: block.id,
+          input: (block.input as Record<string, unknown>) ?? {},
+          ctx: {
+            supabase: args.supabase,
+            userId: args.userId,
+            sessionId: args.sessionId,
+            agentKind: args.agentKind,
+            metrics: args.metrics,
+          },
+        })
+      )
+    );
+
+    for (const result of skillResults) {
+      toolUseIds.push(result.toolUseId);
+      toolCallRowIds.push(result.toolCallRowId);
+      callbacks.onToolCallComplete?.({
+        id: result.toolUseId,
+        skillId: result.skillId,
+        status: result.status,
+        output: result.output,
+        linkedActionId: result.linkedActionId ?? null,
+        error: result.error,
+        latencyMs: result.latencyMs,
+      });
+      if (result.linkedActionId) linkedActionIds.push(result.linkedActionId);
+      if (result.skillId === 'remember' && result.status === 'succeeded') {
+        const key = (result.output as { key?: string } | undefined)?.key;
+        if (key && !seenMemoryKeys.has(key)) {
+          seenMemoryKeys.add(key);
+          callbacks.onMemoryUpdated?.({ key });
+        }
+      }
+    }
+
+    const toolResultBlocks: Anthropic.Messages.ToolResultBlockParam[] = skillResults.map(
+      (result) => ({
+        type: 'tool_result',
+        tool_use_id: result.toolUseId,
+        content: JSON.stringify(result.output).slice(0, TOOL_RESULT_OUTPUT_CHAR_CAP),
+        is_error: result.status === 'failed',
+      })
+    );
+
+    messages.push(
+      { role: 'assistant', content: finalMessage.content },
+      { role: 'user', content: toolResultBlocks }
+    );
+
+    if (iteration === MAX_TOOL_ITERATIONS - 1) {
+      truncated = true;
+    }
+  }
+
+  const assistantMessageId = await persistAssistantMessage({
+    supabase: args.supabase,
+    sessionId: args.sessionId,
+    agentKind: args.agentKind,
+    text: aggregatedText,
+    toolCallIds: toolUseIds,
+    stopReason: finalStopReason,
+    truncated,
+    tokensIn: totalTokensIn,
+    tokensOut: totalTokensOut,
+  });
+
+  await attachToolCallsToMessage(args.supabase, assistantMessageId, toolCallRowIds);
+
+  await args.supabase
+    .from('company_agent_sessions')
+    .update({ last_message_at: new Date().toISOString() })
+    .eq('id', args.sessionId)
+    .eq('user_id', args.userId);
+
+  const result: StreamCompanyAgentResult = {
+    messageId: assistantMessageId,
+    text: aggregatedText,
+    toolCallIds: toolUseIds,
+    linkedActionIds,
+    tokensIn: totalTokensIn,
+    tokensOut: totalTokensOut,
+    truncated,
+  };
+
+  callbacks.onComplete?.(result);
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// Non-streaming wrapper retained for cron callers. Returns a simplified shape
+// (no structured CompanyAgentOutput): cron only consumes counts + token usage.
+// ---------------------------------------------------------------------------
+export type RunCompanyAgentArgs = StreamCompanyAgentArgs;
+
 export interface RunCompanyAgentResult {
-  output: CompanyAgentOutput;
+  text: string;
   actionIds: string[];
+  toolCallIds: string[];
   tokensIn: number;
   tokensOut: number;
 }
 
-function extractToolInput(message: Anthropic.Messages.Message): unknown {
-  const block = message.content.find(
-    (contentBlock): contentBlock is Anthropic.Messages.ToolUseBlock =>
-      contentBlock.type === 'tool_use' && contentBlock.name === COMPANY_AGENT_OUTPUT_TOOL_NAME
-  );
-
-  return block?.input;
-}
-
-function metricsToPrompt(metrics: CompanyMetricsSnapshot): string {
-  return [
-    `Total users: ${metrics.totalUsers}`,
-    `Total reports: ${metrics.totalReports}`,
-    `Unlocked reports: ${metrics.unlockedReports}`,
-    `Unlock rate: ${Math.round(metrics.unlockRate * 100)}%`,
-    `Credits purchased: ${metrics.totalCreditsPurchased}`,
-    `Estimated revenue: $${(metrics.estimatedRevenueCents / 100).toFixed(2)}`,
-    `Pending company actions: ${metrics.pendingCompanyActions}`,
-    `Active company sessions: ${metrics.activeCompanySessions}`,
-    `Captured at: ${metrics.capturedAt}`,
-  ].join('\n');
-}
-
-async function loadRecentActionsContext(args: {
-  supabase: SupabaseClient;
-  userId: string;
-}): Promise<string> {
-  const { data, error } = await args.supabase
-    .from('company_agent_actions')
-    .select('agent_kind,title,status,priority,created_at')
-    .eq('user_id', args.userId)
-    .order('created_at', { ascending: false })
-    .limit(8);
-
-  if (error || !data || data.length === 0) return 'No recent internal company actions yet.';
-
-  return data
-    .map((row) => {
-      const item = row as {
-        agent_kind: string;
-        title: string;
-        status: string;
-        priority: string;
-        created_at: string;
-      };
-      return `- [${item.status}/${item.priority}] ${item.agent_kind}: ${item.title} (${item.created_at})`;
-    })
-    .join('\n');
-}
-
 export async function runCompanyAgent(args: RunCompanyAgentArgs): Promise<RunCompanyAgentResult> {
-  const { userId, sessionId, agentKind, message, supabase, metrics, directorContext } = args;
-  const triggeredBy: CompanyAgentTriggeredBy = args.triggeredBy ?? 'user';
-  const client = getAnthropicClient();
-  const recentActionsContext = await loadRecentActionsContext({ supabase, userId });
-
-  const userPromptBase = buildCompanyUserPrompt({
-    agentKind,
-    message,
-    metricsContext: metricsToPrompt(metrics),
-    recentActionsContext,
-  });
-  const userPrompt = directorContext
-    ? `${userPromptBase}\n\n## ROLE CONTEXT\n${directorContext.summary}\n\n## STRUCTURED\n${JSON.stringify(directorContext.structured, null, 2)}`
-    : userPromptBase;
-
-  let response: Anthropic.Messages.Message;
-  try {
-    response = await client.messages.create({
-      model: CLAUDE_MODELS.reasoning,
-      max_tokens: 1800,
-      system: [
-        {
-          type: 'text',
-          text: buildCompanySystemPrompt(agentKind),
-          cache_control: { type: 'ephemeral' },
-        },
-      ],
-      tools: [COMPANY_AGENT_OUTPUT_TOOL],
-      tool_choice: { type: 'tool', name: COMPANY_AGENT_OUTPUT_TOOL_NAME },
-      messages: [
-        {
-          role: 'user',
-          content: userPrompt,
-        },
-      ],
-    });
-  } catch (err) {
-    throw new CompanyAgentError('Anthropic company-agent call failed', { cause: err });
-  }
-
-  const toolInput = extractToolInput(response);
-  const validated = CompanyAgentOutputSchema.safeParse(toolInput);
-  if (!validated.success) {
-    throw new CompanyAgentError('Company agent output failed schema validation', {
-      cause: validated.error.flatten(),
-    });
-  }
-
-  const output: CompanyAgentOutput = {
-    ...validated.data,
-    agentKind,
-    proposedActions: validated.data.proposedActions.map((action) => ({
-      ...action,
-      requiresApproval: true,
-    })),
-  };
-
-  const tokensIn = response.usage?.input_tokens ?? 0;
-  const tokensOut = response.usage?.output_tokens ?? 0;
-
-  const { error: userMessageError } = await supabase.from('company_agent_messages').insert({
-    session_id: sessionId,
-    role: 'user',
-    agent_kind: agentKind,
-    content_json: { text: message, triggeredBy },
-  });
-  if (userMessageError) {
-    throw new CompanyAgentError('Failed to persist CEO message', { cause: userMessageError });
-  }
-
-  const { error: agentMessageError } = await supabase.from('company_agent_messages').insert({
-    session_id: sessionId,
-    role: 'agent',
-    agent_kind: agentKind,
-    content_json: {
-      ...output,
-      version: COMPANY_AGENT_VERSION,
-    },
-    tokens_in: tokensIn,
-    tokens_out: tokensOut,
-  });
-  if (agentMessageError) {
-    throw new CompanyAgentError('Failed to persist company-agent message', {
-      cause: agentMessageError,
-    });
-  }
-
-  const actionRows = output.proposedActions.map((action) => ({
-    user_id: userId,
-    session_id: sessionId,
-    agent_kind: agentKind,
-    action_type: action.actionType,
-    title: action.title,
-    rationale: action.rationale,
-    priority: action.priority,
-    payload_json: action.payload,
-    status: 'awaiting_approval',
-    evidence_refs_json: output.evidenceRefs,
-    requires_approval: true,
-    triggered_by: triggeredBy,
-  }));
-
-  let actionIds: string[] = [];
-  if (actionRows.length > 0) {
-    const { data: insertedActions, error: actionsError } = await supabase
-      .from('company_agent_actions')
-      .insert(actionRows)
-      .select('id');
-
-    if (actionsError || !insertedActions) {
-      throw new CompanyAgentError('Failed to persist company-agent actions', {
-        cause: actionsError,
-      });
-    }
-
-    actionIds = insertedActions.map((row) => (row as { id: string }).id);
-  }
-
-  await supabase
-    .from('company_agent_sessions')
-    .update({ last_message_at: new Date().toISOString() })
-    .eq('id', sessionId)
-    .eq('user_id', userId);
-
+  const result = await streamCompanyAgent(args);
   return {
-    output,
-    actionIds,
-    tokensIn,
-    tokensOut,
+    text: result.text,
+    actionIds: result.linkedActionIds,
+    toolCallIds: result.toolCallIds,
+    tokensIn: result.tokensIn,
+    tokensOut: result.tokensOut,
   };
 }

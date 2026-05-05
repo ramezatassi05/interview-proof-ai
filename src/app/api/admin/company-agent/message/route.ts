@@ -3,14 +3,17 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { requireAdminUser } from '@/lib/admin';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
-import { runCeoOrchestrator } from '@/server/agents/company/ceo-orchestrator';
-import { COMPANY_AGENT_KINDS, publicCompanyAction } from '@/server/agents/company/types';
-import type { CompanyAgentActionRow, CompanyAgentSessionRow } from '@/server/agents/company/types';
+import { runCeoOrchestratorStream } from '@/server/agents/company/ceo-orchestrator';
+import { COMPANY_AGENT_KINDS } from '@/server/agents/company/types';
+import type { CompanyAgentSessionRow } from '@/server/agents/company/types';
+
+export const maxDuration = 300;
 
 const MessageSchema = z.object({
-  message: z.string().min(1).max(4000),
+  message: z.string().min(1).max(8000),
   sessionId: z.string().uuid().optional(),
   agentKind: z.enum(COMPANY_AGENT_KINDS).optional(),
+  attachmentIds: z.array(z.string().uuid()).max(5).optional(),
 });
 
 async function createSession(args: {
@@ -37,29 +40,39 @@ async function createSession(args: {
   return data as CompanyAgentSessionRow;
 }
 
+function sseEvent(name: string, payload: unknown): string {
+  return `event: ${name}\ndata: ${JSON.stringify(payload)}\n\n`;
+}
+
 export async function POST(request: NextRequest) {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return auth.response;
+
+  const allowed = await checkRateLimit({
+    prefix: 'company_agent_message',
+    identifier: `user:${auth.user.id}`,
+    maxRequests: 40,
+    windowSeconds: 3600,
+  });
+  if (!allowed) return rateLimitResponse(3600);
+
+  let body: unknown;
   try {
-    const auth = await requireAdminUser();
-    if (!auth.ok) return auth.response;
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
 
-    const allowed = await checkRateLimit({
-      prefix: 'company_agent_message',
-      identifier: `user:${auth.user.id}`,
-      maxRequests: 40,
-      windowSeconds: 3600,
-    });
-    if (!allowed) return rateLimitResponse(3600);
+  const parsed = MessageSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Invalid request', details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
 
-    const body = await request.json();
-    const parsed = MessageSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid request', details: parsed.error.flatten() },
-        { status: 400 }
-      );
-    }
-
-    let session: CompanyAgentSessionRow;
+  let session: CompanyAgentSessionRow;
+  try {
     if (parsed.data.sessionId) {
       const { data } = await auth.supabase
         .from('company_agent_sessions')
@@ -67,7 +80,6 @@ export async function POST(request: NextRequest) {
         .eq('id', parsed.data.sessionId)
         .eq('user_id', auth.user.id)
         .single();
-
       if (!data) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
       session = data as CompanyAgentSessionRow;
     } else {
@@ -79,43 +91,85 @@ export async function POST(request: NextRequest) {
         triggeredBy: 'user',
       });
     }
-
-    const result = await runCeoOrchestrator({
-      userId: auth.user.id,
-      sessionId: session.id,
-      message: parsed.data.message,
-      requestedAgentKind: parsed.data.agentKind,
-      triggeredBy: 'user',
-      supabase: auth.supabase,
-    });
-
-    const actions =
-      result.actionIds.length > 0
-        ? await auth.supabase.from('company_agent_actions').select().in('id', result.actionIds)
-        : { data: [], error: null };
-
-    if (actions.error) {
-      return NextResponse.json({ error: 'Failed to load proposed actions' }, { status: 500 });
-    }
-
-    return NextResponse.json({
-      data: {
-        sessionId: session.id,
-        output: result.output,
-        actions: (actions.data ?? []).map((row) =>
-          publicCompanyAction(row as CompanyAgentActionRow)
-        ),
-        usage: { tokensIn: result.tokensIn, tokensOut: result.tokensOut },
-      },
-    });
   } catch (err) {
-    const cause =
-      err && typeof err === 'object' && 'cause' in err ? (err as { cause: unknown }).cause : null;
-    console.error(
-      'POST /api/admin/company-agent/message error:',
-      err,
-      cause ? `\n  cause: ${JSON.stringify(cause, null, 2)}` : ''
-    );
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('[company-agent/message] session error:', err);
+    return NextResponse.json({ error: 'Failed to load or create session' }, { status: 500 });
   }
+
+  const sessionId = session.id;
+  const agentKind = parsed.data.agentKind ?? session.agent_kind;
+  const userMessage = parsed.data.message;
+  const attachmentIds = parsed.data.attachmentIds ?? [];
+
+  const abortController = new AbortController();
+  request.signal.addEventListener('abort', () => abortController.abort(), { once: true });
+
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const send = (name: string, payload: unknown) => {
+        try {
+          controller.enqueue(encoder.encode(sseEvent(name, payload)));
+        } catch {
+          // controller closed (client disconnected) — swallow
+        }
+      };
+
+      send('session', { sessionId, agentKind });
+
+      try {
+        const result = await runCeoOrchestratorStream(
+          {
+            userId: auth.user.id,
+            sessionId,
+            message: userMessage,
+            attachmentIds,
+            requestedAgentKind: agentKind,
+            triggeredBy: 'user',
+            supabase: auth.supabase,
+            abortSignal: abortController.signal,
+          },
+          {
+            onTextDelta: (delta) => send('text_delta', { delta }),
+            onToolCallStart: (event) => send('tool_call_start', event),
+            onToolCallComplete: (event) => send('tool_call_complete', event),
+            onMemoryUpdated: (event) => send('memory_updated', event),
+            onUsage: (event) => send('usage', event),
+          }
+        );
+
+        send('done', {
+          messageId: result.messageId,
+          actionIds: result.linkedActionIds,
+          truncated: result.truncated,
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown agent error';
+        const cause =
+          err && typeof err === 'object' && 'cause' in err
+            ? (err as { cause: unknown }).cause
+            : null;
+        console.error('[company-agent/message] stream error:', err, cause);
+        send('error', { message });
+      } finally {
+        try {
+          controller.close();
+        } catch {
+          // already closed
+        }
+      }
+    },
+    cancel() {
+      abortController.abort();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    },
+  });
 }

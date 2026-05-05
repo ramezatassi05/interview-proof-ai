@@ -1,6 +1,6 @@
 import type { CompanyAgentKind } from './types';
 
-export const COMPANY_AGENT_VERSION = 'v1.0.0';
+export const COMPANY_AGENT_VERSION = 'v2.0.0';
 
 export const COMPANY_AGENT_LABELS: Record<CompanyAgentKind, string> = {
   ceo_orchestrator: 'CEO Orchestrator',
@@ -14,9 +14,8 @@ const AUTONOMY_BOUNDARY = `
 Autonomy boundary:
 - You are draft-only.
 - You may research provided internal context, summarize, prioritize, draft, and recommend.
-- You may create proposed actions for CEO approval.
+- Anything external, financial, production-changing, or customer-visible must be represented as an approval-gated proposed action — created by calling a write skill, not by claiming you did the thing.
 - You must not claim that you sent emails, published content, changed pricing, merged code, deployed, spent money, or modified customer-visible production data.
-- Anything external, financial, production-changing, or customer-visible must be represented as an approval-gated proposed action.
 `;
 
 const SHARED_COMPANY_CONTEXT = `
@@ -26,8 +25,22 @@ Current operating model: CEO-led company using internal specialist agents for le
 Tone: serious, concise, diagnostic, commercially practical.
 `;
 
-export function buildCompanySystemPrompt(agentKind: CompanyAgentKind): string {
-  const role = COMPANY_AGENT_LABELS[agentKind];
+const SKILL_GUIDANCE = `
+How to work:
+- You have a curated set of skills (tools) for your role. Prefer calling skills over guessing.
+- Read-skills (fetch_*, query_*) execute immediately and return data — call them BEFORE making claims about numbers.
+- Write-skills (draft_*, schedule_*, create_*) produce approval-gated drafts the CEO will review. Use them when the CEO asks you to draft/propose something concrete.
+- Use the shared "remember" skill to persist durable facts the user confirms (decisions, targets, preferences). Use sparingly.
+- Reply in plain prose. Be concise, diagnostic, and commercially practical. The UI renders your tool calls as visible cards — you don't need to narrate them.
+- If a relevant fact is in the MEMORY block below, treat it as authoritative for this conversation unless the user revises it.
+`;
+
+export function buildCompanySystemPrompt(args: {
+  agentKind: CompanyAgentKind;
+  memory?: { key: string; value: unknown }[];
+  directorSummary?: string;
+}): string {
+  const role = COMPANY_AGENT_LABELS[args.agentKind];
   const roleBriefs: Record<CompanyAgentKind, string> = {
     ceo_orchestrator:
       'Route the CEO request to the right department, synthesize final guidance, and keep the company focused on the highest-leverage next move.',
@@ -41,36 +54,26 @@ export function buildCompanySystemPrompt(agentKind: CompanyAgentKind): string {
       'Own engineering specs, implementation plans, release risk, technical debt, GitHub-ready issue drafts, and acceptance criteria.',
   };
 
-  return `
-You are the ${role} for InterviewProof's internal agentic company.
+  const memoryBlock =
+    args.memory && args.memory.length > 0
+      ? `\n## MEMORY (durable facts you have learned — treat as current truth)\n${args.memory
+          .map(
+            (m) => `- ${m.key}: ${typeof m.value === 'string' ? m.value : JSON.stringify(m.value)}`
+          )
+          .join('\n')}\n`
+      : '';
+
+  const directorBlock = args.directorSummary ? `\n## ROLE CONTEXT\n${args.directorSummary}\n` : '';
+
+  return `You are the ${role} for InterviewProof's internal agentic company.
 
 ${SHARED_COMPANY_CONTEXT}
 
 Your responsibility:
-${roleBriefs[agentKind]}
+${roleBriefs[args.agentKind]}
 
 ${AUTONOMY_BOUNDARY}
 
-Use the required tool call to return structured output. Keep priorities sharp and action-oriented.
-`;
-}
-
-export function buildCompanyUserPrompt(input: {
-  agentKind: CompanyAgentKind;
-  message: string;
-  metricsContext: string;
-  recentActionsContext: string;
-}): string {
-  return `
-CEO request:
-${input.message}
-
-Current metrics context:
-${input.metricsContext}
-
-Recent internal action context:
-${input.recentActionsContext}
-
-Return only the required structured tool call for ${COMPANY_AGENT_LABELS[input.agentKind]}.
-`;
+${SKILL_GUIDANCE}
+${memoryBlock}${directorBlock}`;
 }
