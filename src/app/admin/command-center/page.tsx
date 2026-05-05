@@ -2,8 +2,8 @@ import { redirect } from 'next/navigation';
 import { isAdminUser } from '@/lib/admin';
 import { createClient } from '@/lib/supabase/server';
 import { loadCompanyMetrics } from '@/server/agents/company/company-metrics';
-import { publicCompanyAction } from '@/server/agents/company/types';
-import type { CompanyAgentActionRow } from '@/server/agents/company/types';
+import { publicCompanyAction, publicCompanyTask } from '@/server/agents/company/types';
+import type { CompanyAgentActionRow, CompanyTaskRow } from '@/server/agents/company/types';
 import { getHeartbeats } from '@/server/agents/company/heartbeats';
 import { loadSpendLast30dCents } from '@/server/agents/company/spend';
 import { CommandCenterClient } from './CommandCenterClient';
@@ -25,7 +25,7 @@ export default async function CommandCenterPage() {
   if (!user) redirect('/auth/login');
   if (!isAdminUser(user)) redirect('/dashboard');
 
-  const [metrics, actionsRes, decisionsRes, spend30dCents] = await Promise.all([
+  const [metrics, actionsRes, decisionsRes, spend30dCents, tasksRes] = await Promise.all([
     loadCompanyMetrics({ supabase, userId: user.id }),
     supabase
       .from('company_agent_actions')
@@ -41,6 +41,13 @@ export default async function CommandCenterPage() {
       .order('decided_at', { ascending: false })
       .limit(10),
     loadSpendLast30dCents({ supabase, userId: user.id }),
+    supabase
+      .from('company_tasks')
+      .select()
+      .eq('user_id', user.id)
+      .neq('status', 'canceled')
+      .order('updated_at', { ascending: false })
+      .limit(100),
   ]);
 
   const pendingActions = (actionsRes.data ?? []).map((row) =>
@@ -55,6 +62,8 @@ export default async function CommandCenterPage() {
     decidedAt: d.decided_at,
   }));
 
+  const tasks = (tasksRes.data ?? []).map((row) => publicCompanyTask(row as CompanyTaskRow));
+
   return (
     <CommandCenterClient
       initialBrief={{
@@ -67,6 +76,7 @@ export default async function CommandCenterPage() {
         metrics,
         pendingActions,
         decisions,
+        tasks,
         heartbeats: getHeartbeats(),
         spend30dCents,
         nextBestQuestions: [

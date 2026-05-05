@@ -13,6 +13,7 @@ import type { AgentHeartbeat } from '@/server/agents/company/heartbeats';
 import { OrgChartCard } from './OrgChartCard';
 import { AgentDrawer } from './AgentDrawer';
 import { COMPANY_AGENT_KINDS } from '@/server/agents/company/types';
+import { TaskKanban, type CompanyTask } from './TaskKanban';
 
 interface CompanyMetricsSnapshot {
   totalUsers: number;
@@ -62,6 +63,7 @@ interface BriefData {
   pendingActions: CompanyAction[];
   nextBestQuestions: string[];
   decisions?: Decision[];
+  tasks?: CompanyTask[];
   heartbeats?: AgentHeartbeat[];
   spend30dCents?: number;
 }
@@ -592,16 +594,9 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
             />
           </aside>
 
-          {/* CENTER — Kanban (Step 4) */}
+          {/* CENTER — Goals Kanban */}
           <section className="order-1 flex flex-col gap-5 lg:order-2">
-            <div className="flex min-h-[360px] flex-col items-center justify-center gap-3 border border-dashed border-[var(--border-default)] bg-[var(--bg-card)] p-6 text-center">
-              <SectionLabel>Goals · Kanban</SectionLabel>
-              <p className="max-w-md text-sm text-[var(--text-secondary)]">
-                Tap a leader on the left to delegate work. The Kanban board for{' '}
-                <span className="font-mono">company_tasks</span> lands here next — Backlog · Doing ·
-                Blocked · Done.
-              </p>
-            </div>
+            <TaskKanban initialTasks={brief.tasks ?? []} />
           </section>
 
           {/* RIGHT RAIL — pending approvals */}

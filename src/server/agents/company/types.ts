@@ -101,6 +101,38 @@ export interface CompanyMetricsSnapshot {
   capturedAt: string;
 }
 
+export const COMPANY_TASK_STATUSES = ['todo', 'doing', 'blocked', 'done', 'canceled'] as const;
+export type CompanyTaskStatus = (typeof COMPANY_TASK_STATUSES)[number];
+
+export type CompanyTaskOwnerKind = Exclude<CompanyAgentKind, 'ceo_orchestrator'>;
+
+export interface CompanyTaskRow {
+  id: string;
+  user_id: string;
+  source_action_id: string | null;
+  owner_kind: CompanyTaskOwnerKind;
+  title: string;
+  description: string | null;
+  status: CompanyTaskStatus;
+  due_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function publicCompanyTask(row: CompanyTaskRow) {
+  return {
+    id: row.id,
+    sourceActionId: row.source_action_id,
+    ownerKind: row.owner_kind,
+    title: row.title,
+    description: row.description,
+    status: row.status,
+    dueAt: row.due_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 export function publicCompanySession(row: CompanyAgentSessionRow) {
   return {
     id: row.id,
