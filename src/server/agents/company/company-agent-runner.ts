@@ -1,9 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
-import { CLAUDE_MODELS, getAnthropicClient } from '@/lib/anthropic';
+import { getAnthropicClient } from '@/lib/anthropic';
 import type { CompanyAgentKind, CompanyAgentTriggeredBy, CompanyMetricsSnapshot } from './types';
 import type { DirectorContext } from './director-context';
 import { buildCompanySystemPrompt, COMPANY_AGENT_VERSION } from './company-agent-prompts';
+import { getModelForAgent } from './agent-models';
 import { loadRoadmap } from './roadmap/loader';
 import { getSkillsForAgent } from './skills';
 import { executeSkill, type ExecuteSkillResult } from './skills/router';
@@ -289,7 +290,7 @@ export async function streamCompanyAgent(
     }
 
     const stream = client.messages.stream({
-      model: CLAUDE_MODELS.reasoning,
+      model: getModelForAgent(args.agentKind),
       max_tokens: STREAM_MAX_TOKENS,
       system: [
         {

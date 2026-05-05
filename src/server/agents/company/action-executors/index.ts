@@ -1,9 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
-import { CLAUDE_MODELS, getAnthropicClient } from '@/lib/anthropic';
+import { getAnthropicClient } from '@/lib/anthropic';
 import { loadCompanyMetrics } from '../company-metrics';
 import { VOICE_RULES_SHORT } from '../voice';
-import type { CompanyAgentActionRow, CompanyActionType } from '../types';
+import type { CompanyAgentActionRow, CompanyActionType, CompanyAgentKind } from '../types';
+import { getModelForAgent } from '../agent-models';
 
 export interface ExecutionResult {
   status: 'completed' | 'failed';
@@ -19,10 +20,15 @@ function extractText(message: Anthropic.Messages.Message): string {
     .trim();
 }
 
-async function generate(prompt: string, system: string, maxTokens = 1500): Promise<string> {
+async function generate(
+  prompt: string,
+  system: string,
+  agentKind: CompanyAgentKind,
+  maxTokens = 1500
+): Promise<string> {
   const client = getAnthropicClient();
   const response = await client.messages.create({
-    model: CLAUDE_MODELS.reasoning,
+    model: getModelForAgent(agentKind),
     max_tokens: maxTokens,
     system,
     messages: [{ role: 'user', content: prompt }],
@@ -58,6 +64,7 @@ Anything extra: ${JSON.stringify(action.payload_json, null, 2)}
 
 Write 3-4 short paragraphs. Cover what's working, what's worrying, what to do next, and anything that needs the CEO to decide. No headers, no labels, no bullets — just the way you'd say it out loud.`,
     `You are the InterviewProof CEO's Executive Assistant. ${VOICE_RULES_SHORT}`,
+    action.agent_kind,
     1200
   );
 
@@ -111,6 +118,7 @@ Spec / details: ${summary || JSON.stringify(action.payload_json)}
 
 Just give me the copy — no preamble, no "here's a draft" intro. If the channel isn't specified, treat it as a short social post under 280 chars. Be specific. Skip generic SaaS phrases.`,
     `You are the InterviewProof Director of Marketing. ${VOICE_RULES_SHORT}`,
+    action.agent_kind,
     900
   );
 
@@ -151,6 +159,7 @@ Anything extra: ${JSON.stringify(action.payload_json, null, 2)}
 
 3 short paragraphs. Where things stand, what you'd recommend, what could go wrong. Use real numbers in sentences. No headers, no bullets.`,
     `You are the InterviewProof Director of Finance. ${VOICE_RULES_SHORT}`,
+    action.agent_kind,
     1200
   );
 
@@ -186,6 +195,7 @@ Anything extra: ${JSON.stringify(action.payload_json, null, 2)}
 
 Walk through what we're building, the constraints to keep in mind, how you'd approach it, what "done" looks like, and a rough size (small / medium / large). Write it as flowing prose, not headers and bullets. Be specific — no hedging.`,
     `You are the InterviewProof Director of Engineering. ${VOICE_RULES_SHORT}`,
+    action.agent_kind,
     1500
   );
 
@@ -293,6 +303,7 @@ ${JSON.stringify(metrics, null, 2)}
 
 Then call out the one number to watch this week and why. Keep it short.`,
     `You are the InterviewProof CEO's Executive Assistant. ${VOICE_RULES_SHORT}`,
+    action.agent_kind,
     800
   );
   return {

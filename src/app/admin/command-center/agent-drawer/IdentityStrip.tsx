@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import type { CompanyAgentKind } from '@/server/agents/company/types';
+import { getModelLabelForAgent } from '@/server/agents/company/agent-models';
 import { agentMeta } from '../agents';
 import { skillsForAgent } from './agent-skill-catalog';
 
@@ -132,7 +133,12 @@ export function IdentityStrip({ agentKind, memoryCount }: IdentityStripProps) {
   return (
     <div className="relative flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-[var(--border-default)] bg-[var(--bg-elevated)] px-4 py-2.5">
       <Badge variant="accent">{meta.label}</Badge>
-      <span className="text-[11px] tabular-nums text-[var(--text-muted)]">Sonnet 4.6</span>
+      <span
+        className="text-[11px] tabular-nums text-[var(--text-muted)]"
+        title="Model running this agent"
+      >
+        {getModelLabelForAgent(agentKind)}
+      </span>
       <span className="text-[11px] text-[var(--text-muted)]" aria-hidden>
         ·
       </span>

@@ -19,6 +19,13 @@ export function getAnthropicClient(): Anthropic {
 }
 
 export const CLAUDE_MODELS = {
-  // Claude Sonnet 4.6 for complex reasoning tasks (analysis)
+  // Claude Sonnet 4.6 — the default working model (analysis, specialists, directors).
   reasoning: 'claude-sonnet-4-6' as const,
+  // Claude Opus 4.7 — strongest model, used for cross-cutting orchestration where
+  // the agent has to reason over every other domain at once.
+  reasoningPlus: 'claude-opus-4-7' as const,
+  // Claude Haiku 4.5 — cheap + fast, for narrow utility paths where Sonnet is overkill.
+  reasoningFast: 'claude-haiku-4-5-20251001' as const,
 } as const;
+
+export type ClaudeModelId = (typeof CLAUDE_MODELS)[keyof typeof CLAUDE_MODELS];
