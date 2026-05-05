@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -11,7 +11,7 @@ import { SectionLabel, MetricTile, PriorityBadge, StatusBadge, humanizeKey } fro
 import { DecisionsStrip, type Decision } from './DecisionsStrip';
 import type { AgentHeartbeat } from '@/server/agents/company/heartbeats';
 import { OrgChartCard } from './OrgChartCard';
-import { AgentDrawer } from './AgentDrawer';
+import { AgentDrawer } from './agent-drawer/AgentDrawer';
 import { COMPANY_AGENT_KINDS } from '@/server/agents/company/types';
 import { TaskKanban, type CompanyTask } from './TaskKanban';
 
@@ -48,13 +48,6 @@ interface CompanyAction {
   completedAt?: string | null;
   error?: string | null;
   createdAt: string;
-}
-
-interface CompanyAgentOutput {
-  agentKind: CompanyAgentKind;
-  summary: string;
-  priorities: string[];
-  proposedActions: CompanyAction[];
 }
 
 interface BriefData {
@@ -310,40 +303,17 @@ function ApprovalDetailModal({
   );
 }
 
-function ProposedActionRow({ action }: { action: CompanyAction }) {
-  return (
-    <div className="flex items-start gap-3 border-l-2 border-[var(--border-default)] pl-3 py-1.5">
-      <PriorityBadge priority={action.priority} />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-[var(--text-primary)]" title={action.title}>
-          {action.title}
-        </p>
-        <p className="mt-0.5 line-clamp-2 text-xs text-[var(--text-secondary)]">
-          {action.rationale}
-        </p>
-      </div>
-      <StatusBadge status={action.status} />
-    </div>
-  );
-}
-
 export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData }) {
   const [brief, setBrief] = useState(initialBrief);
   const [selectedAgent, setSelectedAgent] = useState<CompanyAgentKind>('ceo_orchestrator');
-  const [message, setMessage] = useState('');
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [output, setOutput] = useState<CompanyAgentOutput | null>(null);
   const [actions, setActions] = useState<CompanyAction[]>(initialBrief.pendingActions);
-  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [approvalError, setApprovalError] = useState<string | null>(null);
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
   const [recentExecutions, setRecentExecutions] = useState<CompanyAction[]>([]);
   const [openActionId, setOpenActionId] = useState<string | null>(null);
   const [decisions, setDecisions] = useState<Decision[]>(initialBrief.decisions ?? []);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
   const openAction = useMemo(
     () => actions.find((a) => a.id === openActionId) ?? null,
@@ -351,7 +321,6 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
   );
 
   const metrics = brief.metrics;
-  const activeAgent = agentMeta(selectedAgent);
   const pendingApprovals = useMemo(
     () => actions.filter((a) => a.status === 'awaiting_approval'),
     [actions]
@@ -367,17 +336,8 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
   }, [pendingApprovals]);
 
   const openAgentDrawer = useCallback((agent: CompanyAgentKind) => {
-    setSelectedAgent((prev) => {
-      if (prev !== agent) {
-        setSessionId(null);
-        setOutput(null);
-        setMessage('');
-        setError(null);
-      }
-      return agent;
-    });
+    setSelectedAgent(agent);
     setDrawerOpen(true);
-    setTimeout(() => composerRef.current?.focus(), 50);
   }, []);
 
   const refreshBrief = useCallback(async () => {
@@ -395,53 +355,6 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
       setRefreshing(false);
     }
   }, []);
-
-  const sendMessage = useCallback(async () => {
-    const trimmed = message.trim();
-    if (!trimmed || loading) return;
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch('/api/admin/company-agent/message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: trimmed,
-          sessionId: sessionId ?? undefined,
-          agentKind: selectedAgent,
-        }),
-      });
-
-      const json = (await res.json()) as {
-        data?: {
-          sessionId: string;
-          output: Omit<CompanyAgentOutput, 'proposedActions'> & {
-            proposedActions: Omit<CompanyAction, 'id' | 'sessionId' | 'status' | 'createdAt'>[];
-          };
-          actions: CompanyAction[];
-        };
-        error?: string;
-      };
-
-      if (!res.ok || !json.data) {
-        throw new Error(json.error ?? 'Company agent request failed');
-      }
-
-      setSessionId(json.data.sessionId);
-      setOutput({
-        ...json.data.output,
-        proposedActions: json.data.actions,
-      });
-      setActions((prev) => [...json.data!.actions, ...prev]);
-      setMessage('');
-      await refreshBrief();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
-    } finally {
-      setLoading(false);
-    }
-  }, [message, loading, sessionId, selectedAgent, refreshBrief]);
 
   const transitionAction = useCallback(
     async (id: string, status: 'approved' | 'rejected') => {
@@ -472,26 +385,6 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
     },
     [actions, refreshBrief]
   );
-
-  useEffect(() => {
-    function handleKey(event: KeyboardEvent) {
-      if (
-        (event.metaKey || event.ctrlKey) &&
-        event.key === 'Enter' &&
-        document.activeElement === composerRef.current
-      ) {
-        event.preventDefault();
-        void sendMessage();
-      }
-    }
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [sendMessage]);
-
-  function fillPrompt(prompt: string) {
-    setMessage(prompt);
-    composerRef.current?.focus();
-  }
 
   const nextHeartbeatIso = useMemo(() => {
     const fires = (brief.heartbeats ?? [])
@@ -671,20 +564,9 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
       <AgentDrawer
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
-        activeAgent={activeAgent}
-        message={message}
-        onMessageChange={setMessage}
-        onSend={sendMessage}
-        loading={loading}
-        error={error}
-        onDismissError={() => setError(null)}
-        output={output}
-        composerRef={composerRef}
+        agentKind={selectedAgent}
         suggestedPrompts={brief.nextBestQuestions}
-        onPickPrompt={fillPrompt}
-        renderProposedAction={(action) => (
-          <ProposedActionRow key={action.id} action={action as CompanyAction} />
-        )}
+        onActionsCreated={refreshBrief}
       />
     </main>
   );
