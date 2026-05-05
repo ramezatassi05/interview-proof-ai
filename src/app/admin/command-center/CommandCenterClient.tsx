@@ -11,7 +11,9 @@ import { SoftLabel, MetricTile, PriorityBadge, StatusBadge } from './_primitives
 import { friendlyActionType } from './_action-copy';
 import { DecisionsStrip, type Decision } from './DecisionsStrip';
 import type { AgentHeartbeat } from '@/server/agents/company/heartbeats';
+import type { RoadmapStatus } from '@/server/agents/company/roadmap/types';
 import { OrgChartCard } from './OrgChartCard';
+import { RoadmapStatusCard } from './RoadmapStatusCard';
 import { AgentDrawer } from './agent-drawer/AgentDrawer';
 import { COMPANY_AGENT_KINDS } from '@/server/agents/company/types';
 import { TaskKanban, type CompanyTask } from './TaskKanban';
@@ -60,6 +62,7 @@ interface BriefData {
   tasks?: CompanyTask[];
   heartbeats?: AgentHeartbeat[];
   spend30dCents?: number;
+  roadmapStatus?: RoadmapStatus;
 }
 
 function formatMoney(cents: number): string {
@@ -516,6 +519,8 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
               heartbeats={brief.heartbeats ?? []}
               onSelect={openAgentDrawer}
             />
+
+            {brief.roadmapStatus && <RoadmapStatusCard initialStatus={brief.roadmapStatus} />}
           </aside>
 
           {/* CENTER — Goals Kanban */}

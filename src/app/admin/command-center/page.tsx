@@ -6,6 +6,7 @@ import { publicCompanyAction, publicCompanyTask } from '@/server/agents/company/
 import type { CompanyAgentActionRow, CompanyTaskRow } from '@/server/agents/company/types';
 import { getHeartbeats } from '@/server/agents/company/heartbeats';
 import { loadSpendLast30dCents } from '@/server/agents/company/spend';
+import { loadRoadmapStatus } from '@/server/agents/company/roadmap/loader';
 import { CommandCenterClient } from './CommandCenterClient';
 
 interface DecisionRow {
@@ -25,30 +26,32 @@ export default async function CommandCenterPage() {
   if (!user) redirect('/auth/login');
   if (!isAdminUser(user)) redirect('/dashboard');
 
-  const [metrics, actionsRes, decisionsRes, spend30dCents, tasksRes] = await Promise.all([
-    loadCompanyMetrics({ supabase, userId: user.id }),
-    supabase
-      .from('company_agent_actions')
-      .select()
-      .eq('user_id', user.id)
-      .eq('status', 'awaiting_approval')
-      .order('created_at', { ascending: false })
-      .limit(8),
-    supabase
-      .from('company_decisions')
-      .select('id, title, decision_text, rationale, decided_at')
-      .eq('user_id', user.id)
-      .order('decided_at', { ascending: false })
-      .limit(10),
-    loadSpendLast30dCents({ supabase, userId: user.id }),
-    supabase
-      .from('company_tasks')
-      .select()
-      .eq('user_id', user.id)
-      .neq('status', 'canceled')
-      .order('updated_at', { ascending: false })
-      .limit(100),
-  ]);
+  const [metrics, actionsRes, decisionsRes, spend30dCents, tasksRes, roadmapStatus] =
+    await Promise.all([
+      loadCompanyMetrics({ supabase, userId: user.id }),
+      supabase
+        .from('company_agent_actions')
+        .select()
+        .eq('user_id', user.id)
+        .eq('status', 'awaiting_approval')
+        .order('created_at', { ascending: false })
+        .limit(8),
+      supabase
+        .from('company_decisions')
+        .select('id, title, decision_text, rationale, decided_at')
+        .eq('user_id', user.id)
+        .order('decided_at', { ascending: false })
+        .limit(10),
+      loadSpendLast30dCents({ supabase, userId: user.id }),
+      supabase
+        .from('company_tasks')
+        .select()
+        .eq('user_id', user.id)
+        .neq('status', 'canceled')
+        .order('updated_at', { ascending: false })
+        .limit(100),
+      loadRoadmapStatus(),
+    ]);
 
   const pendingActions = (actionsRes.data ?? []).map((row) =>
     publicCompanyAction(row as CompanyAgentActionRow)
@@ -79,6 +82,7 @@ export default async function CommandCenterPage() {
         tasks,
         heartbeats: getHeartbeats(),
         spend30dCents,
+        roadmapStatus,
         nextBestQuestions: [
           'What should I focus on today?',
           'Give me a marketing plan for this week.',

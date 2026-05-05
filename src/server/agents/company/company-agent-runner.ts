@@ -4,6 +4,7 @@ import { CLAUDE_MODELS, getAnthropicClient } from '@/lib/anthropic';
 import type { CompanyAgentKind, CompanyAgentTriggeredBy, CompanyMetricsSnapshot } from './types';
 import type { DirectorContext } from './director-context';
 import { buildCompanySystemPrompt, COMPANY_AGENT_VERSION } from './company-agent-prompts';
+import { loadRoadmap } from './roadmap/loader';
 import { getSkillsForAgent } from './skills';
 import { executeSkill, type ExecuteSkillResult } from './skills/router';
 
@@ -229,9 +230,10 @@ export async function streamCompanyAgent(
   const triggeredBy: CompanyAgentTriggeredBy = args.triggeredBy ?? 'user';
   const client = getAnthropicClient();
 
-  const [memory, history] = await Promise.all([
+  const [memory, history, roadmap] = await Promise.all([
     loadMemory({ supabase: args.supabase, userId: args.userId, agentKind: args.agentKind }),
     loadConversationHistory({ supabase: args.supabase, sessionId: args.sessionId }),
+    loadRoadmap({ agentKind: args.agentKind }),
   ]);
 
   const userMessageId = await persistUserMessage({
@@ -254,6 +256,7 @@ export async function streamCompanyAgent(
     agentKind: args.agentKind,
     memory: memory.map((m) => ({ key: m.key, value: m.value_json })),
     directorSummary: args.directorContext?.summary,
+    roadmap,
   });
 
   const skills = getSkillsForAgent(args.agentKind);

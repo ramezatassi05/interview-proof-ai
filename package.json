@@ -52,6 +52,7 @@
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "csv-parse": "^6.2.1",
     "d3": "^7.9.0",
     "embla-carousel-react": "^8.6.0",
     "gray-matter": "^4.0.3",

@@ -1,4 +1,6 @@
 import type { CompanyAgentKind } from './types';
+import type { RoadmapContext, RoadmapDomain, RoadmapDomainKey } from './roadmap/types';
+import { isActiveRow } from './roadmap/loader';
 import { VOICE_RULES, roleFraming } from './voice';
 
 export const COMPANY_AGENT_VERSION = 'v3.0.0';
@@ -9,6 +11,12 @@ export const COMPANY_AGENT_LABELS: Record<CompanyAgentKind, string> = {
   director_marketing: 'Director of Marketing',
   director_finance: 'Director of Finance',
   director_engineering: 'Director of Engineering',
+};
+
+const DOMAIN_LABELS: Record<RoadmapDomainKey, string> = {
+  product: 'PRODUCT ROADMAP — roadmap/product.csv',
+  marketing: 'MARKETING ROADMAP — roadmap/marketing.csv',
+  finance: 'FINANCE ROADMAP — roadmap/finance.csv',
 };
 
 const COMPANY_CONTEXT = `About InterviewProof:
@@ -27,10 +35,76 @@ const WHAT_YOU_CANT_DO = `What you can and can't do:
 - You can't actually send the email, publish the post, change pricing, ship code, or move money. Anything like that has to go through a drafting skill so the CEO can approve it first.
 - Don't say you did something external when you only drafted it.`;
 
+const ROADMAP_DISCIPLINE = `Roadmap discipline (binding):
+- The NORTH STAR and your domain ROADMAP below are the source of truth for direction. Domain CSVs say WHAT to do. The north star says WHY, what stage we're at, and what NOT to do right now.
+- Your autonomous proposals must align with the north star and tie back to an active row in your roadmap. If nothing aligns, propose nothing — say so explicitly.
+- Never propose work listed under "What NOT to do right now" in the north star.
+- When a roadmap row's Inspiration/Notes column has direction from the CEO (e.g., a reference reel, a tone, a structure), treat that as binding creative input. You have technical freedom on the HOW — not the WHAT.
+- If a domain you'd need is not loaded ("(no file)"), do not invent it. Say it's missing and ask the CEO to create it.`;
+
+function formatDomain(domainKey: RoadmapDomainKey, domain: RoadmapDomain | null): string {
+  const heading = `## ${DOMAIN_LABELS[domainKey]}`;
+  if (!domain) return `${heading}\n(no file — roadmap/${domainKey}.csv not loaded)`;
+
+  const truncate = (s: string, n: number) => {
+    const flat = s.replace(/\s+/g, ' ').trim();
+    return flat.length > n ? flat.slice(0, n) + '…' : flat;
+  };
+
+  const active = domain.rows.filter(isActiveRow);
+  const rowsBlock =
+    active.length === 0
+      ? '(no active rows)'
+      : active
+          .map((r) => {
+            const lines = [
+              `- ${r.id} | ${r.title} | ${r.priority || '—'} | ${r.status || '—'} | ${
+                r.phase || '—'
+              }`,
+            ];
+            if (r.description) lines.push(`    Description: ${truncate(r.description, 280)}`);
+            if (r.inspiration) lines.push(`    Inspiration: ${truncate(r.inspiration, 280)}`);
+            return lines.join('\n');
+          })
+          .join('\n');
+
+  const notesBlock = domain.notes ? `\n\nDeep notes:\n${domain.notes}` : '';
+  return `${heading}\nActive rows:\n${rowsBlock}${notesBlock}`;
+}
+
+function buildRoadmapBlock(roadmap: RoadmapContext | undefined, agentKind: CompanyAgentKind): string {
+  if (!roadmap) return '';
+
+  const sections: string[] = [];
+
+  if (roadmap.northStar) {
+    sections.push(`## NORTH STAR — roadmap/north-star.md\n${roadmap.northStar}`);
+  } else {
+    sections.push(
+      `## NORTH STAR\n(no roadmap/north-star.md found — operate cautiously and ask the CEO for direction before proposing work)`
+    );
+  }
+
+  if (agentKind === 'ceo_orchestrator' || agentKind === 'executive_assistant') {
+    sections.push(formatDomain('product', roadmap.product));
+    sections.push(formatDomain('marketing', roadmap.marketing));
+    sections.push(formatDomain('finance', roadmap.finance));
+  } else if (agentKind === 'director_engineering') {
+    sections.push(formatDomain('product', roadmap.product));
+  } else if (agentKind === 'director_marketing') {
+    sections.push(formatDomain('marketing', roadmap.marketing));
+  } else if (agentKind === 'director_finance') {
+    sections.push(formatDomain('finance', roadmap.finance));
+  }
+
+  return `\n${sections.join('\n\n')}\n\n${ROADMAP_DISCIPLINE}\n`;
+}
+
 export function buildCompanySystemPrompt(args: {
   agentKind: CompanyAgentKind;
   memory?: { key: string; value: unknown }[];
   directorSummary?: string;
+  roadmap?: RoadmapContext;
 }): string {
   const role = COMPANY_AGENT_LABELS[args.agentKind];
 
@@ -47,6 +121,8 @@ export function buildCompanySystemPrompt(args: {
     ? `\n## What's going on right now\n${args.directorSummary}\n`
     : '';
 
+  const roadmapBlock = buildRoadmapBlock(args.roadmap, args.agentKind);
+
   return `You are the ${role} for InterviewProof.
 
 ${roleFraming(args.agentKind)}
@@ -58,5 +134,5 @@ ${COMPANY_CONTEXT}
 ${HOW_TO_WORK}
 
 ${WHAT_YOU_CANT_DO}
-${memoryBlock}${directorBlock}`;
+${memoryBlock}${roadmapBlock}${directorBlock}`;
 }

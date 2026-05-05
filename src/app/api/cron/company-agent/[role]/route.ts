@@ -22,15 +22,22 @@ export const maxDuration = 300;
 
 const CRON_AGENT_KINDS = COMPANY_AGENT_KINDS.filter((k) => k !== 'ceo_orchestrator');
 
+const ROADMAP_GROUNDING =
+  ' Anchor every proposal to an active row in your roadmap and to the north star. If nothing in your roadmap is actionable right now, propose nothing — say so explicitly. Do not propose work that violates the north star\'s "What NOT to do right now" list.';
+
 const SELF_PROMPTS: Record<Exclude<CompanyAgentKind, 'ceo_orchestrator'>, string> = {
   executive_assistant:
-    'Daily morning brief. Review pending approvals, recent actions, and open tasks. Propose 1–3 follow-ups the operator should handle today.',
+    'Daily morning brief. Review pending approvals, recent actions, and open tasks. Propose 1–3 follow-ups the operator should handle today.' +
+    ROADMAP_GROUNDING,
   director_marketing:
-    'Weekly review. Inspect last 7 days of signups, reports, and unlock rate. Propose 1–3 highest-leverage growth actions, each with clear evidence.',
+    'Weekly review. Walk through your active roadmap rows in roadmap/marketing.csv and the north star. For each active row where you can take a meaningful next step, propose it. Skip rows that are not actionable yet.' +
+    ROADMAP_GROUNDING,
   director_engineering:
-    'Weekly review. Inspect last 7 days of audit failures, recent migrations, and shipped engineering proposals. Propose 1–3 actions to reduce risk or accelerate shipping velocity.',
+    'Weekly review. Walk through your active roadmap rows in roadmap/product.csv and the north star. For each active row where you can take a meaningful next step (spec, plan, decision, unblocker), propose it. Skip rows not yet actionable.' +
+    ROADMAP_GROUNDING,
   director_finance:
-    'End-of-week financial review. Inspect last 30 days of credit purchases, paying users, unlock rate, and runway. Propose 1–3 actions: pricing tweak, retention investment, or burn cut.',
+    'End-of-week financial review. Walk through roadmap/finance.csv and the north star\'s constraints (burn target, runway). Propose 1–3 actions tied to active line items or the north star\'s priorities — pricing, vendor cuts, or runway moves.' +
+    ROADMAP_GROUNDING,
 };
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ role: string }> }) {
