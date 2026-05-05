@@ -8,6 +8,8 @@ import { relativeTime } from '@/lib/relative-time';
 import type { CompanyAgentKind } from '@/server/agents/company/types';
 import { AGENT_OPTIONS, agentMeta } from './agents';
 import { SectionLabel, MetricTile, PriorityBadge, StatusBadge, humanizeKey } from './_primitives';
+import { DecisionsStrip, type Decision } from './DecisionsStrip';
+import type { AgentHeartbeat } from '@/server/agents/company/heartbeats';
 
 interface CompanyMetricsSnapshot {
   totalUsers: number;
@@ -56,6 +58,9 @@ interface BriefData {
   metrics: CompanyMetricsSnapshot;
   pendingActions: CompanyAction[];
   nextBestQuestions: string[];
+  decisions?: Decision[];
+  heartbeats?: AgentHeartbeat[];
+  spend30dCents?: number;
 }
 
 function formatMoney(cents: number): string {
@@ -64,6 +69,18 @@ function formatMoney(cents: number): string {
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(cents / 100);
+}
+
+function formatHeartbeat(iso: string): string {
+  const target = new Date(iso).getTime();
+  const diffMs = target - Date.now();
+  if (diffMs <= 0) return 'now';
+  const min = Math.floor(diffMs / 60_000);
+  if (min < 60) return `in ${min}m`;
+  const hr = Math.floor(min / 60);
+  if (hr < 48) return `in ${hr}h`;
+  const day = Math.floor(hr / 24);
+  return `in ${day}d`;
 }
 
 function ApprovalRow({
@@ -319,6 +336,7 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
   const [recentExecutions, setRecentExecutions] = useState<CompanyAction[]>([]);
   const [openActionId, setOpenActionId] = useState<string | null>(null);
+  const [decisions, setDecisions] = useState<Decision[]>(initialBrief.decisions ?? []);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
   const openAction = useMemo(
@@ -341,6 +359,7 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
       const json = (await res.json()) as { data: BriefData };
       setBrief(json.data);
       setActions(json.data.pendingActions);
+      if (json.data.decisions) setDecisions(json.data.decisions);
     } finally {
       setRefreshing(false);
     }
@@ -443,6 +462,14 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
     composerRef.current?.focus();
   }
 
+  const nextHeartbeatIso = useMemo(() => {
+    const fires = (brief.heartbeats ?? [])
+      .map((h) => h.nextFireIso)
+      .filter((iso): iso is string => Boolean(iso))
+      .sort();
+    return fires[0] ?? null;
+  }, [brief.heartbeats]);
+
   const metricTiles = [
     {
       label: 'Users',
@@ -457,6 +484,16 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
       label: 'Pending',
       value: metrics.pendingCompanyActions.toLocaleString(),
       emphasis: metrics.pendingCompanyActions > 0,
+    },
+    {
+      label: 'Next Heartbeat',
+      value: nextHeartbeatIso ? formatHeartbeat(nextHeartbeatIso) : '—',
+      caption: nextHeartbeatIso ? new Date(nextHeartbeatIso).toUTCString().slice(0, 22) : undefined,
+    },
+    {
+      label: 'Spend (30d)',
+      value: typeof brief.spend30dCents === 'number' ? formatMoney(brief.spend30dCents) : '—',
+      caption: 'Sonnet 4.6 token cost',
     },
   ];
 
@@ -491,6 +528,11 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
             <MetricTile key={tile.label} {...tile} />
           ))}
         </section>
+
+        <DecisionsStrip
+          decisions={decisions}
+          onCreated={(d) => setDecisions((prev) => [d, ...prev].slice(0, 10))}
+        />
 
         <section className="grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)_320px]">
           {/* LEFT RAIL */}

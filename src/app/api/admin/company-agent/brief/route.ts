@@ -3,6 +3,16 @@ import { requireAdminUser } from '@/lib/admin';
 import { loadCompanyMetrics } from '@/server/agents/company/company-metrics';
 import { publicCompanyAction } from '@/server/agents/company/types';
 import type { CompanyAgentActionRow } from '@/server/agents/company/types';
+import { getHeartbeats } from '@/server/agents/company/heartbeats';
+import { loadSpendLast30dCents } from '@/server/agents/company/spend';
+
+interface DecisionRow {
+  id: string;
+  title: string;
+  decision_text: string;
+  rationale: string | null;
+  decided_at: string;
+}
 
 export async function GET() {
   try {
@@ -14,17 +24,36 @@ export async function GET() {
       userId: auth.user.id,
     });
 
-    const { data: actions } = await auth.supabase
-      .from('company_agent_actions')
-      .select()
-      .eq('user_id', auth.user.id)
-      .eq('status', 'awaiting_approval')
-      .order('created_at', { ascending: false })
-      .limit(8);
+    const [actionsRes, decisionsRes, spend30dCents] = await Promise.all([
+      auth.supabase
+        .from('company_agent_actions')
+        .select()
+        .eq('user_id', auth.user.id)
+        .eq('status', 'awaiting_approval')
+        .order('created_at', { ascending: false })
+        .limit(8),
+      auth.supabase
+        .from('company_decisions')
+        .select('id, title, decision_text, rationale, decided_at')
+        .eq('user_id', auth.user.id)
+        .order('decided_at', { ascending: false })
+        .limit(10),
+      loadSpendLast30dCents({ supabase: auth.supabase, userId: auth.user.id }),
+    ]);
 
-    const pendingActions = (actions ?? []).map((row) =>
+    const pendingActions = (actionsRes.data ?? []).map((row) =>
       publicCompanyAction(row as CompanyAgentActionRow)
     );
+
+    const decisions = ((decisionsRes.data ?? []) as DecisionRow[]).map((d) => ({
+      id: d.id,
+      title: d.title,
+      decisionText: d.decision_text,
+      rationale: d.rationale,
+      decidedAt: d.decided_at,
+    }));
+
+    const heartbeats = getHeartbeats();
 
     return NextResponse.json({
       data: {
@@ -38,6 +67,9 @@ export async function GET() {
             : 'No internal company actions are waiting on you. This is a good moment to assign a focused department task.',
         metrics,
         pendingActions,
+        decisions,
+        heartbeats,
+        spend30dCents,
         nextBestQuestions: [
           'What should I focus on today?',
           'Give me a marketing plan for this week.',
