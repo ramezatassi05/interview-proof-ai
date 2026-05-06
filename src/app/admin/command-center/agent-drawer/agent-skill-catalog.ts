@@ -18,6 +18,37 @@ export const SKILL_CATALOG: SkillCatalogEntry[] = [
     description: "Hold onto a fact the CEO wants you to keep in mind next time.",
     icon: 'brain',
   },
+  {
+    id: 'escalate_to_ceo',
+    agentKinds: [
+      'executive_assistant',
+      'director_marketing',
+      'director_finance',
+      'director_engineering',
+    ],
+    kind: 'write',
+    label: 'Escalate to CEO',
+    description: "Flag a stuck or out-of-scope task so the CEO addresses it next.",
+    icon: 'alert-triangle',
+  },
+
+  // ceo_orchestrator
+  {
+    id: 'delegate_task',
+    agentKinds: ['ceo_orchestrator'],
+    kind: 'write',
+    label: 'Delegate to a director',
+    description: 'Hand a task to one of your directors with a clear rationale.',
+    icon: 'send',
+  },
+  {
+    id: 'consult_director',
+    agentKinds: ['ceo_orchestrator'],
+    kind: 'read',
+    label: 'Ask a director',
+    description: "Get a domain answer from one of your directors and bring it into your reply.",
+    icon: 'message-circle',
+  },
 
   // executive_assistant
   {

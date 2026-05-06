@@ -31,6 +31,9 @@ export interface SkillContext {
   agentKind: CompanyAgentKind;
   metrics: CompanyMetricsSnapshot;
   persistAction(draft: ActionDraft): Promise<{ actionId: string }>;
+  // Mutable per-turn budget for nested-agent skills (consult_director). Only
+  // populated for the CEO. Skills decrement `remaining` on success.
+  consultBudget?: { remaining: number };
 }
 
 export type SkillResultStatus = 'succeeded' | 'awaiting_approval' | 'failed';

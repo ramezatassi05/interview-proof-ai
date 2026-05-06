@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { CompanyAgentKind } from './types';
+import { loadCeoContext } from './ceo-context';
 
 export interface DirectorContext {
   summary: string;
@@ -232,6 +233,7 @@ export async function loadDirectorContext(args: LoadDirectorContextArgs): Promis
     case 'executive_assistant':
       return loadExecutiveAssistantContext(supabase, userId);
     case 'ceo_orchestrator':
+      return loadCeoContext({ supabase, userId });
     default:
       return { summary: '', structured: {} };
   }

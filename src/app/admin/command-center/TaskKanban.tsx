@@ -25,6 +25,10 @@ export interface CompanyTask {
   description: string | null;
   status: CompanyTaskStatus;
   dueAt: string | null;
+  delegatedBy: string | null;
+  delegationRationale: string | null;
+  escalatedAt: string | null;
+  escalationReason: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,18 +56,26 @@ function TaskCard({ task }: { task: CompanyTask }) {
       }
     : undefined;
 
+  const fromCeo = task.delegatedBy === 'ceo_orchestrator';
+  const isEscalated = !!task.escalatedAt;
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
-      className={`cursor-grab border border-[var(--border-default)] bg-[var(--bg-card)] p-2.5 active:cursor-grabbing ${
-        isDragging ? 'opacity-60 shadow-lg' : ''
-      }`}
+      title={isEscalated && task.escalationReason ? `Escalated: ${task.escalationReason}` : undefined}
+      className={`cursor-grab border bg-[var(--bg-card)] p-2.5 active:cursor-grabbing ${
+        isEscalated
+          ? 'border-[var(--border-default)] border-l-2 border-l-[var(--color-warning,#f5a524)]'
+          : 'border-[var(--border-default)]'
+      } ${isDragging ? 'opacity-60 shadow-lg' : ''}`}
     >
       <div className="flex flex-wrap items-center gap-1.5">
         <Badge variant="default">{ownerLabel(task.ownerKind)}</Badge>
+        {fromCeo && <Badge variant="accent">from CEO</Badge>}
+        {isEscalated && <Badge variant="default">escalated</Badge>}
         <span className="ml-auto text-[10px] tabular-nums text-[var(--text-muted)]">
           {relativeTime(task.updatedAt)}
         </span>
@@ -77,6 +89,11 @@ function TaskCard({ task }: { task: CompanyTask }) {
       {task.description && (
         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--text-secondary)]">
           {task.description}
+        </p>
+      )}
+      {fromCeo && task.delegationRationale && (
+        <p className="mt-1 line-clamp-2 text-[11px] italic leading-snug text-[var(--text-muted)]">
+          “{task.delegationRationale}”
         </p>
       )}
       {task.dueAt && (

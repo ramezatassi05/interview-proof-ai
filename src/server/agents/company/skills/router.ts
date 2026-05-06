@@ -208,6 +208,7 @@ export async function executeSkill(args: ExecuteSkillArgs): Promise<ExecuteSkill
       sessionId: ctx.sessionId,
       agentKind: ctx.agentKind,
     }),
+    consultBudget: ctx.consultBudget,
   };
 
   let result: SkillResult;

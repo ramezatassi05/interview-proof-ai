@@ -115,6 +115,10 @@ export interface CompanyTaskRow {
   description: string | null;
   status: CompanyTaskStatus;
   due_at: string | null;
+  delegated_by: CompanyAgentKind | null;
+  delegation_rationale: string | null;
+  escalated_at: string | null;
+  escalation_reason: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -128,6 +132,10 @@ export function publicCompanyTask(row: CompanyTaskRow) {
     description: row.description,
     status: row.status,
     dueAt: row.due_at,
+    delegatedBy: row.delegated_by ?? null,
+    delegationRationale: row.delegation_rationale ?? null,
+    escalatedAt: row.escalated_at ?? null,
+    escalationReason: row.escalation_reason ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

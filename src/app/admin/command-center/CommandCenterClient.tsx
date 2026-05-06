@@ -367,6 +367,23 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
     return counts;
   }, [pendingApprovals]);
 
+  const taskCountsByOwner = useMemo(() => {
+    const counts = Object.fromEntries(
+      COMPANY_AGENT_KINDS.map((k) => [k, { delegated: 0, escalated: 0 }])
+    ) as Record<CompanyAgentKind, { delegated: number; escalated: number }>;
+    for (const t of brief.tasks ?? []) {
+      const bucket = counts[t.ownerKind];
+      if (!bucket) continue;
+      if (t.delegatedBy === 'ceo_orchestrator' && t.status !== 'done' && t.status !== 'canceled') {
+        bucket.delegated += 1;
+      }
+      if (t.escalatedAt && t.status !== 'done' && t.status !== 'canceled') {
+        bucket.escalated += 1;
+      }
+    }
+    return counts;
+  }, [brief.tasks]);
+
   const openAgentDrawer = useCallback((agent: CompanyAgentKind) => {
     setSelectedAgent(agent);
     setDrawerOpen(true);
@@ -518,6 +535,7 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
               pendingByAgent={pendingByAgent}
               heartbeats={brief.heartbeats ?? []}
               onSelect={openAgentDrawer}
+              taskCountsByOwner={taskCountsByOwner}
             />
 
             {brief.roadmapStatus && <RoadmapStatusCard initialStatus={brief.roadmapStatus} />}

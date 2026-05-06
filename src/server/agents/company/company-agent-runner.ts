@@ -36,6 +36,10 @@ export interface StreamCompanyAgentArgs {
   directorContext?: DirectorContext;
   triggeredBy?: CompanyAgentTriggeredBy;
   abortSignal?: AbortSignal;
+  // Set by `consult_director` when the CEO nests a director call. Inner
+  // director runs see this and refuse to consult further (defense in depth —
+  // consult_director is already CEO-only, but this hardens the boundary).
+  parentTurnId?: string;
 }
 
 export interface StreamToolCallStartEvent {
@@ -263,6 +267,12 @@ export async function streamCompanyAgent(
   const skills = getSkillsForAgent(args.agentKind);
   const tools = skills.map((s) => s.tool);
 
+  // CEO gets a per-turn consult budget that consult_director decrements.
+  // Inner director runs (parentTurnId set) get no budget — even if a director
+  // somehow had consult_director registered, the ctx check would refuse it.
+  const consultBudget =
+    args.agentKind === 'ceo_orchestrator' && !args.parentTurnId ? { remaining: 2 } : undefined;
+
   const userContent: Anthropic.Messages.ContentBlockParam[] =
     args.messageContent && args.messageContent.length > 0
       ? args.messageContent
@@ -372,6 +382,7 @@ export async function streamCompanyAgent(
             sessionId: args.sessionId,
             agentKind: args.agentKind,
             metrics: args.metrics,
+            consultBudget,
           },
         })
       )

@@ -2,6 +2,7 @@ import type { CompanyAgentKind } from './types';
 import type { RoadmapContext, RoadmapDomain, RoadmapDomainKey } from './roadmap/types';
 import { isActiveRow } from './roadmap/loader';
 import { VOICE_RULES, roleFraming } from './voice';
+import { formatReportingBlock } from './org';
 
 export const COMPANY_AGENT_VERSION = 'v3.0.0';
 
@@ -122,6 +123,7 @@ export function buildCompanySystemPrompt(args: {
     : '';
 
   const roadmapBlock = buildRoadmapBlock(args.roadmap, args.agentKind);
+  const reportingBlock = `\n${formatReportingBlock(args.agentKind)}\n`;
 
   return `You are the ${role} for InterviewProof.
 
@@ -134,5 +136,5 @@ ${COMPANY_CONTEXT}
 ${HOW_TO_WORK}
 
 ${WHAT_YOU_CANT_DO}
-${memoryBlock}${roadmapBlock}${directorBlock}`;
+${memoryBlock}${reportingBlock}${roadmapBlock}${directorBlock}`;
 }

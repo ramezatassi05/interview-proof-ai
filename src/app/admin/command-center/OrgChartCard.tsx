@@ -3,19 +3,26 @@
 import { Badge } from '@/components/ui/Badge';
 import type { CompanyAgentKind } from '@/server/agents/company/types';
 import type { AgentHeartbeat } from '@/server/agents/company/heartbeats';
-import { AGENT_OPTIONS } from './agents';
+import { getDirectReports } from '@/server/agents/company/org';
+import { AGENT_OPTIONS, agentMeta } from './agents';
 import { SoftLabel } from './_primitives';
+
+export interface AgentTaskCounts {
+  delegated: number;
+  escalated: number;
+}
 
 interface OrgChartCardProps {
   pendingByAgent: Record<CompanyAgentKind, number>;
   heartbeats: AgentHeartbeat[];
   onSelect: (agent: CompanyAgentKind) => void;
+  taskCountsByOwner?: Record<CompanyAgentKind, AgentTaskCounts>;
 }
 
-function nodeKindClasses(active: boolean): string {
-  return active
-    ? 'border-[var(--border-accent)] bg-[var(--bg-elevated)]'
-    : 'border-[var(--border-default)] bg-[var(--bg-card)] hover:border-[var(--border-accent)] hover:bg-[var(--bg-elevated)]';
+const ROOT: CompanyAgentKind = 'ceo_orchestrator';
+
+function nodeKindClasses(): string {
+  return 'border-[var(--border-default)] bg-[var(--bg-card)] hover:border-[var(--border-accent)] hover:bg-[var(--bg-elevated)]';
 }
 
 function nextFireLabel(iso: string | null | undefined): string {
@@ -30,10 +37,20 @@ function nextFireLabel(iso: string | null | undefined): string {
   return `next: in ${Math.floor(hr / 24)}d`;
 }
 
-export function OrgChartCard({ pendingByAgent, heartbeats, onSelect }: OrgChartCardProps) {
-  const ceo = AGENT_OPTIONS.find((a) => a.value === 'ceo_orchestrator');
-  const directors = AGENT_OPTIONS.filter((a) => a.value !== 'ceo_orchestrator');
+export function OrgChartCard({
+  pendingByAgent,
+  heartbeats,
+  onSelect,
+  taskCountsByOwner,
+}: OrgChartCardProps) {
+  const ceo = AGENT_OPTIONS.find((a) => a.value === ROOT);
+  const directReportKinds = getDirectReports(ROOT);
   const beatsByKind = new Map(heartbeats.map((h) => [h.agentKind, h]));
+
+  const totalDelegated = directReportKinds.reduce(
+    (sum, k) => sum + (taskCountsByOwner?.[k]?.delegated ?? 0),
+    0
+  );
 
   return (
     <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
@@ -49,7 +66,7 @@ export function OrgChartCard({ pendingByAgent, heartbeats, onSelect }: OrgChartC
           <button
             type="button"
             onClick={() => onSelect(ceo.value)}
-            className={`flex w-full max-w-[260px] flex-col items-center border px-3 py-2 text-center transition-colors ${nodeKindClasses(false)}`}
+            className={`flex w-full max-w-[260px] flex-col items-center border px-3 py-2 text-center transition-colors ${nodeKindClasses()}`}
           >
             <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
               CEO
@@ -57,9 +74,14 @@ export function OrgChartCard({ pendingByAgent, heartbeats, onSelect }: OrgChartC
             <span className="mt-0.5 text-sm font-semibold text-[var(--text-primary)]">
               {ceo.label}
             </span>
-            <div className="mt-1 flex items-center gap-2">
+            <div className="mt-1 flex flex-wrap items-center justify-center gap-1.5">
               {pendingByAgent[ceo.value] > 0 && (
                 <Badge variant="accent">{pendingByAgent[ceo.value]} waiting on you</Badge>
+              )}
+              {totalDelegated > 0 && (
+                <span className="text-[10px] tabular-nums text-[var(--text-muted)]">
+                  {totalDelegated} delegated
+                </span>
               )}
               <span className="text-[10px] text-[var(--text-muted)]">On demand</span>
             </div>
@@ -69,27 +91,38 @@ export function OrgChartCard({ pendingByAgent, heartbeats, onSelect }: OrgChartC
         <div className="my-2 h-4 w-px bg-[var(--border-default)]" aria-hidden />
 
         <div className="grid w-full grid-cols-2 gap-2">
-          {directors.map((agent) => {
-            const pending = pendingByAgent[agent.value] ?? 0;
-            const beat = beatsByKind.get(agent.value);
+          {directReportKinds.map((kind) => {
+            const meta = agentMeta(kind);
+            const pending = pendingByAgent[kind] ?? 0;
+            const beat = beatsByKind.get(kind);
+            const counts = taskCountsByOwner?.[kind];
+            const showAsDirector = kind !== 'executive_assistant';
             return (
               <button
-                key={agent.value}
+                key={kind}
                 type="button"
-                onClick={() => onSelect(agent.value)}
-                className={`flex flex-col items-start gap-1 border px-3 py-2 text-left transition-colors ${nodeKindClasses(false)}`}
+                onClick={() => onSelect(kind)}
+                className={`flex flex-col items-start gap-1 border px-3 py-2 text-left transition-colors ${nodeKindClasses()}`}
               >
                 <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
-                  Director
+                  {showAsDirector ? 'Director' : 'Assistant'}
                 </span>
                 <span className="text-[12px] font-semibold leading-tight text-[var(--text-primary)]">
-                  {agent.label.replace('Director of ', '')}
+                  {meta.label.replace('Director of ', '')}
                 </span>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {pending > 0 ? (
                     <Badge variant="accent">{pending} waiting on you</Badge>
                   ) : (
                     <span className="text-[10px] text-[var(--text-muted)]">All clear</span>
+                  )}
+                  {counts && counts.delegated > 0 && (
+                    <span className="text-[10px] tabular-nums text-[var(--text-muted)]">
+                      {counts.delegated} from CEO
+                    </span>
+                  )}
+                  {counts && counts.escalated > 0 && (
+                    <Badge variant="default">{counts.escalated} escalated</Badge>
                   )}
                 </div>
                 <span className="text-[10px] tabular-nums text-[var(--text-muted)]">
