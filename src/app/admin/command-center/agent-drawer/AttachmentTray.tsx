@@ -97,25 +97,23 @@ export function AttachmentTray({
       }`}
     >
       {onUploaded && (
-        <>
+        <label
+          aria-disabled={disabled || uploading}
+          className={`relative cursor-pointer border border-[var(--border-default)] bg-[var(--bg-card)] px-2 py-1 text-[11px] text-[var(--text-secondary)] transition-colors hover:border-[var(--border-accent)] hover:text-[var(--text-primary)] ${
+            disabled || uploading ? 'pointer-events-none opacity-50' : ''
+          }`}
+        >
           <input
             ref={inputRef}
             type="file"
             multiple
             accept={ACCEPT}
             onChange={onPick}
-            className="hidden"
             disabled={disabled || uploading}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           />
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            disabled={disabled || uploading}
-            className="border border-[var(--border-default)] bg-[var(--bg-card)] px-2 py-1 text-[11px] text-[var(--text-secondary)] transition-colors hover:border-[var(--border-accent)] hover:text-[var(--text-primary)] disabled:opacity-50"
-          >
-            Attach
-          </button>
-        </>
+          Attach
+        </label>
       )}
       {attachments.map((att) => (
         <AttachmentChip key={att.id} attachment={att} onRemove={onRemove} />
