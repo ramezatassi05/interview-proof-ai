@@ -9,7 +9,7 @@ interface TabsContextValue {
 
 const TabsContext = createContext<TabsContextValue | null>(null);
 
-function useTabsContext() {
+export function useTabsContext() {
   const context = useContext(TabsContext);
   if (!context) {
     throw new Error('Tab components must be used within a Tabs provider');
@@ -64,10 +64,11 @@ interface TabTriggerProps {
   id: string;
   children: ReactNode;
   icon?: ReactNode;
+  badge?: ReactNode;
   className?: string;
 }
 
-export function TabTrigger({ id, children, icon, className = '' }: TabTriggerProps) {
+export function TabTrigger({ id, children, icon, badge, className = '' }: TabTriggerProps) {
   const { activeTab, setActiveTab } = useTabsContext();
   const isActive = activeTab === id;
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -98,6 +99,7 @@ export function TabTrigger({ id, children, icon, className = '' }: TabTriggerPro
     >
       {icon && <span className="flex-shrink-0">{icon}</span>}
       {children}
+      {badge && <span className="flex-shrink-0">{badge}</span>}
     </button>
   );
 }
