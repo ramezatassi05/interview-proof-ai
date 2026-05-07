@@ -5,7 +5,12 @@ import type { CompanyAgentKind } from '@/server/agents/company/types';
 import { COMPANY_AGENT_KINDS } from '@/server/agents/company/types';
 import { agentMeta } from './agents';
 import { SoftLabel } from './_primitives';
-import type { InboxFilters, InboxStatus, InboxTriggeredBy } from './useInboxQuery';
+import type {
+  InboxApprovalScope,
+  InboxFilters,
+  InboxStatus,
+  InboxTriggeredBy,
+} from './useInboxQuery';
 
 const STATUS_OPTIONS: { value: InboxStatus; label: string }[] = [
   { value: 'awaiting_approval', label: 'Pending' },
@@ -19,6 +24,12 @@ const TRIGGERED_OPTIONS: { value: InboxTriggeredBy; label: string }[] = [
   { value: 'cron', label: 'Acted on its own' },
   { value: 'agent', label: 'Agent-asked' },
   { value: 'user', label: 'You-asked' },
+];
+
+const APPROVAL_SCOPE_OPTIONS: { value: InboxApprovalScope; label: string }[] = [
+  { value: 'awaiting', label: 'Awaiting' },
+  { value: 'auto_executed', label: 'Auto-executed' },
+  { value: 'any', label: 'Any' },
 ];
 
 function Chip({
@@ -82,6 +93,7 @@ export function InboxFiltersBar({
 
   const setStatus = (s: InboxStatus) => onChange({ ...value, status: s });
   const setTriggered = (t: InboxTriggeredBy) => onChange({ ...value, triggeredBy: t });
+  const setApprovalScope = (a: InboxApprovalScope) => onChange({ ...value, approvalScope: a });
 
   return (
     <div className="flex flex-col gap-3 border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
@@ -124,6 +136,21 @@ export function InboxFiltersBar({
                 key={opt.value}
                 active={value.triggeredBy === opt.value}
                 onClick={() => setTriggered(opt.value)}
+              >
+                {opt.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <SoftLabel>Approval</SoftLabel>
+          <div className="flex gap-1.5">
+            {APPROVAL_SCOPE_OPTIONS.map((opt) => (
+              <Chip
+                key={opt.value}
+                active={value.approvalScope === opt.value}
+                onClick={() => setApprovalScope(opt.value)}
               >
                 {opt.label}
               </Chip>

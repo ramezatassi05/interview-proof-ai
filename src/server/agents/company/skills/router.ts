@@ -1,7 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { CompanyAgentKind } from '../types';
+import type { CompanyAgentActionRow, CompanyAgentKind, GuardrailTier } from '../types';
 import { getSkillById, isSkillAllowedForAgent } from './index';
 import type { ActionDraft, SkillContext, SkillResult } from './types';
+import { shouldAutoExecute, checkAutoExecuteRateLimit } from '../guardrails';
+import { executeAction } from '../action-executors';
 
 const HANDLER_TIMEOUT_MS = 30_000;
 
@@ -98,10 +100,27 @@ async function updateToolCallRow(
 
 function makePersistAction(
   supabase: SupabaseClient,
-  args: { userId: string; sessionId: string; agentKind: CompanyAgentKind }
+  args: {
+    userId: string;
+    sessionId: string;
+    agentKind: CompanyAgentKind;
+    guardrailTier: GuardrailTier;
+  }
 ): SkillContext['persistAction'] {
   return async (draft: ActionDraft) => {
-    const { data, error } = await supabase
+    const tier = args.guardrailTier;
+    const eligibleForAuto = shouldAutoExecute(tier, draft.actionType, draft.priority);
+    let willAutoExec = eligibleForAuto;
+    let rateLimitedReason: string | null = null;
+    if (eligibleForAuto) {
+      const rl = await checkAutoExecuteRateLimit(supabase, args.userId, args.agentKind);
+      if (!rl.allowed) {
+        willAutoExec = false;
+        rateLimitedReason = `Auto-execute rate limit hit (${rl.used}/${rl.max}); waiting for approval.`;
+      }
+    }
+
+    const { data: row, error } = await supabase
       .from('company_agent_actions')
       .insert({
         user_id: args.userId,
@@ -114,15 +133,34 @@ function makePersistAction(
         payload_json: draft.payload,
         status: 'awaiting_approval',
         evidence_refs_json: draft.evidenceRefs ?? [],
-        requires_approval: true,
+        requires_approval: !willAutoExec,
+        error: rateLimitedReason,
       })
-      .select('id')
+      .select()
       .single();
 
-    if (error || !data) {
+    if (error || !row) {
       throw new Error(`persistAction failed: ${error?.message ?? 'unknown'}`);
     }
-    return { actionId: data.id as string };
+
+    const actionId = (row as CompanyAgentActionRow).id;
+
+    if (willAutoExec) {
+      const result = await executeAction(row as CompanyAgentActionRow, supabase);
+      const followUp: Record<string, unknown> = {
+        status: result.status,
+        completed_at: new Date().toISOString(),
+      };
+      if (result.resultJson !== undefined) followUp.result_json = result.resultJson;
+      if (result.error !== undefined) followUp.error = result.error;
+      await supabase
+        .from('company_agent_actions')
+        .update(followUp)
+        .eq('id', actionId)
+        .eq('user_id', args.userId);
+    }
+
+    return { actionId };
   };
 }
 
@@ -207,8 +245,10 @@ export async function executeSkill(args: ExecuteSkillArgs): Promise<ExecuteSkill
       userId: ctx.userId,
       sessionId: ctx.sessionId,
       agentKind: ctx.agentKind,
+      guardrailTier: ctx.guardrailTier ?? 'manual',
     }),
     consultBudget: ctx.consultBudget,
+    guardrailTier: ctx.guardrailTier,
   };
 
   let result: SkillResult;

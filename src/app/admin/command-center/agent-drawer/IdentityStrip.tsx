@@ -2,15 +2,23 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
-import type { CompanyAgentKind } from '@/server/agents/company/types';
+import type { CompanyAgentKind, GuardrailTier } from '@/server/agents/company/types';
 import { getModelLabelForAgent } from '@/server/agents/company/agent-models';
 import { agentMeta } from '../agents';
 import { skillsForAgent } from './agent-skill-catalog';
+import { tierBadgeVariant } from './GuardrailsCard';
 
 interface IdentityStripProps {
   agentKind: CompanyAgentKind;
   memoryCount: number;
+  guardrailTier?: GuardrailTier;
 }
+
+const TIER_LABEL: Record<GuardrailTier, string> = {
+  manual: 'Won’t act without your OK',
+  guarded: 'Guarded autonomy',
+  autonomous: 'Autonomous (low-risk)',
+};
 
 interface MemoryRow {
   id: string;
@@ -29,7 +37,7 @@ function previewValue(value: unknown): string {
   }
 }
 
-export function IdentityStrip({ agentKind, memoryCount }: IdentityStripProps) {
+export function IdentityStrip({ agentKind, memoryCount, guardrailTier = 'manual' }: IdentityStripProps) {
   const meta = agentMeta(agentKind);
   const skills = skillsForAgent(agentKind);
   const [open, setOpen] = useState(false);
@@ -159,7 +167,17 @@ export function IdentityStrip({ agentKind, memoryCount }: IdentityStripProps) {
       >
         Remembers <span className="tabular-nums">{displayedCount}</span>
       </button>
-      <Badge variant="default">Won&apos;t act without your OK</Badge>
+      <button
+        type="button"
+        onClick={() => {
+          const el = document.getElementById(`guardrails-${agentKind}`);
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }}
+        className="text-left"
+        title="Adjust how much freedom this agent has"
+      >
+        <Badge variant={tierBadgeVariant(guardrailTier)}>{TIER_LABEL[guardrailTier]}</Badge>
+      </button>
       <span className="ml-auto truncate text-[11px] text-[var(--text-muted)]">
         {meta.discipline}
       </span>

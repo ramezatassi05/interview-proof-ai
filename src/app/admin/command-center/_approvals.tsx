@@ -25,6 +25,7 @@ export interface CompanyAction {
   priority: 'low' | 'medium' | 'high' | 'critical';
   status: 'drafted' | 'awaiting_approval' | 'approved' | 'rejected' | 'completed' | 'failed';
   triggeredBy?: 'user' | 'cron' | 'agent';
+  requiresApproval?: boolean;
   payloadJson?: Record<string, unknown> | null;
   resultJson?: Record<string, unknown> | null;
   evidenceRefsJson?: EvidenceRef[] | null;
@@ -47,6 +48,7 @@ export function ApprovalRow({
   onOpenDetail: (action: CompanyAction) => void;
 }) {
   const isAwaiting = action.status === 'awaiting_approval';
+  const isAutoExecuted = action.requiresApproval === false;
   return (
     <div className="border border-[var(--border-default)] bg-[var(--bg-card)]">
       <button
@@ -61,7 +63,8 @@ export function ApprovalRow({
             {agentMeta(action.agentKind).label}
           </span>
           {action.triggeredBy === 'cron' && <Badge variant="default">Acted on its own</Badge>}
-          {!isAwaiting && <StatusBadge status={action.status} />}
+          {isAutoExecuted && <Badge variant="success">Auto-executed</Badge>}
+          {!isAwaiting && !isAutoExecuted && <StatusBadge status={action.status} />}
           <span className="ml-auto text-[10px] tabular-nums text-[var(--text-muted)]">
             {relativeTime(action.createdAt)}
           </span>
@@ -209,7 +212,11 @@ export function ApprovalDetailModal({
               {agentMeta(action.agentKind).label}
             </span>
             {action.triggeredBy === 'cron' && <Badge variant="default">Acted on its own</Badge>}
-            <StatusBadge status={action.status} />
+            {action.requiresApproval === false ? (
+              <Badge variant="success">Auto-executed</Badge>
+            ) : (
+              <StatusBadge status={action.status} />
+            )}
             <span className="ml-auto text-[10px] tabular-nums text-[var(--text-muted)]">
               {relativeTime(action.createdAt)}
             </span>

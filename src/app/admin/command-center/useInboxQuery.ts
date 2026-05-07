@@ -14,10 +14,13 @@ export type InboxStatus =
 
 export type InboxTriggeredBy = 'any' | 'user' | 'cron' | 'agent';
 
+export type InboxApprovalScope = 'awaiting' | 'auto_executed' | 'any';
+
 export interface InboxFilters {
   status: InboxStatus;
   agentKinds: CompanyAgentKind[]; // empty = all
   triggeredBy: InboxTriggeredBy;
+  approvalScope: InboxApprovalScope;
   q: string;
 }
 
@@ -25,6 +28,7 @@ export const DEFAULT_INBOX_FILTERS: InboxFilters = {
   status: 'awaiting_approval',
   agentKinds: [],
   triggeredBy: 'any',
+  approvalScope: 'awaiting',
   q: '',
 };
 
@@ -43,6 +47,8 @@ async function fetchPage(filters: InboxFilters, cursor: string | null, signal: A
       params.set('status', filters.status);
       if (kind) params.set('agentKind', kind);
       if (filters.triggeredBy !== 'any') params.set('triggeredBy', filters.triggeredBy);
+      if (filters.approvalScope === 'awaiting') params.set('requiresApproval', 'true');
+      if (filters.approvalScope === 'auto_executed') params.set('requiresApproval', 'false');
       if (filters.q.trim()) params.set('q', filters.q.trim());
       if (cursor) params.set('cursor', cursor);
       return fetch(`/api/admin/company-agent/actions?${params.toString()}`, { signal }).then(
@@ -110,7 +116,13 @@ export function useInboxQuery(filters: InboxFilters) {
     return () => ctl.abort();
     // We intentionally re-run on filter primitive changes; agentKinds is array, so include length + sorted join.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.status, filters.triggeredBy, filters.q, filters.agentKinds.slice().sort().join(',')]);
+  }, [
+    filters.status,
+    filters.triggeredBy,
+    filters.approvalScope,
+    filters.q,
+    filters.agentKinds.slice().sort().join(','),
+  ]);
 
   const loadMore = useCallback(async () => {
     if (!nextCursor || loadingMore) return;

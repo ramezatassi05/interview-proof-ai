@@ -5,6 +5,7 @@ import type {
   CompanyActionType,
   CompanyAgentKind,
   CompanyMetricsSnapshot,
+  GuardrailTier,
 } from '../types';
 
 export type SkillKind = 'read' | 'write';
@@ -34,6 +35,9 @@ export interface SkillContext {
   // Mutable per-turn budget for nested-agent skills (consult_director). Only
   // populated for the CEO. Skills decrement `remaining` on success.
   consultBudget?: { remaining: number };
+  // Guardrail tier snapshotted at agent-turn start. Drives whether persisted
+  // actions auto-execute or wait for operator approval.
+  guardrailTier?: GuardrailTier;
 }
 
 export type SkillResultStatus = 'succeeded' | 'awaiting_approval' | 'failed';

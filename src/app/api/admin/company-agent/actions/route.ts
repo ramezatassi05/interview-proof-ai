@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const status = request.nextUrl.searchParams.get('status');
     const agentKindParam = request.nextUrl.searchParams.get('agentKind');
     const triggeredByParam = request.nextUrl.searchParams.get('triggeredBy');
+    const requiresApprovalParam = request.nextUrl.searchParams.get('requiresApproval');
     const cursor = request.nextUrl.searchParams.get('cursor');
     const qRaw = request.nextUrl.searchParams.get('q');
 
@@ -31,6 +32,9 @@ export async function GET(request: NextRequest) {
     }
     if (triggeredByParam && ['user', 'cron', 'agent'].includes(triggeredByParam)) {
       query = query.eq('triggered_by', triggeredByParam);
+    }
+    if (requiresApprovalParam === 'true' || requiresApprovalParam === 'false') {
+      query = query.eq('requires_approval', requiresApprovalParam === 'true');
     }
     if (cursor && /^\d{4}-\d{2}-\d{2}T/.test(cursor)) {
       query = query.lt('created_at', cursor);

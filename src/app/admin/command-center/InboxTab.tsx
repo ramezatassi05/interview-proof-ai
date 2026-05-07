@@ -51,6 +51,7 @@ export function InboxTab({
     filters.status !== DEFAULT_INBOX_FILTERS.status ||
     filters.agentKinds.length > 0 ||
     filters.triggeredBy !== DEFAULT_INBOX_FILTERS.triggeredBy ||
+    filters.approvalScope !== DEFAULT_INBOX_FILTERS.approvalScope ||
     filters.q.trim().length > 0;
 
   // Wrap the parent's onTransition so the inbox optimistically removes the row.

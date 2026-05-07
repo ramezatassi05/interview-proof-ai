@@ -37,6 +37,13 @@ export type CompanyActionPriority = 'low' | 'medium' | 'high' | 'critical';
 export const COMPANY_AGENT_TRIGGERED_BY = ['user', 'cron', 'agent'] as const;
 export type CompanyAgentTriggeredBy = (typeof COMPANY_AGENT_TRIGGERED_BY)[number];
 
+export type {
+  GuardrailTier,
+  ActionRiskLevel,
+  RateLimitState,
+} from './guardrails';
+export { GUARDRAIL_TIERS, ACTION_RISK, AUTO_EXECUTE_DAILY_LIMIT } from './guardrails';
+
 export interface CompanyProposedAction {
   title: string;
   actionType: CompanyActionType;

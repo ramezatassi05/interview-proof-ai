@@ -6,6 +6,8 @@ import type { CompanyAgentKind } from '@/server/agents/company/types';
 import { agentMeta, AGENT_OPTIONS } from '../agents';
 import { IdentityStrip } from './IdentityStrip';
 import { SkillsPanel } from './SkillsPanel';
+import { GuardrailsCard } from './GuardrailsCard';
+import type { GuardrailTier } from '@/server/agents/company/types';
 import { MessageList } from './MessageList';
 import { AttachmentTray } from './AttachmentTray';
 import { Composer } from './Composer';
@@ -67,6 +69,7 @@ function AgentChatContent({
   const meta = agentMeta(agentKind);
   const [draft, setDraft] = useState('');
   const [attachments, setAttachments] = useState<AttachmentMeta[]>([]);
+  const [guardrailTier, setGuardrailTier] = useState<GuardrailTier>('manual');
 
   const stream = useAgentStream({ agentKind, initialSessionId });
   const { messages, inFlight, status, error, send, abort, activeSkillId, memoryBumps, sessionId } =
@@ -111,11 +114,14 @@ function AgentChatContent({
 
   return (
     <>
-      <IdentityStrip agentKind={agentKind} memoryCount={memoryBumps} />
+      <IdentityStrip agentKind={agentKind} memoryCount={memoryBumps} guardrailTier={guardrailTier} />
 
       <div className="grid min-h-0 grid-cols-[220px_minmax(0,1fr)] overflow-hidden">
-        <div className="hidden md:block">
+        <div className="hidden min-h-0 flex-col overflow-y-auto md:flex">
           <SkillsPanel agentKind={agentKind} activeSkillId={activeSkillId} />
+          <div className="border-r border-[var(--border-default)] bg-[var(--bg-card)] px-3 pb-3">
+            <GuardrailsCard agentKind={agentKind} onTierChange={setGuardrailTier} />
+          </div>
         </div>
 
         <div className="flex min-h-0 flex-col">

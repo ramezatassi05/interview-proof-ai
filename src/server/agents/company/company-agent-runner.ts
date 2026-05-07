@@ -6,6 +6,7 @@ import type { DirectorContext } from './director-context';
 import { buildCompanySystemPrompt, COMPANY_AGENT_VERSION } from './company-agent-prompts';
 import { getModelForAgent } from './agent-models';
 import { loadRoadmap } from './roadmap/loader';
+import { loadGuardrailTier } from './guardrails';
 import { getSkillsForAgent } from './skills';
 import { executeSkill, type ExecuteSkillResult } from './skills/router';
 
@@ -235,10 +236,11 @@ export async function streamCompanyAgent(
   const triggeredBy: CompanyAgentTriggeredBy = args.triggeredBy ?? 'user';
   const client = getAnthropicClient();
 
-  const [memory, history, roadmap] = await Promise.all([
+  const [memory, history, roadmap, guardrailTier] = await Promise.all([
     loadMemory({ supabase: args.supabase, userId: args.userId, agentKind: args.agentKind }),
     loadConversationHistory({ supabase: args.supabase, sessionId: args.sessionId }),
     loadRoadmap({ agentKind: args.agentKind }),
+    loadGuardrailTier(args.supabase, args.userId, args.agentKind),
   ]);
 
   const userMessageId = await persistUserMessage({
@@ -383,6 +385,7 @@ export async function streamCompanyAgent(
             agentKind: args.agentKind,
             metrics: args.metrics,
             consultBudget,
+            guardrailTier,
           },
         })
       )
