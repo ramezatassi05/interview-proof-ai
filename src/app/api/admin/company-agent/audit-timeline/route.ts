@@ -54,6 +54,7 @@ interface TaskRow {
   status: string;
   created_at: string;
   source_action_id: string | null;
+  requester_kind: string | null;
 }
 
 const PAGE_LIMIT = 50;
@@ -106,7 +107,7 @@ export async function GET(request: NextRequest) {
 
     const tasksQuery = auth.supabase
       .from('company_tasks')
-      .select('id, title, owner_kind, status, created_at, source_action_id')
+      .select('id, title, owner_kind, status, created_at, source_action_id, requester_kind')
       .eq('user_id', auth.user.id)
       .order('created_at', { ascending: false })
       .limit(sourceLimit);
@@ -198,7 +199,11 @@ export async function GET(request: NextRequest) {
         summary: null,
         refType: 'task',
         refId: row.id,
-        meta: { status: row.status, sourceActionId: row.source_action_id },
+        meta: {
+          status: row.status,
+          sourceActionId: row.source_action_id,
+          requesterKind: row.requester_kind,
+        },
       });
     }
 

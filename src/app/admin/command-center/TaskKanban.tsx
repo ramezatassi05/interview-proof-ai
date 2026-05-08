@@ -29,6 +29,9 @@ export interface CompanyTask {
   delegationRationale: string | null;
   escalatedAt: string | null;
   escalationReason: string | null;
+  requesterKind: string | null;
+  resolution: string | null;
+  resolvedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -58,6 +61,10 @@ function TaskCard({ task }: { task: CompanyTask }) {
 
   const fromCeo = task.delegatedBy === 'ceo_orchestrator';
   const isEscalated = !!task.escalatedAt;
+  const fromPeer = !!task.requesterKind && task.requesterKind !== 'ceo_orchestrator';
+  const requesterLabel = fromPeer
+    ? agentMeta(task.requesterKind as CompanyTaskOwnerKind).label.replace('Director of ', '')
+    : null;
 
   return (
     <div
@@ -75,6 +82,7 @@ function TaskCard({ task }: { task: CompanyTask }) {
       <div className="flex flex-wrap items-center gap-1.5">
         <Badge variant="default">{ownerLabel(task.ownerKind)}</Badge>
         {fromCeo && <Badge variant="accent">from CEO</Badge>}
+        {fromPeer && <Badge variant="default">from {requesterLabel}</Badge>}
         {isEscalated && <Badge variant="default">escalated</Badge>}
         <span className="ml-auto text-[10px] tabular-nums text-[var(--text-muted)]">
           {relativeTime(task.updatedAt)}
