@@ -32,7 +32,49 @@ async function countRowsSince(
   return count ?? 0;
 }
 
-async function loadMarketingContext(supabase: SupabaseClient): Promise<DirectorContext> {
+interface OwnedTicketRow {
+  id: string;
+  title: string;
+  status: string;
+  priority: string | null;
+  due_at: string | null;
+  requester_kind: string | null;
+  description: string | null;
+  updated_at: string;
+}
+
+async function loadOwnedTickets(
+  supabase: SupabaseClient,
+  userId: string,
+  ownerKind: CompanyAgentKind,
+  limit = 10
+): Promise<OwnedTicketRow[]> {
+  const { data } = await supabase
+    .from('company_tasks')
+    .select('id, title, status, priority, due_at, requester_kind, description, updated_at')
+    .eq('user_id', userId)
+    .eq('owner_kind', ownerKind)
+    .in('status', ['todo', 'doing', 'blocked'])
+    .order('updated_at', { ascending: false })
+    .limit(limit);
+  return (data as OwnedTicketRow[] | null) ?? [];
+}
+
+function formatTicketsSummary(tickets: OwnedTicketRow[]): string {
+  if (tickets.length === 0) return 'No active tickets owned by you.';
+  return tickets
+    .map((t) => {
+      const reqLabel = t.requester_kind ? ` (from ${t.requester_kind})` : '';
+      const dueLabel = t.due_at ? ` due ${t.due_at.slice(0, 10)}` : '';
+      return `- [${t.status}] ${t.title}${reqLabel}${dueLabel}`;
+    })
+    .join('\n');
+}
+
+async function loadMarketingContext(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<DirectorContext> {
   const reports7 = await countRowsSince(supabase, 'reports', 'created_at', isoDaysAgo(7));
   const reports30 = await countRowsSince(supabase, 'reports', 'created_at', isoDaysAgo(30));
   const profiles7 = await countRowsSince(supabase, 'user_profiles', 'created_at', isoDaysAgo(7));
@@ -63,6 +105,8 @@ async function loadMarketingContext(supabase: SupabaseClient): Promise<DirectorC
     .slice(0, 5)
     .map(([domain, count]) => ({ domain, count }));
 
+  const tickets = await loadOwnedTickets(supabase, userId, 'director_marketing');
+
   const structured = {
     reportsLast7d: reports7,
     reportsLast30d: reports30,
@@ -70,6 +114,7 @@ async function loadMarketingContext(supabase: SupabaseClient): Promise<DirectorC
     signupsLast30d: profiles30,
     topTargetRoles: topRoles,
     topTargetDomains: topDomains,
+    activeTickets: tickets,
   };
 
   const summary = [
@@ -77,12 +122,18 @@ async function loadMarketingContext(supabase: SupabaseClient): Promise<DirectorC
     `Signups last 7d: ${profiles7} | last 30d: ${profiles30}`,
     `Top target roles: ${topRoles.map((r) => `${r.role}(${r.count})`).join(', ') || 'n/a'}`,
     `Top target domains: ${topDomains.map((d) => `${d.domain}(${d.count})`).join(', ') || 'n/a'}`,
+    '',
+    'Your active tickets:',
+    formatTicketsSummary(tickets),
   ].join('\n');
 
   return { summary, structured };
 }
 
-async function loadEngineeringContext(supabase: SupabaseClient): Promise<DirectorContext> {
+async function loadEngineeringContext(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<DirectorContext> {
   const sinceIso = isoDaysAgo(7);
 
   const { data: auditFailRows } = await supabase
@@ -105,22 +156,31 @@ async function loadEngineeringContext(supabase: SupabaseClient): Promise<Directo
     .order('created_at', { ascending: false })
     .limit(5);
 
+  const tickets = await loadOwnedTickets(supabase, userId, 'director_engineering');
+
   const structured = {
     auditFailuresLast7d: auditFailures,
     companyActionsFailedLast7d: actionsFailed ?? 0,
     recentEngineeringActions: recentMigrationRows ?? [],
+    activeTickets: tickets,
   };
 
   const summary = [
     `Audit failures last 7d: ${auditFailures}`,
     `Company actions failed last 7d: ${actionsFailed ?? 0}`,
     `Recent engineering proposals: ${recentMigrationRows?.length ?? 0}`,
+    '',
+    'Your active tickets:',
+    formatTicketsSummary(tickets),
   ].join('\n');
 
   return { summary, structured };
 }
 
-async function loadFinanceContext(supabase: SupabaseClient): Promise<DirectorContext> {
+async function loadFinanceContext(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<DirectorContext> {
   const sinceIso = isoDaysAgo(30);
 
   const { data: ledgerRows } = await supabase
@@ -154,6 +214,8 @@ async function loadFinanceContext(supabase: SupabaseClient): Promise<DirectorCon
       ? Math.max(0, (estimatedRevenueUsd - monthlyBurnUsd) / Math.max(1, monthlyBurnUsd))
       : null;
 
+  const tickets = await loadOwnedTickets(supabase, userId, 'director_finance');
+
   const structured = {
     creditsPurchasedLast30d: purchasesLast30d,
     estimatedRevenueLast30dUsd: estimatedRevenueUsd,
@@ -162,6 +224,7 @@ async function loadFinanceContext(supabase: SupabaseClient): Promise<DirectorCon
     unlockedReports: unlockedReports ?? 0,
     monthlyBurnUsd,
     runwayMonthsEstimate: runwayMonths,
+    activeTickets: tickets,
   };
 
   const summary = [
@@ -172,6 +235,9 @@ async function loadFinanceContext(supabase: SupabaseClient): Promise<DirectorCon
     monthlyBurnUsd > 0
       ? `Monthly burn: $${monthlyBurnUsd.toFixed(2)} | runway estimate: ${runwayMonths?.toFixed(2) ?? 'n/a'} months`
       : 'Monthly burn not configured (set COMPANY_AGENT_MONTHLY_BURN_USD).',
+    '',
+    'Your active tickets:',
+    formatTicketsSummary(tickets),
   ].join('\n');
 
   return { summary, structured };
@@ -225,11 +291,11 @@ export async function loadDirectorContext(args: LoadDirectorContextArgs): Promis
   const { supabase, userId, kind } = args;
   switch (kind) {
     case 'director_marketing':
-      return loadMarketingContext(supabase);
+      return loadMarketingContext(supabase, userId);
     case 'director_engineering':
-      return loadEngineeringContext(supabase);
+      return loadEngineeringContext(supabase, userId);
     case 'director_finance':
-      return loadFinanceContext(supabase);
+      return loadFinanceContext(supabase, userId);
     case 'executive_assistant':
       return loadExecutiveAssistantContext(supabase, userId);
     case 'ceo_orchestrator':
