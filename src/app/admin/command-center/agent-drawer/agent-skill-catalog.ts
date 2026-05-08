@@ -39,6 +39,14 @@ export const SKILL_CATALOG: SkillCatalogEntry[] = [
     description: 'Capture a piece of inspiration as a structured row in your domain roadmap.',
     icon: 'list',
   },
+  {
+    id: 'file_ticket',
+    agentKinds: ['director_marketing', 'director_finance', 'director_engineering'],
+    kind: 'write',
+    label: 'File a ticket on a peer',
+    description: 'Ask another director (or the EA) to take on a piece of work.',
+    icon: 'send',
+  },
 
   // ceo_orchestrator
   {

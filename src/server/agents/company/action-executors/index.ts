@@ -228,6 +228,14 @@ const TASK_OWNER_KINDS = new Set([
   'director_engineering',
 ]);
 
+const REQUESTER_KINDS = new Set([
+  'ceo_orchestrator',
+  'executive_assistant',
+  'director_marketing',
+  'director_finance',
+  'director_engineering',
+]);
+
 async function execCreateTask(
   action: CompanyAgentActionRow,
   supabase: SupabaseClient
@@ -238,12 +246,19 @@ async function execCreateTask(
   const description = (payload.description as string) ?? action.rationale;
   const dueAt = (payload.dueAt as string) ?? null;
 
+  // Peer-filed tickets carry requesterKind in the payload (set by file_ticket).
+  // CEO-mandated tasks and director self-tasks leave it null.
+  const requesterRaw = payload.requesterKind as string | undefined;
+  const requesterKind =
+    requesterRaw && REQUESTER_KINDS.has(requesterRaw) ? requesterRaw : null;
+
   const { data: task, error } = await supabase
     .from('company_tasks')
     .insert({
       user_id: action.user_id,
       source_action_id: action.id,
       owner_kind: ownerKind,
+      requester_kind: requesterKind,
       title: action.title,
       description,
       status: 'todo',
@@ -255,7 +270,11 @@ async function execCreateTask(
   if (error) return { status: 'failed', error: error.message };
   return {
     status: 'completed',
-    resultJson: { taskId: (task as { id: string }).id, ownerKind },
+    resultJson: {
+      taskId: (task as { id: string }).id,
+      ownerKind,
+      requesterKind,
+    },
   };
 }
 

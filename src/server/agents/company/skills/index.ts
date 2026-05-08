@@ -3,6 +3,7 @@ import type { SkillDefinition } from './types';
 import { rememberSkill } from './shared/remember';
 import { escalateToCeoSkill } from './shared/escalate_to_ceo';
 import { proposeRoadmapRowSkill } from './shared/propose_roadmap_row';
+import { fileTicketSkill } from './shared/file_ticket';
 import { delegateTaskSkill } from './ceo_orchestrator/delegate_task';
 import { consultDirectorSkill } from './ceo_orchestrator/consult_director';
 import { searchEmailsSkill } from './executive_assistant/search_emails';
@@ -34,6 +35,7 @@ const REGISTRY: AnySkill[] = [
   rememberSkill,
   escalateToCeoSkill,
   proposeRoadmapRowSkill,
+  fileTicketSkill,
   // ceo_orchestrator
   delegateTaskSkill,
   consultDirectorSkill,
