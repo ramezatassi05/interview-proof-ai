@@ -7,7 +7,10 @@ const AgentKindSchema = z.enum(COMPANY_AGENT_KINDS);
 
 interface MemoryRow {
   id: string;
+  topic: string | null;
   key: string;
+  summary: string | null;
+  body: string | null;
   value_json: unknown;
   source: string;
   created_at: string;
@@ -27,7 +30,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await auth.supabase
     .from('company_agent_memory')
-    .select('id,key,value_json,source,created_at,updated_at')
+    .select('id,topic,key,summary,body,value_json,source,created_at,updated_at')
     .eq('user_id', auth.user.id)
     .eq('agent_kind', parsed.data)
     .order('updated_at', { ascending: false });

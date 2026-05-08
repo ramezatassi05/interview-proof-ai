@@ -1,9 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import type { CompanyAgentKind, GuardrailTier } from '@/server/agents/company/types';
 import { getModelLabelForAgent } from '@/server/agents/company/agent-models';
+import {
+  MEMORY_TOPIC_LABELS,
+  MEMORY_TOPIC_ORDER,
+  isMemoryTopic,
+  type MemoryTopic,
+} from '@/server/agents/company/memory-topics';
 import { agentMeta } from '../agents';
 import { skillsForAgent } from './agent-skill-catalog';
 import { tierBadgeVariant } from './GuardrailsCard';
@@ -22,18 +28,23 @@ const TIER_LABEL: Record<GuardrailTier, string> = {
 
 interface MemoryRow {
   id: string;
+  topic: string | null;
   key: string;
+  summary: string | null;
+  body: string | null;
   value_json: unknown;
   source: string;
   updated_at: string;
 }
 
-function previewValue(value: unknown): string {
-  if (typeof value === 'string') return value;
+function previewValue(row: MemoryRow): string {
+  if (row.summary && row.summary.trim().length > 0) return row.summary;
+  if (typeof row.value_json === 'string') return row.value_json;
+  if (row.value_json === null || row.value_json === undefined) return '';
   try {
-    return JSON.stringify(value);
+    return JSON.stringify(row.value_json);
   } catch {
-    return String(value);
+    return String(row.value_json);
   }
 }
 
@@ -204,38 +215,92 @@ export function IdentityStrip({ agentKind, memoryCount, guardrailTier = 'manual'
                 Nothing saved yet.
               </div>
             )}
-            {!loading &&
-              !error &&
-              rows &&
-              rows.map((row) => (
-                <div
-                  key={row.id}
-                  className="flex items-start gap-2 border-b border-[var(--border-default)] px-3 py-2 last:border-b-0"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[11px] font-medium text-[var(--text-primary)]">
-                      {row.key}
-                    </div>
-                    <div
-                      className="truncate text-[11px] text-[var(--text-muted)]"
-                      title={previewValue(row.value_json)}
-                    >
-                      {previewValue(row.value_json)}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => void handleDelete(row.key)}
-                    className="shrink-0 text-[14px] leading-none text-[var(--text-muted)] hover:text-[var(--color-danger)]"
-                    aria-label={`Forget ${row.key}`}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+            {!loading && !error && rows && rows.length > 0 && (
+              <MemoryGrouped rows={rows} onDelete={handleDelete} />
+            )}
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function MemoryGrouped({
+  rows,
+  onDelete,
+}: {
+  rows: MemoryRow[];
+  onDelete: (key: string) => void;
+}) {
+  const grouped = useMemo(() => {
+    const map = new Map<MemoryTopic, MemoryRow[]>();
+    for (const row of rows) {
+      const topic: MemoryTopic = isMemoryTopic(row.topic) ? row.topic : 'general';
+      const list = map.get(topic);
+      if (list) list.push(row);
+      else map.set(topic, [row]);
+    }
+    return MEMORY_TOPIC_ORDER.map((t) => [t, map.get(t) ?? []] as const).filter(
+      ([, list]) => list.length > 0
+    );
+  }, [rows]);
+
+  return (
+    <div className="flex flex-col">
+      {grouped.map(([topic, list]) => (
+        <div key={topic} className="border-b border-[var(--border-default)] last:border-b-0">
+          <div className="flex items-center justify-between gap-2 bg-[var(--bg-elevated)] px-3 py-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              {MEMORY_TOPIC_LABELS[topic]}
+            </span>
+            <span className="text-[10px] tabular-nums text-[var(--text-muted)]">{list.length}</span>
+          </div>
+          {list.map((row) => (
+            <MemoryItemRow key={row.id} row={row} onDelete={onDelete} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MemoryItemRow({ row, onDelete }: { row: MemoryRow; onDelete: (key: string) => void }) {
+  const [expanded, setExpanded] = useState(false);
+  const preview = previewValue(row);
+  const hasBody = !!(row.body && row.body.trim().length > 0);
+
+  return (
+    <div className="flex items-start gap-2 border-t border-[var(--border-default)] px-3 py-2 first:border-t-0">
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-[11px] font-medium text-[var(--text-primary)]">{row.key}</div>
+        {preview && (
+          <div className="truncate text-[11px] text-[var(--text-muted)]" title={preview}>
+            {preview}
+          </div>
+        )}
+        {hasBody && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="mt-0.5 text-[10px] text-[var(--text-muted)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline"
+          >
+            {expanded ? 'Hide details' : 'Show details'}
+          </button>
+        )}
+        {hasBody && expanded && (
+          <p className="mt-1 whitespace-pre-wrap text-[11px] leading-snug text-[var(--text-secondary)]">
+            {row.body}
+          </p>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={() => onDelete(row.key)}
+        className="shrink-0 text-[14px] leading-none text-[var(--text-muted)] hover:text-[var(--color-danger)]"
+        aria-label={`Forget ${row.key}`}
+      >
+        ×
+      </button>
     </div>
   );
 }
