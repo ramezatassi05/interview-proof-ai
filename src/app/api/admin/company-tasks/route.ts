@@ -7,18 +7,29 @@ import {
   type CompanyTaskRow,
 } from '@/server/agents/company/types';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const auth = await requireAdminUser();
     if (!auth.ok) return auth.response;
 
-    const { data, error } = await auth.supabase
+    const requesterFilter = request.nextUrl.searchParams.get('requester');
+
+    let query = auth.supabase
       .from('company_tasks')
       .select()
       .eq('user_id', auth.user.id)
       .neq('status', 'canceled')
       .order('updated_at', { ascending: false })
       .limit(100);
+
+    if (requesterFilter === 'peer') {
+      // Peer tickets: requester_kind set and not the CEO. Excludes both
+      // CEO-mandated tasks (which use delegated_by) and director self-tasks
+      // (which leave requester_kind null).
+      query = query.not('requester_kind', 'is', null).neq('requester_kind', 'ceo_orchestrator');
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('GET /api/admin/company-tasks error:', error);

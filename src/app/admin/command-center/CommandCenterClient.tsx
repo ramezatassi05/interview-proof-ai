@@ -23,6 +23,7 @@ import {
 } from './_approvals';
 import { InboxTab } from './InboxTab';
 import { AuditTimeline } from './AuditTimeline';
+import { TicketsCard } from './artifacts';
 
 interface CompanyMetricsSnapshot {
   totalUsers: number;
@@ -289,6 +290,8 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
                 />
 
                 {brief.roadmapStatus && <RoadmapStatusCard initialStatus={brief.roadmapStatus} />}
+
+                <TicketsCard />
               </aside>
 
               {/* CENTER — Goals Kanban */}
