@@ -7,6 +7,7 @@ import { agentMeta, AGENT_OPTIONS } from '../agents';
 import { IdentityStrip } from './IdentityStrip';
 import { SkillsPanel } from './SkillsPanel';
 import { GuardrailsCard } from './GuardrailsCard';
+import { Separator } from '@/components/ui/separator';
 import type { GuardrailTier } from '@/server/agents/company/types';
 import { MessageList } from './MessageList';
 import { AttachmentTray } from './AttachmentTray';
@@ -116,13 +117,12 @@ function AgentChatContent({
     <>
       <IdentityStrip agentKind={agentKind} memoryCount={memoryBumps} guardrailTier={guardrailTier} />
 
-      <div className="grid min-h-0 grid-cols-[220px_minmax(0,1fr)] overflow-hidden">
-        <div className="hidden min-h-0 flex-col overflow-y-auto md:flex">
+      <div className="grid min-h-0 grid-cols-[260px_minmax(0,1fr)] overflow-hidden">
+        <aside className="hidden min-h-0 flex-col overflow-y-auto border-r border-[var(--border-default)] bg-[var(--bg-card)] md:flex">
           <SkillsPanel agentKind={agentKind} activeSkillId={activeSkillId} />
-          <div className="border-r border-[var(--border-default)] bg-[var(--bg-card)] px-3 pb-3">
-            <GuardrailsCard agentKind={agentKind} onTierChange={setGuardrailTier} />
-          </div>
-        </div>
+          <Separator className="bg-[var(--border-default)]/60" />
+          <GuardrailsCard agentKind={agentKind} onTierChange={setGuardrailTier} />
+        </aside>
 
         <div className="flex min-h-0 flex-col">
           {promptsToShow.length > 0 && messages.length === 0 && !inFlight && (
