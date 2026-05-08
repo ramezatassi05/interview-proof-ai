@@ -6,7 +6,8 @@ import type { DirectorContext } from './director-context';
 import { buildCompanySystemPrompt, COMPANY_AGENT_VERSION } from './company-agent-prompts';
 import { getModelForAgent } from './agent-models';
 import { loadRoadmap } from './roadmap/loader';
-import { loadGuardrailTier, checkSpendCeiling, type SpendState } from './guardrails';
+import { loadGuardrailTier } from './guardrails';
+import { checkSpendCeiling, type SpendState } from './guardrails-spend';
 import { getSkillsForAgent } from './skills';
 import { executeSkill, type ExecuteSkillResult } from './skills/router';
 

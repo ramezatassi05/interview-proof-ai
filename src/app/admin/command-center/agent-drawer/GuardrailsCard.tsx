@@ -18,6 +18,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
+interface SpendState {
+  allowed: boolean;
+  monthSpendUsd: number;
+  capUsd: number | null;
+  monthStart: string;
+  resetsAt: string;
+}
+
 interface GuardrailsCardProps {
   agentKind: CompanyAgentKind;
   onTierChange?: (tier: GuardrailTier) => void;
@@ -49,8 +57,12 @@ export function GuardrailsCard({ agentKind, onTierChange }: GuardrailsCardProps)
   const meta = agentMeta(agentKind);
   const [tier, setTier] = useState<GuardrailTier>('manual');
   const [rateLimit, setRateLimit] = useState<RateLimitState | null>(null);
+  const [spend, setSpend] = useState<SpendState | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingCap, setSavingCap] = useState(false);
+  const [editingCap, setEditingCap] = useState(false);
+  const [capInput, setCapInput] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -66,11 +78,12 @@ export function GuardrailsCard({ agentKind, onTierChange }: GuardrailsCardProps)
         return;
       }
       const json = (await res.json()) as {
-        data?: { tier: GuardrailTier; rateLimit: RateLimitState };
+        data?: { tier: GuardrailTier; rateLimit: RateLimitState; spend: SpendState };
       };
       if (json.data) {
         setTier(json.data.tier);
         setRateLimit(json.data.rateLimit);
+        setSpend(json.data.spend);
         onTierChange?.(json.data.tier);
       }
     } catch (err) {
@@ -79,6 +92,43 @@ export function GuardrailsCard({ agentKind, onTierChange }: GuardrailsCardProps)
       setLoading(false);
     }
   }, [agentKind, onTierChange]);
+
+  const saveCap = async (next: number | null) => {
+    if (savingCap) return;
+    setSavingCap(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/company-agent/guardrails', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentKind, monthlySpendCapUsd: next }),
+      });
+      if (!res.ok) {
+        setError(`Couldn’t save cap (${res.status})`);
+        return;
+      }
+      setEditingCap(false);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Network error');
+    } finally {
+      setSavingCap(false);
+    }
+  };
+
+  const handleCapSubmit = () => {
+    const trimmed = capInput.trim();
+    if (trimmed === '') {
+      void saveCap(null);
+      return;
+    }
+    const parsed = Number.parseFloat(trimmed);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      setError('Enter a positive dollar amount or leave blank to clear');
+      return;
+    }
+    void saveCap(parsed);
+  };
 
   useEffect(() => {
     void load();
@@ -230,9 +280,147 @@ export function GuardrailsCard({ agentKind, onTierChange }: GuardrailsCardProps)
           </p>
         )}
 
+        {spend && (
+          <SpendBar
+            spend={spend}
+            editing={editingCap}
+            saving={savingCap}
+            value={capInput}
+            onValueChange={setCapInput}
+            onStartEdit={() => {
+              setCapInput(spend.capUsd != null ? spend.capUsd.toFixed(2) : '');
+              setEditingCap(true);
+              setError(null);
+            }}
+            onCancel={() => {
+              setEditingCap(false);
+              setError(null);
+            }}
+            onSubmit={handleCapSubmit}
+            onClear={() => void saveCap(null)}
+          />
+        )}
+
         {error && <p className="text-[11px] text-[var(--color-danger)]">{error}</p>}
       </section>
     </TooltipProvider>
+  );
+}
+
+interface SpendBarProps {
+  spend: SpendState;
+  editing: boolean;
+  saving: boolean;
+  value: string;
+  onValueChange: (next: string) => void;
+  onStartEdit: () => void;
+  onCancel: () => void;
+  onSubmit: () => void;
+  onClear: () => void;
+}
+
+function SpendBar({
+  spend,
+  editing,
+  saving,
+  value,
+  onValueChange,
+  onStartEdit,
+  onCancel,
+  onSubmit,
+  onClear,
+}: SpendBarProps) {
+  const used = spend.monthSpendUsd;
+  const cap = spend.capUsd;
+  const pct = cap != null && cap > 0 ? Math.min(100, (used / cap) * 100) : 0;
+  const overCap = cap != null && used >= cap;
+  const resetDate = new Date(spend.resetsAt).toISOString().slice(0, 10);
+
+  return (
+    <div className="flex flex-col gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] px-3 py-2">
+      <div className="flex items-center justify-between gap-2 text-[11px] tabular-nums">
+        <span className="font-medium text-[var(--text-primary)]">Monthly cost</span>
+        <span className={overCap ? 'text-[var(--color-danger)]' : 'text-[var(--text-muted)]'}>
+          ${used.toFixed(2)}
+          {cap != null ? ` / $${cap.toFixed(2)}` : ' (no cap)'}
+        </span>
+      </div>
+
+      {cap != null && (
+        <div className="h-1 w-full overflow-hidden rounded-full bg-[var(--bg-card)]">
+          <div
+            className={`h-full transition-all ${
+              overCap
+                ? 'bg-[var(--color-danger)]'
+                : pct > 80
+                  ? 'bg-[var(--color-warning)]'
+                  : 'bg-[var(--color-success)]'
+            }`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
+
+      {overCap && (
+        <p className="text-[11px] leading-snug text-[var(--color-danger)]">
+          Paused until {resetDate}. Raise the cap below to resume now.
+        </p>
+      )}
+
+      {editing ? (
+        <div className="flex items-center gap-1.5 pt-0.5">
+          <span className="text-[11px] text-[var(--text-muted)]">$</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min="0"
+            step="0.01"
+            value={value}
+            onChange={(e) => onValueChange(e.target.value)}
+            placeholder="No cap"
+            className="h-6 flex-1 rounded border border-[var(--border-default)] bg-[var(--bg-card)] px-1.5 text-[11px] tabular-nums text-[var(--text-primary)] outline-none focus:border-[var(--border-accent)]"
+            autoFocus
+            disabled={saving}
+          />
+          <button
+            type="button"
+            onClick={onSubmit}
+            disabled={saving}
+            className="rounded bg-[var(--bg-accent)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-on-accent)] hover:opacity-90 disabled:opacity-60"
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={saving}
+            className="rounded px-1.5 py-0.5 text-[11px] text-[var(--text-muted)] hover:text-[var(--text-primary)] disabled:opacity-60"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center justify-end gap-2 pt-0.5 text-[11px]">
+          <button
+            type="button"
+            onClick={onStartEdit}
+            className="text-[var(--text-muted)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline"
+          >
+            {cap != null ? 'Change cap' : 'Set cap'}
+          </button>
+          {cap != null && (
+            <button
+              type="button"
+              onClick={onClear}
+              disabled={saving}
+              className="text-[var(--text-muted)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline disabled:opacity-60"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
