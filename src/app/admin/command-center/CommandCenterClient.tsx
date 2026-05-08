@@ -22,6 +22,7 @@ import {
   type CompanyAction,
 } from './_approvals';
 import { InboxTab } from './InboxTab';
+import { AuditTimeline } from './AuditTimeline';
 
 interface CompanyMetricsSnapshot {
   totalUsers: number;
@@ -252,6 +253,7 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
             >
               Inbox
             </TabTrigger>
+            <TabTrigger id="audit">Audit</TabTrigger>
           </TabList>
 
           <TabContent id="dashboard">
@@ -360,6 +362,10 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
               approvalError={approvalError}
               onTransition={transitionAction}
             />
+          </TabContent>
+
+          <TabContent id="audit">
+            <AuditTimeline />
           </TabContent>
         </Tabs>
       </div>
