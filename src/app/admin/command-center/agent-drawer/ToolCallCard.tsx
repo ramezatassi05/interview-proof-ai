@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { skillById } from './agent-skill-catalog';
+import { getArtifactRenderer } from '../artifacts';
 import type { ToolCallView } from './types';
 
 export function ToolCallCard({ call }: { call: ToolCallView }) {
@@ -10,6 +11,9 @@ export function ToolCallCard({ call }: { call: ToolCallView }) {
   const meta = skillById(call.skillId);
   const label = meta?.label ?? call.skillId;
   const accent = accentForStatus(call.status);
+
+  const ArtifactRenderer =
+    call.status === 'succeeded' && call.output ? getArtifactRenderer(call.skillId) : null;
 
   return (
     <div className={`my-1.5 border ${accent.border} ${accent.bg}`}>
@@ -37,6 +41,11 @@ export function ToolCallCard({ call }: { call: ToolCallView }) {
           <span className="ml-2 text-[10px] text-[var(--text-muted)]">{expanded ? '−' : '+'}</span>
         )}
       </button>
+      {ArtifactRenderer && call.output && (
+        <div className="border-t border-[var(--border-default)] p-2">
+          <ArtifactRenderer data={call.output} />
+        </div>
+      )}
       {expanded && call.status !== 'running' && (
         <div className="border-t border-[var(--border-default)] px-3 py-2">
           {call.input && Object.keys(call.input).length > 0 && (
