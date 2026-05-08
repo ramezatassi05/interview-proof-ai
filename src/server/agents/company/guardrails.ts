@@ -15,6 +15,7 @@ export const ACTION_RISK: Record<CompanyActionType, ActionRiskLevel> = {
   record_decision: 'low',
   create_task: 'high',
   request_approval: 'high',
+  append_roadmap_row: 'high',
 };
 
 export const AUTO_EXECUTE_DAILY_LIMIT = 20;

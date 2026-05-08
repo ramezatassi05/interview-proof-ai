@@ -2,6 +2,7 @@ import type { CompanyAgentKind } from '../types';
 import type { SkillDefinition } from './types';
 import { rememberSkill } from './shared/remember';
 import { escalateToCeoSkill } from './shared/escalate_to_ceo';
+import { proposeRoadmapRowSkill } from './shared/propose_roadmap_row';
 import { delegateTaskSkill } from './ceo_orchestrator/delegate_task';
 import { consultDirectorSkill } from './ceo_orchestrator/consult_director';
 import { searchEmailsSkill } from './executive_assistant/search_emails';
@@ -32,6 +33,7 @@ type AnySkill = SkillDefinition<any>; // eslint-disable-line @typescript-eslint/
 const REGISTRY: AnySkill[] = [
   rememberSkill,
   escalateToCeoSkill,
+  proposeRoadmapRowSkill,
   // ceo_orchestrator
   delegateTaskSkill,
   consultDirectorSkill,

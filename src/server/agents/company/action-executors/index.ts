@@ -5,6 +5,8 @@ import { loadCompanyMetrics } from '../company-metrics';
 import { VOICE_RULES_SHORT } from '../voice';
 import type { CompanyAgentActionRow, CompanyActionType, CompanyAgentKind } from '../types';
 import { getModelForAgent } from '../agent-models';
+import { appendRoadmapRow } from '../roadmap/loader';
+import type { RoadmapDomainKey } from '../roadmap/types';
 
 export interface ExecutionResult {
   status: 'completed' | 'failed';
@@ -291,6 +293,66 @@ async function execRequestApproval(): Promise<ExecutionResult> {
   };
 }
 
+const VALID_ROADMAP_DOMAINS = new Set<RoadmapDomainKey>(['product', 'marketing', 'finance']);
+
+function asString(v: unknown): string | undefined {
+  return typeof v === 'string' && v.length > 0 ? v : undefined;
+}
+
+async function execAppendRoadmapRow(
+  action: CompanyAgentActionRow
+): Promise<ExecutionResult> {
+  const payload = action.payload_json ?? {};
+  const domainRaw = (payload.domain as string) ?? '';
+  if (!VALID_ROADMAP_DOMAINS.has(domainRaw as RoadmapDomainKey)) {
+    return { status: 'failed', error: `append_roadmap_row: unknown domain "${domainRaw}".` };
+  }
+  const domain = domainRaw as RoadmapDomainKey;
+  const row = (payload.row as Record<string, unknown> | undefined) ?? {};
+  const title = asString(row.title);
+  if (!title) {
+    return { status: 'failed', error: 'append_roadmap_row: payload.row.title is required.' };
+  }
+  const priority = asString(row.priority);
+
+  const result = await appendRoadmapRow(domain, {
+    title,
+    priority,
+    status: asString(row.status),
+    phase: asString(row.phase),
+    description: asString(row.description),
+    inspiration: asString(row.inspiration),
+  });
+
+  if (!result.ok) {
+    if (result.reason === 'missing_file') {
+      return {
+        status: 'failed',
+        error: `roadmap/${domain}.csv does not exist yet — create it first.`,
+      };
+    }
+    if (result.reason === 'no_header') {
+      return {
+        status: 'failed',
+        error: `roadmap/${domain}.csv has no header row — fix the file before adding rows from chat.`,
+      };
+    }
+    if (result.reason === 'read_only_fs') {
+      return {
+        status: 'failed',
+        error:
+          'Filesystem is read-only on this host (likely Vercel). Run the command center locally to apply roadmap changes.',
+      };
+    }
+    return { status: 'failed', error: result.error ?? 'Failed to append roadmap row.' };
+  }
+
+  return {
+    status: 'completed',
+    resultJson: { domain, id: result.id, line: result.line, filePath: result.filePath },
+  };
+}
+
 async function execSummarizeMetrics(
   action: CompanyAgentActionRow,
   supabase: SupabaseClient
@@ -324,6 +386,7 @@ const EXECUTORS: Record<
   record_decision: execRecordDecision,
   request_approval: execRequestApproval,
   summarize_metrics: execSummarizeMetrics,
+  append_roadmap_row: execAppendRoadmapRow,
 };
 
 export async function executeAction(

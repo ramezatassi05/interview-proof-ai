@@ -26,6 +26,25 @@ const DOMAINS_FOR_AGENT: Record<CompanyAgentKind, RoadmapDomainKey[]> = {
   director_finance: ['finance'],
 };
 
+const DEFAULT_ID_PREFIX: Record<RoadmapDomainKey, string> = {
+  product: 'F',
+  marketing: 'M',
+  finance: 'B',
+};
+
+export function domainForAgent(agentKind: CompanyAgentKind): RoadmapDomainKey | null {
+  switch (agentKind) {
+    case 'director_engineering':
+      return 'product';
+    case 'director_marketing':
+      return 'marketing';
+    case 'director_finance':
+      return 'finance';
+    default:
+      return null;
+  }
+}
+
 const ACTIVE_STATUS_REGEX = /^(?!.*(done|complete|completed|cancel|cancelled|canceled|shipped))/i;
 const NOTES_BUDGET = 2000;
 
@@ -157,6 +176,127 @@ export async function loadRoadmap(opts: { agentKind: CompanyAgentKind }): Promis
 
 export function isActiveRow(row: RoadmapRow): boolean {
   return ACTIVE_STATUS_REGEX.test(row.status);
+}
+
+export interface AppendRoadmapInput {
+  title: string;
+  priority?: string;
+  status?: string;
+  phase?: string;
+  description?: string;
+  inspiration?: string;
+}
+
+export type AppendRoadmapResult =
+  | { ok: true; id: string; line: string; filePath: string }
+  | { ok: false; reason: 'missing_file' | 'no_header' | 'read_only_fs' | 'write_failed'; error?: string };
+
+function escapeCsvCell(value: string): string {
+  if (value === '') return '';
+  if (/[",\n\r]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
+
+function buildCsvLine(values: string[]): string {
+  return values.map(escapeCsvCell).join(',');
+}
+
+function nextRowId(existingIds: string[], fallbackPrefix: string): string {
+  let prefix = fallbackPrefix;
+  let maxN = 0;
+  for (const raw of existingIds) {
+    const match = raw.match(/^([A-Za-z]+)-(\d+)$/);
+    if (!match) continue;
+    prefix = match[1];
+    const n = Number(match[2]);
+    if (Number.isFinite(n) && n > maxN) maxN = n;
+  }
+  const next = maxN + 1;
+  return `${prefix}-${String(next).padStart(3, '0')}`;
+}
+
+function valueForHeader(header: string, id: string, input: AppendRoadmapInput): string {
+  const h = header.toLowerCase().trim();
+  if (h === 'id') return id;
+  if (h === 'feature name' || h === 'initiative' || h === 'line item') return input.title;
+  if (h === 'epic description' || h === 'description') return input.description ?? '';
+  if (h === 'priority') return input.priority ?? '';
+  if (h === 'status') return input.status ?? 'Backlog';
+  if (h === 'phase' || h === 'category') return input.phase ?? '';
+  if (
+    h === 'inspiration / references' ||
+    h === 'inspiration/references' ||
+    h === 'inspiration' ||
+    h === 'notes'
+  )
+    return input.inspiration ?? '';
+  return '';
+}
+
+export async function appendRoadmapRow(
+  domain: RoadmapDomainKey,
+  input: AppendRoadmapInput
+): Promise<AppendRoadmapResult> {
+  const filePath = DOMAIN_FILES[domain];
+  const raw = await readFileOrNull(filePath);
+  if (raw === null) return { ok: false, reason: 'missing_file' };
+
+  const parsedRows: string[][] = parseCsv(raw, {
+    relax_column_count: true,
+    skip_empty_lines: false,
+    trim: false,
+  });
+
+  const headerIdx = findHeaderRowIndex(parsedRows);
+  if (headerIdx === -1) return { ok: false, reason: 'no_header' };
+
+  const header = parsedRows[headerIdx].map((c) => (c ?? '').trim());
+
+  const existingIds: string[] = [];
+  let cursor = headerIdx + 1;
+  while (cursor < parsedRows.length) {
+    const row = parsedRows[cursor];
+    if (isBlankRow(row)) break;
+    const idCell = (row[0] ?? '').trim();
+    if (idCell) existingIds.push(idCell);
+    cursor++;
+  }
+  // cursor now points to the first blank row after the data section
+  // (or past the end of the file if there is no blank line yet).
+
+  const id = nextRowId(existingIds, DEFAULT_ID_PREFIX[domain]);
+  const values = header.map((h) => valueForHeader(h, id, input));
+  const newLine = buildCsvLine(values);
+
+  // Splice the new line into the raw text right before the blank row that
+  // separates the table from the deep-notes section. We do this by counting
+  // newlines rather than re-serialising the whole CSV, which keeps the
+  // user's deep-notes formatting byte-identical.
+  const lines = raw.split(/\r?\n/);
+  const eol = raw.includes('\r\n') ? '\r\n' : '\n';
+  // The parsed-row index aligns with the raw line index because we passed
+  // skip_empty_lines: false. Insert at `cursor` (the blank row position).
+  const insertAt = Math.min(cursor, lines.length);
+  lines.splice(insertAt, 0, newLine);
+  const newRaw = lines.join(eol);
+
+  try {
+    await fs.writeFile(filePath, newRaw, 'utf-8');
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === 'EROFS' || code === 'EACCES' || code === 'EPERM') {
+      return { ok: false, reason: 'read_only_fs', error: code };
+    }
+    return {
+      ok: false,
+      reason: 'write_failed',
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+
+  return { ok: true, id, line: newLine, filePath };
 }
 
 export async function loadRoadmapStatus(): Promise<RoadmapStatus> {

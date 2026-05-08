@@ -17,6 +17,7 @@ export const COMPANY_ACTION_TYPES = [
   'record_decision',
   'request_approval',
   'summarize_metrics',
+  'append_roadmap_row',
 ] as const;
 
 export type CompanyActionType = (typeof COMPANY_ACTION_TYPES)[number];

@@ -43,6 +43,9 @@ const ROADMAP_DISCIPLINE = `Roadmap discipline (binding):
 - When a roadmap row's Inspiration/Notes column has direction from the CEO (e.g., a reference reel, a tone, a structure), treat that as binding creative input. You have technical freedom on the HOW — not the WHAT.
 - If a domain you'd need is not loaded ("(no file)"), do not invent it. Say it's missing and ask the CEO to create it.`;
 
+const ROADMAP_INSPIRATION_NUDGE = `Capturing inspiration:
+- If the CEO drops an idea, link, competitor reference, or campaign in chat that's worth tracking, call \`propose_roadmap_row\` to capture it as a structured row in your domain roadmap. The CEO will approve before anything is written to disk. This is exactly what "hey, look at X" moments are for — don't just acknowledge, capture.`;
+
 function formatDomain(domainKey: RoadmapDomainKey, domain: RoadmapDomain | null): string {
   const heading = `## ${DOMAIN_LABELS[domainKey]}`;
   if (!domain) return `${heading}\n(no file — roadmap/${domainKey}.csv not loaded)`;
@@ -98,7 +101,13 @@ function buildRoadmapBlock(roadmap: RoadmapContext | undefined, agentKind: Compa
     sections.push(formatDomain('finance', roadmap.finance));
   }
 
-  return `\n${sections.join('\n\n')}\n\n${ROADMAP_DISCIPLINE}\n`;
+  const isDomainDirector =
+    agentKind === 'director_engineering' ||
+    agentKind === 'director_marketing' ||
+    agentKind === 'director_finance';
+  const inspirationBlock = isDomainDirector ? `\n\n${ROADMAP_INSPIRATION_NUDGE}` : '';
+
+  return `\n${sections.join('\n\n')}\n\n${ROADMAP_DISCIPLINE}${inspirationBlock}\n`;
 }
 
 export function buildCompanySystemPrompt(args: {

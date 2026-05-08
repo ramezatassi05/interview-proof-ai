@@ -9,6 +9,7 @@ const ACTION_TYPE_FRIENDLY: Record<CompanyActionType, string> = {
   record_decision: 'a decision to log',
   request_approval: 'something to approve',
   summarize_metrics: 'a metrics summary',
+  append_roadmap_row: 'a new roadmap row',
 };
 
 export function friendlyActionType(actionType: string): string {

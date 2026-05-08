@@ -31,6 +31,14 @@ export const SKILL_CATALOG: SkillCatalogEntry[] = [
     description: "Flag a stuck or out-of-scope task so the CEO addresses it next.",
     icon: 'alert-triangle',
   },
+  {
+    id: 'propose_roadmap_row',
+    agentKinds: ['director_engineering', 'director_marketing', 'director_finance'],
+    kind: 'write',
+    label: 'Add roadmap row',
+    description: 'Capture a piece of inspiration as a structured row in your domain roadmap.',
+    icon: 'list',
+  },
 
   // ceo_orchestrator
   {
