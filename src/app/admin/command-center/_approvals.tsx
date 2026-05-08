@@ -179,6 +179,143 @@ function PayloadField({ label, value }: { label: string; value: unknown }) {
   );
 }
 
+function CodeBlock({ children }: { children: string }) {
+  return (
+    <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words rounded border border-[var(--border-default)] bg-[var(--bg-primary)] p-3 text-xs leading-relaxed text-[var(--text-secondary)]">
+      {children}
+    </pre>
+  );
+}
+
+function ResultLink({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="flex items-baseline gap-2 text-xs text-[var(--text-secondary)]">
+      <span className="text-[var(--text-muted)]">{label}</span>
+      <span className="font-mono text-[11px] text-[var(--text-primary)]">{String(value)}</span>
+    </div>
+  );
+}
+
+function ResultJsonPanel({
+  actionType,
+  result,
+}: {
+  actionType: string;
+  result: Record<string, unknown>;
+}) {
+  const get = <T,>(key: string): T | undefined => result[key] as T | undefined;
+
+  let body: ReactNode;
+  switch (actionType) {
+    case 'draft_brief': {
+      const briefBody = get<string>('body');
+      const weekStart = get<string>('weekStart');
+      const briefId = get<string>('briefId');
+      body = (
+        <>
+          {weekStart && <ResultLink label="Week of" value={weekStart} />}
+          {briefId && <ResultLink label="Brief id" value={briefId} />}
+          {briefBody && <CodeBlock>{briefBody}</CodeBlock>}
+        </>
+      );
+      break;
+    }
+    case 'draft_marketing_asset':
+    case 'draft_engineering_spec': {
+      const text = get<string>(actionType === 'draft_marketing_asset' ? 'copy' : 'spec');
+      const taskId = get<string>('taskId');
+      const ownerKind = get<string>('ownerKind');
+      body = (
+        <>
+          {ownerKind && <ResultLink label="Owner" value={ownerKind} />}
+          {taskId && <ResultLink label="Task id" value={taskId} />}
+          {text && <CodeBlock>{text}</CodeBlock>}
+        </>
+      );
+      break;
+    }
+    case 'draft_finance_memo': {
+      const memo = get<string>('memo');
+      const decisionId = get<string>('decisionId');
+      body = (
+        <>
+          {decisionId && <ResultLink label="Decision id" value={decisionId} />}
+          {memo && <CodeBlock>{memo}</CodeBlock>}
+        </>
+      );
+      break;
+    }
+    case 'create_task': {
+      const taskId = get<string>('taskId');
+      const ownerKind = get<string>('ownerKind');
+      body = (
+        <p className="text-sm text-[var(--text-secondary)]">
+          Created task <span className="font-mono text-xs">{taskId}</span>
+          {ownerKind ? ` for ${ownerKind}.` : '.'}
+        </p>
+      );
+      break;
+    }
+    case 'record_decision': {
+      const decisionId = get<string>('decisionId');
+      body = (
+        <p className="text-sm text-[var(--text-secondary)]">
+          Recorded decision <span className="font-mono text-xs">{decisionId}</span>.
+        </p>
+      );
+      break;
+    }
+    case 'request_approval': {
+      const note = get<string>('note');
+      body = note ? (
+        <p className="text-sm text-[var(--text-secondary)]">{note}</p>
+      ) : (
+        <p className="text-sm text-[var(--text-muted)]">Approval recorded.</p>
+      );
+      break;
+    }
+    case 'summarize_metrics': {
+      const summary = get<string>('summary');
+      const metrics = get<unknown>('metrics');
+      body = (
+        <>
+          {summary && (
+            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-[var(--text-secondary)]">
+              {summary}
+            </p>
+          )}
+          {metrics !== undefined && <CodeBlock>{JSON.stringify(metrics, null, 2)}</CodeBlock>}
+        </>
+      );
+      break;
+    }
+    case 'append_roadmap_row': {
+      const domain = get<string>('domain');
+      const filePath = get<string>('filePath');
+      const rowId = get<string>('id');
+      const line = get<string>('line');
+      body = (
+        <>
+          {domain && <ResultLink label="Domain" value={domain} />}
+          {rowId && <ResultLink label="Row id" value={rowId} />}
+          {filePath && <ResultLink label="File" value={filePath} />}
+          {line && <CodeBlock>{line}</CodeBlock>}
+        </>
+      );
+      break;
+    }
+    default:
+      body = <CodeBlock>{JSON.stringify(result, null, 2)}</CodeBlock>;
+  }
+
+  return (
+    <div className="flex flex-col gap-3 border-t border-[var(--border-default)] pt-4">
+      <SoftLabel>What I did after you approved</SoftLabel>
+      <div className="flex flex-col gap-2">{body}</div>
+    </div>
+  );
+}
+
 export function ApprovalDetailModal({
   action,
   open,
@@ -241,6 +378,10 @@ export function ApprovalDetailModal({
                 <PayloadField key={key} label={key} value={value} />
               ))}
             </div>
+          )}
+
+          {action.status === 'completed' && action.resultJson && (
+            <ResultJsonPanel actionType={action.actionType} result={action.resultJson} />
           )}
 
           {evidence.length > 0 && (
