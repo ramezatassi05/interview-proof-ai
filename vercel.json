@@ -9,6 +9,10 @@
       "schedule": "0 6 * * *"
     },
     {
+      "path": "/api/cron/clear-spend-pause",
+      "schedule": "5 0 1 * *"
+    },
+    {
       "path": "/api/cron/company-agent/executive_assistant",
       "schedule": "0 8 * * *"
     },
