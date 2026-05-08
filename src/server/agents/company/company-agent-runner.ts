@@ -6,7 +6,7 @@ import type { DirectorContext } from './director-context';
 import { buildCompanySystemPrompt, COMPANY_AGENT_VERSION } from './company-agent-prompts';
 import { getModelForAgent } from './agent-models';
 import { loadRoadmap } from './roadmap/loader';
-import { loadGuardrailTier } from './guardrails';
+import { loadGuardrailTier, checkSpendCeiling, type SpendState } from './guardrails';
 import { getSkillsForAgent } from './skills';
 import { executeSkill, type ExecuteSkillResult } from './skills/router';
 
@@ -175,6 +175,7 @@ async function persistAssistantMessage(args: {
   truncated: boolean;
   tokensIn: number;
   tokensOut: number;
+  modelId: string | null;
 }): Promise<string> {
   const { data, error } = await args.supabase
     .from('company_agent_messages')
@@ -192,6 +193,7 @@ async function persistAssistantMessage(args: {
       },
       tokens_in: args.tokensIn,
       tokens_out: args.tokensOut,
+      model_id: args.modelId,
     })
     .select('id')
     .single();
@@ -200,6 +202,16 @@ async function persistAssistantMessage(args: {
     throw new CompanyAgentError('Failed to persist assistant message', { cause: error });
   }
   return data.id as string;
+}
+
+function formatSpendCapMessage(state: SpendState): string {
+  const cap = state.capUsd?.toFixed(2) ?? '0.00';
+  const used = state.monthSpendUsd.toFixed(2);
+  const resetDate = new Date(state.resetsAt).toISOString().slice(0, 10);
+  return [
+    `I'm paused for the rest of this month — the spend cap of $${cap} has been reached (current usage: $${used}).`,
+    `The cap resets on ${resetDate}, or you can raise it now in the agent's Guardrails panel.`,
+  ].join(' ');
 }
 
 async function attachToolCallsToMessage(
@@ -235,12 +247,14 @@ export async function streamCompanyAgent(
 ): Promise<StreamCompanyAgentResult> {
   const triggeredBy: CompanyAgentTriggeredBy = args.triggeredBy ?? 'user';
   const client = getAnthropicClient();
+  const modelId = getModelForAgent(args.agentKind);
 
-  const [memory, history, roadmap, guardrailTier] = await Promise.all([
+  const [memory, history, roadmap, guardrailTier, spendState] = await Promise.all([
     loadMemory({ supabase: args.supabase, userId: args.userId, agentKind: args.agentKind }),
     loadConversationHistory({ supabase: args.supabase, sessionId: args.sessionId }),
     loadRoadmap({ agentKind: args.agentKind }),
     loadGuardrailTier(args.supabase, args.userId, args.agentKind),
+    checkSpendCeiling(args.supabase, args.userId, args.agentKind),
   ]);
 
   const userMessageId = await persistUserMessage({
@@ -258,6 +272,44 @@ export async function streamCompanyAgent(
     sessionId: args.sessionId,
     messageId: userMessageId,
   });
+
+  // Spend cap gate. If the agent has hit its monthly USD ceiling, persist a
+  // synthetic assistant message explaining the pause and return early without
+  // calling Anthropic. The user message stays in history so they can resend
+  // after raising the cap.
+  if (!spendState.allowed) {
+    const capMessage = formatSpendCapMessage(spendState);
+    callbacks.onTextDelta?.(capMessage);
+    const messageId = await persistAssistantMessage({
+      supabase: args.supabase,
+      sessionId: args.sessionId,
+      agentKind: args.agentKind,
+      text: capMessage,
+      toolCallIds: [],
+      stopReason: 'spend_cap_exceeded',
+      truncated: false,
+      tokensIn: 0,
+      tokensOut: 0,
+      modelId: null,
+    });
+    await args.supabase
+      .from('company_agent_sessions')
+      .update({ last_message_at: new Date().toISOString() })
+      .eq('id', args.sessionId)
+      .eq('user_id', args.userId);
+
+    const result: StreamCompanyAgentResult = {
+      messageId,
+      text: capMessage,
+      toolCallIds: [],
+      linkedActionIds: [],
+      tokensIn: 0,
+      tokensOut: 0,
+      truncated: false,
+    };
+    callbacks.onComplete?.(result);
+    return result;
+  }
 
   const systemPrompt = buildCompanySystemPrompt({
     agentKind: args.agentKind,
@@ -442,6 +494,7 @@ export async function streamCompanyAgent(
     truncated,
     tokensIn: totalTokensIn,
     tokensOut: totalTokensOut,
+    modelId,
   });
 
   await attachToolCallsToMessage(args.supabase, assistantMessageId, toolCallRowIds);
