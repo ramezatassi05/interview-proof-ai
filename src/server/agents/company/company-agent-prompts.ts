@@ -3,6 +3,22 @@ import type { RoadmapContext, RoadmapDomain, RoadmapDomainKey } from './roadmap/
 import { isActiveRow } from './roadmap/loader';
 import { VOICE_RULES, roleFraming } from './voice';
 import { formatReportingBlock } from './org';
+import {
+  MEMORY_TOPIC_LABELS,
+  MEMORY_TOPIC_ORDER,
+  type MemoryTopic,
+} from './memory-topics';
+
+export interface MemoryItem {
+  topic: MemoryTopic;
+  key: string;
+  summary: string | null;
+  body: string | null;
+  value: unknown;
+}
+
+const MEMORY_BLOCK_BUDGET_CHARS = 3000;
+const MEMORY_BODY_BUDGET_CHARS = 300;
 
 export const COMPANY_AGENT_VERSION = 'v3.0.0';
 
@@ -110,22 +126,73 @@ function buildRoadmapBlock(roadmap: RoadmapContext | undefined, agentKind: Compa
   return `\n${sections.join('\n\n')}\n\n${ROADMAP_DISCIPLINE}${inspirationBlock}\n`;
 }
 
+function truncate(text: string, max: number): string {
+  if (text.length <= max) return text;
+  return text.slice(0, max - 1) + '…';
+}
+
+function renderMemoryItem(item: MemoryItem): string {
+  const valuePart =
+    item.summary && item.summary.trim().length > 0
+      ? item.summary
+      : typeof item.value === 'string'
+        ? item.value
+        : item.value === null || item.value === undefined
+          ? ''
+          : JSON.stringify(item.value);
+
+  const head = valuePart ? `- **${item.key}** — ${truncate(valuePart, 240)}` : `- **${item.key}**`;
+
+  if (item.body && item.body.trim().length > 0) {
+    const body = truncate(item.body.trim(), MEMORY_BODY_BUDGET_CHARS);
+    const indented = body
+      .split('\n')
+      .map((line) => `  ${line}`)
+      .join('\n');
+    return `${head}\n${indented}`;
+  }
+  return head;
+}
+
+function buildMemoryBlock(memory: MemoryItem[] | undefined): string {
+  if (!memory || memory.length === 0) return '';
+
+  const byTopic = new Map<MemoryTopic, MemoryItem[]>();
+  for (const item of memory) {
+    const list = byTopic.get(item.topic);
+    if (list) list.push(item);
+    else byTopic.set(item.topic, [item]);
+  }
+
+  const sections: string[] = [];
+  for (const topic of MEMORY_TOPIC_ORDER) {
+    const items = byTopic.get(topic);
+    if (!items || items.length === 0) continue;
+    const heading = `### ${MEMORY_TOPIC_LABELS[topic]}`;
+    const rendered = items.map(renderMemoryItem).join('\n');
+    sections.push(`${heading}\n${rendered}`);
+  }
+
+  if (sections.length === 0) return '';
+
+  const body = sections.join('\n\n');
+  const trimmed =
+    body.length > MEMORY_BLOCK_BUDGET_CHARS
+      ? `${body.slice(0, MEMORY_BLOCK_BUDGET_CHARS - 1)}…\n\n(memory truncated — recent topics shown first)`
+      : body;
+
+  return `\n## MEMORY (treat as current)\n${trimmed}\n`;
+}
+
 export function buildCompanySystemPrompt(args: {
   agentKind: CompanyAgentKind;
-  memory?: { key: string; value: unknown }[];
+  memory?: MemoryItem[];
   directorSummary?: string;
   roadmap?: RoadmapContext;
 }): string {
   const role = COMPANY_AGENT_LABELS[args.agentKind];
 
-  const memoryBlock =
-    args.memory && args.memory.length > 0
-      ? `\n## MEMORY (things you've learned — treat as current)\n${args.memory
-          .map(
-            (m) => `- ${m.key}: ${typeof m.value === 'string' ? m.value : JSON.stringify(m.value)}`
-          )
-          .join('\n')}\n`
-      : '';
+  const memoryBlock = buildMemoryBlock(args.memory);
 
   const directorBlock = args.directorSummary
     ? `\n## What's going on right now\n${args.directorSummary}\n`

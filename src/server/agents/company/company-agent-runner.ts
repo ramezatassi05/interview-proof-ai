@@ -3,7 +3,12 @@ import Anthropic from '@anthropic-ai/sdk';
 import { getAnthropicClient } from '@/lib/anthropic';
 import type { CompanyAgentKind, CompanyAgentTriggeredBy, CompanyMetricsSnapshot } from './types';
 import type { DirectorContext } from './director-context';
-import { buildCompanySystemPrompt, COMPANY_AGENT_VERSION } from './company-agent-prompts';
+import {
+  buildCompanySystemPrompt,
+  COMPANY_AGENT_VERSION,
+  type MemoryItem,
+} from './company-agent-prompts';
+import { isMemoryTopic, type MemoryTopic } from './memory-topics';
 import { getModelForAgent } from './agent-models';
 import { loadRoadmap } from './roadmap/loader';
 import { loadGuardrailTier } from './guardrails';
@@ -13,7 +18,8 @@ import { executeSkill, type ExecuteSkillResult } from './skills/router';
 
 const MAX_TOOL_ITERATIONS = 6;
 const MAX_HISTORY_MESSAGES = 20;
-const MAX_MEMORY_ROWS = 50;
+const MAX_MEMORY_ROWS = 80;
+const MAX_MEMORY_PER_TOPIC = 20;
 const STREAM_MAX_TOKENS = 4096;
 const TOOL_RESULT_OUTPUT_CHAR_CAP = 8000;
 
@@ -80,7 +86,10 @@ export interface StreamCompanyAgentCallbacks {
 }
 
 interface MemoryRow {
+  topic: string | null;
   key: string;
+  summary: string | null;
+  body: string | null;
   value_json: unknown;
 }
 
@@ -88,15 +97,33 @@ async function loadMemory(args: {
   supabase: SupabaseClient;
   userId: string;
   agentKind: CompanyAgentKind;
-}): Promise<MemoryRow[]> {
+}): Promise<MemoryItem[]> {
   const { data } = await args.supabase
     .from('company_agent_memory')
-    .select('key,value_json')
+    .select('topic,key,summary,body,value_json')
     .eq('user_id', args.userId)
     .eq('agent_kind', args.agentKind)
     .order('updated_at', { ascending: false })
     .limit(MAX_MEMORY_ROWS);
-  return (data as MemoryRow[] | null) ?? [];
+
+  const rows = (data as MemoryRow[] | null) ?? [];
+  const perTopic = new Map<MemoryTopic, number>();
+  const items: MemoryItem[] = [];
+
+  for (const row of rows) {
+    const topic: MemoryTopic = isMemoryTopic(row.topic) ? row.topic : 'general';
+    const used = perTopic.get(topic) ?? 0;
+    if (used >= MAX_MEMORY_PER_TOPIC) continue;
+    perTopic.set(topic, used + 1);
+    items.push({
+      topic,
+      key: row.key,
+      summary: row.summary,
+      body: row.body,
+      value: row.value_json,
+    });
+  }
+  return items;
 }
 
 interface PriorMessageRow {
@@ -314,7 +341,7 @@ export async function streamCompanyAgent(
 
   const systemPrompt = buildCompanySystemPrompt({
     agentKind: args.agentKind,
-    memory: memory.map((m) => ({ key: m.key, value: m.value_json })),
+    memory,
     directorSummary: args.directorContext?.summary,
     roadmap,
   });
