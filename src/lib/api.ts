@@ -157,6 +157,11 @@ export interface AgentMessageResponse {
   data: AgentMessage;
 }
 
+export interface AgentMessagesListResponse {
+  data: AgentMessage[];
+  nextCursor: string | null;
+}
+
 export interface PracticeProgressResponse {
   data: PracticeProgress;
 }
@@ -443,6 +448,19 @@ class APIClient {
       method: 'POST',
       body: JSON.stringify(input),
     });
+  }
+
+  async listAgentMessages(
+    sessionId: string,
+    params?: { limit?: number; direction?: 'asc' | 'desc' }
+  ): Promise<AgentMessagesListResponse> {
+    const search = new URLSearchParams();
+    if (params?.limit) search.set('limit', String(params.limit));
+    if (params?.direction) search.set('direction', params.direction);
+    const qs = search.toString();
+    return this.request<AgentMessagesListResponse>(
+      `/agent/sessions/${sessionId}/messages${qs ? `?${qs}` : ''}`
+    );
   }
 
   /**
