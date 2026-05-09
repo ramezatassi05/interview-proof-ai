@@ -9,6 +9,7 @@ import type { CompanyAgentKind } from '@/server/agents/company/types';
 import { agentMeta } from './agents';
 import { SoftLabel, PriorityBadge, StatusBadge } from './_primitives';
 import { friendlyActionType } from './_action-copy';
+import { Markdown } from './_markdown';
 
 export interface EvidenceRef {
   label: string;
@@ -150,11 +151,7 @@ function PayloadField({ label, value }: { label: string; value: unknown }) {
 
   let body: ReactNode;
   if (typeof value === 'string') {
-    body = (
-      <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-[var(--text-secondary)]">
-        {value}
-      </p>
-    );
+    body = <Markdown text={value} />;
   } else if (typeof value === 'number' || typeof value === 'boolean') {
     body = <p className="text-sm tabular-nums text-[var(--text-secondary)]">{String(value)}</p>;
   } else if (Array.isArray(value) && value.every((v) => typeof v === 'string')) {
@@ -217,7 +214,7 @@ function ResultJsonPanel({
         <>
           {weekStart && <ResultLink label="Week of" value={weekStart} />}
           {briefId && <ResultLink label="Brief id" value={briefId} />}
-          {briefBody && <CodeBlock>{briefBody}</CodeBlock>}
+          {briefBody && <Markdown text={briefBody} />}
         </>
       );
       break;
@@ -231,7 +228,7 @@ function ResultJsonPanel({
         <>
           {ownerKind && <ResultLink label="Owner" value={ownerKind} />}
           {taskId && <ResultLink label="Task id" value={taskId} />}
-          {text && <CodeBlock>{text}</CodeBlock>}
+          {text && <Markdown text={text} />}
         </>
       );
       break;
@@ -242,7 +239,7 @@ function ResultJsonPanel({
       body = (
         <>
           {decisionId && <ResultLink label="Decision id" value={decisionId} />}
-          {memo && <CodeBlock>{memo}</CodeBlock>}
+          {memo && <Markdown text={memo} />}
         </>
       );
       break;
@@ -281,11 +278,7 @@ function ResultJsonPanel({
       const metrics = get<unknown>('metrics');
       body = (
         <>
-          {summary && (
-            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-[var(--text-secondary)]">
-              {summary}
-            </p>
-          )}
+          {summary && <Markdown text={summary} />}
           {metrics !== undefined && <CodeBlock>{JSON.stringify(metrics, null, 2)}</CodeBlock>}
         </>
       );
@@ -301,7 +294,7 @@ function ResultJsonPanel({
           {domain && <ResultLink label="Domain" value={domain} />}
           {rowId && <ResultLink label="Row id" value={rowId} />}
           {filePath && <ResultLink label="File" value={filePath} />}
-          {line && <CodeBlock>{line}</CodeBlock>}
+          {line && <Markdown text={line} />}
         </>
       );
       break;
@@ -369,9 +362,7 @@ export function ApprovalDetailModal({
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
             <SoftLabel>Why I&apos;m proposing this</SoftLabel>
-            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-[var(--text-secondary)]">
-              {action.rationale}
-            </p>
+            <Markdown text={action.rationale} />
           </div>
 
           {payloadEntries.length > 0 && (

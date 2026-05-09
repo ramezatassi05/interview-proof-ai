@@ -11,6 +11,7 @@ import { relativeTime } from '@/lib/relative-time';
 import { agentMeta } from './agents';
 import type { CompanyTask } from './TaskKanban';
 import type { CompanyTaskOwnerKind, CompanyTaskStatus } from '@/server/agents/company/types';
+import { Markdown } from './_markdown';
 
 const STATUS_LABEL: Record<CompanyTaskStatus, string> = {
   todo: 'Backlog',
@@ -66,20 +67,16 @@ export function TaskDetailDialog({
         </DialogHeader>
 
         <div className="flex flex-col gap-5">
-          {task.description && (
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">
-              {task.description}
-            </p>
-          )}
+          {task.description && <Markdown text={task.description} />}
 
           {fromCeo && task.delegationRationale && (
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                 Why this was delegated
               </p>
-              <p className="mt-1.5 whitespace-pre-wrap text-sm italic leading-relaxed text-[var(--text-secondary)]">
-                “{task.delegationRationale}”
-              </p>
+              <div className="mt-1.5 italic">
+                <Markdown text={`“${task.delegationRationale}”`} />
+              </div>
             </div>
           )}
 
@@ -89,9 +86,9 @@ export function TaskDetailDialog({
                 Escalated · {relativeTime(task.escalatedAt!)}
               </p>
               {task.escalationReason && (
-                <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">
-                  {task.escalationReason}
-                </p>
+                <div className="mt-1.5">
+                  <Markdown text={task.escalationReason} />
+                </div>
               )}
             </div>
           )}
@@ -101,9 +98,9 @@ export function TaskDetailDialog({
               <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                 Resolution{task.resolvedAt ? ` · ${relativeTime(task.resolvedAt)}` : ''}
               </p>
-              <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">
-                {task.resolution}
-              </p>
+              <div className="mt-1.5">
+                <Markdown text={task.resolution} />
+              </div>
             </div>
           )}
 

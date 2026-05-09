@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Markdown } from '../../_markdown';
 
 interface ToolCallView {
   id: string;
@@ -110,7 +111,9 @@ export function TriageTranscript({
             {m.role === 'user' ? 'You (CEO)' : 'CEO orchestrator'}
           </p>
           {m.text && (
-            <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--text-primary)]">{m.text}</p>
+            <div className="mt-1">
+              <Markdown text={m.text} />
+            </div>
           )}
           {m.toolCalls.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
