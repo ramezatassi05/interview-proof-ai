@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { z } from 'zod';
 import { verifyBearerToken } from '@/lib/security';
 import { createServiceClient } from '@/lib/supabase/server';
@@ -99,18 +99,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to record idea' }, { status: 500 });
   }
 
-  // 3. Fire-and-forget triage. The orchestrator persists messages & actions
-  //    to the DB itself; the browser hydrates the session via existing routes.
-  //    We do NOT await — CLI gets a snappy response and the browser polls.
-  void runIdeaTriage({
-    supabase: service,
-    serviceClient: service,
-    userId: ceoUserId,
-    ideaId: idea.id,
-    sessionId: session.id,
-    rawText: text,
-    context: context ?? null,
-  });
+  // 3. Hand the triage off to Vercel's `after()` so the orchestrator keeps
+  //    running after the response is sent. Plain fire-and-forget (`void
+  //    promise()`) gets killed by Vercel Functions when the request handler
+  //    returns; `after` extends the function's billed duration to cover the
+  //    background work. The orchestrator persists messages + actions to the
+  //    DB itself; the browser hydrates the session via existing routes.
+  after(() =>
+    runIdeaTriage({
+      supabase: service,
+      serviceClient: service,
+      userId: ceoUserId,
+      ideaId: idea.id,
+      sessionId: session.id,
+      rawText: text,
+      context: context ?? null,
+    })
+  );
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   return NextResponse.json({
