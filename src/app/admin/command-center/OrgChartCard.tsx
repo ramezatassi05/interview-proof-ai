@@ -57,7 +57,7 @@ function AgentRow({
     <button
       type="button"
       onClick={onClick}
-      className={`group flex w-full items-start gap-3 border border-[var(--border-default)]/60 bg-[var(--bg-card)] px-3 py-2.5 text-left transition-colors hover:border-[var(--border-accent)] hover:bg-[var(--bg-elevated)] ${escalatedClasses}`}
+      className={`group flex w-full items-start gap-3 border-l-2 border-l-transparent px-3 py-2.5 text-left transition-colors hover:border-l-[var(--accent-primary)] hover:bg-[var(--bg-elevated)]/60 ${escalatedClasses}`}
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-2">
@@ -110,13 +110,8 @@ export function OrgChartCard({
   const beatsByKind = new Map(heartbeats.map((h) => [h.agentKind, h]));
 
   return (
-    <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-      <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-sm font-semibold text-[var(--text-primary)]">Your team</h2>
-        <span className="text-[11px] text-[var(--text-muted)]">Tap to talk</span>
-      </div>
-
-      <div className="mt-3 flex flex-col gap-2">
+    <div>
+      <div className="flex flex-col gap-2">
         {ceo && (
           <AgentRow
             role="CEO"

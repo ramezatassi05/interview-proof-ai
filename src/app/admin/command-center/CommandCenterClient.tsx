@@ -29,6 +29,7 @@ import { RejectActionDialog } from './RejectActionDialog';
 import { IdeasTab } from './IdeasTab';
 import { AuditTimeline } from './AuditTimeline';
 import { TicketsCard } from './artifacts';
+import { BodySection } from './_section-frame';
 
 interface CompanyMetricsSnapshot {
   totalUsers: number;
@@ -247,136 +248,162 @@ export function CommandCenterClient({
           />
 
           <TabContent id="dashboard">
-            <section className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)_380px]">
+            <section className="grid gap-x-8 gap-y-10 lg:grid-cols-[300px_minmax(0,1fr)_380px]">
               {/* LEFT RAIL */}
-              <aside className="order-2 flex flex-col gap-5 lg:order-1">
+              <aside className="order-2 flex flex-col gap-10 lg:order-1">
                 <BlurFade delay={0.04}>
-                  <OrgChartCard
-                    pendingByAgent={pendingByAgent}
-                    heartbeats={brief.heartbeats ?? []}
-                    onSelect={openAgentDrawer}
-                    taskCountsByOwner={taskCountsByOwner}
-                  />
+                  <BodySection
+                    index="01"
+                    eyebrow="Team"
+                    title="Your team"
+                    tagline="Direct reports and their pulse. Tap a row to talk."
+                  >
+                    <OrgChartCard
+                      pendingByAgent={pendingByAgent}
+                      heartbeats={brief.heartbeats ?? []}
+                      onSelect={openAgentDrawer}
+                      taskCountsByOwner={taskCountsByOwner}
+                    />
+                  </BodySection>
                 </BlurFade>
 
                 {brief.roadmapStatus && (
                   <BlurFade delay={0.1}>
-                    <RoadmapStatusCard initialStatus={brief.roadmapStatus} />
+                    <BodySection
+                      eyebrow="Roadmap"
+                      title="What grounds them"
+                      tagline="The CSV files your agents read before they propose anything."
+                    >
+                      <RoadmapStatusCard initialStatus={brief.roadmapStatus} />
+                    </BodySection>
                   </BlurFade>
                 )}
 
                 <BlurFade delay={0.16}>
-                  <TicketsCard />
+                  <BodySection
+                    eyebrow="Tickets"
+                    title="In flight between agents"
+                    tagline="Work one director filed against another."
+                  >
+                    <TicketsCard />
+                  </BodySection>
                 </BlurFade>
               </aside>
 
               {/* CENTER — Goals Kanban */}
               <section className="order-1 flex flex-col gap-5 lg:order-2">
                 <BlurFade delay={0.04}>
-                  <TaskKanban initialTasks={brief.tasks ?? []} />
+                  <BodySection
+                    index="02"
+                    eyebrow="Goals"
+                    title="What everyone is moving"
+                    tagline="Drag a card across columns to update where it sits."
+                    action={
+                      <span className="font-serif text-[15px] font-medium tabular-nums text-[var(--text-muted)]">
+                        {(brief.tasks ?? []).length}
+                      </span>
+                    }
+                    divider
+                  >
+                    <TaskKanban initialTasks={brief.tasks ?? []} />
+                  </BodySection>
                 </BlurFade>
               </section>
 
-              {/* RIGHT RAIL — pending approvals: single surface, BorderBeam when active */}
-              <aside className="order-3 flex flex-col gap-5">
+              {/* RIGHT RAIL — pending approvals: editorial frame + surfaced action panel with BorderBeam */}
+              <aside className="order-3 flex flex-col gap-10">
                 <BlurFade delay={0.04}>
-                  <div
-                    className={`relative border bg-[var(--bg-card)] p-4 ${
-                      hasPendingApprovals
-                        ? 'border-[var(--border-accent)]/50'
-                        : 'border-[var(--border-default)]'
-                    }`}
-                  >
-                    {hasPendingApprovals && (
-                      <BorderBeam
-                        size={220}
-                        duration={11}
-                        colorFrom="var(--accent-primary)"
-                        colorTo="var(--accent-secondary)"
-                      />
-                    )}
-
-                    <div className="flex items-baseline justify-between gap-2">
-                      <h2
-                        className={`text-base font-semibold ${
-                          hasPendingApprovals
-                            ? 'text-[var(--text-primary)]'
-                            : 'text-[var(--text-secondary)]'
-                        }`}
-                      >
-                        Waiting on your OK
-                      </h2>
-                      <div className="flex items-center gap-2">
+                  <BodySection
+                    index="03"
+                    eyebrow="Decisions"
+                    title="Waiting on your OK"
+                    tagline="Things your team drafted that need a yes or no."
+                    muted={!hasPendingApprovals}
+                    action={
+                      <div className="flex items-center gap-3">
                         {hasPendingApprovals && (
                           <Badge variant="accent">{pendingApprovals.length}</Badge>
                         )}
                         <ViewAllInboxLink />
                       </div>
-                    </div>
-                    <p className="mt-1 text-[12px] text-[var(--text-muted)]">
-                      Things your team drafted that need a yes or no.
-                    </p>
-                    {approvalError && (
-                      <p className="mt-2 text-[12px] text-[var(--color-danger)]">{approvalError}</p>
-                    )}
+                    }
+                  >
+                    <div
+                      className={`relative bg-[var(--bg-card)] ${
+                        hasPendingApprovals
+                          ? 'border border-[var(--border-accent)]/50 p-4'
+                          : 'border border-[var(--border-default)]/60 p-4'
+                      }`}
+                    >
+                      {hasPendingApprovals && (
+                        <BorderBeam
+                          size={220}
+                          duration={11}
+                          colorFrom="var(--accent-primary)"
+                          colorTo="var(--accent-secondary)"
+                        />
+                      )}
 
-                    {!hasPendingApprovals ? (
-                      <div className="mt-4 flex flex-col items-center justify-center gap-1.5 py-8 text-center">
-                        <span className="text-2xl text-[var(--text-muted)]" aria-hidden>
-                          ✓
-                        </span>
-                        <p className="text-[13px] font-medium text-[var(--text-primary)]">
-                          You&apos;re all caught up.
-                        </p>
-                        <p className="max-w-[220px] text-[11.5px] text-[var(--text-muted)]">
-                          Your team will queue the next call.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="mt-4 flex flex-col gap-3">
-                        {heroApproval && (
-                          <HeroApprovalCard
-                            action={heroApproval}
-                            pending={pendingActionId === heroApproval.id}
-                            onTransition={transitionAction}
-                            onRequestReject={requestReject}
-                            onOpenDetail={(a) => setOpenActionId(a.id)}
-                          />
-                        )}
-                        {restApprovals.length > 0 && (
-                          <div className="flex flex-col gap-2.5">
-                            {restApprovals.map((action) => (
-                              <ApprovalRow
-                                key={action.id}
-                                action={action}
-                                pending={pendingActionId === action.id}
-                                onTransition={transitionAction}
-                                onRequestReject={requestReject}
-                                onOpenDetail={(a) => setOpenActionId(a.id)}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                      {approvalError && (
+                        <p className="mb-3 text-[12px] text-[var(--color-danger)]">{approvalError}</p>
+                      )}
+
+                      {!hasPendingApprovals ? (
+                        <div className="flex flex-col items-center justify-center gap-1.5 py-6 text-center">
+                          <span className="text-2xl text-[var(--text-muted)]" aria-hidden>
+                            ✓
+                          </span>
+                          <p className="text-[13px] font-medium text-[var(--text-primary)]">
+                            You&apos;re all caught up.
+                          </p>
+                          <p className="max-w-[220px] text-[11.5px] text-[var(--text-muted)]">
+                            Your team will queue the next call.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          {heroApproval && (
+                            <HeroApprovalCard
+                              action={heroApproval}
+                              pending={pendingActionId === heroApproval.id}
+                              onTransition={transitionAction}
+                              onRequestReject={requestReject}
+                              onOpenDetail={(a) => setOpenActionId(a.id)}
+                            />
+                          )}
+                          {restApprovals.length > 0 && (
+                            <div className="flex flex-col gap-2.5">
+                              {restApprovals.map((action) => (
+                                <ApprovalRow
+                                  key={action.id}
+                                  action={action}
+                                  pending={pendingActionId === action.id}
+                                  onTransition={transitionAction}
+                                  onRequestReject={requestReject}
+                                  onOpenDetail={(a) => setOpenActionId(a.id)}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </BodySection>
                 </BlurFade>
 
                 {recentExecutions.length > 0 && (
                   <BlurFade delay={0.12}>
-                    <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-                      <h3 className="text-[13px] font-medium text-[var(--text-secondary)]">
-                        Just shipped
-                      </h3>
-                      <p className="mt-1 text-[11.5px] text-[var(--text-muted)]">
-                        Stuff you approved and what came of it.
-                      </p>
-                      <div className="mt-3 flex flex-col gap-3">
+                    <BodySection
+                      eyebrow="Just shipped"
+                      title="What came back"
+                      tagline="Recent actions you approved and the result."
+                    >
+                      <div className="flex flex-col gap-3">
                         {recentExecutions.map((action) => (
                           <ExecutedActionRow key={action.id} action={action} />
                         ))}
                       </div>
-                    </div>
+                    </BodySection>
                   </BlurFade>
                 )}
               </aside>

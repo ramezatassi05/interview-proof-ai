@@ -58,61 +58,55 @@ export function TicketsCard({ data }: TicketsCardProps) {
   }, [tickets]);
 
   if (loading) {
-    return (
-      <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-3 text-[11px] text-[var(--text-muted)]">
-        Loading tickets…
-      </div>
-    );
+    return <p className="text-[11px] text-[var(--text-muted)]">Loading tickets…</p>;
   }
 
   if (error) {
-    return (
-      <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-3 text-[11px] text-[var(--color-danger)]">
-        {error}
-      </div>
-    );
+    return <p className="text-[11px] text-[var(--color-danger)]">{error}</p>;
   }
 
   if (!tickets || tickets.length === 0) {
     return (
-      <div className="border border-dashed border-[var(--border-default)] bg-[var(--bg-card)] p-3 text-[11px] text-[var(--text-muted)]">
+      <p className="text-[11px] text-[var(--text-muted)]/80">
         No peer-filed tickets right now.
-      </div>
+      </p>
     );
   }
 
   return (
-    <div className="border border-[var(--border-default)] bg-[var(--bg-card)]">
-      <div className="flex items-center justify-between border-b border-[var(--border-default)]/60 px-4 py-2.5">
-        <h3 className="text-sm font-semibold text-[var(--text-primary)]">Tickets in flight</h3>
-        <span className="text-[11px] tabular-nums text-[var(--text-muted)]">{tickets.length}</span>
-      </div>
-      <div className="max-h-[280px] overflow-y-auto">
-        {grouped.map(([owner, list]) => (
-          <div key={owner} className="border-b border-[var(--border-default)]/60 last:border-b-0">
-            <div className="flex items-center justify-between bg-[var(--bg-elevated)]/60 px-4 py-1.5">
-              <span className="text-[11px] font-medium text-[var(--text-secondary)]">
-                {shortLabel(owner as CompanyTaskOwnerKind)} · {list.length}
-              </span>
-            </div>
+    <div className="max-h-[280px] divide-y divide-[var(--border-default)]/50 overflow-y-auto">
+      {grouped.map(([owner, list]) => (
+        <div key={owner} className="py-2">
+          <div className="flex items-center justify-between pb-1.5">
+            <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+              {shortLabel(owner as CompanyTaskOwnerKind)}
+            </span>
+            <span className="font-serif text-[13px] text-[var(--text-muted)] tabular-nums">
+              {list.length}
+            </span>
+          </div>
+          <div className="flex flex-col gap-1.5">
             {list.map((t) => (
-              <div key={t.id} className="border-t border-[var(--border-default)]/60 px-4 py-2 first:border-t-0">
+              <div key={t.id} className="py-1">
                 <div className="flex flex-wrap items-baseline gap-1.5">
                   {t.requesterKind && (
                     <Badge variant="default">from {shortLabel(t.requesterKind)}</Badge>
                   )}
-                  <span className="text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
+                  <span className="text-[10.5px] uppercase tracking-wide text-[var(--text-muted)]">
                     {t.status}
                   </span>
                 </div>
-                <p className="mt-1 truncate text-[13px] text-[var(--text-primary)]" title={t.title}>
+                <p
+                  className="mt-0.5 truncate text-[13px] text-[var(--text-primary)]"
+                  title={t.title}
+                >
                   {t.title}
                 </p>
               </div>
             ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }

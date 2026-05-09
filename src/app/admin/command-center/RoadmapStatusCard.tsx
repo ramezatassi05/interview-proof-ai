@@ -64,20 +64,8 @@ export function RoadmapStatusCard({ initialStatus }: RoadmapStatusCardProps) {
     status.product.activeRows + status.marketing.activeRows + status.finance.activeRows;
 
   return (
-    <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-      <div className="flex items-baseline justify-between gap-2">
-        <h3 className="text-sm font-semibold text-[var(--text-primary)]">Roadmap your team reads</h3>
-        <button
-          type="button"
-          onClick={refresh}
-          disabled={refreshing}
-          className="text-[11px] text-[var(--text-muted)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline disabled:opacity-50"
-        >
-          {refreshing ? 'refreshing…' : 'refresh'}
-        </button>
-      </div>
-
-      <div className="mt-3 flex items-center justify-between gap-2 py-1">
+    <div>
+      <div className="flex items-center justify-between gap-2 py-1">
         <span className="text-[13px] font-medium text-[var(--text-primary)]">North Star</span>
         {status.northStarLoaded ? (
           <Badge variant="accent">loaded</Badge>
@@ -110,10 +98,19 @@ export function RoadmapStatusCard({ initialStatus }: RoadmapStatusCardProps) {
         />
       </div>
 
-      <p className="mt-3 text-[12px] leading-relaxed text-[var(--text-muted)]">
-        {totalActive} active row{totalActive === 1 ? '' : 's'} grounding what your team proposes.
-        Edit these files in the repo to steer direction.
-      </p>
+      <div className="mt-3 flex items-baseline justify-between gap-2">
+        <p className="text-[12px] leading-relaxed text-[var(--text-muted)]">
+          {totalActive} active row{totalActive === 1 ? '' : 's'} grounding what your team proposes.
+        </p>
+        <button
+          type="button"
+          onClick={refresh}
+          disabled={refreshing}
+          className="shrink-0 text-[11px] text-[var(--text-muted)] underline-offset-2 transition-colors hover:text-[var(--text-primary)] hover:underline disabled:opacity-50"
+        >
+          {refreshing ? 'refreshing…' : 'refresh'}
+        </button>
+      </div>
     </div>
   );
 }

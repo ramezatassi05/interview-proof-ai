@@ -82,10 +82,10 @@ function TaskCard({ task, onSelect }: { task: CompanyTask; onSelect: (task: Comp
         }
       }}
       title={isEscalated && task.escalationReason ? `Escalated: ${task.escalationReason}` : undefined}
-      className={`cursor-grab border bg-[var(--bg-card)] p-3.5 transition-colors active:cursor-grabbing hover:border-[var(--border-default)] hover:bg-[var(--bg-elevated)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]/40 ${
+      className={`cursor-grab border-l-2 bg-[var(--bg-card)] p-3 shadow-[0_1px_0_0_var(--border-default)] transition-all active:cursor-grabbing hover:bg-[var(--bg-elevated)] hover:shadow-[0_1px_0_0_var(--border-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]/40 ${
         isEscalated
-          ? 'border-[var(--border-default)]/60 border-l-2 border-l-[var(--color-warning,#f5a524)]'
-          : 'border-[var(--border-default)]/60'
+          ? 'border-l-[var(--color-warning,#f5a524)]'
+          : 'border-l-[var(--border-default)]/40'
       } ${isDragging ? 'opacity-60 shadow-lg' : ''}`}
     >
       <div className="flex flex-wrap items-center gap-1.5">
@@ -137,21 +137,23 @@ function Column({
   return (
     <div
       ref={setNodeRef}
-      className={`flex min-h-[280px] flex-col gap-2 border bg-[var(--bg-primary)] p-3 transition-colors ${
+      className={`flex min-h-[280px] flex-col gap-3 border-t-2 pt-3 transition-colors ${
         isOver
-          ? 'border-[var(--border-accent)] bg-[var(--bg-elevated)]'
-          : 'border-[var(--border-default)]'
+          ? 'border-t-[var(--accent-primary)] bg-[var(--accent-primary)]/[0.025]'
+          : 'border-t-[var(--border-default)]/60'
       }`}
     >
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-[var(--text-primary)]">{label}</h3>
-        <span className="inline-flex min-w-[1.5rem] items-center justify-center border border-[var(--border-default)]/60 bg-[var(--bg-card)] px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-[var(--text-secondary)]">
+      <div className="flex items-baseline justify-between gap-2 px-0.5">
+        <h3 className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
+          {label}
+        </h3>
+        <span className="font-serif text-[15px] font-medium tabular-nums text-[var(--text-muted)]">
           {tasks.length}
         </span>
       </div>
       <div className="flex flex-col gap-2.5">
         {tasks.length === 0 ? (
-          <p className="py-6 text-center text-[11px] text-[var(--text-muted)]">Empty</p>
+          <p className="py-4 text-[11px] text-[var(--text-muted)]/70">—</p>
         ) : (
           tasks.map((t) => <TaskCard key={t.id} task={t} onSelect={onSelect} />)
         )}
@@ -236,14 +238,10 @@ export function TaskKanban({ initialTasks }: { initialTasks?: CompanyTask[] }) {
   );
 
   return (
-    <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-      <div className="flex items-center justify-between gap-2 pb-4">
-        <h2 className="text-sm font-semibold text-[var(--text-primary)]">Goals</h2>
-        <div className="flex items-center gap-3 text-[11px] tabular-nums text-[var(--text-muted)]">
-          {error && <span className="text-[var(--color-danger)]">{error}</span>}
-          <span>{tasks.length} tasks</span>
-        </div>
-      </div>
+    <div>
+      {error && (
+        <p className="mb-3 text-[11px] text-[var(--color-danger)]">{error}</p>
+      )}
 
       {loading ? (
         <p className="py-10 text-center text-sm text-[var(--text-muted)]">Loading tasks…</p>
@@ -254,7 +252,7 @@ export function TaskKanban({ initialTasks }: { initialTasks?: CompanyTask[] }) {
         </p>
       ) : (
         <DndContext id="company-task-kanban" sensors={sensors} onDragEnd={onDragEnd}>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-4 lg:grid-cols-4">
             {BOARD_COLUMNS.map((col) => (
               <Column
                 key={col.status}
