@@ -338,15 +338,17 @@ function SpendBar({
 
   return (
     <div className="flex flex-col gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] px-3 py-2">
-      <div className="flex items-center justify-between gap-2 text-[11px] tabular-nums">
-        <span className="font-medium text-[var(--text-primary)]">Monthly cost</span>
-        <span className={overCap ? 'text-[var(--color-danger)]' : 'text-[var(--text-muted)]'}>
-          ${used.toFixed(2)}
-          {cap != null ? ` / $${cap.toFixed(2)}` : ' (no cap)'}
-        </span>
-      </div>
+      {!editing && (
+        <div className="flex items-center justify-between gap-2 text-[11px] tabular-nums">
+          <span className="font-medium text-[var(--text-primary)]">Monthly cost</span>
+          <span className={overCap ? 'text-[var(--color-danger)]' : 'text-[var(--text-muted)]'}>
+            ${used.toFixed(2)}
+            {cap != null ? ` / $${cap.toFixed(2)}` : ' (no cap)'}
+          </span>
+        </div>
+      )}
 
-      {cap != null && (
+      {!editing && cap != null && (
         <div className="h-1 w-full overflow-hidden rounded-full bg-[var(--bg-card)]">
           <div
             className={`h-full transition-all ${
@@ -361,43 +363,51 @@ function SpendBar({
         </div>
       )}
 
-      {overCap && (
+      {!editing && overCap && (
         <p className="text-[11px] leading-snug text-[var(--color-danger)]">
           Paused until {resetDate}. Raise the cap below to resume now.
         </p>
       )}
 
       {editing ? (
-        <div className="flex items-center gap-1.5 pt-0.5">
-          <span className="text-[11px] text-[var(--text-muted)]">$</span>
-          <input
-            type="number"
-            inputMode="decimal"
-            min="0"
-            step="0.01"
-            value={value}
-            onChange={(e) => onValueChange(e.target.value)}
-            placeholder="No cap"
-            className="h-6 flex-1 rounded border border-[var(--border-default)] bg-[var(--bg-card)] px-1.5 text-[11px] tabular-nums text-[var(--text-primary)] outline-none focus:border-[var(--border-accent)]"
-            autoFocus
-            disabled={saving}
-          />
-          <button
-            type="button"
-            onClick={onSubmit}
-            disabled={saving}
-            className="rounded bg-[var(--bg-accent)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-on-accent)] hover:opacity-90 disabled:opacity-60"
-          >
-            Save
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={saving}
-            className="rounded px-1.5 py-0.5 text-[11px] text-[var(--text-muted)] hover:text-[var(--text-primary)] disabled:opacity-60"
-          >
-            Cancel
-          </button>
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-medium text-[var(--text-primary)]">
+            Set monthly cap
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-[var(--text-muted)]">$</span>
+            <input
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="0.01"
+              value={value}
+              onChange={(e) => onValueChange(e.target.value)}
+              placeholder="No cap"
+              className="h-6 flex-1 rounded border border-[var(--border-default)] bg-[var(--bg-card)] px-1.5 text-[11px] tabular-nums text-[var(--text-primary)] outline-none focus:border-[var(--border-accent)]"
+              autoFocus
+              disabled={saving}
+            />
+            <button
+              type="button"
+              onClick={onSubmit}
+              disabled={saving}
+              className="rounded bg-[var(--bg-accent)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-on-accent)] hover:opacity-90 disabled:opacity-60"
+            >
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={saving}
+              className="rounded px-1.5 py-0.5 text-[11px] text-[var(--text-muted)] hover:text-[var(--text-primary)] disabled:opacity-60"
+            >
+              Cancel
+            </button>
+          </div>
+          <p className="text-[10px] leading-snug text-[var(--text-muted)]">
+            Currently spent ${used.toFixed(2)} this month. Leave blank for no cap.
+          </p>
         </div>
       ) : (
         <div className="flex items-center justify-end gap-2 pt-0.5 text-[11px]">
