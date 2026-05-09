@@ -23,6 +23,7 @@ import {
   type CompanyAction,
 } from './_approvals';
 import { InboxTab } from './InboxTab';
+import { RejectActionDialog } from './RejectActionDialog';
 import { IdeasTab } from './IdeasTab';
 import { AuditTimeline } from './AuditTimeline';
 import { TicketsCard } from './artifacts';
@@ -68,6 +69,7 @@ export function CommandCenterClient({
   const [openActionId, setOpenActionId] = useState<string | null>(null);
   const [decisions, setDecisions] = useState<Decision[]>(initialBrief.decisions ?? []);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [rejectTarget, setRejectTarget] = useState<CompanyAction | null>(null);
 
   const openAction = useMemo(
     () => actions.find((a) => a.id === openActionId) ?? null,
@@ -128,16 +130,18 @@ export function CommandCenterClient({
   }, []);
 
   const transitionAction = useCallback(
-    async (id: string, status: 'approved' | 'rejected') => {
+    async (id: string, status: 'approved' | 'rejected', feedback?: string | null) => {
       setApprovalError(null);
       setPendingActionId(id);
       const prevActions = actions;
       setActions((current) => current.filter((a) => a.id !== id));
       try {
+        const body: Record<string, unknown> = { status };
+        if (status === 'rejected' && feedback) body.feedback = feedback;
         const res = await fetch(`/api/admin/company-agent/actions/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status }),
+          body: JSON.stringify(body),
         });
         if (!res.ok) throw new Error(`Could not ${status === 'approved' ? 'approve' : 'reject'}.`);
         if (status === 'approved') {
@@ -155,6 +159,18 @@ export function CommandCenterClient({
       }
     },
     [actions, refreshBrief]
+  );
+
+  const requestReject = useCallback((action: CompanyAction) => {
+    setRejectTarget(action);
+  }, []);
+
+  const confirmReject = useCallback(
+    async (id: string, feedback: string | null) => {
+      setRejectTarget(null);
+      await transitionAction(id, 'rejected', feedback);
+    },
+    [transitionAction]
   );
 
   const nextHeartbeatIso = useMemo(() => {
@@ -280,6 +296,7 @@ export function CommandCenterClient({
                             action={heroApproval}
                             pending={pendingActionId === heroApproval.id}
                             onTransition={transitionAction}
+                            onRequestReject={requestReject}
                             onOpenDetail={(a) => setOpenActionId(a.id)}
                           />
                         )}
@@ -291,6 +308,7 @@ export function CommandCenterClient({
                                 action={action}
                                 pending={pendingActionId === action.id}
                                 onTransition={transitionAction}
+                                onRequestReject={requestReject}
                                 onOpenDetail={(a) => setOpenActionId(a.id)}
                               />
                             ))}
@@ -327,6 +345,7 @@ export function CommandCenterClient({
               pendingActionId={pendingActionId}
               approvalError={approvalError}
               onTransition={transitionAction}
+              onRequestReject={requestReject}
             />
           </TabContent>
 
@@ -348,6 +367,18 @@ export function CommandCenterClient({
         }}
         pending={openAction ? pendingActionId === openAction.id : false}
         onTransition={transitionAction}
+        onRequestReject={requestReject}
+      />
+
+      <RejectActionDialog
+        key={rejectTarget?.id ?? 'none'}
+        action={rejectTarget}
+        open={!!rejectTarget}
+        pending={rejectTarget ? pendingActionId === rejectTarget.id : false}
+        onOpenChange={(next) => {
+          if (!next) setRejectTarget(null);
+        }}
+        onConfirm={confirmReject}
       />
 
       <AgentDrawer

@@ -41,11 +41,13 @@ export function ApprovalRow({
   action,
   pending,
   onTransition,
+  onRequestReject,
   onOpenDetail,
 }: {
   action: CompanyAction;
   pending: boolean;
   onTransition: (id: string, status: TransitionStatus) => void;
+  onRequestReject: (action: CompanyAction) => void;
   onOpenDetail: (action: CompanyAction) => void;
 }) {
   const isAwaiting = action.status === 'awaiting_approval';
@@ -98,7 +100,7 @@ export function ApprovalRow({
             variant="ghost"
             size="sm"
             className="w-full"
-            onClick={() => onTransition(action.id, 'rejected')}
+            onClick={() => onRequestReject(action)}
             disabled={pending}
           >
             Reject
@@ -317,12 +319,14 @@ export function ApprovalDetailModal({
   onOpenChange,
   pending,
   onTransition,
+  onRequestReject,
 }: {
   action: CompanyAction | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pending: boolean;
   onTransition: (id: string, status: TransitionStatus) => void;
+  onRequestReject: (action: CompanyAction) => void;
 }) {
   if (!action) return null;
 
@@ -377,6 +381,17 @@ export function ApprovalDetailModal({
             <ResultJsonPanel actionType={action.actionType} result={action.resultJson} />
           )}
 
+          {action.status === 'rejected' &&
+            typeof action.resultJson?.rejection_feedback === 'string' && (
+              <div className="flex flex-col gap-2 border-t border-[var(--border-default)] pt-4">
+                <SoftLabel>Feedback you gave the agent</SoftLabel>
+                <Markdown text={action.resultJson.rejection_feedback as string} />
+                <p className="text-[11px] text-[var(--text-muted)]">
+                  The agent was asked to draft a new version that addresses this.
+                </p>
+              </div>
+            )}
+
           {evidence.length > 0 && (
             <div className="flex flex-col gap-2 border-t border-[var(--border-default)] pt-4">
               <SoftLabel>What I&apos;m working from</SoftLabel>
@@ -410,7 +425,7 @@ export function ApprovalDetailModal({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onTransition(action.id, 'rejected')}
+              onClick={() => onRequestReject(action)}
               disabled={pending}
             >
               Reject

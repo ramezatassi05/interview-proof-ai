@@ -11,6 +11,7 @@ export function InboxGroup({
   actions,
   pendingActionId,
   onTransition,
+  onRequestReject,
   onOpenDetail,
   defaultOpen = true,
 }: {
@@ -18,6 +19,7 @@ export function InboxGroup({
   actions: CompanyAction[];
   pendingActionId: string | null;
   onTransition: (id: string, status: TransitionStatus) => void;
+  onRequestReject: (action: CompanyAction) => void;
   onOpenDetail: (action: CompanyAction) => void;
   defaultOpen?: boolean;
 }) {
@@ -61,6 +63,7 @@ export function InboxGroup({
               action={action}
               pending={pendingActionId === action.id}
               onTransition={onTransition}
+              onRequestReject={onRequestReject}
               onOpenDetail={onOpenDetail}
             />
           ))}

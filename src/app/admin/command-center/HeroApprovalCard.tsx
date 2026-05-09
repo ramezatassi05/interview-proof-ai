@@ -11,6 +11,7 @@ interface HeroApprovalCardProps {
   action: CompanyAction;
   pending: boolean;
   onTransition: (id: string, status: TransitionStatus) => void;
+  onRequestReject: (action: CompanyAction) => void;
   onOpenDetail: (action: CompanyAction) => void;
 }
 
@@ -18,6 +19,7 @@ export function HeroApprovalCard({
   action,
   pending,
   onTransition,
+  onRequestReject,
   onOpenDetail,
 }: HeroApprovalCardProps) {
   return (
@@ -58,7 +60,7 @@ export function HeroApprovalCard({
           variant="ghost"
           size="md"
           className="w-full"
-          onClick={() => onTransition(action.id, 'rejected')}
+          onClick={() => onRequestReject(action)}
           disabled={pending}
         >
           Reject

@@ -1,13 +1,12 @@
 import { CLAUDE_MODELS, type ClaudeModelId } from '@/lib/anthropic';
 import type { CompanyAgentKind } from './types';
 
-const DEFAULT_AGENT_MODEL: ClaudeModelId = CLAUDE_MODELS.reasoning;
+// Every company agent (orchestrator, EA, all directors) runs on Opus 4.7. The
+// CEO wants the strongest reasoning model on every surface — these agents act
+// on the business directly, so the cost premium is worth the quality.
+const DEFAULT_AGENT_MODEL: ClaudeModelId = CLAUDE_MODELS.reasoningPlus;
 
-const AGENT_MODEL_OVERRIDES: Partial<Record<CompanyAgentKind, ClaudeModelId>> = {
-  // CEO orchestrator reasons across every other domain at once, so it gets
-  // the strongest model. Directors and the EA stay on Sonnet 4.6.
-  ceo_orchestrator: CLAUDE_MODELS.reasoningPlus,
-};
+const AGENT_MODEL_OVERRIDES: Partial<Record<CompanyAgentKind, ClaudeModelId>> = {};
 
 export function getModelForAgent(agentKind: CompanyAgentKind): ClaudeModelId {
   return AGENT_MODEL_OVERRIDES[agentKind] ?? DEFAULT_AGENT_MODEL;

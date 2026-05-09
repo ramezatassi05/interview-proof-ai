@@ -18,10 +18,12 @@ export function InboxTab({
   pendingActionId,
   approvalError,
   onTransition,
+  onRequestReject,
 }: {
   pendingActionId: string | null;
   approvalError: string | null;
   onTransition: (id: string, status: TransitionStatus) => Promise<void> | void;
+  onRequestReject: (action: CompanyAction) => void;
 }) {
   const [filters, setFilters] = useState<InboxFilters>(DEFAULT_INBOX_FILTERS);
   const { actions, loading, loadingMore, error, nextCursor, loadMore, removeAction } =
@@ -134,6 +136,7 @@ export function InboxTab({
               actions={cliIdeaActions}
               pendingActionId={pendingActionId}
               onTransition={handleTransition}
+              onRequestReject={onRequestReject}
               onOpenDetail={(a) => setOpenActionId(a.id)}
             />
           )}
@@ -147,6 +150,7 @@ export function InboxTab({
                 actions={list}
                 pendingActionId={pendingActionId}
                 onTransition={handleTransition}
+                onRequestReject={onRequestReject}
                 onOpenDetail={(a) => setOpenActionId(a.id)}
               />
             );
@@ -163,6 +167,7 @@ export function InboxTab({
               action={action}
               pending={pendingActionId === action.id}
               onTransition={handleTransition}
+              onRequestReject={onRequestReject}
               onOpenDetail={(a) => setOpenActionId(a.id)}
             />
           ))}
@@ -185,6 +190,7 @@ export function InboxTab({
         }}
         pending={openAction ? pendingActionId === openAction.id : false}
         onTransition={handleTransition}
+        onRequestReject={onRequestReject}
       />
     </div>
   );
@@ -194,11 +200,13 @@ function CliIdeasGroup({
   actions,
   pendingActionId,
   onTransition,
+  onRequestReject,
   onOpenDetail,
 }: {
   actions: CompanyAction[];
   pendingActionId: string | null;
   onTransition: (id: string, status: TransitionStatus) => void;
+  onRequestReject: (action: CompanyAction) => void;
   onOpenDetail: (action: CompanyAction) => void;
 }) {
   const [open, setOpen] = useState(true);
@@ -240,6 +248,7 @@ function CliIdeasGroup({
               action={action}
               pending={pendingActionId === action.id}
               onTransition={onTransition}
+              onRequestReject={onRequestReject}
               onOpenDetail={onOpenDetail}
             />
           ))}
