@@ -83,31 +83,29 @@ export function TicketsCard({ data }: TicketsCardProps) {
 
   return (
     <div className="border border-[var(--border-default)] bg-[var(--bg-card)]">
-      <div className="flex items-center justify-between border-b border-[var(--border-default)] px-3 py-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-          Tickets in flight
-        </span>
-        <span className="text-[10px] tabular-nums text-[var(--text-muted)]">{tickets.length}</span>
+      <div className="flex items-center justify-between border-b border-[var(--border-default)]/60 px-4 py-2.5">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">Tickets in flight</h3>
+        <span className="text-[11px] tabular-nums text-[var(--text-muted)]">{tickets.length}</span>
       </div>
       <div className="max-h-[280px] overflow-y-auto">
         {grouped.map(([owner, list]) => (
-          <div key={owner} className="border-b border-[var(--border-default)] last:border-b-0">
-            <div className="flex items-center justify-between bg-[var(--bg-elevated)] px-3 py-1">
-              <span className="text-[10px] font-medium text-[var(--text-secondary)]">
+          <div key={owner} className="border-b border-[var(--border-default)]/60 last:border-b-0">
+            <div className="flex items-center justify-between bg-[var(--bg-elevated)]/60 px-4 py-1.5">
+              <span className="text-[11px] font-medium text-[var(--text-secondary)]">
                 {shortLabel(owner as CompanyTaskOwnerKind)} · {list.length}
               </span>
             </div>
             {list.map((t) => (
-              <div key={t.id} className="border-t border-[var(--border-default)] px-3 py-1.5 first:border-t-0">
+              <div key={t.id} className="border-t border-[var(--border-default)]/60 px-4 py-2 first:border-t-0">
                 <div className="flex flex-wrap items-baseline gap-1.5">
                   {t.requesterKind && (
                     <Badge variant="default">from {shortLabel(t.requesterKind)}</Badge>
                   )}
-                  <span className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
+                  <span className="text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
                     {t.status}
                   </span>
                 </div>
-                <p className="mt-0.5 truncate text-xs text-[var(--text-primary)]" title={t.title}>
+                <p className="mt-1 truncate text-[13px] text-[var(--text-primary)]" title={t.title}>
                   {t.title}
                 </p>
               </div>

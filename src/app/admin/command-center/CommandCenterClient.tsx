@@ -2,12 +2,13 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { BlurFade } from '@/components/ui/blur-fade';
 import { Tabs, TabList, TabTrigger, TabContent, useTabsContext } from '@/components/ui/Tabs';
 import { relativeTime } from '@/lib/relative-time';
 import type { CompanyAgentKind } from '@/server/agents/company/types';
 import { agentMeta } from './agents';
-import { SoftLabel, MetricTile } from './_primitives';
+import { DashboardHero } from './DashboardHero';
+import { HeroApprovalCard } from './HeroApprovalCard';
 import { DecisionsStrip, type Decision } from './DecisionsStrip';
 import type { AgentHeartbeat } from '@/server/agents/company/heartbeats';
 import type { RoadmapStatus } from '@/server/agents/company/roadmap/types';
@@ -49,27 +50,13 @@ interface BriefData {
   roadmapStatus?: RoadmapStatus;
 }
 
-function formatMoney(cents: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
-
-function formatHeartbeat(iso: string): string {
-  const target = new Date(iso).getTime();
-  const diffMs = target - Date.now();
-  if (diffMs <= 0) return 'now';
-  const min = Math.floor(diffMs / 60_000);
-  if (min < 60) return `in ${min}m`;
-  const hr = Math.floor(min / 60);
-  if (hr < 48) return `in ${hr}h`;
-  const day = Math.floor(hr / 24);
-  return `in ${day}d`;
-}
-
-export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData }) {
+export function CommandCenterClient({
+  initialBrief,
+  viewerFirstName,
+}: {
+  initialBrief: BriefData;
+  viewerFirstName: string;
+}) {
   const [brief, setBrief] = useState(initialBrief);
   const [selectedAgent, setSelectedAgent] = useState<CompanyAgentKind>('ceo_orchestrator');
   const [actions, setActions] = useState<CompanyAction[]>(initialBrief.pendingActions);
@@ -177,64 +164,26 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
     return fires[0] ?? null;
   }, [brief.heartbeats]);
 
-  const metricTiles = [
-    {
-      label: 'Users',
-      value: metrics.totalUsers.toLocaleString(),
-      caption: `Snapshot ${relativeTime(metrics.capturedAt)}`,
-    },
-    { label: 'Reports', value: metrics.totalReports.toLocaleString() },
-    { label: 'Unlock Rate', value: `${Math.round(metrics.unlockRate * 100)}%` },
-    { label: 'Revenue Est.', value: formatMoney(metrics.estimatedRevenueCents) },
-    { label: 'Sessions', value: metrics.activeCompanySessions.toLocaleString() },
-    {
-      label: 'Pending',
-      value: metrics.pendingCompanyActions.toLocaleString(),
-      emphasis: metrics.pendingCompanyActions > 0,
-    },
-    {
-      label: 'Next Heartbeat',
-      value: nextHeartbeatIso ? formatHeartbeat(nextHeartbeatIso) : '—',
-      caption: nextHeartbeatIso ? new Date(nextHeartbeatIso).toUTCString().slice(0, 22) : undefined,
-    },
-    {
-      label: 'Spend (30d)',
-      value: typeof brief.spend30dCents === 'number' ? formatMoney(brief.spend30dCents) : '—',
-      caption: 'Sonnet 4.6 token cost',
-    },
-  ];
+  const heroApproval = pendingApprovals[0];
+  const restApprovals = pendingApprovals.slice(1);
 
   return (
     <main className="min-h-screen bg-[var(--bg-primary)]">
-      <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-6 sm:px-6 sm:py-8">
-        <header className="flex flex-col gap-3 border-b border-[var(--border-default)] pb-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="accent">Just for you · nothing ships without your OK</Badge>
-              <span className="text-[11px] tabular-nums text-[var(--text-muted)]">
-                Last refresh {relativeTime(metrics.capturedAt)}
-              </span>
-            </div>
-            <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-3xl">
-              Your team
-            </h1>
-          </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            loading={refreshing}
-            onClick={refreshBrief}
-            className="w-fit"
-          >
-            Refresh
-          </Button>
-        </header>
-
-        <section className="flex gap-3 overflow-x-auto pb-1">
-          {metricTiles.map((tile) => (
-            <MetricTile key={tile.label} {...tile} />
-          ))}
-        </section>
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
+        <DashboardHero
+          viewerFirstName={viewerFirstName}
+          pendingCount={pendingApprovals.length}
+          totalUsers={metrics.totalUsers}
+          totalReports={metrics.totalReports}
+          unlockRate={metrics.unlockRate}
+          estimatedRevenueCents={metrics.estimatedRevenueCents}
+          activeCompanySessions={metrics.activeCompanySessions}
+          spend30dCents={brief.spend30dCents}
+          capturedAt={metrics.capturedAt}
+          nextHeartbeatIso={nextHeartbeatIso}
+          refreshing={refreshing}
+          onRefresh={refreshBrief}
+        />
 
         <DecisionsStrip
           decisions={decisions}
@@ -258,102 +207,114 @@ export function CommandCenterClient({ initialBrief }: { initialBrief: BriefData 
           </TabList>
 
           <TabContent id="dashboard">
-            <section className="grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)_320px]">
+            <section className="grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)_400px]">
               {/* LEFT RAIL */}
-              <aside className="order-2 flex flex-col gap-5 lg:order-1">
-                <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-                  <SoftLabel>Where things stand</SoftLabel>
-                  <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
-                    {brief.summary}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] tabular-nums text-[var(--text-muted)]">
-                    <span>
-                      <span className="text-[var(--text-secondary)]">
-                        {metrics.pendingCompanyActions}
-                      </span>{' '}
-                      waiting on you
-                    </span>
-                    <span>
-                      <span className="text-[var(--text-secondary)]">
-                        {metrics.activeCompanySessions}
-                      </span>{' '}
-                      open chats
-                    </span>
-                  </div>
-                </div>
+              <aside className="order-2 flex flex-col gap-4 lg:order-1">
+                <BlurFade delay={0.04}>
+                  <OrgChartCard
+                    pendingByAgent={pendingByAgent}
+                    heartbeats={brief.heartbeats ?? []}
+                    onSelect={openAgentDrawer}
+                    taskCountsByOwner={taskCountsByOwner}
+                  />
+                </BlurFade>
 
-                <OrgChartCard
-                  pendingByAgent={pendingByAgent}
-                  heartbeats={brief.heartbeats ?? []}
-                  onSelect={openAgentDrawer}
-                  taskCountsByOwner={taskCountsByOwner}
-                />
+                {brief.roadmapStatus && (
+                  <BlurFade delay={0.1}>
+                    <RoadmapStatusCard initialStatus={brief.roadmapStatus} />
+                  </BlurFade>
+                )}
 
-                {brief.roadmapStatus && <RoadmapStatusCard initialStatus={brief.roadmapStatus} />}
-
-                <TicketsCard />
+                <BlurFade delay={0.16}>
+                  <TicketsCard />
+                </BlurFade>
               </aside>
 
               {/* CENTER — Goals Kanban */}
               <section className="order-1 flex flex-col gap-5 lg:order-2">
-                <TaskKanban initialTasks={brief.tasks ?? []} />
+                <BlurFade delay={0.04}>
+                  <TaskKanban initialTasks={brief.tasks ?? []} />
+                </BlurFade>
               </section>
 
               {/* RIGHT RAIL — pending approvals */}
-              <aside className="order-3 flex flex-col gap-3">
-                <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <SoftLabel>Waiting on your OK</SoftLabel>
-                    <div className="flex items-center gap-2">
-                      {pendingApprovals.length > 0 && (
-                        <Badge variant="accent">{pendingApprovals.length}</Badge>
-                      )}
-                      <ViewAllInboxLink />
+              <aside className="order-3 flex flex-col gap-4">
+                <BlurFade delay={0.04}>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+                        Waiting on your OK
+                      </h2>
+                      <div className="flex items-center gap-2">
+                        {pendingApprovals.length > 0 && (
+                          <Badge variant="accent">{pendingApprovals.length}</Badge>
+                        )}
+                        <ViewAllInboxLink />
+                      </div>
                     </div>
-                  </div>
-                  <p className="mt-2 text-[11px] text-[var(--text-muted)]">
-                    Things your team drafted that need a yes or no.
-                  </p>
-                  {approvalError && (
-                    <p className="mt-2 text-[11px] text-[var(--color-danger)]">{approvalError}</p>
-                  )}
+                    <p className="text-[12px] text-[var(--text-muted)]">
+                      Things your team drafted that need a yes or no.
+                    </p>
+                    {approvalError && (
+                      <p className="text-[12px] text-[var(--color-danger)]">{approvalError}</p>
+                    )}
 
-                  <div className="mt-3 flex flex-col gap-2">
                     {pendingApprovals.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center gap-2 border border-dashed border-[var(--border-default)] py-8">
-                        <span className="text-2xl text-[var(--text-muted)]" aria-hidden>
-                          —
+                      <div className="flex flex-col items-center justify-center gap-2 border border-dashed border-[var(--border-default)]/70 py-10 text-center">
+                        <span className="text-3xl text-[var(--text-muted)]" aria-hidden>
+                          ✓
                         </span>
-                        <p className="text-sm text-[var(--text-secondary)]">
-                          All clear — nothing waiting on you.
+                        <p className="text-sm font-medium text-[var(--text-primary)]">
+                          You&apos;re all caught up.
+                        </p>
+                        <p className="max-w-[220px] text-[12px] text-[var(--text-muted)]">
+                          Nothing is waiting on you. Your team will queue the next call.
                         </p>
                       </div>
                     ) : (
-                      pendingApprovals.map((action) => (
-                        <ApprovalRow
-                          key={action.id}
-                          action={action}
-                          pending={pendingActionId === action.id}
-                          onTransition={transitionAction}
-                          onOpenDetail={(a) => setOpenActionId(a.id)}
-                        />
-                      ))
+                      <>
+                        {heroApproval && (
+                          <HeroApprovalCard
+                            action={heroApproval}
+                            pending={pendingActionId === heroApproval.id}
+                            onTransition={transitionAction}
+                            onOpenDetail={(a) => setOpenActionId(a.id)}
+                          />
+                        )}
+                        {restApprovals.length > 0 && (
+                          <div className="flex flex-col gap-2.5">
+                            {restApprovals.map((action) => (
+                              <ApprovalRow
+                                key={action.id}
+                                action={action}
+                                pending={pendingActionId === action.id}
+                                onTransition={transitionAction}
+                                onOpenDetail={(a) => setOpenActionId(a.id)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
-                </div>
+                </BlurFade>
 
                 {recentExecutions.length > 0 && (
-                  <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-                    <SoftLabel>Just shipped</SoftLabel>
-                    <p className="mt-2 text-[11px] text-[var(--text-muted)]">
-                      Stuff you approved and what came of it.
-                    </p>
-                    <div className="mt-3 flex flex-col gap-3">
-                      {recentExecutions.map((action) => (
-                        <ExecutedActionRow key={action.id} action={action} />
-                      ))}
+                  <BlurFade delay={0.12}>
+                    <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
+                      <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+                        Just shipped
+                      </h3>
+                      <p className="mt-1 text-[12px] text-[var(--text-muted)]">
+                        Stuff you approved and what came of it.
+                      </p>
+                      <div className="mt-3 flex flex-col gap-3">
+                        {recentExecutions.map((action) => (
+                          <ExecutedActionRow key={action.id} action={action} />
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  </BlurFade>
                 )}
               </aside>
             </section>

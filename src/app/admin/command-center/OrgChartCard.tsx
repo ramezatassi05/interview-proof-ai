@@ -5,7 +5,6 @@ import type { CompanyAgentKind } from '@/server/agents/company/types';
 import type { AgentHeartbeat } from '@/server/agents/company/heartbeats';
 import { getDirectReports } from '@/server/agents/company/org';
 import { AGENT_OPTIONS, agentMeta } from './agents';
-import { SoftLabel } from './_primitives';
 
 export interface AgentTaskCounts {
   delegated: number;
@@ -21,20 +20,83 @@ interface OrgChartCardProps {
 
 const ROOT: CompanyAgentKind = 'ceo_orchestrator';
 
-function nodeKindClasses(): string {
-  return 'border-[var(--border-default)] bg-[var(--bg-card)] hover:border-[var(--border-accent)] hover:bg-[var(--bg-elevated)]';
-}
-
 function nextFireLabel(iso: string | null | undefined): string {
   if (!iso) return 'On demand';
   const target = new Date(iso).getTime();
   const diffMs = target - Date.now();
   if (diffMs <= 0) return 'now';
   const min = Math.floor(diffMs / 60_000);
-  if (min < 60) return `next: in ${min}m`;
+  if (min < 60) return `next in ${min}m`;
   const hr = Math.floor(min / 60);
-  if (hr < 48) return `next: in ${hr}h`;
-  return `next: in ${Math.floor(hr / 24)}d`;
+  if (hr < 48) return `next in ${hr}h`;
+  return `next in ${Math.floor(hr / 24)}d`;
+}
+
+function AgentRow({
+  role,
+  name,
+  pending,
+  beat,
+  counts,
+  isCeo,
+  onClick,
+}: {
+  role: string;
+  name: string;
+  pending: number;
+  beat?: AgentHeartbeat;
+  counts?: AgentTaskCounts;
+  isCeo?: boolean;
+  onClick: () => void;
+}) {
+  const escalated = counts?.escalated ?? 0;
+  const delegated = counts?.delegated ?? 0;
+  const escalatedClasses = escalated > 0 ? 'border-l-2 border-l-[var(--color-warning)]' : '';
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`group flex w-full items-start gap-3 border border-[var(--border-default)]/60 bg-[var(--bg-card)] px-3 py-2.5 text-left transition-colors hover:border-[var(--border-accent)] hover:bg-[var(--bg-elevated)] ${escalatedClasses}`}
+    >
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--accent-primary)]">
+            {role}
+          </span>
+          {pending > 0 && <Badge variant="accent">{pending} waiting</Badge>}
+        </div>
+        <p
+          className={`mt-0.5 truncate ${
+            isCeo ? 'text-[15px]' : 'text-sm'
+          } font-semibold leading-tight text-[var(--text-primary)]`}
+        >
+          {name}
+        </p>
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-[var(--text-muted)]">
+          {pending === 0 && !escalated && !delegated ? (
+            <span>All clear</span>
+          ) : (
+            <>
+              {delegated > 0 && (
+                <span className="tabular-nums">
+                  <span className="text-[var(--text-secondary)]">{delegated}</span> from CEO
+                </span>
+              )}
+              {escalated > 0 && (
+                <span className="tabular-nums text-[var(--color-warning)]">
+                  {escalated} escalated
+                </span>
+              )}
+            </>
+          )}
+          {beat?.scheduleHuman && (
+            <span className="ml-auto truncate tabular-nums">{nextFireLabel(beat.nextFireIso)}</span>
+          )}
+        </div>
+      </div>
+    </button>
+  );
 }
 
 export function OrgChartCard({
@@ -47,91 +109,48 @@ export function OrgChartCard({
   const directReportKinds = getDirectReports(ROOT);
   const beatsByKind = new Map(heartbeats.map((h) => [h.agentKind, h]));
 
-  const totalDelegated = directReportKinds.reduce(
-    (sum, k) => sum + (taskCountsByOwner?.[k]?.delegated ?? 0),
-    0
-  );
-
   return (
     <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-      <div className="flex items-center justify-between gap-2">
-        <SoftLabel>Your team</SoftLabel>
-        <span className="text-[10px] tabular-nums text-[var(--text-muted)]">
-          Tap to talk to anyone
-        </span>
+      <div className="flex items-baseline justify-between gap-2">
+        <h2 className="text-sm font-semibold text-[var(--text-primary)]">Your team</h2>
+        <span className="text-[11px] text-[var(--text-muted)]">Tap to talk</span>
       </div>
 
-      <div className="mt-4 flex flex-col items-center">
+      <div className="mt-3 flex flex-col gap-2">
         {ceo && (
-          <button
-            type="button"
+          <AgentRow
+            role="CEO"
+            name={ceo.label}
+            pending={pendingByAgent[ceo.value] ?? 0}
+            counts={taskCountsByOwner?.[ceo.value]}
+            beat={beatsByKind.get(ceo.value)}
+            isCeo
             onClick={() => onSelect(ceo.value)}
-            className={`flex w-full max-w-[260px] flex-col items-center border px-3 py-2 text-center transition-colors ${nodeKindClasses()}`}
-          >
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
-              CEO
-            </span>
-            <span className="mt-0.5 text-sm font-semibold text-[var(--text-primary)]">
-              {ceo.label}
-            </span>
-            <div className="mt-1 flex flex-wrap items-center justify-center gap-1.5">
-              {pendingByAgent[ceo.value] > 0 && (
-                <Badge variant="accent">{pendingByAgent[ceo.value]} waiting on you</Badge>
-              )}
-              {totalDelegated > 0 && (
-                <span className="text-[10px] tabular-nums text-[var(--text-muted)]">
-                  {totalDelegated} delegated
-                </span>
-              )}
-              <span className="text-[10px] text-[var(--text-muted)]">On demand</span>
-            </div>
-          </button>
+          />
         )}
 
-        <div className="my-2 h-4 w-px bg-[var(--border-default)]" aria-hidden />
+        {directReportKinds.length > 0 && (
+          <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+            Direct reports
+          </p>
+        )}
 
-        <div className="grid w-full grid-cols-2 gap-2">
-          {directReportKinds.map((kind) => {
-            const meta = agentMeta(kind);
-            const pending = pendingByAgent[kind] ?? 0;
-            const beat = beatsByKind.get(kind);
-            const counts = taskCountsByOwner?.[kind];
-            const showAsDirector = kind !== 'executive_assistant';
-            return (
-              <button
-                key={kind}
-                type="button"
-                onClick={() => onSelect(kind)}
-                className={`flex flex-col items-start gap-1 border px-3 py-2 text-left transition-colors ${nodeKindClasses()}`}
-              >
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
-                  {showAsDirector ? 'Director' : 'Assistant'}
-                </span>
-                <span className="text-[12px] font-semibold leading-tight text-[var(--text-primary)]">
-                  {meta.label.replace('Director of ', '')}
-                </span>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {pending > 0 ? (
-                    <Badge variant="accent">{pending} waiting on you</Badge>
-                  ) : (
-                    <span className="text-[10px] text-[var(--text-muted)]">All clear</span>
-                  )}
-                  {counts && counts.delegated > 0 && (
-                    <span className="text-[10px] tabular-nums text-[var(--text-muted)]">
-                      {counts.delegated} from CEO
-                    </span>
-                  )}
-                  {counts && counts.escalated > 0 && (
-                    <Badge variant="default">{counts.escalated} escalated</Badge>
-                  )}
-                </div>
-                <span className="text-[10px] tabular-nums text-[var(--text-muted)]">
-                  {beat?.scheduleHuman ?? '—'} · {nextFireLabel(beat?.nextFireIso)}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        {directReportKinds.map((kind) => {
+          const meta = agentMeta(kind);
+          const role = kind === 'executive_assistant' ? 'Assistant' : 'Director';
+          const name = meta.label.replace('Director of ', '');
+          return (
+            <AgentRow
+              key={kind}
+              role={role}
+              name={name}
+              pending={pendingByAgent[kind] ?? 0}
+              counts={taskCountsByOwner?.[kind]}
+              beat={beatsByKind.get(kind)}
+              onClick={() => onSelect(kind)}
+            />
+          );
+        })}
       </div>
     </div>
   );

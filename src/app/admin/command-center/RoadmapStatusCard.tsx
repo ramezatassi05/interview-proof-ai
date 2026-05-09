@@ -3,7 +3,6 @@
 import { useCallback, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import type { RoadmapStatus } from '@/server/agents/company/roadmap/types';
-import { SoftLabel } from './_primitives';
 
 interface RoadmapStatusCardProps {
   initialStatus: RoadmapStatus;
@@ -29,17 +28,17 @@ function DomainRow({
   total: number;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-2 py-1.5">
-      <div className="flex flex-col">
-        <span className="text-xs font-medium text-[var(--text-primary)]">{label}</span>
-        <span className="font-mono text-[10px] text-[var(--text-muted)]">{filename}</span>
+    <div className="flex items-baseline justify-between gap-2 py-2">
+      <div className="flex flex-col gap-0.5">
+        <span className="text-[13px] font-medium text-[var(--text-primary)]">{label}</span>
+        <span className="font-mono text-[11px] text-[var(--text-muted)]">{filename}</span>
       </div>
       {loaded ? (
-        <span className="text-[11px] tabular-nums text-[var(--text-secondary)]">
+        <span className="text-[12px] tabular-nums text-[var(--text-secondary)]">
           {active} active <span className="text-[var(--text-muted)]">/ {total}</span>
         </span>
       ) : (
-        <span className="text-[11px] text-[var(--text-muted)]">no file</span>
+        <span className="text-[12px] text-[var(--text-muted)]">no file</span>
       )}
     </div>
   );
@@ -66,8 +65,8 @@ export function RoadmapStatusCard({ initialStatus }: RoadmapStatusCardProps) {
 
   return (
     <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-      <div className="flex items-center justify-between gap-2">
-        <SoftLabel>Roadmap your team reads</SoftLabel>
+      <div className="flex items-baseline justify-between gap-2">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">Roadmap your team reads</h3>
         <button
           type="button"
           onClick={refresh}
@@ -78,8 +77,8 @@ export function RoadmapStatusCard({ initialStatus }: RoadmapStatusCardProps) {
         </button>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-[var(--text-primary)]">North Star</span>
+      <div className="mt-3 flex items-center justify-between gap-2 py-1">
+        <span className="text-[13px] font-medium text-[var(--text-primary)]">North Star</span>
         {status.northStarLoaded ? (
           <Badge variant="accent">loaded</Badge>
         ) : (
@@ -87,7 +86,7 @@ export function RoadmapStatusCard({ initialStatus }: RoadmapStatusCardProps) {
         )}
       </div>
 
-      <div className="mt-2 divide-y divide-[var(--border-default)] border-t border-[var(--border-default)]">
+      <div className="mt-1 divide-y divide-[var(--border-default)]/60 border-t border-[var(--border-default)]/60">
         <DomainRow
           label={DOMAIN_LABELS.product}
           filename="roadmap/product.csv"
@@ -111,7 +110,7 @@ export function RoadmapStatusCard({ initialStatus }: RoadmapStatusCardProps) {
         />
       </div>
 
-      <p className="mt-3 text-[11px] leading-relaxed text-[var(--text-muted)]">
+      <p className="mt-3 text-[12px] leading-relaxed text-[var(--text-muted)]">
         {totalActive} active row{totalActive === 1 ? '' : 's'} grounding what your team proposes.
         Edit these files in the repo to steer direction.
       </p>

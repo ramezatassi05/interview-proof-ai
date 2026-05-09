@@ -14,7 +14,6 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { relativeTime } from '@/lib/relative-time';
 import { agentMeta } from './agents';
-import { SectionLabel } from './_primitives';
 import type { CompanyTaskOwnerKind, CompanyTaskStatus } from '@/server/agents/company/types';
 
 export interface CompanyTask {
@@ -73,10 +72,10 @@ function TaskCard({ task }: { task: CompanyTask }) {
       {...attributes}
       {...listeners}
       title={isEscalated && task.escalationReason ? `Escalated: ${task.escalationReason}` : undefined}
-      className={`cursor-grab border bg-[var(--bg-card)] p-2.5 active:cursor-grabbing ${
+      className={`cursor-grab border bg-[var(--bg-card)] p-3.5 transition-colors active:cursor-grabbing hover:border-[var(--border-default)] ${
         isEscalated
-          ? 'border-[var(--border-default)] border-l-2 border-l-[var(--color-warning,#f5a524)]'
-          : 'border-[var(--border-default)]'
+          ? 'border-[var(--border-default)]/60 border-l-2 border-l-[var(--color-warning,#f5a524)]'
+          : 'border-[var(--border-default)]/60'
       } ${isDragging ? 'opacity-60 shadow-lg' : ''}`}
     >
       <div className="flex flex-wrap items-center gap-1.5">
@@ -84,31 +83,31 @@ function TaskCard({ task }: { task: CompanyTask }) {
         {fromCeo && <Badge variant="accent">from CEO</Badge>}
         {fromPeer && <Badge variant="default">from {requesterLabel}</Badge>}
         {isEscalated && <Badge variant="default">escalated</Badge>}
-        <span className="ml-auto text-[10px] tabular-nums text-[var(--text-muted)]">
-          {relativeTime(task.updatedAt)}
-        </span>
       </div>
       <p
-        className="mt-1.5 line-clamp-2 text-sm font-medium leading-snug text-[var(--text-primary)]"
+        className="mt-2 line-clamp-2 text-sm font-medium leading-snug text-[var(--text-primary)]"
         title={task.title}
       >
         {task.title}
       </p>
       {task.description && (
-        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+        <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed text-[var(--text-secondary)]">
           {task.description}
         </p>
       )}
       {fromCeo && task.delegationRationale && (
-        <p className="mt-1 line-clamp-2 text-[11px] italic leading-snug text-[var(--text-muted)]">
+        <p className="mt-1.5 line-clamp-2 text-[11px] italic leading-snug text-[var(--text-muted)]">
           “{task.delegationRationale}”
         </p>
       )}
-      {task.dueAt && (
-        <p className="mt-1.5 text-[10px] tabular-nums text-[var(--accent-primary)]">
-          Due {new Date(task.dueAt).toLocaleDateString()}
-        </p>
-      )}
+      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] tabular-nums text-[var(--text-muted)]">
+        <span>{relativeTime(task.updatedAt)}</span>
+        {task.dueAt && (
+          <span className="text-[var(--accent-primary)]">
+            Due {new Date(task.dueAt).toLocaleDateString()}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -133,10 +132,12 @@ function Column({
       }`}
     >
       <div className="flex items-center justify-between gap-2">
-        <SectionLabel>{label}</SectionLabel>
-        <span className="text-[10px] tabular-nums text-[var(--text-muted)]">{tasks.length}</span>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">{label}</h3>
+        <span className="inline-flex min-w-[1.5rem] items-center justify-center border border-[var(--border-default)]/60 bg-[var(--bg-card)] px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-[var(--text-secondary)]">
+          {tasks.length}
+        </span>
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2.5">
         {tasks.length === 0 ? (
           <p className="py-6 text-center text-[11px] text-[var(--text-muted)]">Empty</p>
         ) : (
@@ -222,10 +223,10 @@ export function TaskKanban({ initialTasks }: { initialTasks?: CompanyTask[] }) {
   );
 
   return (
-    <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-3">
-      <div className="flex items-center justify-between gap-2 px-1 pb-3">
-        <SectionLabel>Goals · Kanban</SectionLabel>
-        <div className="flex items-center gap-3 text-[10px] tabular-nums text-[var(--text-muted)]">
+    <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
+      <div className="flex items-center justify-between gap-2 pb-4">
+        <h2 className="text-sm font-semibold text-[var(--text-primary)]">Goals</h2>
+        <div className="flex items-center gap-3 text-[11px] tabular-nums text-[var(--text-muted)]">
           {error && <span className="text-[var(--color-danger)]">{error}</span>}
           <span>{tasks.length} tasks</span>
         </div>

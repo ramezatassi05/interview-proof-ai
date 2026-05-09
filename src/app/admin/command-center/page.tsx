@@ -67,8 +67,18 @@ export default async function CommandCenterPage() {
 
   const tasks = (tasksRes.data ?? []).map((row) => publicCompanyTask(row as CompanyTaskRow));
 
+  const fullName =
+    (user.user_metadata?.full_name as string | undefined) ??
+    (user.user_metadata?.name as string | undefined) ??
+    '';
+  const fromMeta = fullName.trim().split(/\s+/)[0] ?? '';
+  const fromEmail = (user.email ?? '').split('@')[0] ?? '';
+  const rawFirst = fromMeta || fromEmail || 'there';
+  const viewerFirstName = rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1);
+
   return (
     <CommandCenterClient
+      viewerFirstName={viewerFirstName}
       initialBrief={{
         summary:
           pendingActions.length > 0

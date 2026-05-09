@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { relativeTime } from '@/lib/relative-time';
-import { SoftLabel } from './_primitives';
 
 export interface Decision {
   id: string;
@@ -20,11 +19,14 @@ export function DecisionsStrip({
   decisions: Decision[];
   onCreated: (decision: Decision) => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const [composing, setComposing] = useState(false);
   const [title, setTitle] = useState('');
   const [decisionText, setDecisionText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const latest = decisions[0];
 
   async function submit() {
     const t = title.trim();
@@ -44,6 +46,7 @@ export function DecisionsStrip({
       setTitle('');
       setDecisionText('');
       setComposing(false);
+      setExpanded(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not save');
     } finally {
@@ -51,19 +54,53 @@ export function DecisionsStrip({
     }
   }
 
+  function startCompose() {
+    setComposing(true);
+    setExpanded(true);
+  }
+
   return (
-    <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-      <div className="flex items-center justify-between gap-2">
-        <SoftLabel>What we&apos;ve decided lately</SoftLabel>
-        {!composing && (
-          <Button variant="ghost" size="sm" onClick={() => setComposing(true)}>
-            + Log a decision
-          </Button>
+    <div className="border-y border-[var(--border-default)]/60 bg-[var(--bg-card)]/40">
+      <div className="flex items-center gap-3 px-4 py-2.5">
+        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+          Latest decision
+        </span>
+        {latest ? (
+          <>
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              className="flex min-w-0 flex-1 items-center gap-2 text-left text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            >
+              <span className="truncate font-medium text-[var(--text-primary)]" title={latest.title}>
+                {latest.title}
+              </span>
+              <span className="shrink-0 tabular-nums text-[var(--text-muted)]">
+                · {relativeTime(latest.decidedAt)}
+              </span>
+            </button>
+          </>
+        ) : (
+          <span className="flex-1 text-[13px] text-[var(--text-muted)]">
+            Nothing logged yet — drop decisions here so the team stays on the same page.
+          </span>
+        )}
+        <Button variant="ghost" size="sm" onClick={startCompose} className="shrink-0">
+          + Log a decision
+        </Button>
+        {decisions.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="shrink-0 text-[11px] font-medium text-[var(--accent-primary)] hover:underline"
+          >
+            {expanded ? 'Hide' : `View all ${decisions.length}`}
+          </button>
         )}
       </div>
 
       {composing && (
-        <div className="mt-3 flex flex-col gap-2 border border-[var(--border-default)] bg-[var(--bg-primary)] p-3">
+        <div className="mx-4 mb-3 flex flex-col gap-2 border border-[var(--border-default)] bg-[var(--bg-primary)] p-3">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -105,29 +142,23 @@ export function DecisionsStrip({
         </div>
       )}
 
-      {decisions.length === 0 && !composing ? (
-        <p className="mt-3 text-xs text-[var(--text-muted)]">
-          Nothing logged yet. Drop decisions here so the team stays on the same page.
-        </p>
-      ) : (
-        <ul className="mt-3 flex gap-3 overflow-x-auto pb-1">
+      {expanded && decisions.length > 0 && (
+        <ul className="flex gap-3 overflow-x-auto px-4 pb-3">
           {decisions.map((d) => (
             <li
               key={d.id}
-              className="min-w-[260px] max-w-[300px] flex-shrink-0 border border-[var(--border-default)] bg-[var(--bg-primary)] p-3"
+              className="min-w-[260px] max-w-[320px] flex-shrink-0 border border-[var(--border-default)] bg-[var(--bg-primary)] p-3"
             >
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
-                  {relativeTime(d.decidedAt)}
-                </p>
-              </div>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
+                {relativeTime(d.decidedAt)}
+              </p>
               <p
                 className="mt-1.5 truncate text-sm font-semibold text-[var(--text-primary)]"
                 title={d.title}
               >
                 {d.title}
               </p>
-              <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-[var(--text-secondary)]">
+              <p className="mt-1 line-clamp-3 text-[12.5px] leading-relaxed text-[var(--text-secondary)]">
                 {d.decisionText}
               </p>
             </li>

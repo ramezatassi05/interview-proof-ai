@@ -18,6 +18,51 @@ export function SoftLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+export function HeroMetric({
+  label,
+  value,
+  caption,
+  gradient = false,
+}: {
+  label: string;
+  value: string;
+  caption?: string;
+  gradient?: boolean;
+}) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1">
+      <p
+        className={`text-4xl font-semibold leading-none tracking-tight tabular-nums sm:text-[44px] ${
+          gradient
+            ? 'bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent'
+            : 'text-[var(--text-primary)]'
+        }`}
+      >
+        {value}
+      </p>
+      <p className="text-sm font-medium text-[var(--text-secondary)]">{label}</p>
+      {caption && (
+        <p className="text-[11px] tabular-nums text-[var(--text-muted)]">{caption}</p>
+      )}
+    </div>
+  );
+}
+
+export function MetaStat({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <span className="inline-flex items-baseline gap-1 text-[12px] text-[var(--text-muted)]">
+      <span className="font-medium tabular-nums text-[var(--text-secondary)]">{value}</span>
+      <span>{label}</span>
+    </span>
+  );
+}
+
 export function MetricTile({
   label,
   value,
