@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
 import FloatingActionMenu from '@/components/ui/floating-action-menu';
+import { NotificationBell } from './NotificationBell';
 
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Container } from './Container';
@@ -157,6 +158,7 @@ export function Header() {
               <div className="h-9 w-20 animate-pulse rounded-lg bg-[var(--header-elevated)]" />
             ) : user ? (
               <div className="flex items-center gap-3">
+                <NotificationBell />
                 <LiquidButton
                   href="/new"
                   variant="gradient"

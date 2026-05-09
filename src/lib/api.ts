@@ -19,6 +19,7 @@ import type {
   AgentKind,
   PracticeProgress,
   CoachTabData,
+  UserNotification,
 } from '@/types';
 
 const API_BASE = '/api';
@@ -160,6 +161,11 @@ export interface AgentMessageResponse {
 export interface AgentMessagesListResponse {
   data: AgentMessage[];
   nextCursor: string | null;
+}
+
+export interface NotificationsListResponse {
+  data: UserNotification[];
+  unreadCount: number;
 }
 
 export interface PracticeProgressResponse {
@@ -461,6 +467,28 @@ class APIClient {
     return this.request<AgentMessagesListResponse>(
       `/agent/sessions/${sessionId}/messages${qs ? `?${qs}` : ''}`
     );
+  }
+
+  async listNotifications(params?: {
+    limit?: number;
+    unreadOnly?: boolean;
+  }): Promise<NotificationsListResponse> {
+    const search = new URLSearchParams();
+    if (params?.limit) search.set('limit', String(params.limit));
+    if (params?.unreadOnly) search.set('unread', '1');
+    const qs = search.toString();
+    return this.request<NotificationsListResponse>(`/notifications${qs ? `?${qs}` : ''}`);
+  }
+
+  async markNotificationRead(id: string, read = true): Promise<{ data: { ok: true } }> {
+    return this.request(`/notifications/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ read }),
+    });
+  }
+
+  async markAllNotificationsRead(): Promise<{ data: { ok: true } }> {
+    return this.request(`/notifications/mark-all-read`, { method: 'POST' });
   }
 
   /**

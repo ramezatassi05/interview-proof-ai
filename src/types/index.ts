@@ -1379,3 +1379,24 @@ export interface ApprovalModalProps {
   actionId: string | null;
   onResolved?: () => void;
 }
+
+// --- User notifications (migration 044) ---
+
+export type UserNotificationKind =
+  | 'action_drafted'
+  | 'action_completed'
+  | 'action_failed'
+  | 'digest'
+  | 'system';
+
+export interface UserNotification {
+  id: string;
+  userId: string;
+  kind: UserNotificationKind;
+  title: string;
+  body: string | null;
+  actionId: string | null;
+  href: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
