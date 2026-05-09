@@ -42,6 +42,7 @@ const HIDDEN_PATH_PATTERNS: RegExp[] = [
   /^\/interview-prep(\/|$)/,
   /^\/interview-questions(\/|$)/,
   /^\/onboarding(\/|$)/,
+  /^\/interview\/live(\/|$)/,
   /^\/r\/[^/]+\/full(\/|$)/,
   /^\/s\/[^/]+/,
   /^\/waitlist/,
@@ -161,26 +162,37 @@ function CopilotPanel({ reportId, loadingReport, resolveError, onClose }: Copilo
           <p className="text-sm font-semibold text-[var(--text-primary)]">Career Copilot</p>
           <p className="text-[11px] text-[var(--text-muted)]">⌘K to toggle · Esc to close</p>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-md p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-          aria-label="Close"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        <div className="flex items-center gap-2">
+          {reportId && (
+            <Link
+              href={`/interview/live?reportId=${reportId}`}
+              className="rounded-md border border-[var(--border-default)] bg-[var(--bg-elevated)] px-2 py-1 text-[11px] font-medium text-[var(--text-secondary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)]"
+              onClick={onClose}
+            >
+              🎙 Live
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+            aria-label="Close"
           >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
       </header>
       {loadingReport ? (
         <div className="flex flex-1 items-center justify-center text-sm text-[var(--text-muted)]">
