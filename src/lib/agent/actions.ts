@@ -88,16 +88,21 @@ export type TransitionResult = TransitionOk | TransitionErr;
 /**
  * Enforces the action approval state machine.
  *
- * In M3 there is no execution layer for external-send actions, so an action
- * with `requiresExternalSend = true` cannot transition past `approved`. This
- * is a hard guarantee at the API boundary — agents have zero autonomy to send
- * anything user-facing without an explicit approved → completed flow that is
- * not yet implemented.
+ * External-send actions (`requiresExternalSend = true`) cannot transition
+ * past `approved` from the user-facing API. Only the executor cron
+ * (`/api/cron/execute-approved-actions`) flips them to `completed` /
+ * `failed`, and only when it sets `executorAuthorized: true`. This keeps the
+ * autonomy boundary explicit: no API route a user can hit will ever mark an
+ * outbound action as sent.
  */
 export function assertTransitionAllowed(
   from: AgentActionStatus,
   to: AgentActionStatus,
-  options: { actionType: AgentActionType; requiresExternalSend: boolean }
+  options: {
+    actionType: AgentActionType;
+    requiresExternalSend: boolean;
+    executorAuthorized?: boolean;
+  }
 ): TransitionResult {
   const allowed = ALLOWED_TRANSITIONS[from];
 
@@ -113,13 +118,14 @@ export function assertTransitionAllowed(
   if (
     from === 'approved' &&
     (to === 'completed' || to === 'failed') &&
-    options.requiresExternalSend
+    options.requiresExternalSend &&
+    !options.executorAuthorized
   ) {
     return {
       ok: false,
       reason: 'external_send_blocked',
       message:
-        'External send is not yet implemented. Actions that produce user-facing output cannot be completed through this endpoint.',
+        'External-send actions can only be completed by the executor cron. Approve the action and let the executor handle delivery.',
       allowed: [],
     };
   }

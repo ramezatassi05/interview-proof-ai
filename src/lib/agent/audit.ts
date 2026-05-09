@@ -7,7 +7,8 @@
  * the only write path. This file is one of the approved sites for
  * createServiceClient (alongside src/lib/rate-limit.ts,
  * src/lib/agent/company-cache.ts,
- * src/app/api/cron/cleanup-stale-actions/route.ts, and
+ * src/app/api/cron/cleanup-stale-actions/route.ts,
+ * src/app/api/cron/execute-approved-actions/route.ts, and
  * src/app/api/webhook/**).
  *
  * runAgentCall is a thin wrapper that records `agent_call_started`,

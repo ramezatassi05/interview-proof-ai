@@ -9,6 +9,10 @@
       "schedule": "0 6 * * *"
     },
     {
+      "path": "/api/cron/execute-approved-actions",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/clear-spend-pause",
       "schedule": "5 0 1 * *"
     },
