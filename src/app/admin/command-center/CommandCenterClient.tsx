@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { BlurFade } from '@/components/ui/blur-fade';
+import { BorderBeam } from '@/components/ui/border-beam';
 import { Tabs, TabList, TabTrigger, TabContent, useTabsContext } from '@/components/ui/Tabs';
 import { relativeTime } from '@/lib/relative-time';
 import type { CompanyAgentKind } from '@/server/agents/company/types';
@@ -184,50 +185,54 @@ export function CommandCenterClient({
   const heroApproval = pendingApprovals[0];
   const restApprovals = pendingApprovals.slice(1);
 
+  const hasPendingApprovals = pendingApprovals.length > 0;
+
   return (
     <main className="min-h-screen bg-[var(--bg-primary)]">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
-        <DashboardHero
-          viewerFirstName={viewerFirstName}
-          pendingCount={pendingApprovals.length}
-          totalUsers={metrics.totalUsers}
-          totalReports={metrics.totalReports}
-          unlockRate={metrics.unlockRate}
-          estimatedRevenueCents={metrics.estimatedRevenueCents}
-          activeCompanySessions={metrics.activeCompanySessions}
-          spend30dCents={brief.spend30dCents}
-          capturedAt={metrics.capturedAt}
-          nextHeartbeatIso={nextHeartbeatIso}
-          refreshing={refreshing}
-          onRefresh={refreshBrief}
-        />
-
-        <DecisionsStrip
-          decisions={decisions}
-          onCreated={(d) => setDecisions((prev) => [d, ...prev].slice(0, 10))}
-        />
-
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-6 sm:gap-10 sm:px-6 sm:py-8">
         <Tabs defaultTab="dashboard">
-          <TabList className="self-start">
-            <TabTrigger id="dashboard">Dashboard</TabTrigger>
-            <TabTrigger
-              id="inbox"
-              badge={
-                pendingApprovals.length > 0 ? (
-                  <Badge variant="accent">{pendingApprovals.length}</Badge>
-                ) : null
-              }
-            >
-              Inbox
-            </TabTrigger>
-            <TabTrigger id="ideas">Ideas</TabTrigger>
-            <TabTrigger id="audit">Audit</TabTrigger>
-          </TabList>
+          <DashboardHero
+            viewerFirstName={viewerFirstName}
+            pendingCount={pendingApprovals.length}
+            totalUsers={metrics.totalUsers}
+            totalReports={metrics.totalReports}
+            unlockRate={metrics.unlockRate}
+            estimatedRevenueCents={metrics.estimatedRevenueCents}
+            activeCompanySessions={metrics.activeCompanySessions}
+            spend30dCents={brief.spend30dCents}
+            capturedAt={metrics.capturedAt}
+            nextHeartbeatIso={nextHeartbeatIso}
+            refreshing={refreshing}
+            onRefresh={refreshBrief}
+            decisionsStrip={
+              <DecisionsStrip
+                decisions={decisions}
+                onCreated={(d) => setDecisions((prev) => [d, ...prev].slice(0, 10))}
+              />
+            }
+            tabList={
+              <TabList className="self-start">
+                <TabTrigger id="dashboard">Dashboard</TabTrigger>
+                <TabTrigger
+                  id="inbox"
+                  badge={
+                    hasPendingApprovals ? (
+                      <Badge variant="accent">{pendingApprovals.length}</Badge>
+                    ) : null
+                  }
+                >
+                  Inbox
+                </TabTrigger>
+                <TabTrigger id="ideas">Ideas</TabTrigger>
+                <TabTrigger id="audit">Audit</TabTrigger>
+              </TabList>
+            }
+          />
 
           <TabContent id="dashboard">
-            <section className="grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)_400px]">
+            <section className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)_380px]">
               {/* LEFT RAIL */}
-              <aside className="order-2 flex flex-col gap-4 lg:order-1">
+              <aside className="order-2 flex flex-col gap-5 lg:order-1">
                 <BlurFade delay={0.04}>
                   <OrgChartCard
                     pendingByAgent={pendingByAgent}
@@ -255,42 +260,63 @@ export function CommandCenterClient({
                 </BlurFade>
               </section>
 
-              {/* RIGHT RAIL — pending approvals */}
-              <aside className="order-3 flex flex-col gap-4">
+              {/* RIGHT RAIL — pending approvals: single surface, BorderBeam when active */}
+              <aside className="order-3 flex flex-col gap-5">
                 <BlurFade delay={0.04}>
-                  <div className="flex flex-col gap-3">
+                  <div
+                    className={`relative border bg-[var(--bg-card)] p-4 ${
+                      hasPendingApprovals
+                        ? 'border-[var(--border-accent)]/50'
+                        : 'border-[var(--border-default)]'
+                    }`}
+                  >
+                    {hasPendingApprovals && (
+                      <BorderBeam
+                        size={220}
+                        duration={11}
+                        colorFrom="var(--accent-primary)"
+                        colorTo="var(--accent-secondary)"
+                      />
+                    )}
+
                     <div className="flex items-baseline justify-between gap-2">
-                      <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+                      <h2
+                        className={`text-base font-semibold ${
+                          hasPendingApprovals
+                            ? 'text-[var(--text-primary)]'
+                            : 'text-[var(--text-secondary)]'
+                        }`}
+                      >
                         Waiting on your OK
                       </h2>
                       <div className="flex items-center gap-2">
-                        {pendingApprovals.length > 0 && (
+                        {hasPendingApprovals && (
                           <Badge variant="accent">{pendingApprovals.length}</Badge>
                         )}
                         <ViewAllInboxLink />
                       </div>
                     </div>
-                    <p className="text-[12px] text-[var(--text-muted)]">
+                    <p className="mt-1 text-[12px] text-[var(--text-muted)]">
                       Things your team drafted that need a yes or no.
                     </p>
                     {approvalError && (
-                      <p className="text-[12px] text-[var(--color-danger)]">{approvalError}</p>
+                      <p className="mt-2 text-[12px] text-[var(--color-danger)]">{approvalError}</p>
                     )}
 
-                    {pendingApprovals.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center gap-2 border border-dashed border-[var(--border-default)]/70 py-10 text-center">
-                        <span className="text-3xl text-[var(--text-muted)]" aria-hidden>
+                    {!hasPendingApprovals ? (
+                      <div className="mt-4 flex flex-col items-center justify-center gap-1.5 py-8 text-center">
+                        <span className="text-2xl text-[var(--text-muted)]" aria-hidden>
                           ✓
                         </span>
-                        <p className="text-sm font-medium text-[var(--text-primary)]">
+                        <p className="text-[13px] font-medium text-[var(--text-primary)]">
                           You&apos;re all caught up.
                         </p>
-                        <p className="max-w-[220px] text-[12px] text-[var(--text-muted)]">
-                          Nothing is waiting on you. Your team will queue the next call.
+                        <p className="max-w-[220px] text-[11.5px] text-[var(--text-muted)]">
+                          Your team will queue the next call.
                         </p>
                       </div>
                     ) : (
-                      <>
+                      <div className="mt-4 flex flex-col gap-3">
                         {heroApproval && (
                           <HeroApprovalCard
                             action={heroApproval}
@@ -314,7 +340,7 @@ export function CommandCenterClient({
                             ))}
                           </div>
                         )}
-                      </>
+                      </div>
                     )}
                   </div>
                 </BlurFade>
@@ -322,10 +348,10 @@ export function CommandCenterClient({
                 {recentExecutions.length > 0 && (
                   <BlurFade delay={0.12}>
                     <div className="border border-[var(--border-default)] bg-[var(--bg-card)] p-4">
-                      <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+                      <h3 className="text-[13px] font-medium text-[var(--text-secondary)]">
                         Just shipped
                       </h3>
-                      <p className="mt-1 text-[12px] text-[var(--text-muted)]">
+                      <p className="mt-1 text-[11.5px] text-[var(--text-muted)]">
                         Stuff you approved and what came of it.
                       </p>
                       <div className="mt-3 flex flex-col gap-3">

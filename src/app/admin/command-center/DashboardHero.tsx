@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { TextAnimate } from '@/components/ui/text-animate';
 import { relativeTime } from '@/lib/relative-time';
@@ -18,6 +19,8 @@ interface DashboardHeroProps {
   nextHeartbeatIso: string | null;
   refreshing: boolean;
   onRefresh: () => void;
+  decisionsStrip?: ReactNode;
+  tabList?: ReactNode;
 }
 
 function greetingFor(date: Date): string {
@@ -75,49 +78,71 @@ export function DashboardHero({
   nextHeartbeatIso,
   refreshing,
   onRefresh,
+  decisionsStrip,
+  tabList,
 }: DashboardHeroProps) {
   const greeting = greetingFor(new Date());
 
   return (
-    <header className="flex flex-col gap-6 border-b border-[var(--border-default)] pb-7 sm:pb-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-1.5">
-          <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-[34px]">
-            <TextAnimate animation="blurInUp" by="word" duration={0.35}>
-              {`${greeting}, ${viewerFirstName}.`}
-            </TextAnimate>
-          </h1>
+    <header className="flex flex-col gap-8 border-b border-[var(--border-default)] pb-6 sm:gap-10 sm:pb-7">
+      {/* GREETING + PRIMARY METRIC pair */}
+      <div className="flex flex-col gap-8 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-12">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-[36px]">
+              <TextAnimate animation="blurInUp" by="word" duration={0.35}>
+                {`${greeting}, ${viewerFirstName}.`}
+              </TextAnimate>
+            </h1>
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={refreshing}
+              onClick={onRefresh}
+              className="shrink-0 text-[var(--text-muted)] hover:text-[var(--text-primary)] sm:hidden"
+            >
+              Refresh
+            </Button>
+          </div>
           <p className="max-w-xl text-base leading-relaxed text-[var(--text-secondary)]">
             {summaryLine(pendingCount)}
           </p>
         </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          loading={refreshing}
-          onClick={onRefresh}
-          className="w-fit"
-        >
-          Refresh
-        </Button>
+
+        <div className="flex items-end gap-5 sm:justify-end">
+          <HeroMetric
+            tone={pendingCount > 0 ? 'primary' : 'secondary'}
+            label={pendingCount === 1 ? 'pending decision' : 'pending decisions'}
+            value={pendingCount.toLocaleString()}
+            gradient={pendingCount > 0}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            loading={refreshing}
+            onClick={onRefresh}
+            className="hidden shrink-0 pb-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] sm:inline-flex"
+          >
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
+      {/* SECONDARY METRICS — supporting context, smaller weight */}
+      <div className="flex flex-wrap items-baseline gap-x-10 gap-y-5">
         <HeroMetric
-          label={pendingCount === 1 ? 'pending decision' : 'pending decisions'}
-          value={pendingCount.toLocaleString()}
-          gradient={pendingCount > 0}
-        />
-        <HeroMetric
+          tone="secondary"
           label="revenue (est.)"
           value={formatMoneyCompact(estimatedRevenueCents)}
         />
         <HeroMetric
+          tone="secondary"
           label="unlock rate"
           value={`${Math.round(unlockRate * 100)}%`}
         />
       </div>
 
+      {/* META STRIP — quietest tier, comma-separated tabular metadata */}
       <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1.5 text-[var(--text-muted)]">
         <MetaStat value={formatCount(totalUsers)} label="users" />
         <span aria-hidden className="text-[var(--text-muted)]/60">·</span>
@@ -137,6 +162,16 @@ export function DashboardHero({
           last refresh {relativeTime(capturedAt)}
         </span>
       </div>
+
+      {/* DECISIONS ANCHOR — quiet inline strip, shares the header surface */}
+      {decisionsStrip && (
+        <div className="border-t border-[var(--border-default)]/60 pt-4">
+          {decisionsStrip}
+        </div>
+      )}
+
+      {/* TAB ROW — sits inside the header surface, single border-b on header closes the chrome */}
+      {tabList && <div className="-mb-1">{tabList}</div>}
     </header>
   );
 }

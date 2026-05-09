@@ -23,16 +23,25 @@ export function HeroMetric({
   value,
   caption,
   gradient = false,
+  tone = 'primary',
 }: {
   label: string;
   value: string;
   caption?: string;
   gradient?: boolean;
+  tone?: 'primary' | 'secondary';
 }) {
+  const isPrimary = tone === 'primary';
+  const valueClass = isPrimary
+    ? 'text-4xl font-semibold leading-none tracking-tight tabular-nums sm:text-[56px]'
+    : 'text-[26px] font-medium leading-none tracking-tight tabular-nums sm:text-[28px]';
+  const labelClass = isPrimary
+    ? 'text-sm font-medium text-[var(--text-secondary)]'
+    : 'text-[12.5px] font-medium text-[var(--text-muted)]';
   return (
-    <div className="flex min-w-0 flex-col gap-1">
+    <div className="flex min-w-0 flex-col gap-1.5">
       <p
-        className={`text-4xl font-semibold leading-none tracking-tight tabular-nums sm:text-[44px] ${
+        className={`${valueClass} ${
           gradient
             ? 'bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent'
             : 'text-[var(--text-primary)]'
@@ -40,7 +49,7 @@ export function HeroMetric({
       >
         {value}
       </p>
-      <p className="text-sm font-medium text-[var(--text-secondary)]">{label}</p>
+      <p className={labelClass}>{label}</p>
       {caption && (
         <p className="text-[11px] tabular-nums text-[var(--text-muted)]">{caption}</p>
       )}

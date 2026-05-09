@@ -23,11 +23,11 @@ export function HeroApprovalCard({
   onOpenDetail,
 }: HeroApprovalCardProps) {
   return (
-    <article className="border border-[var(--border-default)] bg-[var(--bg-card)] shadow-[0_1px_0_0_var(--border-default)]">
+    <article className="relative bg-[var(--bg-elevated)] before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:bg-[var(--accent-primary)]">
       <button
         type="button"
         onClick={() => onOpenDetail(action)}
-        className="block w-full px-5 py-5 text-left transition-colors hover:bg-[var(--bg-elevated)] focus:bg-[var(--bg-elevated)] focus:outline-none"
+        className="block w-full px-5 py-4 text-left transition-colors hover:bg-[var(--bg-elevated)]/70 focus:bg-[var(--bg-elevated)]/70 focus:outline-none"
       >
         <div className="flex flex-wrap items-center gap-2">
           <PriorityBadge priority={action.priority} />
@@ -45,7 +45,7 @@ export function HeroApprovalCard({
         >
           {action.title}
         </h2>
-        <p className="mt-2 text-[13.5px] leading-relaxed text-[var(--text-secondary)]">
+        <p className="mt-2 line-clamp-4 text-[13.5px] leading-relaxed text-[var(--text-secondary)]">
           {action.rationale}
         </p>
         <span className="mt-3 inline-flex items-center gap-1 text-[12px] font-medium text-[var(--accent-primary)]">
@@ -55,7 +55,7 @@ export function HeroApprovalCard({
           </svg>
         </span>
       </button>
-      <div className="grid grid-cols-2 gap-2 border-t border-[var(--border-default)] px-5 py-3">
+      <div className="grid grid-cols-2 gap-2 border-t border-[var(--border-default)]/50 px-5 py-3">
         <Button
           variant="ghost"
           size="md"

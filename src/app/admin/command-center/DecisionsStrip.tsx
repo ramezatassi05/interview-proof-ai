@@ -60,47 +60,47 @@ export function DecisionsStrip({
   }
 
   return (
-    <div className="border-y border-[var(--border-default)]/60 bg-[var(--bg-card)]/40">
-      <div className="flex items-center gap-3 px-4 py-2.5">
-        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
           Latest decision
         </span>
         {latest ? (
-          <>
-            <button
-              type="button"
-              onClick={() => setExpanded((v) => !v)}
-              className="flex min-w-0 flex-1 items-center gap-2 text-left text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            >
-              <span className="truncate font-medium text-[var(--text-primary)]" title={latest.title}>
-                {latest.title}
-              </span>
-              <span className="shrink-0 tabular-nums text-[var(--text-muted)]">
-                · {relativeTime(latest.decidedAt)}
-              </span>
-            </button>
-          </>
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="flex min-w-0 flex-1 items-center gap-2 text-left text-[13px] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+          >
+            <span className="truncate font-medium text-[var(--text-primary)]" title={latest.title}>
+              {latest.title}
+            </span>
+            <span className="shrink-0 tabular-nums text-[var(--text-muted)]">
+              · {relativeTime(latest.decidedAt)}
+            </span>
+          </button>
         ) : (
           <span className="flex-1 text-[13px] text-[var(--text-muted)]">
             Nothing logged yet — drop decisions here so the team stays on the same page.
           </span>
         )}
-        <Button variant="ghost" size="sm" onClick={startCompose} className="shrink-0">
-          + Log a decision
-        </Button>
-        {decisions.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="shrink-0 text-[11px] font-medium text-[var(--accent-primary)] hover:underline"
-          >
-            {expanded ? 'Hide' : `View all ${decisions.length}`}
-          </button>
-        )}
+        <div className="ml-auto flex items-center gap-3">
+          {decisions.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              className="text-[11px] font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            >
+              {expanded ? 'Hide' : `View all ${decisions.length}`}
+            </button>
+          )}
+          <Button variant="ghost" size="sm" onClick={startCompose} className="shrink-0">
+            + Log a decision
+          </Button>
+        </div>
       </div>
 
       {composing && (
-        <div className="mx-4 mb-3 flex flex-col gap-2 border border-[var(--border-default)] bg-[var(--bg-primary)] p-3">
+        <div className="flex flex-col gap-2 border border-[var(--border-default)] bg-[var(--bg-elevated)] p-3">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -143,11 +143,11 @@ export function DecisionsStrip({
       )}
 
       {expanded && decisions.length > 0 && (
-        <ul className="flex gap-3 overflow-x-auto px-4 pb-3">
+        <ul className="flex gap-3 overflow-x-auto pb-1">
           {decisions.map((d) => (
             <li
               key={d.id}
-              className="min-w-[260px] max-w-[320px] flex-shrink-0 border border-[var(--border-default)] bg-[var(--bg-primary)] p-3"
+              className="min-w-[260px] max-w-[320px] flex-shrink-0 border border-[var(--border-default)]/70 bg-[var(--bg-elevated)] p-3"
             >
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">
                 {relativeTime(d.decidedAt)}
