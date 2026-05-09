@@ -2,24 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { AgentAction, AgentActionType } from '@/types';
+import type { AgentAction } from '@/types';
 import { ActionApprovalModal } from './ActionApprovalModal';
+import { ActionCard } from '@/components/agents/artifacts';
 
 interface PendingApprovalsListProps {
   pendingActions: AgentAction[];
 }
-
-const ACTION_TYPE_LABELS: Record<AgentActionType, string> = {
-  recommend_drill: 'Recommended drill',
-  start_mock_interview: 'Mock interview',
-  score_answer: 'Score answer',
-  draft_recruiter_reply: 'Draft recruiter reply',
-  rewrite_resume_bullet: 'Rewrite resume bullet',
-  create_company_brief: 'Company brief',
-  update_prep_plan: 'Prep plan update',
-  propose_opportunity_update: 'Opportunity update',
-  summarize_progress: 'Progress summary',
-};
 
 export function PendingApprovalsList({ pendingActions }: PendingApprovalsListProps) {
   const [openActionId, setOpenActionId] = useState<string | null>(null);
@@ -43,13 +32,11 @@ export function PendingApprovalsList({ pendingActions }: PendingApprovalsListPro
             {pendingActions.map((action) => (
               <li
                 key={action.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] px-4 py-3"
+                className="flex items-start justify-between gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] px-4 py-3"
               >
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-[var(--text-primary)]">
-                    {ACTION_TYPE_LABELS[action.actionType] ?? action.actionType}
-                  </p>
-                  <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <ActionCard action={action} />
+                  <p className="text-[11px] text-[var(--text-muted)]">
                     Drafted {formatRelative(action.createdAt)}
                     {action.requiresExternalSend && (
                       <span className="ml-2 inline-flex items-center gap-1 rounded-full border border-[var(--color-warning)]/30 bg-[var(--color-warning-muted)] px-1.5 py-px text-[10px] font-medium text-[var(--color-warning)]">
