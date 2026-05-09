@@ -9,10 +9,6 @@
       "schedule": "0 6 * * *"
     },
     {
-      "path": "/api/cron/execute-approved-actions",
-      "schedule": "*/5 * * * *"
-    },
-    {
       "path": "/api/cron/copilot-digest",
       "schedule": "0 13 * * *"
     },

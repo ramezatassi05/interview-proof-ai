@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { LiveMockInterview } from '@/components/interview/LiveMockInterview';
 import { useAuth } from '@/hooks/useAuth';
 import { api, APIRequestError } from '@/lib/api';
 
-export default function LiveInterviewPage() {
+function LiveInterviewPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -76,5 +76,19 @@ export default function LiveInterviewPage() {
 
       {reportId && <LiveMockInterview reportId={reportId} />}
     </AppLayout>
+  );
+}
+
+export default function LiveInterviewPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppLayout showIntelligencePanel={false}>
+          <p className="text-sm text-[var(--text-muted)]">Loading…</p>
+        </AppLayout>
+      }
+    >
+      <LiveInterviewPageInner />
+    </Suspense>
   );
 }

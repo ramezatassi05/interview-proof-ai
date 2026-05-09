@@ -1,0 +1,45 @@
+name: executor-cron
+
+# Pings /api/cron/execute-approved-actions every 5 minutes so approved
+# external-send actions move from `approved` -> `completed`/`failed` close
+# to real-time. This used to be a Vercel cron entry, but Vercel Hobby
+# limits cron expressions to once-per-day per expression. We moved the
+# trigger to GitHub Actions to keep the 5-min SLA without upgrading.
+#
+# Server side is unchanged: the endpoint already accepts
+# `Authorization: Bearer ${CRON_SECRET}` (verifyCronSecret in
+# src/lib/security.ts). No code edits required there.
+#
+# Required repo secrets (no untrusted input is consumed by this workflow):
+#   - CRON_SECRET             same value as the Vercel project env var
+#   - INTERVIEWPROOF_BASE_URL https://interviewproof.ai (no trailing slash)
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: executor-cron
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Sweep approved actions
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          BASE_URL: ${{ secrets.INTERVIEWPROOF_BASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CRON_SECRET:-}" ] || [ -z "${BASE_URL:-}" ]; then
+            echo "::error::Missing CRON_SECRET or INTERVIEWPROOF_BASE_URL repo secret." >&2
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error --max-time 90 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$BASE_URL/api/cron/execute-approved-actions"
