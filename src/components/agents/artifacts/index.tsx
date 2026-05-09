@@ -21,6 +21,7 @@ import { DrillSummaryCard } from './DrillSummaryCard';
 import { ResumeBulletCard } from './ResumeBulletCard';
 import { RecruiterDraftCard } from './RecruiterDraftCard';
 import { DelegationCard } from './DelegationCard';
+import { OpportunityCreateCard } from './OpportunityCreateCard';
 import { GenericActionCard } from './GenericActionCard';
 
 export interface ActionArtifactProps {
@@ -32,6 +33,7 @@ const REGISTRY: Partial<Record<AgentActionType, ComponentType<ActionArtifactProp
   rewrite_resume_bullet: ResumeBulletCard,
   draft_recruiter_reply: RecruiterDraftCard,
   delegate_to_specialist: DelegationCard,
+  propose_opportunity_create: OpportunityCreateCard,
 };
 
 export function getActionRenderer(
@@ -50,5 +52,6 @@ export {
   ResumeBulletCard,
   RecruiterDraftCard,
   DelegationCard,
+  OpportunityCreateCard,
   GenericActionCard,
 };

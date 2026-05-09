@@ -17,6 +17,10 @@
       "schedule": "0 13 * * *"
     },
     {
+      "path": "/api/cron/opportunity-ingest",
+      "schedule": "0 11 * * *"
+    },
+    {
       "path": "/api/cron/clear-spend-pause",
       "schedule": "5 0 1 * *"
     },

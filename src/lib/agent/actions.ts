@@ -46,6 +46,23 @@ export const ACTION_PAYLOAD_SCHEMAS: Record<AgentActionType, z.ZodTypeAny> = {
     reportId: z.string().uuid(),
     windowDays: z.number().int().positive().max(365),
   }),
+  propose_opportunity_create: z.object({
+    companyName: z.string().min(1).max(200),
+    roleTitle: z.string().min(1).max(200),
+    stage: z
+      .enum([
+        'applied',
+        'recruiter_screen',
+        'phone_screen',
+        'onsite',
+        'offer',
+        'rejected',
+        'withdrawn',
+      ])
+      .default('applied'),
+    notes: z.string().max(2000).optional(),
+    sourceUrl: z.string().url().optional(),
+  }),
   delegate_to_specialist: z.object({
     targetAgentKind: z.enum([
       'readiness_coach',

@@ -9,7 +9,9 @@
  * src/lib/agent/company-cache.ts,
  * src/app/api/cron/cleanup-stale-actions/route.ts,
  * src/app/api/cron/execute-approved-actions/route.ts,
- * src/app/api/cron/copilot-digest/route.ts, and
+ * src/app/api/cron/copilot-digest/route.ts,
+ * src/app/api/cron/opportunity-ingest/route.ts,
+ * src/app/api/auth/google/callback/route.ts, and
  * src/app/api/webhook/**).
  *
  * runAgentCall is a thin wrapper that records `agent_call_started`,

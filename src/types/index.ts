@@ -991,7 +991,8 @@ export type AgentActionType =
   | 'update_prep_plan'
   | 'propose_opportunity_update'
   | 'summarize_progress'
-  | 'delegate_to_specialist';
+  | 'delegate_to_specialist'
+  | 'propose_opportunity_create';
 
 export type AgentDelegateTargetKind =
   | 'readiness_coach'

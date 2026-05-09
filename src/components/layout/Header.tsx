@@ -230,6 +230,27 @@ export function Header() {
                       onClick: () => router.push('/opportunities'),
                     },
                     {
+                      label: 'Outbox',
+                      Icon: (
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="3 12 9 12 11 16 13 8 15 12 21 12" />
+                          <path d="M22 12v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-7" />
+                          <path d="M12 2v10" />
+                          <polyline points="8 6 12 2 16 6" />
+                        </svg>
+                      ),
+                      onClick: () => router.push('/outbox'),
+                    },
+                    {
                       label: 'Account',
                       Icon: (
                         <svg

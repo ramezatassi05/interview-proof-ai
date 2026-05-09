@@ -27,6 +27,7 @@ const ACTION_TYPE_LABELS: Record<AgentActionType, string> = {
   propose_opportunity_update: 'Opportunity update',
   summarize_progress: 'Progress summary',
   delegate_to_specialist: 'Hand off to specialist',
+  propose_opportunity_create: 'Add to opportunity tracker',
 };
 
 interface ResumeAlternativesEvidence {

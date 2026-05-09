@@ -35,6 +35,7 @@ export const AGENT_ACTION_TYPES: readonly AgentActionType[] = [
   'propose_opportunity_update',
   'summarize_progress',
   'delegate_to_specialist',
+  'propose_opportunity_create',
 ] as const;
 
 export const AGENT_KINDS: readonly AgentKind[] = [
@@ -105,6 +106,7 @@ export const EXTERNAL_SEND_ACTIONS: ReadonlySet<AgentActionType> = new Set<Agent
   'draft_recruiter_reply',
   'rewrite_resume_bullet',
   'delegate_to_specialist',
+  'propose_opportunity_create',
 ]);
 
 export function actionRequiresExternalSend(actionType: AgentActionType): boolean {

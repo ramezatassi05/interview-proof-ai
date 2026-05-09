@@ -10,6 +10,8 @@ const ACTION_TYPE_LABELS: Record<string, string> = {
   update_prep_plan: 'Prep plan update',
   propose_opportunity_update: 'Opportunity update',
   summarize_progress: 'Progress summary',
+  delegate_to_specialist: 'Hand off to specialist',
+  propose_opportunity_create: 'Add to opportunity tracker',
 };
 
 export function GenericActionCard({ action }: { action: AgentAction }) {
