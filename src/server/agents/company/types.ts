@@ -35,7 +35,13 @@ export type CompanyActionStatus = (typeof COMPANY_ACTION_STATUSES)[number];
 
 export type CompanyActionPriority = 'low' | 'medium' | 'high' | 'critical';
 
-export const COMPANY_AGENT_TRIGGERED_BY = ['user', 'cron', 'agent'] as const;
+export const COMPANY_AGENT_TRIGGERED_BY = [
+  'user',
+  'cron',
+  'agent',
+  'ceo_cli',
+  'ceo_chat',
+] as const;
 export type CompanyAgentTriggeredBy = (typeof COMPANY_AGENT_TRIGGERED_BY)[number];
 
 export type {

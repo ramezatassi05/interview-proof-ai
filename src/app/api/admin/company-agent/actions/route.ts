@@ -30,7 +30,10 @@ export async function GET(request: NextRequest) {
     if (agentKindParam && (COMPANY_AGENT_KINDS as readonly string[]).includes(agentKindParam)) {
       query = query.eq('agent_kind', agentKindParam);
     }
-    if (triggeredByParam && ['user', 'cron', 'agent'].includes(triggeredByParam)) {
+    if (
+      triggeredByParam &&
+      ['user', 'cron', 'agent', 'ceo_cli', 'ceo_chat'].includes(triggeredByParam)
+    ) {
       query = query.eq('triggered_by', triggeredByParam);
     }
     if (requiresApprovalParam === 'true' || requiresApprovalParam === 'false') {

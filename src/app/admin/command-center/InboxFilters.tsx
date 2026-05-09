@@ -24,6 +24,7 @@ const TRIGGERED_OPTIONS: { value: InboxTriggeredBy; label: string }[] = [
   { value: 'cron', label: 'Acted on its own' },
   { value: 'agent', label: 'Agent-asked' },
   { value: 'user', label: 'You-asked' },
+  { value: 'ceo_cli', label: 'From Claude Code' },
 ];
 
 const APPROVAL_SCOPE_OPTIONS: { value: InboxApprovalScope; label: string }[] = [

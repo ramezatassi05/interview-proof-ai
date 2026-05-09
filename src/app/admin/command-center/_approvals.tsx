@@ -24,7 +24,7 @@ export interface CompanyAction {
   rationale: string;
   priority: 'low' | 'medium' | 'high' | 'critical';
   status: 'drafted' | 'awaiting_approval' | 'approved' | 'rejected' | 'completed' | 'failed';
-  triggeredBy?: 'user' | 'cron' | 'agent';
+  triggeredBy?: 'user' | 'cron' | 'agent' | 'ceo_cli' | 'ceo_chat';
   requiresApproval?: boolean;
   payloadJson?: Record<string, unknown> | null;
   resultJson?: Record<string, unknown> | null;

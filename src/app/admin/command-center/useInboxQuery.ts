@@ -12,7 +12,7 @@ export type InboxStatus =
   | 'drafted'
   | 'approved';
 
-export type InboxTriggeredBy = 'any' | 'user' | 'cron' | 'agent';
+export type InboxTriggeredBy = 'any' | 'user' | 'cron' | 'agent' | 'ceo_cli';
 
 export type InboxApprovalScope = 'awaiting' | 'auto_executed' | 'any';
 
