@@ -239,7 +239,7 @@ export function TaskKanban({ initialTasks }: { initialTasks?: CompanyTask[] }) {
           right rail to populate this board.
         </p>
       ) : (
-        <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+        <DndContext id="company-task-kanban" sensors={sensors} onDragEnd={onDragEnd}>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {BOARD_COLUMNS.map((col) => (
               <Column
