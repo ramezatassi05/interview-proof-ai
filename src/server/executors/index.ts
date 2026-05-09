@@ -21,6 +21,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AgentActionRow } from '@/lib/agent/types';
 import { executeDraftRecruiterReply } from './draft_recruiter_reply';
 import { executeRewriteResumeBullet } from './rewrite_resume_bullet';
+import { executeDelegateToSpecialist } from './delegate_to_specialist';
 
 export interface ExecutorContext {
   supabase: SupabaseClient;
@@ -40,6 +41,7 @@ export type ActionExecutor = (
 export const EXECUTORS: Partial<Record<string, ActionExecutor>> = {
   draft_recruiter_reply: executeDraftRecruiterReply,
   rewrite_resume_bullet: executeRewriteResumeBullet,
+  delegate_to_specialist: executeDelegateToSpecialist,
 };
 
 export function getExecutor(actionType: string): ActionExecutor | null {

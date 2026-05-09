@@ -26,6 +26,7 @@ const ACTION_TYPE_LABELS: Record<AgentActionType, string> = {
   update_prep_plan: 'Prep plan update',
   propose_opportunity_update: 'Opportunity update',
   summarize_progress: 'Progress summary',
+  delegate_to_specialist: 'Hand off to specialist',
 };
 
 interface ResumeAlternativesEvidence {

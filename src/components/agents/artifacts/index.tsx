@@ -20,6 +20,7 @@ import type { AgentAction, AgentActionType } from '@/types';
 import { DrillSummaryCard } from './DrillSummaryCard';
 import { ResumeBulletCard } from './ResumeBulletCard';
 import { RecruiterDraftCard } from './RecruiterDraftCard';
+import { DelegationCard } from './DelegationCard';
 import { GenericActionCard } from './GenericActionCard';
 
 export interface ActionArtifactProps {
@@ -30,6 +31,7 @@ const REGISTRY: Partial<Record<AgentActionType, ComponentType<ActionArtifactProp
   recommend_drill: DrillSummaryCard,
   rewrite_resume_bullet: ResumeBulletCard,
   draft_recruiter_reply: RecruiterDraftCard,
+  delegate_to_specialist: DelegationCard,
 };
 
 export function getActionRenderer(
@@ -43,4 +45,10 @@ export function ActionCard({ action }: { action: AgentAction }) {
   return <Renderer action={action} />;
 }
 
-export { DrillSummaryCard, ResumeBulletCard, RecruiterDraftCard, GenericActionCard };
+export {
+  DrillSummaryCard,
+  ResumeBulletCard,
+  RecruiterDraftCard,
+  DelegationCard,
+  GenericActionCard,
+};

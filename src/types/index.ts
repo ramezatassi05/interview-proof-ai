@@ -990,7 +990,19 @@ export type AgentActionType =
   | 'create_company_brief'
   | 'update_prep_plan'
   | 'propose_opportunity_update'
-  | 'summarize_progress';
+  | 'summarize_progress'
+  | 'delegate_to_specialist';
+
+export type AgentDelegateTargetKind =
+  | 'readiness_coach'
+  | 'mock_interview'
+  | 'prep_plan'
+  | 'resume_evidence'
+  | 'company_research'
+  | 'recruiter_comm'
+  | 'opportunity_tracker'
+  | 'application_materials'
+  | 'post_interview_debrief';
 
 export type AgentActionStatus =
   | 'drafted'

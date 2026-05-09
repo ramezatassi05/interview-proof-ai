@@ -46,6 +46,22 @@ export const ACTION_PAYLOAD_SCHEMAS: Record<AgentActionType, z.ZodTypeAny> = {
     reportId: z.string().uuid(),
     windowDays: z.number().int().positive().max(365),
   }),
+  delegate_to_specialist: z.object({
+    targetAgentKind: z.enum([
+      'readiness_coach',
+      'mock_interview',
+      'prep_plan',
+      'resume_evidence',
+      'company_research',
+      'recruiter_comm',
+      'opportunity_tracker',
+      'application_materials',
+      'post_interview_debrief',
+    ]),
+    brief: z.string().min(1).max(2000),
+    reportId: z.string().uuid().optional(),
+    opportunityId: z.string().uuid().optional(),
+  }),
 };
 
 export interface PayloadValidationOk {

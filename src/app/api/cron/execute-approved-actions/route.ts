@@ -23,7 +23,7 @@ import { verifyCronSecret } from '@/lib/security';
 import { recordAuditEvent } from '@/lib/agent/audit';
 import { assertTransitionAllowed } from '@/lib/agent/actions';
 import type { AgentActionRow, AgentActionType } from '@/lib/agent/types';
-import { getExecutor } from '@/server/executors';
+import { EXECUTORS, getExecutor } from '@/server/executors';
 
 export const maxDuration = 60;
 
@@ -43,11 +43,13 @@ export async function GET(request: NextRequest) {
   const supabase = await createServiceClient();
   const stats: SweepStats = { picked: 0, completed: 0, failed: 0, skipped: 0 };
 
+  const handledActionTypes = Object.keys(EXECUTORS) as AgentActionType[];
+
   const { data, error } = await supabase
     .from('agent_actions')
     .select('*')
     .eq('status', 'approved')
-    .eq('requires_external_send', true)
+    .in('action_type', handledActionTypes)
     .is('completed_at', null)
     .order('approved_at', { ascending: true })
     .limit(BATCH_SIZE);

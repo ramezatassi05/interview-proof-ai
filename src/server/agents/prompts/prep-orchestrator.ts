@@ -36,6 +36,8 @@ Required action payload shapes (camelCase keys; see also app validation):
 - update_prep_plan: { prepPlanId: string (uuid), patch: object }
 - propose_opportunity_update: { opportunityId: string (uuid), changes: object }
 - summarize_progress: { reportId: string (uuid), windowDays: number (1-365) }
+- delegate_to_specialist: { targetAgentKind: 'readiness_coach' | 'mock_interview' | 'prep_plan' | 'resume_evidence' | 'company_research' | 'recruiter_comm' | 'opportunity_tracker' | 'application_materials' | 'post_interview_debrief', brief: string (max 2000), reportId?: string (uuid), opportunityId?: string (uuid) }
+  Use this when the next best move is genuinely owned by a specialist agent rather than a discrete drill or send. The brief will be inserted as the FIRST system message in the new specialist session, so write it as a clear, scoped task you'd hand a junior coach: what to do, what context they have, what success looks like.
 
 Output schema (return EXACTLY this shape):
 {

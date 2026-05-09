@@ -34,6 +34,7 @@ export const AGENT_ACTION_TYPES: readonly AgentActionType[] = [
   'update_prep_plan',
   'propose_opportunity_update',
   'summarize_progress',
+  'delegate_to_specialist',
 ] as const;
 
 export const AGENT_KINDS: readonly AgentKind[] = [
@@ -94,12 +95,16 @@ export const ALLOWED_TRANSITIONS: Record<AgentActionStatus, readonly AgentAction
   failed: [],
 };
 
-// Actions whose `completed` outcome would produce something user-facing.
-// In M3 these can transition drafted → awaiting_approval → approved, but the API
-// rejects approved → completed/failed because no execution endpoint exists yet.
+// Actions that may only be finalized by the executor cron.
+// Originally just "external sends" (recruiter reply, resume bullet rewrite),
+// now also includes inter-agent delegations whose completion side-effects
+// (target session creation, primed brief) must run server-side. The API
+// PATCH route refuses approved → completed/failed for these; the cron at
+// /api/cron/execute-approved-actions sets executorAuthorized=true to bypass.
 export const EXTERNAL_SEND_ACTIONS: ReadonlySet<AgentActionType> = new Set<AgentActionType>([
   'draft_recruiter_reply',
   'rewrite_resume_bullet',
+  'delegate_to_specialist',
 ]);
 
 export function actionRequiresExternalSend(actionType: AgentActionType): boolean {
