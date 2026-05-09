@@ -491,6 +491,12 @@ class APIClient {
     return this.request(`/notifications/mark-all-read`, { method: 'POST' });
   }
 
+  async getLatestReport(): Promise<{
+    data: { reportId: string; createdAt: string } | null;
+  }> {
+    return this.request(`/me/latest-report`);
+  }
+
   /**
    * Composite Coach loader — fans out the three reads the Coach tab needs in
    * parallel and returns a single aggregate. Errors on any leg propagate.

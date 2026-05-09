@@ -13,6 +13,10 @@
       "schedule": "*/5 * * * *"
     },
     {
+      "path": "/api/cron/copilot-digest",
+      "schedule": "0 13 * * *"
+    },
+    {
       "path": "/api/cron/clear-spend-pause",
       "schedule": "5 0 1 * *"
     },
