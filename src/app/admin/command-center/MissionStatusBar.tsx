@@ -22,9 +22,10 @@ export function MissionStatusBar({
   pendingCount,
   nextBeatLabel,
 }: MissionStatusBarProps) {
-  const [clock, setClock] = useState<string>(() => formatClock(new Date()));
+  const [clock, setClock] = useState<string | null>(null);
 
   useEffect(() => {
+    setClock(formatClock(new Date()));
     const id = setInterval(() => setClock(formatClock(new Date())), 1000);
     return () => clearInterval(id);
   }, []);
