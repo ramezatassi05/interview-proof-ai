@@ -15,6 +15,7 @@ import { MagicCard } from '@/components/ui/magic-card';
 import { BlurFade } from '@/components/ui/blur-fade';
 import { NumberTicker } from '@/components/ui/number-ticker';
 import { ResumeSection } from '@/components/account/ResumeSection';
+import { LinkedAccountsCard } from '@/components/account/LinkedAccountsCard';
 
 import type { RiskBand, RoundType } from '@/types';
 
@@ -156,6 +157,13 @@ export default function AccountPage() {
         <BlurFade delay={0.1}>
           <div className="mt-6">
             <ResumeSection initialResumeText={profileResumeText} initialResumePdfPath={profileResumePdfPath} />
+          </div>
+        </BlurFade>
+
+        {/* Connected Accounts (Phase A4) */}
+        <BlurFade delay={0.12}>
+          <div className="mt-6">
+            <LinkedAccountsCard />
           </div>
         </BlurFade>
       </div>
