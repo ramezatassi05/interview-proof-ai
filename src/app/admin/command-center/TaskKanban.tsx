@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { relativeTime } from '@/lib/relative-time';
 import { agentMeta } from './agents';
+import { TaskDetailDialog } from './TaskDetailDialog';
 import type { CompanyTaskOwnerKind, CompanyTaskStatus } from '@/server/agents/company/types';
 
 export interface CompanyTask {
@@ -46,7 +47,7 @@ function ownerLabel(kind: CompanyTaskOwnerKind): string {
   return agentMeta(kind).label.replace('Director of ', '');
 }
 
-function TaskCard({ task }: { task: CompanyTask }) {
+function TaskCard({ task, onSelect }: { task: CompanyTask; onSelect: (task: CompanyTask) => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
     data: { task },
@@ -71,8 +72,17 @@ function TaskCard({ task }: { task: CompanyTask }) {
       style={style}
       {...attributes}
       {...listeners}
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(task)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(task);
+        }
+      }}
       title={isEscalated && task.escalationReason ? `Escalated: ${task.escalationReason}` : undefined}
-      className={`cursor-grab border bg-[var(--bg-card)] p-3.5 transition-colors active:cursor-grabbing hover:border-[var(--border-default)] ${
+      className={`cursor-grab border bg-[var(--bg-card)] p-3.5 transition-colors active:cursor-grabbing hover:border-[var(--border-default)] hover:bg-[var(--bg-elevated)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]/40 ${
         isEscalated
           ? 'border-[var(--border-default)]/60 border-l-2 border-l-[var(--color-warning,#f5a524)]'
           : 'border-[var(--border-default)]/60'
@@ -116,10 +126,12 @@ function Column({
   status,
   label,
   tasks,
+  onSelect,
 }: {
   status: CompanyTaskStatus;
   label: string;
   tasks: CompanyTask[];
+  onSelect: (task: CompanyTask) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `col:${status}` });
   return (
@@ -141,7 +153,7 @@ function Column({
         {tasks.length === 0 ? (
           <p className="py-6 text-center text-[11px] text-[var(--text-muted)]">Empty</p>
         ) : (
-          tasks.map((t) => <TaskCard key={t.id} task={t} />)
+          tasks.map((t) => <TaskCard key={t.id} task={t} onSelect={onSelect} />)
         )}
       </div>
     </div>
@@ -152,6 +164,7 @@ export function TaskKanban({ initialTasks }: { initialTasks?: CompanyTask[] }) {
   const [tasks, setTasks] = useState<CompanyTask[]>(initialTasks ?? []);
   const [loading, setLoading] = useState(!initialTasks);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<CompanyTask | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -248,11 +261,16 @@ export function TaskKanban({ initialTasks }: { initialTasks?: CompanyTask[] }) {
                 status={col.status}
                 label={col.label}
                 tasks={grouped[col.status]}
+                onSelect={setSelectedTask}
               />
             ))}
           </div>
         </DndContext>
       )}
+      <TaskDetailDialog
+        task={selectedTask ? tasks.find((t) => t.id === selectedTask.id) ?? selectedTask : null}
+        onClose={() => setSelectedTask(null)}
+      />
     </div>
   );
 }
