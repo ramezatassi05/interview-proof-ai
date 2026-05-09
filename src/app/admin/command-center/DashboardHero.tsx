@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { TextAnimate } from '@/components/ui/text-animate';
 import { relativeTime } from '@/lib/relative-time';
-import { HeroMetric, MetaStat } from './_primitives';
+import { MetaStat } from './_primitives';
 
 interface DashboardHeroProps {
   viewerFirstName: string;
@@ -29,6 +29,15 @@ function greetingFor(date: Date): string {
   if (h < 12) return 'Good morning';
   if (h < 18) return 'Good afternoon';
   return 'Good evening';
+}
+
+function formatDateLong(d: Date): string {
+  return d.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 function formatMoneyCompact(cents: number): string {
@@ -81,97 +90,119 @@ export function DashboardHero({
   decisionsStrip,
   tabList,
 }: DashboardHeroProps) {
-  const greeting = greetingFor(new Date());
+  const now = new Date();
+  const greeting = greetingFor(now);
+  const dateLine = formatDateLong(now);
+  const hasPending = pendingCount > 0;
 
   return (
-    <header className="flex flex-col gap-8 border-b border-[var(--border-default)] pb-6 sm:gap-10 sm:pb-7">
-      {/* GREETING + PRIMARY METRIC pair */}
-      <div className="flex flex-col gap-8 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-12">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-[36px]">
-              <TextAnimate animation="blurInUp" by="word" duration={0.35}>
-                {`${greeting}, ${viewerFirstName}.`}
-              </TextAnimate>
-            </h1>
-            <Button
-              variant="ghost"
-              size="sm"
-              loading={refreshing}
-              onClick={onRefresh}
-              className="shrink-0 text-[var(--text-muted)] hover:text-[var(--text-primary)] sm:hidden"
-            >
-              Refresh
-            </Button>
-          </div>
-          <p className="max-w-xl text-base leading-relaxed text-[var(--text-secondary)]">
-            {summaryLine(pendingCount)}
-          </p>
-        </div>
+    <header className="relative overflow-hidden border-b border-[var(--border-default)]">
+      {/* Decorative radial backdrop — subtle, sets the 'stage' tone */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: hasPending
+            ? 'radial-gradient(ellipse 80% 60% at 85% 0%, color-mix(in oklab, var(--accent-primary) 8%, transparent), transparent 70%)'
+            : 'radial-gradient(ellipse 80% 60% at 85% 0%, color-mix(in oklab, var(--accent-primary) 4%, transparent), transparent 70%)',
+        }}
+      />
 
-        <div className="flex items-end gap-5 sm:justify-end">
-          <HeroMetric
-            tone={pendingCount > 0 ? 'primary' : 'secondary'}
-            label={pendingCount === 1 ? 'pending decision' : 'pending decisions'}
-            value={pendingCount.toLocaleString()}
-            gradient={pendingCount > 0}
-          />
+      <div className="relative flex flex-col gap-10 pb-7 pt-2 sm:gap-12 sm:pb-9">
+        {/* TOP STRIP — date + refresh */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-[10.5px] font-medium uppercase tracking-[0.2em] text-[var(--text-muted)]">
+            <span aria-hidden className="h-px w-6 bg-[var(--text-muted)]/40" />
+            <span>{dateLine}</span>
+          </div>
           <Button
             variant="ghost"
             size="sm"
             loading={refreshing}
             onClick={onRefresh}
-            className="hidden shrink-0 pb-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] sm:inline-flex"
+            className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
           >
             Refresh
           </Button>
         </div>
-      </div>
 
-      {/* SECONDARY METRICS — supporting context, smaller weight */}
-      <div className="flex flex-wrap items-baseline gap-x-10 gap-y-5">
-        <HeroMetric
-          tone="secondary"
-          label="revenue (est.)"
-          value={formatMoneyCompact(estimatedRevenueCents)}
-        />
-        <HeroMetric
-          tone="secondary"
-          label="unlock rate"
-          value={`${Math.round(unlockRate * 100)}%`}
-        />
-      </div>
+        {/* MAIN STAGE — greeting (left) paired with massive primary metric (right) */}
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-16">
+          <div className="flex flex-col gap-4">
+            <h1 className="font-serif text-[42px] font-semibold leading-[1.05] tracking-tight text-[var(--text-primary)] sm:text-[56px]">
+              <TextAnimate animation="blurInUp" by="word" duration={0.45}>
+                {`${greeting}, ${viewerFirstName}.`}
+              </TextAnimate>
+            </h1>
+            <p className="max-w-xl text-[17px] leading-relaxed text-[var(--text-secondary)]">
+              {summaryLine(pendingCount)}
+            </p>
+          </div>
 
-      {/* META STRIP — quietest tier, comma-separated tabular metadata */}
-      <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1.5 text-[var(--text-muted)]">
-        <MetaStat value={formatCount(totalUsers)} label="users" />
-        <span aria-hidden className="text-[var(--text-muted)]/60">·</span>
-        <MetaStat value={formatCount(totalReports)} label="reports" />
-        <span aria-hidden className="text-[var(--text-muted)]/60">·</span>
-        <MetaStat value={activeCompanySessions.toLocaleString()} label="sessions" />
-        {typeof spend30dCents === 'number' && (
-          <>
-            <span aria-hidden className="text-[var(--text-muted)]/60">·</span>
-            <MetaStat value={formatMoneyCompact(spend30dCents)} label="spend (30d)" />
-          </>
-        )}
-        <span aria-hidden className="text-[var(--text-muted)]/60">·</span>
-        <MetaStat value={`in ${nextBeatLabel(nextHeartbeatIso)}`} label="next beat" />
-        <span aria-hidden className="text-[var(--text-muted)]/60">·</span>
-        <span className="text-[12px] tabular-nums text-[var(--text-muted)]">
-          last refresh {relativeTime(capturedAt)}
-        </span>
-      </div>
-
-      {/* DECISIONS ANCHOR — quiet inline strip, shares the header surface */}
-      {decisionsStrip && (
-        <div className="border-t border-[var(--border-default)]/60 pt-4">
-          {decisionsStrip}
+          {/* PRIMARY METRIC — dramatic when > 0, calm when 0 */}
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            <span className="text-[10.5px] font-medium uppercase tracking-[0.2em] text-[var(--text-muted)]">
+              {pendingCount === 1 ? 'pending decision' : 'pending decisions'}
+            </span>
+            <span
+              className={`font-serif font-semibold leading-[0.85] tracking-[-0.04em] tabular-nums ${
+                hasPending
+                  ? 'bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent text-[88px] sm:text-[140px]'
+                  : 'text-[var(--text-muted)]/40 text-[64px] sm:text-[96px]'
+              }`}
+            >
+              {pendingCount.toLocaleString()}
+            </span>
+          </div>
         </div>
-      )}
 
-      {/* TAB ROW — sits inside the header surface, single border-b on header closes the chrome */}
-      {tabList && <div className="-mb-1">{tabList}</div>}
+        {/* SECONDARY METRICS — supporting context, demoted weight */}
+        <div className="flex flex-wrap items-baseline gap-x-12 gap-y-5">
+          <SecondaryMetric label="revenue (est.)" value={formatMoneyCompact(estimatedRevenueCents)} />
+          <SecondaryMetric label="unlock rate" value={`${Math.round(unlockRate * 100)}%`} />
+          <SecondaryMetric label="active sessions" value={activeCompanySessions.toLocaleString()} />
+        </div>
+
+        {/* META STRIP — quietest tier */}
+        <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1.5 text-[var(--text-muted)]">
+          <MetaStat value={formatCount(totalUsers)} label="users" />
+          <span aria-hidden className="text-[var(--text-muted)]/60">·</span>
+          <MetaStat value={formatCount(totalReports)} label="reports" />
+          {typeof spend30dCents === 'number' && (
+            <>
+              <span aria-hidden className="text-[var(--text-muted)]/60">·</span>
+              <MetaStat value={formatMoneyCompact(spend30dCents)} label="spend (30d)" />
+            </>
+          )}
+          <span aria-hidden className="text-[var(--text-muted)]/60">·</span>
+          <MetaStat value={`in ${nextBeatLabel(nextHeartbeatIso)}`} label="next beat" />
+          <span aria-hidden className="text-[var(--text-muted)]/60">·</span>
+          <span className="text-[12px] tabular-nums text-[var(--text-muted)]">
+            last refresh {relativeTime(capturedAt)}
+          </span>
+        </div>
+
+        {/* DECISIONS ANCHOR — quiet inline strip */}
+        {decisionsStrip && (
+          <div className="border-t border-[var(--border-default)]/60 pt-5">{decisionsStrip}</div>
+        )}
+
+        {/* TAB ROW — sits inside the header surface */}
+        {tabList && <div className="-mb-1">{tabList}</div>}
+      </div>
     </header>
+  );
+}
+
+function SecondaryMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-[10.5px] font-medium uppercase tracking-[0.2em] text-[var(--text-muted)]">
+        {label}
+      </span>
+      <span className="font-serif text-[28px] font-medium leading-none tracking-tight tabular-nums text-[var(--text-primary)] sm:text-[34px]">
+        {value}
+      </span>
+    </div>
   );
 }

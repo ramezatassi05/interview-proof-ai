@@ -18,6 +18,7 @@ import { RoadmapStatusCard } from './RoadmapStatusCard';
 import { AgentDrawer } from './agent-drawer/AgentDrawer';
 import { COMPANY_AGENT_KINDS } from '@/server/agents/company/types';
 import { TaskKanban, type CompanyTask } from './TaskKanban';
+import { MissionStatusBar } from './MissionStatusBar';
 import {
   ApprovalDetailModal,
   ApprovalRow,
@@ -186,10 +187,26 @@ export function CommandCenterClient({
   const restApprovals = pendingApprovals.slice(1);
 
   const hasPendingApprovals = pendingApprovals.length > 0;
+  const agentsOnline = (brief.heartbeats ?? []).length || COMPANY_AGENT_KINDS.length;
+  const nextBeatLabelText = (() => {
+    if (!nextHeartbeatIso) return '—';
+    const diffMs = new Date(nextHeartbeatIso).getTime() - Date.now();
+    if (diffMs <= 0) return 'now';
+    const min = Math.floor(diffMs / 60_000);
+    if (min < 60) return `${min}m`;
+    const hr = Math.floor(min / 60);
+    if (hr < 48) return `${hr}h`;
+    return `${Math.floor(hr / 24)}d`;
+  })();
 
   return (
     <main className="min-h-screen bg-[var(--bg-primary)]">
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-6 sm:gap-10 sm:px-6 sm:py-8">
+      <MissionStatusBar
+        agentsOnline={agentsOnline}
+        pendingCount={pendingApprovals.length}
+        nextBeatLabel={nextBeatLabelText}
+      />
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 pb-6 pt-2 sm:gap-10 sm:px-6 sm:pb-8 sm:pt-3">
         <Tabs defaultTab="dashboard">
           <DashboardHero
             viewerFirstName={viewerFirstName}
