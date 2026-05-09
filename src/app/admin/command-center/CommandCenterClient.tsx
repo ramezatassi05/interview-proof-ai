@@ -23,6 +23,7 @@ import {
   type CompanyAction,
 } from './_approvals';
 import { InboxTab } from './InboxTab';
+import { IdeasTab } from './IdeasTab';
 import { AuditTimeline } from './AuditTimeline';
 import { TicketsCard } from './artifacts';
 
@@ -203,6 +204,7 @@ export function CommandCenterClient({
             >
               Inbox
             </TabTrigger>
+            <TabTrigger id="ideas">Ideas</TabTrigger>
             <TabTrigger id="audit">Audit</TabTrigger>
           </TabList>
 
@@ -326,6 +328,10 @@ export function CommandCenterClient({
               approvalError={approvalError}
               onTransition={transitionAction}
             />
+          </TabContent>
+
+          <TabContent id="ideas">
+            <IdeasTab />
           </TabContent>
 
           <TabContent id="audit">
