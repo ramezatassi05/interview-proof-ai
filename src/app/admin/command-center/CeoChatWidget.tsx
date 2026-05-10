@@ -1,9 +1,28 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { Fragment, useCallback, useState, type ReactNode } from 'react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { PromptInputBox } from '@/components/ui/ai-prompt-box';
 import { useTabsContext } from '@/components/ui/Tabs';
+
+// Tokenize **bold** and *italic*. Non-greedy + requires a closing marker, so
+// half-streamed markers (e.g. mid-token "**rej") render as literal text until
+// the closing pair arrives.
+const INLINE_MD_RE = /(\*\*[^*\n]+?\*\*|\*[^*\n]+?\*)/g;
+
+function renderInlineMarkdown(text: string): ReactNode {
+  if (!text.includes('*')) return text;
+  const parts = text.split(INLINE_MD_RE);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('*') && part.endsWith('*') && part.length >= 3) {
+      return <em key={i}>{part.slice(1, -1)}</em>;
+    }
+    return <Fragment key={i}>{part}</Fragment>;
+  });
+}
 
 type TabId = 'dashboard' | 'inbox' | 'ideas' | 'audit';
 
@@ -161,7 +180,11 @@ export function CeoChatWidget() {
             <p className="mt-2 text-[14px] leading-relaxed text-red-500">{state.error}</p>
           ) : (
             <p className="mt-2 whitespace-pre-wrap text-[14px] leading-relaxed text-[var(--text-primary)]">
-              {state.answer || <span className="text-[var(--text-muted)]">…</span>}
+              {state.answer ? (
+                renderInlineMarkdown(state.answer)
+              ) : (
+                <span className="text-[var(--text-muted)]">…</span>
+              )}
             </p>
           )}
           {state.navigation && !state.isStreaming && (
