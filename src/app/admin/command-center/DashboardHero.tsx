@@ -21,6 +21,7 @@ interface DashboardHeroProps {
   onRefresh: () => void;
   decisionsStrip?: ReactNode;
   tabList?: ReactNode;
+  chatSlot?: ReactNode;
 }
 
 function greetingFor(date: Date): string {
@@ -89,6 +90,7 @@ export function DashboardHero({
   onRefresh,
   decisionsStrip,
   tabList,
+  chatSlot,
 }: DashboardHeroProps) {
   const now = new Date();
   const greeting = greetingFor(now);
@@ -126,8 +128,14 @@ export function DashboardHero({
           </Button>
         </div>
 
-        {/* MAIN STAGE — greeting (left) paired with massive primary metric (right) */}
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-16">
+        {/* MAIN STAGE — greeting (left) paired with primary metric or chat (right) */}
+        <div
+          className={`grid grid-cols-1 gap-10 sm:items-end sm:gap-12 ${
+            chatSlot
+              ? 'sm:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]'
+              : 'sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-16'
+          }`}
+        >
           <div className="flex flex-col gap-4">
             <h1 className="font-serif text-[42px] font-semibold leading-[1.05] tracking-tight text-[var(--text-primary)] sm:text-[56px]">
               <TextAnimate animation="blurInUp" by="word" duration={0.45}>
@@ -139,21 +147,42 @@ export function DashboardHero({
             </p>
           </div>
 
-          {/* PRIMARY METRIC — dramatic when > 0, calm when 0 */}
-          <div className="flex flex-col items-start gap-2 sm:items-end">
-            <span className="text-[10.5px] font-medium uppercase tracking-[0.2em] text-[var(--text-muted)]">
-              {pendingCount === 1 ? 'pending decision' : 'pending decisions'}
-            </span>
-            <span
-              className={`font-serif font-semibold leading-[0.85] tracking-[-0.04em] tabular-nums ${
-                hasPending
-                  ? 'bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent text-[88px] sm:text-[140px]'
-                  : 'text-[var(--text-muted)]/40 text-[64px] sm:text-[96px]'
-              }`}
-            >
-              {pendingCount.toLocaleString()}
-            </span>
-          </div>
+          {chatSlot ? (
+            // RIGHT COLUMN with chat — condensed pending counter on top, chat below.
+            <div className="flex flex-col items-start gap-4 sm:items-stretch">
+              <div className="flex items-baseline justify-between gap-3 sm:justify-end">
+                <span className="text-[10.5px] font-medium uppercase tracking-[0.2em] text-[var(--text-muted)]">
+                  {pendingCount === 1 ? 'pending decision' : 'pending decisions'}
+                </span>
+                <span
+                  className={`font-serif font-semibold leading-none tracking-[-0.02em] tabular-nums ${
+                    hasPending
+                      ? 'bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent text-[34px]'
+                      : 'text-[var(--text-muted)]/50 text-[28px]'
+                  }`}
+                >
+                  {pendingCount.toLocaleString()}
+                </span>
+              </div>
+              {chatSlot}
+            </div>
+          ) : (
+            // PRIMARY METRIC — dramatic when > 0, calm when 0 (legacy layout)
+            <div className="flex flex-col items-start gap-2 sm:items-end">
+              <span className="text-[10.5px] font-medium uppercase tracking-[0.2em] text-[var(--text-muted)]">
+                {pendingCount === 1 ? 'pending decision' : 'pending decisions'}
+              </span>
+              <span
+                className={`font-serif font-semibold leading-[0.85] tracking-[-0.04em] tabular-nums ${
+                  hasPending
+                    ? 'bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent text-[88px] sm:text-[140px]'
+                    : 'text-[var(--text-muted)]/40 text-[64px] sm:text-[96px]'
+                }`}
+              >
+                {pendingCount.toLocaleString()}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* SECONDARY METRICS — supporting context, demoted weight */}

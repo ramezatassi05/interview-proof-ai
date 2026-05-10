@@ -30,6 +30,7 @@ import { IdeasTab } from './IdeasTab';
 import { AuditTimeline } from './AuditTimeline';
 import { TicketsCard } from './artifacts';
 import { BodySection } from './_section-frame';
+import { CeoChatWidget } from './CeoChatWidget';
 
 interface CompanyMetricsSnapshot {
   totalUsers: number;
@@ -228,6 +229,7 @@ export function CommandCenterClient({
                 onCreated={(d) => setDecisions((prev) => [d, ...prev].slice(0, 10))}
               />
             }
+            chatSlot={<CeoChatWidget />}
             tabList={
               <TabList className="self-start">
                 <TabTrigger id="dashboard">Dashboard</TabTrigger>

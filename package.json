@@ -56,6 +56,7 @@
     "d3": "^7.9.0",
     "embla-carousel-react": "^8.6.0",
     "gray-matter": "^4.0.3",
+    "lucide-react": "^1.14.0",
     "motion": "^12.34.3",
     "next": "16.1.1",
     "openai": "^6.16.0",
