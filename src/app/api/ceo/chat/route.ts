@@ -71,31 +71,47 @@ export async function POST(request: NextRequest) {
 
   const last24hIso = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  const [ceoCtxRes, openTasksRes, recentActionsRes, pendingActionsRes] = await Promise.all([
-    loadCeoContext({ supabase, userId }),
-    supabase
-      .from('company_tasks')
-      .select('id,title,status,owner_kind,updated_at')
-      .eq('user_id', userId)
-      .neq('status', 'completed')
-      .neq('status', 'canceled')
-      .order('updated_at', { ascending: false })
-      .limit(40),
-    supabase
-      .from('company_agent_actions')
-      .select('id,title,status,agent_kind,created_at')
-      .eq('user_id', userId)
-      .gte('created_at', last24hIso)
-      .order('created_at', { ascending: false })
-      .limit(40),
-    supabase
-      .from('company_agent_actions')
-      .select('id,title,agent_kind')
-      .eq('user_id', userId)
-      .eq('status', 'awaiting_approval')
-      .order('created_at', { ascending: false })
-      .limit(20),
-  ]);
+  let ceoCtxRes: Awaited<ReturnType<typeof loadCeoContext>>;
+  let openTasksRes: { data: OpenTaskRow[] | null };
+  let recentActionsRes: { data: RecentActionRow[] | null };
+  let pendingActionsRes: { data: Pick<RecentActionRow, 'id' | 'title' | 'agent_kind'>[] | null };
+  try {
+    const results = await Promise.all([
+      loadCeoContext({ supabase, userId }),
+      supabase
+        .from('company_tasks')
+        .select('id,title,status,owner_kind,updated_at')
+        .eq('user_id', userId)
+        .neq('status', 'completed')
+        .neq('status', 'canceled')
+        .order('updated_at', { ascending: false })
+        .limit(40),
+      supabase
+        .from('company_agent_actions')
+        .select('id,title,status,agent_kind,created_at')
+        .eq('user_id', userId)
+        .gte('created_at', last24hIso)
+        .order('created_at', { ascending: false })
+        .limit(40),
+      supabase
+        .from('company_agent_actions')
+        .select('id,title,agent_kind')
+        .eq('user_id', userId)
+        .eq('status', 'awaiting_approval')
+        .order('created_at', { ascending: false })
+        .limit(20),
+    ]);
+    ceoCtxRes = results[0];
+    openTasksRes = results[1] as { data: OpenTaskRow[] | null };
+    recentActionsRes = results[2] as { data: RecentActionRow[] | null };
+    pendingActionsRes = results[3] as { data: Pick<RecentActionRow, 'id' | 'title' | 'agent_kind'>[] | null };
+  } catch (err) {
+    console.error('[/api/ceo/chat] context load failed:', err);
+    return NextResponse.json(
+      { error: 'Failed to load CEO context', detail: err instanceof Error ? err.message : String(err) },
+      { status: 500 },
+    );
+  }
 
   const openTasks = (openTasksRes.data ?? []) as OpenTaskRow[];
   const recentActions = (recentActionsRes.data ?? []) as RecentActionRow[];
@@ -165,6 +181,11 @@ export async function POST(request: NextRequest) {
   ];
 
   const client = getAnthropicClient();
+  console.log('[/api/ceo/chat] starting stream', {
+    model: CLAUDE_MODELS.reasoning,
+    msgLen: message.length,
+    historyLen: history.length,
+  });
   const stream = client.messages.stream({
     model: CLAUDE_MODELS.reasoning,
     max_tokens: 1024,
@@ -175,20 +196,36 @@ export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
   const body$ = new ReadableStream<Uint8Array>({
     start(controller) {
-      stream.on('text', (delta) => {
-        controller.enqueue(encoder.encode(delta));
+      let closed = false;
+      const safeClose = () => {
+        if (closed) return;
+        closed = true;
+        try { controller.close(); } catch { /* already closed */ }
+      };
+      const safeEnqueue = (text: string) => {
+        if (closed) return;
+        try { controller.enqueue(encoder.encode(text)); } catch { /* already closed */ }
+      };
+
+      // Heartbeat: flush headers and prove we reached this point.
+      // The client trims the leading space.
+      safeEnqueue(' ');
+
+      stream.on('text', (delta) => safeEnqueue(delta));
+      stream.on('error', (err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error('[/api/ceo/chat] stream error event:', err);
+        safeEnqueue(`\n\n[error: ${msg}]`);
+        safeClose();
       });
       stream
         .finalMessage()
-        .then(() => controller.close())
-        .catch((err) => {
-          console.error('[/api/ceo/chat] stream failed:', err);
-          try {
-            controller.enqueue(encoder.encode('\n\n[error: stream ended unexpectedly]'));
-          } catch {
-            /* controller already closed */
-          }
-          controller.close();
+        .then(() => safeClose())
+        .catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.error('[/api/ceo/chat] finalMessage rejected:', err);
+          safeEnqueue(`\n\n[error: ${msg}]`);
+          safeClose();
         });
     },
     cancel() {

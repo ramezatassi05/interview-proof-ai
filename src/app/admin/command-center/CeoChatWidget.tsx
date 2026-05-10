@@ -69,11 +69,14 @@ export function CeoChatWidget() {
       error: null,
     });
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45_000);
     try {
       const res = await fetch('/api/ceo/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message }),
+        signal: controller.signal,
       });
 
       if (!res.ok || !res.body) {
@@ -89,6 +92,7 @@ export function CeoChatWidget() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let acc = '';
+      let trimmedHeartbeat = false;
 
       let done = false;
       while (!done) {
@@ -97,6 +101,10 @@ export function CeoChatWidget() {
         if (done) break;
         const value = chunk.value;
         acc += decoder.decode(value, { stream: true });
+        if (!trimmedHeartbeat) {
+          acc = acc.replace(/^\s+/, '');
+          if (acc.length > 0) trimmedHeartbeat = true;
+        }
         const visible = acc.replace(NAVIGATE_RE, '');
         setState((s) => ({ ...s, answer: visible }));
       }
@@ -109,11 +117,18 @@ export function CeoChatWidget() {
         navigation: nav,
       }));
     } catch (err) {
+      const aborted = err instanceof DOMException && err.name === 'AbortError';
       setState((s) => ({
         ...s,
         isStreaming: false,
-        error: err instanceof Error ? err.message : 'Network error',
+        error: aborted
+          ? 'Concierge timed out — try again.'
+          : err instanceof Error
+            ? err.message
+            : 'Network error',
       }));
+    } finally {
+      clearTimeout(timeout);
     }
   }, []);
 
