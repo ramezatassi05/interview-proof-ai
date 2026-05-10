@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
 
   const client = getAnthropicClient();
   const stream = client.messages.stream({
-    model: CLAUDE_MODELS.reasoningPlus,
+    model: CLAUDE_MODELS.reasoning,
     max_tokens: 1024,
     system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
     messages,
