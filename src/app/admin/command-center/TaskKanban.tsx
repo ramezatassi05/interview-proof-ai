@@ -207,6 +207,33 @@ export function TaskKanban({ initialTasks }: { initialTasks?: CompanyTask[] }) {
     return map;
   }, [tasks]);
 
+  const onCancelTask = useCallback(
+    async (taskId: string) => {
+      const prev = tasks;
+      setTasks((rows) => rows.filter((t) => t.id !== taskId));
+      setSelectedTask(null);
+      setError(null);
+
+      try {
+        const res = await fetch('/api/admin/company-tasks', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: taskId, status: 'canceled' }),
+        });
+        if (!res.ok) {
+          const json = (await res.json().catch(() => ({}))) as { error?: string };
+          throw new Error(json.error ?? 'Could not cancel task');
+        }
+      } catch (e) {
+        setTasks(prev);
+        const message = e instanceof Error ? e.message : 'Could not cancel task';
+        setError(message);
+        throw e;
+      }
+    },
+    [tasks]
+  );
+
   const onDragEnd = useCallback(
     async (event: DragEndEvent) => {
       const { active, over } = event;
@@ -268,6 +295,7 @@ export function TaskKanban({ initialTasks }: { initialTasks?: CompanyTask[] }) {
       <TaskDetailDialog
         task={selectedTask ? tasks.find((t) => t.id === selectedTask.id) ?? selectedTask : null}
         onClose={() => setSelectedTask(null)}
+        onCancelTask={onCancelTask}
       />
     </div>
   );

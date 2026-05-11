@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import {
   Dialog,
   DialogContent,
@@ -28,12 +30,33 @@ function ownerLabel(kind: CompanyTaskOwnerKind): string {
 export function TaskDetailDialog({
   task,
   onClose,
+  onCancelTask,
 }: {
   task: CompanyTask | null;
   onClose: () => void;
+  onCancelTask?: (taskId: string) => Promise<void>;
 }) {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
   if (!task) return null;
   const open = true;
+  const canCancel = task.status !== 'done' && task.status !== 'canceled';
+
+  const handleCancel = async () => {
+    if (!onCancelTask) return;
+    setBusy(true);
+    setCancelError(null);
+    try {
+      await onCancelTask(task.id);
+      setConfirming(false);
+    } catch (e) {
+      setCancelError(e instanceof Error ? e.message : 'Could not cancel task');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const fromCeo = task.delegatedBy === 'ceo_orchestrator';
   const isEscalated = !!task.escalatedAt;
@@ -110,6 +133,49 @@ export function TaskDetailDialog({
             <Meta label="Updated" value={relativeTime(task.updatedAt)} />
             <Meta label="Created" value={relativeTime(task.createdAt)} />
           </div>
+
+          {canCancel && onCancelTask && (
+            <div className="flex flex-col gap-2 border-t border-[var(--border-default)]/60 pt-4">
+              {cancelError && (
+                <p className="text-[11px] text-[var(--color-danger)]">{cancelError}</p>
+              )}
+              {confirming ? (
+                <div className="flex items-center justify-end gap-2">
+                  <span className="mr-auto text-[12px] text-[var(--text-secondary)]">
+                    Cancel this task? It will be removed from the board.
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConfirming(false)}
+                    disabled={busy}
+                  >
+                    Keep
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={handleCancel}
+                    loading={busy}
+                    disabled={busy}
+                  >
+                    Cancel task
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex justify-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConfirming(true)}
+                    className="text-[var(--color-danger)] hover:text-[var(--color-danger)]"
+                  >
+                    Cancel task
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
