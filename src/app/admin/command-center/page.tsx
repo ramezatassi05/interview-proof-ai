@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { after } from 'next/server';
 import { isAdminUser } from '@/lib/admin';
 import { createClient } from '@/lib/supabase/server';
 import { loadCompanyMetrics } from '@/server/agents/company/company-metrics';
@@ -7,6 +8,7 @@ import type { CompanyAgentActionRow, CompanyTaskRow } from '@/server/agents/comp
 import { getHeartbeats } from '@/server/agents/company/heartbeats';
 import { loadSpendLast30dCents } from '@/server/agents/company/spend';
 import { loadRoadmapStatus } from '@/server/agents/company/roadmap/loader';
+import { maybeRunDueAgents } from '@/server/agents/company/on-visit';
 import { CommandCenterClient } from './CommandCenterClient';
 
 interface DecisionRow {
@@ -25,6 +27,14 @@ export default async function CommandCenterPage() {
 
   if (!user) redirect('/auth/login');
   if (!isAdminUser(user)) redirect('/dashboard');
+
+  after(async () => {
+    try {
+      await maybeRunDueAgents();
+    } catch (err) {
+      console.error('[command-center] on-visit dispatch failed:', err);
+    }
+  });
 
   const [metrics, actionsRes, decisionsRes, spend30dCents, tasksRes, roadmapStatus] =
     await Promise.all([
