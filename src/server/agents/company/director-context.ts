@@ -278,10 +278,25 @@ async function loadExecutiveAssistantContext(
     openTasks: openTasks ?? [],
   };
 
+  const openTaskRows = (openTasks ?? []) as Array<{
+    title: string;
+    status: string;
+    owner_kind: string;
+  }>;
+  const openTasksLine =
+    openTaskRows.length === 0
+      ? 'Open tasks: none'
+      : [
+          `Open tasks (${openTaskRows.length}):`,
+          ...openTaskRows.map(
+            (t) => `- "${t.title}" — status:${t.status} owner:${t.owner_kind}`
+          ),
+        ].join('\n');
+
   const summary = [
     `Action counts — awaiting:${counts.awaiting_approval} approved:${counts.approved} completed:${counts.completed} failed:${counts.failed} rejected:${counts.rejected}`,
     `Recent decisions: ${(recentDecisions ?? []).map((d) => (d as { title: string }).title).join('; ') || 'none'}`,
-    `Open tasks: ${(openTasks ?? []).length}`,
+    openTasksLine,
   ].join('\n');
 
   return { summary, structured };

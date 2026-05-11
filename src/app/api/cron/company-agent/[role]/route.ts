@@ -27,7 +27,7 @@ const ROADMAP_GROUNDING =
 
 const SELF_PROMPTS: Record<Exclude<CompanyAgentKind, 'ceo_orchestrator'>, string> = {
   executive_assistant:
-    'Daily morning brief. Review pending approvals, recent actions, and open tasks. Propose 1–3 follow-ups the operator should handle today.' +
+    'Daily morning brief. Review pending approvals, recent actions, and open tasks. Propose 1–3 follow-ups the operator should handle today. When a proposal concerns a specific open task, the task title must appear verbatim in both the proposal `title` and `rationale` — never refer to it generically as "an open task" or "1 task". If no open task is actionable, do not propose a review item for it.' +
     ROADMAP_GROUNDING,
   director_marketing:
     'Weekly review. Walk through your active roadmap rows in roadmap/marketing.csv and the north star. For each active row where you can take a meaningful next step, propose it. Skip rows that are not actionable yet.' +
