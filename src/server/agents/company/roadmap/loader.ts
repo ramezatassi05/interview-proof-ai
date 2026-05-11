@@ -114,11 +114,16 @@ function parseDomainCsv(raw: string): RoadmapDomain {
     }
     dataRows.push({
       id,
-      title: pickColumn(rec, ['Feature Name', 'Initiative', 'Line Item']),
+      title: pickColumn(rec, ['Feature Name', 'Initiative', 'Line Item', 'Marketing Idea']),
       priority: pickColumn(rec, ['Priority']),
       status: pickColumn(rec, ['Status']),
-      phase: pickColumn(rec, ['Phase', 'Category']),
-      description: pickColumn(rec, ['Epic Description', 'Description', 'Notes']),
+      phase: pickColumn(rec, ['Phase', 'Category', 'Channel']),
+      description: pickColumn(rec, [
+        'Epic Description',
+        'Campaign Description',
+        'Description',
+        'Notes',
+      ]),
       inspiration: pickColumn(rec, [
         'Inspiration / References',
         'Inspiration/References',
@@ -220,11 +225,18 @@ function nextRowId(existingIds: string[], fallbackPrefix: string): string {
 function valueForHeader(header: string, id: string, input: AppendRoadmapInput): string {
   const h = header.toLowerCase().trim();
   if (h === 'id') return id;
-  if (h === 'feature name' || h === 'initiative' || h === 'line item') return input.title;
-  if (h === 'epic description' || h === 'description') return input.description ?? '';
+  if (
+    h === 'feature name' ||
+    h === 'initiative' ||
+    h === 'line item' ||
+    h === 'marketing idea'
+  )
+    return input.title;
+  if (h === 'epic description' || h === 'campaign description' || h === 'description')
+    return input.description ?? '';
   if (h === 'priority') return input.priority ?? '';
   if (h === 'status') return input.status ?? 'Backlog';
-  if (h === 'phase' || h === 'category') return input.phase ?? '';
+  if (h === 'phase' || h === 'category' || h === 'channel') return input.phase ?? '';
   if (
     h === 'inspiration / references' ||
     h === 'inspiration/references' ||
