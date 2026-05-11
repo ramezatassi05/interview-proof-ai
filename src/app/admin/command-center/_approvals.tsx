@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,6 +10,7 @@ import { agentMeta } from './agents';
 import { SoftLabel, PriorityBadge, StatusBadge } from './_primitives';
 import { friendlyActionType } from './_action-copy';
 import { Markdown } from './_markdown';
+import type { CompanyTask } from './TaskKanban';
 
 export interface EvidenceRef {
   label: string;
@@ -313,6 +314,68 @@ function ResultJsonPanel({
   );
 }
 
+function isTaskReviewProposal(action: CompanyAction): boolean {
+  if (action.agentKind !== 'executive_assistant') return false;
+  const haystack = `${action.title} ${action.rationale}`.toLowerCase();
+  return haystack.includes('task') || haystack.includes('open work');
+}
+
+function OpenTasksPanel() {
+  const [tasks, setTasks] = useState<CompanyTask[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/company-tasks');
+        const json = (await res.json()) as { data?: CompanyTask[]; error?: string };
+        if (cancelled) return;
+        if (!res.ok || !json.data) throw new Error(json.error ?? 'Could not load tasks');
+        setTasks(json.data);
+      } catch (e) {
+        if (cancelled) return;
+        setError(e instanceof Error ? e.message : 'Could not load tasks');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const openTasks = (tasks ?? []).filter(
+    (t) => t.status === 'todo' || t.status === 'doing' || t.status === 'blocked'
+  );
+
+  return (
+    <div className="flex flex-col gap-2 border-t border-[var(--border-default)] pt-4">
+      <SoftLabel>Open tasks right now</SoftLabel>
+      {error ? (
+        <p className="text-[11px] text-[var(--color-danger)]">{error}</p>
+      ) : tasks === null ? (
+        <p className="text-[11px] text-[var(--text-muted)]">Loading…</p>
+      ) : openTasks.length === 0 ? (
+        <p className="text-[11px] text-[var(--text-muted)]">No open tasks on the board.</p>
+      ) : (
+        <ul className="flex flex-col gap-1.5">
+          {openTasks.map((t) => (
+            <li
+              key={t.id}
+              className="flex flex-wrap items-baseline gap-x-2 text-xs text-[var(--text-secondary)]"
+            >
+              <span className="font-semibold text-[var(--text-primary)]">{t.title}</span>
+              <span className="text-[var(--text-muted)]">·</span>
+              <span className="text-[11px] text-[var(--text-muted)]">
+                {t.status} · {agentMeta(t.ownerKind).label.replace('Director of ', '')}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export function ApprovalDetailModal({
   action,
   open,
@@ -337,6 +400,7 @@ export function ApprovalDetailModal({
     : [];
   const evidence = action.evidenceRefsJson ?? [];
   const isAwaiting = action.status === 'awaiting_approval';
+  const showOpenTasks = isTaskReviewProposal(action);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -368,6 +432,8 @@ export function ApprovalDetailModal({
             <SoftLabel>Why I&apos;m proposing this</SoftLabel>
             <Markdown text={action.rationale} />
           </div>
+
+          {showOpenTasks && <OpenTasksPanel />}
 
           {payloadEntries.length > 0 && (
             <div className="flex flex-col gap-4 border-t border-[var(--border-default)] pt-4">
