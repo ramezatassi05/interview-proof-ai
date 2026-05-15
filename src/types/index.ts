@@ -1227,11 +1227,19 @@ export interface ReadinessCoachEvidenceQuote {
   quote: string;
 }
 
+export interface SuggestedDelegationProposal {
+  targetAgentKind: AgentDelegateTargetKind;
+  brief: string;
+  reportId?: string;
+  opportunityId?: string;
+}
+
 export interface ReadinessCoachOutput {
   summary: string;
   whyItMatters: string;
   recommendedDrills: ReadinessCoachDrill[];
   evidenceQuotes: ReadinessCoachEvidenceQuote[];
+  suggestedDelegations?: SuggestedDelegationProposal[];
 }
 
 export interface AnswerFeedbackAgentSummary {
@@ -1363,6 +1371,7 @@ export interface DebriefOutput {
   whatToImprove: string[];
   proposedMemory: DebriefProposedMemory[];
   evidenceFromPractice: DebriefPracticeEvidence[];
+  suggestedDelegations?: SuggestedDelegationProposal[];
 }
 
 export interface ApplicationMaterialsBulletOutput {

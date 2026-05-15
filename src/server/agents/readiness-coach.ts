@@ -14,8 +14,9 @@ import { runAgentCall } from '@/lib/agent/audit';
 import type { ReadinessCoachOutput, RiskItem } from '@/types';
 import { loadAgentContext } from './context-loader';
 import { buildUserPrompt, SYSTEM_PROMPT } from './prompts/readiness-coach';
+import { persistSuggestedDelegations } from './delegations';
 
-export const READINESS_COACH_VERSION = 'v1.0.0';
+export const READINESS_COACH_VERSION = 'v1.1.0';
 
 const DrillSchema = z.object({
   title: z.string().min(1).max(200),
@@ -28,11 +29,29 @@ const EvidenceQuoteSchema = z.object({
   quote: z.string().min(1).max(500),
 });
 
+const SuggestedDelegationRawSchema = z.object({
+  target_agent_kind: z.enum([
+    'readiness_coach',
+    'mock_interview',
+    'prep_plan',
+    'resume_evidence',
+    'company_research',
+    'recruiter_comm',
+    'opportunity_tracker',
+    'application_materials',
+    'post_interview_debrief',
+  ]),
+  brief: z.string().min(1).max(2000),
+  report_id: z.string().uuid().optional(),
+  opportunity_id: z.string().uuid().optional(),
+});
+
 const ReadinessCoachOutputSchema = z.object({
   summary: z.string().min(1).max(2000),
   why_it_matters: z.string().min(1).max(1500),
   recommended_drills: z.array(DrillSchema).max(3),
   evidence_quotes: z.array(EvidenceQuoteSchema).max(5),
+  suggested_delegations: z.array(SuggestedDelegationRawSchema).max(3).default([]),
 });
 
 export class ReadinessCoachError extends Error {
@@ -154,11 +173,19 @@ export async function runReadinessCoach(
     });
   }
 
+  const suggestedDelegations = validated.data.suggested_delegations.map((d) => ({
+    targetAgentKind: d.target_agent_kind,
+    brief: d.brief,
+    ...(d.report_id ? { reportId: d.report_id } : {}),
+    ...(d.opportunity_id ? { opportunityId: d.opportunity_id } : {}),
+  }));
+
   const output: ReadinessCoachOutput = {
     summary: validated.data.summary,
     whyItMatters: validated.data.why_it_matters,
     recommendedDrills: validated.data.recommended_drills,
     evidenceQuotes: validated.data.evidence_quotes,
+    suggestedDelegations,
   };
 
   const tokensIn = response.usage?.input_tokens ?? 0;
@@ -228,6 +255,19 @@ export async function runReadinessCoach(
     }
 
     for (const row of insertedActions) actionIds.push(row.id as string);
+  }
+
+  // Phase B+1: persist any suggested cross-specialist delegations.
+  if (suggestedDelegations.length > 0) {
+    const delegationActionIds = await persistSuggestedDelegations({
+      supabase,
+      userId,
+      sessionId,
+      reportId,
+      proposingAgentKind: 'readiness_coach',
+      delegations: suggestedDelegations,
+    });
+    for (const id of delegationActionIds) actionIds.push(id);
   }
 
   return { output, actionIds, tokensIn, tokensOut };

@@ -17,8 +17,9 @@ import { runAgentCall } from '@/lib/agent/audit';
 import type { DebriefOutput, DebriefProposedMemory } from '@/types';
 import { loadAgentContext } from './context-loader';
 import { buildUserPrompt, SYSTEM_PROMPT } from './prompts/debrief';
+import { persistSuggestedDelegations } from './delegations';
 
-export const DEBRIEF_VERSION = 'v1.0.0';
+export const DEBRIEF_VERSION = 'v1.1.0';
 const DEFAULT_WINDOW_DAYS = 30;
 const PRACTICE_ANSWER_LIMIT = 12;
 
@@ -39,12 +40,30 @@ const EvidenceFromPracticeSchema = z.object({
   observation: z.string().min(1).max(800),
 });
 
+const SuggestedDelegationSchema = z.object({
+  targetAgentKind: z.enum([
+    'readiness_coach',
+    'mock_interview',
+    'prep_plan',
+    'resume_evidence',
+    'company_research',
+    'recruiter_comm',
+    'opportunity_tracker',
+    'application_materials',
+    'post_interview_debrief',
+  ]),
+  brief: z.string().min(1).max(2000),
+  reportId: z.string().uuid().optional(),
+  opportunityId: z.string().uuid().optional(),
+});
+
 const DebriefSchema = z.object({
   summary: z.string().min(1).max(2000),
   whatWentWell: z.array(z.string().max(500)).max(8).default([]),
   whatToImprove: z.array(z.string().max(500)).max(8).default([]),
   proposedMemory: z.array(ProposedMemorySchema).max(5).default([]),
   evidenceFromPractice: z.array(EvidenceFromPracticeSchema).max(10).default([]),
+  suggestedDelegations: z.array(SuggestedDelegationSchema).max(3).default([]),
 });
 
 export class DebriefError extends Error {
@@ -244,12 +263,15 @@ export async function runDebrief(args: RunDebriefArgs): Promise<RunDebriefResult
 
   const proposedMemory: DebriefProposedMemory[] = validated.data.proposedMemory;
 
+  const suggestedDelegations = validated.data.suggestedDelegations;
+
   const output: DebriefOutput = {
     summary: validated.data.summary,
     whatWentWell: validated.data.whatWentWell,
     whatToImprove: validated.data.whatToImprove,
     proposedMemory,
     evidenceFromPractice,
+    suggestedDelegations,
   };
 
   const tokensIn = response.usage?.input_tokens ?? 0;
@@ -330,6 +352,18 @@ export async function runDebrief(args: RunDebriefArgs): Promise<RunDebriefResult
     throw new DebriefError('Failed to persist drafted action', { cause: actionsErr });
   }
   const actionId = insertedActions[0].id as string;
+
+  // Phase B+1: persist any suggested cross-specialist delegations.
+  if (suggestedDelegations.length > 0) {
+    await persistSuggestedDelegations({
+      supabase,
+      userId,
+      sessionId,
+      reportId,
+      proposingAgentKind: 'post_interview_debrief',
+      delegations: suggestedDelegations,
+    });
+  }
 
   return { output, actionId, tokensIn, tokensOut };
 }
