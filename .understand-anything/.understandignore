@@ -1,0 +1,55 @@
+# .understandignore — patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)
+# Lines below are suggestions — uncomment to activate.
+# Use ! prefix to force-include something excluded by defaults.
+#
+# Built-in defaults (always excluded unless negated):
+#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.
+#
+# --- From .gitignore (excluded) ---
+
+.DS_Store
+.claude/
+.env*
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+my-video/
+output/
+supabase/.temp/
+carousel-assets/
+tiktok-carousel-*.html
+.playwright-mcp/
+screenshots/
+.auth-state.json
+.playwright-profile/
+.playwright/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# --- Project asset / non-code directories (excluded) ---
+
+content/
+tools/
+carousel-script-generator/
+public/
+*.png
+*.csv
+
+# --- Scope: Backend + routes only (src/server, src/app, src/lib, src/types) ---
+# Excluding the UI component library, hooks, and aux/data dirs for this run.
+
+src/components/
+src/hooks/
+supabase/
+scripts/
+docs/
+roadmap/
+
+# --- Test file patterns (uncomment to exclude) ---
+
+# *.test.*
+# *.spec.*
+# *.snap

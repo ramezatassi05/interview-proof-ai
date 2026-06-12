@@ -1,0 +1,3565 @@
+{
+  "name": "interview-proof-ai",
+  "description": "InterviewProof AI — an AI-powered interview-preparation and career-coaching SaaS built on Next.js, featuring an autonomous agentic \"Command Center\" of company agents (CEO orchestrator, directors, and specialist skills) layered over a candidate-facing report, practice, and scoring pipeline. Note: this project has over 100 source files; consider scoping analysis to a subdirectory for faster results.",
+  "languages": [
+    "css",
+    "javascript",
+    "json",
+    "markdown",
+    "typescript",
+    "unknown",
+    "yaml"
+  ],
+  "frameworks": [
+    "Next.js",
+    "React",
+    "Tailwind CSS",
+    "Supabase",
+    "Stripe",
+    "Zod",
+    "Playwright",
+    "GitHub Actions",
+    "Vercel"
+  ],
+  "files": [
+    {
+      "path": ".github/workflows/executor-cron.yml",
+      "language": "yaml",
+      "sizeLines": 45,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".husky/pre-commit",
+      "language": "unknown",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".mcp.json",
+      "language": "json",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".prettierignore",
+      "language": "unknown",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.understandignore",
+      "language": "unknown",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/config.json",
+      "language": "json",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".vercelignore",
+      "language": "unknown",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent_docs/agentic-tool-improvements.md",
+      "language": "markdown",
+      "sizeLines": 410,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 376,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/aha-moment-optimization-research.md",
+      "language": "markdown",
+      "sizeLines": 743,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/ai-agent-implementation-strategy.md",
+      "language": "markdown",
+      "sizeLines": 362,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/CAREER-ADVISOR-PROMPT.md",
+      "language": "markdown",
+      "sizeLines": 190,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/claude-code-agentic-platform-workflow.md",
+      "language": "markdown",
+      "sizeLines": 564,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/CLAUDE.md",
+      "language": "markdown",
+      "sizeLines": 321,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/code_patterns.md",
+      "language": "markdown",
+      "sizeLines": 84,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/codebase-changes-for-agentic-application.md",
+      "language": "markdown",
+      "sizeLines": 478,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/company-agent-command-center.md",
+      "language": "markdown",
+      "sizeLines": 135,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/credibility_playbook.md",
+      "language": "markdown",
+      "sizeLines": 286,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/google-oauth-prod-wiring.md",
+      "language": "markdown",
+      "sizeLines": 40,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/InterviewProof_Credibility_Playbook.md",
+      "language": "markdown",
+      "sizeLines": 286,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/organic-growth-implementation-plan.md",
+      "language": "markdown",
+      "sizeLines": 356,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/owl-code.md",
+      "language": "markdown",
+      "sizeLines": 691,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/plan.md",
+      "language": "markdown",
+      "sizeLines": 938,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/product_requirements.md",
+      "language": "markdown",
+      "sizeLines": 55,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/project_brief.md",
+      "language": "markdown",
+      "sizeLines": 27,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/tech_stack.md",
+      "language": "markdown",
+      "sizeLines": 32,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent_docs/testing.md",
+      "language": "markdown",
+      "sizeLines": 19,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "e2e/agent-actions.spec.ts",
+      "language": "typescript",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/auth.setup.ts",
+      "language": "typescript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/coach-tab.spec.ts",
+      "language": "typescript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/m4-practice-and-tasks.spec.ts",
+      "language": "typescript",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "language": "javascript",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "middleware.ts",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "next.config.ts",
+      "language": "typescript",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "sizeLines": 95,
+      "fileCategory": "config"
+    },
+    {
+      "path": "playwright.config.ts",
+      "language": "typescript",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "postcss.config.mjs",
+      "language": "javascript",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "sizeLines": 36,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "src/app/about/page.tsx",
+      "language": "typescript",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/account/page.tsx",
+      "language": "typescript",
+      "sizeLines": 233,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/_action-copy.ts",
+      "language": "typescript",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/_approvals.tsx",
+      "language": "typescript",
+      "sizeLines": 512,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/_markdown.tsx",
+      "language": "typescript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/_primitives.tsx",
+      "language": "typescript",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/_section-frame.tsx",
+      "language": "typescript",
+      "sizeLines": 89,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/agent-skill-catalog.ts",
+      "language": "typescript",
+      "sizeLines": 230,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/AgentDrawer.tsx",
+      "language": "typescript",
+      "sizeLines": 181,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/AttachmentChip.tsx",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/AttachmentTray.tsx",
+      "language": "typescript",
+      "sizeLines": 137,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/Composer.tsx",
+      "language": "typescript",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/GuardrailsCard.tsx",
+      "language": "typescript",
+      "sizeLines": 439,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/IdentityStrip.tsx",
+      "language": "typescript",
+      "sizeLines": 306,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/MessageBubble.tsx",
+      "language": "typescript",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/MessageList.tsx",
+      "language": "typescript",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/SkillIcon.tsx",
+      "language": "typescript",
+      "sizeLines": 150,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/SkillsPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 152,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/ToolCallCard.tsx",
+      "language": "typescript",
+      "sizeLines": 131,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/types.ts",
+      "language": "typescript",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agent-drawer/useAgentStream.ts",
+      "language": "typescript",
+      "sizeLines": 589,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/agents.ts",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/artifacts/index.tsx",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/artifacts/ListCard.tsx",
+      "language": "typescript",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/artifacts/MetricsCard.tsx",
+      "language": "typescript",
+      "sizeLines": 121,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/artifacts/TicketsCard.tsx",
+      "language": "typescript",
+      "sizeLines": 112,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/AuditTimeline.tsx",
+      "language": "typescript",
+      "sizeLines": 329,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/CeoChatWidget.tsx",
+      "language": "typescript",
+      "sizeLines": 210,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/CommandCenterClient.tsx",
+      "language": "typescript",
+      "sizeLines": 514,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/DashboardHero.tsx",
+      "language": "typescript",
+      "sizeLines": 240,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/DecisionsStrip.tsx",
+      "language": "typescript",
+      "sizeLines": 170,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/HeroApprovalCard.tsx",
+      "language": "typescript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/ideas/[id]/IdeaActionsList.tsx",
+      "language": "typescript",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/ideas/[id]/page.tsx",
+      "language": "typescript",
+      "sizeLines": 133,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/ideas/[id]/TriageTranscript.tsx",
+      "language": "typescript",
+      "sizeLines": 152,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/ideas/page.tsx",
+      "language": "typescript",
+      "sizeLines": 130,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/IdeasTab.tsx",
+      "language": "typescript",
+      "sizeLines": 172,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/InboxFilters.tsx",
+      "language": "typescript",
+      "sizeLines": 176,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/InboxGroup.tsx",
+      "language": "typescript",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/InboxTab.tsx",
+      "language": "typescript",
+      "sizeLines": 259,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/MissionStatusBar.tsx",
+      "language": "typescript",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/OrgChartCard.tsx",
+      "language": "typescript",
+      "sizeLines": 156,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/page.tsx",
+      "language": "typescript",
+      "sizeLines": 118,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/RejectActionDialog.tsx",
+      "language": "typescript",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/RoadmapStatusCard.tsx",
+      "language": "typescript",
+      "sizeLines": 116,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/TaskDetailDialog.tsx",
+      "language": "typescript",
+      "sizeLines": 194,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/TaskKanban.tsx",
+      "language": "typescript",
+      "sizeLines": 302,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/admin/command-center/useInboxQuery.ts",
+      "language": "typescript",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/ambassadors/page.tsx",
+      "language": "typescript",
+      "sizeLines": 307,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/account/linked-accounts/[provider]/route.ts",
+      "language": "typescript",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/account/linked-accounts/route.ts",
+      "language": "typescript",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/account/route.ts",
+      "language": "typescript",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-agent/actions/[id]/route.ts",
+      "language": "typescript",
+      "sizeLines": 165,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-agent/actions/route.ts",
+      "language": "typescript",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-agent/audit-timeline/route.ts",
+      "language": "typescript",
+      "sizeLines": 225,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-agent/brief/route.ts",
+      "language": "typescript",
+      "sizeLines": 98,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-agent/guardrails/route.ts",
+      "language": "typescript",
+      "sizeLines": 106,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-agent/memory/route.ts",
+      "language": "typescript",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-agent/message/route.ts",
+      "language": "typescript",
+      "sizeLines": 265,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-agent/metrics/route.ts",
+      "language": "typescript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-agent/roadmap-status/route.ts",
+      "language": "typescript",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-agent/sessions/[id]/messages/route.ts",
+      "language": "typescript",
+      "sizeLines": 142,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-agent/sessions/route.ts",
+      "language": "typescript",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-agent/upload/route.ts",
+      "language": "typescript",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-decisions/route.ts",
+      "language": "typescript",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/admin/company-tasks/route.ts",
+      "language": "typescript",
+      "sizeLines": 91,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/actions/[id]/route.ts",
+      "language": "typescript",
+      "sizeLines": 276,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/actions/route.ts",
+      "language": "typescript",
+      "sizeLines": 199,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/answer-feedback/route.ts",
+      "language": "typescript",
+      "sizeLines": 165,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/application-materials/route.ts",
+      "language": "typescript",
+      "sizeLines": 165,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/chat/stream/route.ts",
+      "language": "typescript",
+      "sizeLines": 194,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/company-research/route.ts",
+      "language": "typescript",
+      "sizeLines": 133,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/debrief/route.ts",
+      "language": "typescript",
+      "sizeLines": 150,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/memory/route.ts",
+      "language": "typescript",
+      "sizeLines": 179,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/mock-interview/route.ts",
+      "language": "typescript",
+      "sizeLines": 159,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/opportunity-tracker/route.ts",
+      "language": "typescript",
+      "sizeLines": 152,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/orchestrator/route.ts",
+      "language": "typescript",
+      "sizeLines": 158,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/prep-plan/route.ts",
+      "language": "typescript",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/readiness-coach/route.ts",
+      "language": "typescript",
+      "sizeLines": 139,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/recruiter-comm/route.ts",
+      "language": "typescript",
+      "sizeLines": 152,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/resume-evidence/route.ts",
+      "language": "typescript",
+      "sizeLines": 135,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/sessions/[id]/messages/route.ts",
+      "language": "typescript",
+      "sizeLines": 169,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/sessions/[id]/route.ts",
+      "language": "typescript",
+      "sizeLines": 181,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/agent/sessions/route.ts",
+      "language": "typescript",
+      "sizeLines": 183,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/ambassadors/apply/route.ts",
+      "language": "typescript",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/auth/google/callback/route.ts",
+      "language": "typescript",
+      "sizeLines": 105,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/auth/google/start/route.ts",
+      "language": "typescript",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/ceo/chat/route.ts",
+      "language": "typescript",
+      "sizeLines": 243,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/ceo/idea/[id]/actions/route.ts",
+      "language": "typescript",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/ceo/idea/[id]/status/route.ts",
+      "language": "typescript",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/ceo/idea/route.ts",
+      "language": "typescript",
+      "sizeLines": 126,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/ceo/ideas/route.ts",
+      "language": "typescript",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/checkout/credits/route.ts",
+      "language": "typescript",
+      "sizeLines": 93,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/checkout/route.ts",
+      "language": "typescript",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/credits/history/route.ts",
+      "language": "typescript",
+      "sizeLines": 60,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/cron/cleanup-stale-actions/route.ts",
+      "language": "typescript",
+      "sizeLines": 102,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/cron/clear-spend-pause/route.ts",
+      "language": "typescript",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/cron/company-agent/[role]/route.ts",
+      "language": "typescript",
+      "sizeLines": 70,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/cron/copilot-digest/route.ts",
+      "language": "typescript",
+      "sizeLines": 115,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/cron/execute-approved-actions/route.ts",
+      "language": "typescript",
+      "sizeLines": 174,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/cron/feedback-emails/route.ts",
+      "language": "typescript",
+      "sizeLines": 119,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/cron/opportunity-ingest/route.ts",
+      "language": "typescript",
+      "sizeLines": 201,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/e2e/seed-session/route.ts",
+      "language": "typescript",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/feedback/route.ts",
+      "language": "typescript",
+      "sizeLines": 95,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/insights/route.ts",
+      "language": "typescript",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/jobs/search/route.ts",
+      "language": "typescript",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/me/latest-report/route.ts",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/newsletter/subscribe/route.ts",
+      "language": "typescript",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/notifications/[id]/route.ts",
+      "language": "typescript",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/notifications/mark-all-read/route.ts",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/notifications/route.ts",
+      "language": "typescript",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/onboarding/aha-insights/route.ts",
+      "language": "typescript",
+      "sizeLines": 462,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/onboarding/benchmarks/route.ts",
+      "language": "typescript",
+      "sizeLines": 309,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/opportunities/[id]/route.ts",
+      "language": "typescript",
+      "sizeLines": 193,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/opportunities/route.ts",
+      "language": "typescript",
+      "sizeLines": 139,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/outbox/route.ts",
+      "language": "typescript",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/parse-pdf/route.ts",
+      "language": "typescript",
+      "sizeLines": 93,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/profile/resume-pdf/route.ts",
+      "language": "typescript",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/profile/resume-upload/route.ts",
+      "language": "typescript",
+      "sizeLines": 130,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/profile/route.ts",
+      "language": "typescript",
+      "sizeLines": 234,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/referral/route.ts",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/[id]/pdf/route.ts",
+      "language": "typescript",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/[id]/practice-answers/route.ts",
+      "language": "typescript",
+      "sizeLines": 322,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/[id]/practice-progress/route.ts",
+      "language": "typescript",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/[id]/practice-session/route.ts",
+      "language": "typescript",
+      "sizeLines": 306,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/[id]/prep-plan-tasks/route.ts",
+      "language": "typescript",
+      "sizeLines": 201,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/[id]/questions/best-answer/route.ts",
+      "language": "typescript",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/[id]/questions/feedback/route.ts",
+      "language": "typescript",
+      "sizeLines": 153,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/[id]/questions/generate/route.ts",
+      "language": "typescript",
+      "sizeLines": 90,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/[id]/route.ts",
+      "language": "typescript",
+      "sizeLines": 145,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/[id]/share/route.ts",
+      "language": "typescript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/analyze/complete/route.ts",
+      "language": "typescript",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/analyze/llm/route.ts",
+      "language": "typescript",
+      "sizeLines": 145,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/analyze/prepare/route.ts",
+      "language": "typescript",
+      "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/analyze/route.ts",
+      "language": "typescript",
+      "sizeLines": 167,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/create/route.ts",
+      "language": "typescript",
+      "sizeLines": 121,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/rerun/route.ts",
+      "language": "typescript",
+      "sizeLines": 182,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/shared/[token]/route.ts",
+      "language": "typescript",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/report/unlock/route.ts",
+      "language": "typescript",
+      "sizeLines": 151,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/waitlist/confirm/route.ts",
+      "language": "typescript",
+      "sizeLines": 129,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/waitlist/count/route.ts",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/waitlist/join/route.ts",
+      "language": "typescript",
+      "sizeLines": 175,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/waitlist/status/route.ts",
+      "language": "typescript",
+      "sizeLines": 60,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/webhook/stripe/route.ts",
+      "language": "typescript",
+      "sizeLines": 201,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/apple-icon.tsx",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/auth/callback/route.ts",
+      "language": "typescript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/auth/login/page.tsx",
+      "language": "typescript",
+      "sizeLines": 202,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/blog/[slug]/page.tsx",
+      "language": "typescript",
+      "sizeLines": 154,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/blog/lib.ts",
+      "language": "typescript",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/blog/page.tsx",
+      "language": "typescript",
+      "sizeLines": 81,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/case-studies/page.tsx",
+      "language": "typescript",
+      "sizeLines": 188,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/contact/page.tsx",
+      "language": "typescript",
+      "sizeLines": 200,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/dashboard/page.tsx",
+      "language": "typescript",
+      "sizeLines": 626,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/feedback/[reportId]/page.tsx",
+      "language": "typescript",
+      "sizeLines": 237,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/globals.css",
+      "language": "css",
+      "sizeLines": 1156,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/app/icon.tsx",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/interview-prep/[role]/page.tsx",
+      "language": "typescript",
+      "sizeLines": 501,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/interview-questions/[company]/page.tsx",
+      "language": "typescript",
+      "sizeLines": 489,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/interview/live/page.tsx",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "language": "typescript",
+      "sizeLines": 98,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/methodology/page.tsx",
+      "language": "typescript",
+      "sizeLines": 526,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/new/page.tsx",
+      "language": "typescript",
+      "sizeLines": 444,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/onboarding/layout.tsx",
+      "language": "typescript",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/onboarding/page.tsx",
+      "language": "typescript",
+      "sizeLines": 640,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/opengraph-image.tsx",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/opportunities/page.tsx",
+      "language": "typescript",
+      "sizeLines": 239,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/outbox/page.tsx",
+      "language": "typescript",
+      "sizeLines": 125,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "language": "typescript",
+      "sizeLines": 192,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/privacy/page.tsx",
+      "language": "typescript",
+      "sizeLines": 321,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/r/[id]/full/page.tsx",
+      "language": "typescript",
+      "sizeLines": 478,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/r/[id]/page.tsx",
+      "language": "typescript",
+      "sizeLines": 119,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/risk-simulation/page.tsx",
+      "language": "typescript",
+      "sizeLines": 187,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/robots.ts",
+      "language": "typescript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/s/[token]/opengraph-image.tsx",
+      "language": "typescript",
+      "sizeLines": 139,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/s/[token]/page.tsx",
+      "language": "typescript",
+      "sizeLines": 406,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/sitemap.ts",
+      "language": "typescript",
+      "sizeLines": 102,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/study-intelligence/page.tsx",
+      "language": "typescript",
+      "sizeLines": 195,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/terms/page.tsx",
+      "language": "typescript",
+      "sizeLines": 301,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/twitter-image.tsx",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/waitlist/confirm/page.tsx",
+      "language": "typescript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/wallet/page.tsx",
+      "language": "typescript",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/admin.ts",
+      "language": "typescript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/adzuna.ts",
+      "language": "typescript",
+      "sizeLines": 168,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/agent/actions.ts",
+      "language": "typescript",
+      "sizeLines": 169,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/agent/audit.ts",
+      "language": "typescript",
+      "sizeLines": 151,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/agent/company-cache.ts",
+      "language": "typescript",
+      "sizeLines": 113,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/agent/types.ts",
+      "language": "typescript",
+      "sizeLines": 223,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/anthropic-pricing.ts",
+      "language": "typescript",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/anthropic.ts",
+      "language": "typescript",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/api.ts",
+      "language": "typescript",
+      "sizeLines": 547,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/audit.ts",
+      "language": "typescript",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/credits.ts",
+      "language": "typescript",
+      "sizeLines": 108,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/feedback-emails.ts",
+      "language": "typescript",
+      "sizeLines": 113,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/focus-area-pool.ts",
+      "language": "typescript",
+      "sizeLines": 1583,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/format.ts",
+      "language": "typescript",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/highlight.ts",
+      "language": "typescript",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/insights.ts",
+      "language": "typescript",
+      "sizeLines": 281,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/jsearch.ts",
+      "language": "typescript",
+      "sizeLines": 159,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/jsonld.ts",
+      "language": "typescript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/linked-accounts/crypto.ts",
+      "language": "typescript",
+      "sizeLines": 61,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/linked-accounts/gmail.ts",
+      "language": "typescript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/linked-accounts/google.ts",
+      "language": "typescript",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/linked-accounts/store.ts",
+      "language": "typescript",
+      "sizeLines": 103,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/location-coordinates.ts",
+      "language": "typescript",
+      "sizeLines": 222,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/location-data.ts",
+      "language": "typescript",
+      "sizeLines": 284,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/onboarding-emotional-anchor.ts",
+      "language": "typescript",
+      "sizeLines": 95,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/onboarding-scoring.ts",
+      "language": "typescript",
+      "sizeLines": 336,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/onboarding-strength-acknowledgment.ts",
+      "language": "typescript",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/onboarding-trajectory.ts",
+      "language": "typescript",
+      "sizeLines": 248,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/openai.ts",
+      "language": "typescript",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/opportunities.ts",
+      "language": "typescript",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/prep-plan-tasks.ts",
+      "language": "typescript",
+      "sizeLines": 202,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/rate-limit.ts",
+      "language": "typescript",
+      "sizeLines": 81,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/relative-time.ts",
+      "language": "typescript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/resend.ts",
+      "language": "typescript",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/resume-signals.ts",
+      "language": "typescript",
+      "sizeLines": 275,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/role-suggestions.ts",
+      "language": "typescript",
+      "sizeLines": 238,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/security.ts",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/seniority.ts",
+      "language": "typescript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/stripe-config.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/stripe.ts",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "language": "typescript",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/waitlist-emails.ts",
+      "language": "typescript",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/waitlist.ts",
+      "language": "typescript",
+      "sizeLines": 96,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/answer-feedback.ts",
+      "language": "typescript",
+      "sizeLines": 357,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/application-materials.ts",
+      "language": "typescript",
+      "sizeLines": 401,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/chat.ts",
+      "language": "typescript",
+      "sizeLines": 189,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company-research.ts",
+      "language": "typescript",
+      "sizeLines": 298,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/action-executors/index.ts",
+      "language": "typescript",
+      "sizeLines": 425,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/agent-models.ts",
+      "language": "typescript",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/ceo-context.ts",
+      "language": "typescript",
+      "sizeLines": 106,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/ceo-idea-triage.ts",
+      "language": "typescript",
+      "sizeLines": 98,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/ceo-orchestrator.ts",
+      "language": "typescript",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/company-actions.ts",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/company-agent-prompts.ts",
+      "language": "typescript",
+      "sizeLines": 216,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/company-agent-runner.ts",
+      "language": "typescript",
+      "sizeLines": 573,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/company-agent-tools.ts",
+      "language": "typescript",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/company-metrics.ts",
+      "language": "typescript",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/director-context.ts",
+      "language": "typescript",
+      "sizeLines": 321,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/director-engineering.ts",
+      "language": "typescript",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/director-finance.ts",
+      "language": "typescript",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/director-marketing.ts",
+      "language": "typescript",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/dispatcher.ts",
+      "language": "typescript",
+      "sizeLines": 108,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/executive-assistant.ts",
+      "language": "typescript",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/guardrails-spend.ts",
+      "language": "typescript",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/guardrails.ts",
+      "language": "typescript",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/heartbeats.ts",
+      "language": "typescript",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/memory-topics.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/on-visit.ts",
+      "language": "typescript",
+      "sizeLines": 103,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/org.ts",
+      "language": "typescript",
+      "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/ceo_orchestrator/consult_director.ts",
+      "language": "typescript",
+      "sizeLines": 141,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/ceo_orchestrator/delegate_task.ts",
+      "language": "typescript",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_engineering/draft_engineering_spec.ts",
+      "language": "typescript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_engineering/fetch_deploy_history.ts",
+      "language": "typescript",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_engineering/fetch_open_incidents.ts",
+      "language": "typescript",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_engineering/fetch_uptime.ts",
+      "language": "typescript",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_engineering/query_codebase_summary.ts",
+      "language": "typescript",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_finance/draft_finance_memo.ts",
+      "language": "typescript",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_finance/fetch_burn_breakdown.ts",
+      "language": "typescript",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_finance/fetch_revenue_snapshot.ts",
+      "language": "typescript",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_finance/fetch_runway.ts",
+      "language": "typescript",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_finance/model_pricing_change.ts",
+      "language": "typescript",
+      "sizeLines": 67,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_marketing/draft_landing_copy.ts",
+      "language": "typescript",
+      "sizeLines": 60,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_marketing/draft_social_post.ts",
+      "language": "typescript",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_marketing/fetch_funnel_metrics.ts",
+      "language": "typescript",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_marketing/query_brand_guidelines.ts",
+      "language": "typescript",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/director_marketing/search_competitor_landing_pages.ts",
+      "language": "typescript",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/executive_assistant/schedule_followup.ts",
+      "language": "typescript",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/executive_assistant/search_emails.ts",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/executive_assistant/summarize_threads.ts",
+      "language": "typescript",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/index.ts",
+      "language": "typescript",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/router.ts",
+      "language": "typescript",
+      "sizeLines": 293,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/shared/escalate_to_ceo.ts",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/shared/file_ticket.ts",
+      "language": "typescript",
+      "sizeLines": 126,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/shared/propose_roadmap_row.ts",
+      "language": "typescript",
+      "sizeLines": 96,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/shared/remember.ts",
+      "language": "typescript",
+      "sizeLines": 106,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/skills/types.ts",
+      "language": "typescript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/spend.ts",
+      "language": "typescript",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/types.ts",
+      "language": "typescript",
+      "sizeLines": 199,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/company/voice.ts",
+      "language": "typescript",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/context-loader.ts",
+      "language": "typescript",
+      "sizeLines": 359,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/debrief.ts",
+      "language": "typescript",
+      "sizeLines": 369,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/delegations.ts",
+      "language": "typescript",
+      "sizeLines": 143,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/mock-interview.ts",
+      "language": "typescript",
+      "sizeLines": 629,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/opportunity-tracker.ts",
+      "language": "typescript",
+      "sizeLines": 309,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/practice-progress.ts",
+      "language": "typescript",
+      "sizeLines": 142,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prep-orchestrator.ts",
+      "language": "typescript",
+      "sizeLines": 284,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prep-plan.ts",
+      "language": "typescript",
+      "sizeLines": 322,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prompts/answer-feedback.ts",
+      "language": "typescript",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prompts/application-materials.ts",
+      "language": "typescript",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prompts/chat.ts",
+      "language": "typescript",
+      "sizeLines": 106,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prompts/company-research.ts",
+      "language": "typescript",
+      "sizeLines": 70,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prompts/debrief.ts",
+      "language": "typescript",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prompts/mock-interview.ts",
+      "language": "typescript",
+      "sizeLines": 148,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prompts/opportunity-tracker.ts",
+      "language": "typescript",
+      "sizeLines": 120,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prompts/prep-orchestrator.ts",
+      "language": "typescript",
+      "sizeLines": 204,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prompts/prep-plan.ts",
+      "language": "typescript",
+      "sizeLines": 125,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prompts/readiness-coach.ts",
+      "language": "typescript",
+      "sizeLines": 98,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prompts/recruiter-comm.ts",
+      "language": "typescript",
+      "sizeLines": 93,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/prompts/resume-evidence.ts",
+      "language": "typescript",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/readiness-coach.ts",
+      "language": "typescript",
+      "sizeLines": 274,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/recruiter-comm.ts",
+      "language": "typescript",
+      "sizeLines": 288,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/agents/resume-evidence.ts",
+      "language": "typescript",
+      "sizeLines": 238,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/executors/delegate_to_specialist.ts",
+      "language": "typescript",
+      "sizeLines": 91,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/executors/draft_recruiter_reply.ts",
+      "language": "typescript",
+      "sizeLines": 91,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/executors/index.ts",
+      "language": "typescript",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/executors/propose_opportunity_create.ts",
+      "language": "typescript",
+      "sizeLines": 67,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/executors/rewrite_resume_bullet.ts",
+      "language": "typescript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/pdf/template.tsx",
+      "language": "typescript",
+      "sizeLines": 374,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/pipeline.ts",
+      "language": "typescript",
+      "sizeLines": 542,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/questions.ts",
+      "language": "typescript",
+      "sizeLines": 339,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/rag/analysis.ts",
+      "language": "typescript",
+      "sizeLines": 938,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/rag/extraction.ts",
+      "language": "typescript",
+      "sizeLines": 203,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/rag/resource-bank.ts",
+      "language": "typescript",
+      "sizeLines": 703,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/rag/retrieval.ts",
+      "language": "typescript",
+      "sizeLines": 334,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/rag/validation.ts",
+      "language": "typescript",
+      "sizeLines": 316,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/archetype.ts",
+      "language": "typescript",
+      "sizeLines": 216,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/cognitive.ts",
+      "language": "typescript",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/company-difficulty.ts",
+      "language": "typescript",
+      "sizeLines": 759,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/competency-heatmap.ts",
+      "language": "typescript",
+      "sizeLines": 725,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/engine.ts",
+      "language": "typescript",
+      "sizeLines": 238,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/evidence.ts",
+      "language": "typescript",
+      "sizeLines": 123,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/forecast.ts",
+      "language": "typescript",
+      "sizeLines": 216,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/hirezone.ts",
+      "language": "typescript",
+      "sizeLines": 176,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/pool-percentile.ts",
+      "language": "typescript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/practice.ts",
+      "language": "typescript",
+      "sizeLines": 565,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/prior-employment.ts",
+      "language": "typescript",
+      "sizeLines": 168,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/studyplan.ts",
+      "language": "typescript",
+      "sizeLines": 478,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/server/scoring/trajectory.ts",
+      "language": "typescript",
+      "sizeLines": 219,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/types/index.ts",
+      "language": "typescript",
+      "sizeLines": 1424,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tsconfig.json",
+      "language": "json",
+      "sizeLines": 34,
+      "fileCategory": "config"
+    },
+    {
+      "path": "vercel.json",
+      "language": "json",
+      "sizeLines": 24,
+      "fileCategory": "config"
+    }
+  ],
+  "totalFiles": 370,
+  "filteredByIgnore": 313,
+  "estimatedComplexity": "large",
+  "importMap": {
+    ".github/workflows/executor-cron.yml": [],
+    ".husky/pre-commit": [],
+    ".mcp.json": [],
+    ".prettierignore": [],
+    ".understand-anything/.understandignore": [],
+    ".understand-anything/config.json": [],
+    ".vercelignore": [],
+    "agent_docs/agentic-tool-improvements.md": [],
+    "agent_docs/AGENTS.md": [],
+    "agent_docs/aha-moment-optimization-research.md": [],
+    "agent_docs/ai-agent-implementation-strategy.md": [],
+    "agent_docs/CAREER-ADVISOR-PROMPT.md": [],
+    "agent_docs/claude-code-agentic-platform-workflow.md": [],
+    "agent_docs/CLAUDE.md": [],
+    "agent_docs/code_patterns.md": [],
+    "agent_docs/codebase-changes-for-agentic-application.md": [],
+    "agent_docs/company-agent-command-center.md": [],
+    "agent_docs/credibility_playbook.md": [],
+    "agent_docs/google-oauth-prod-wiring.md": [],
+    "agent_docs/InterviewProof_Credibility_Playbook.md": [],
+    "agent_docs/organic-growth-implementation-plan.md": [],
+    "agent_docs/owl-code.md": [],
+    "agent_docs/plan.md": [],
+    "agent_docs/product_requirements.md": [],
+    "agent_docs/project_brief.md": [],
+    "agent_docs/tech_stack.md": [],
+    "agent_docs/testing.md": [],
+    "e2e/agent-actions.spec.ts": [],
+    "e2e/auth.setup.ts": [],
+    "e2e/coach-tab.spec.ts": [],
+    "e2e/m4-practice-and-tasks.spec.ts": [],
+    "eslint.config.mjs": [],
+    "middleware.ts": [],
+    "next.config.ts": [],
+    "package.json": [],
+    "playwright.config.ts": [],
+    "postcss.config.mjs": [],
+    "README.md": [],
+    "src/app/about/page.tsx": [],
+    "src/app/account/page.tsx": [
+      "src/types/index.ts"
+    ],
+    "src/app/admin/command-center/_action-copy.ts": [
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/_approvals.tsx": [
+      "src/app/admin/command-center/_action-copy.ts",
+      "src/app/admin/command-center/_markdown.tsx",
+      "src/app/admin/command-center/_primitives.tsx",
+      "src/app/admin/command-center/agents.ts",
+      "src/app/admin/command-center/TaskKanban.tsx",
+      "src/lib/relative-time.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/_markdown.tsx": [],
+    "src/app/admin/command-center/_primitives.tsx": [
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/_section-frame.tsx": [],
+    "src/app/admin/command-center/agent-drawer/agent-skill-catalog.ts": [
+      "src/app/admin/command-center/agent-drawer/types.ts"
+    ],
+    "src/app/admin/command-center/agent-drawer/AgentDrawer.tsx": [
+      "src/app/admin/command-center/agent-drawer/AttachmentTray.tsx",
+      "src/app/admin/command-center/agent-drawer/Composer.tsx",
+      "src/app/admin/command-center/agent-drawer/GuardrailsCard.tsx",
+      "src/app/admin/command-center/agent-drawer/IdentityStrip.tsx",
+      "src/app/admin/command-center/agent-drawer/MessageList.tsx",
+      "src/app/admin/command-center/agent-drawer/SkillsPanel.tsx",
+      "src/app/admin/command-center/agent-drawer/types.ts",
+      "src/app/admin/command-center/agent-drawer/useAgentStream.ts",
+      "src/app/admin/command-center/agents.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/agent-drawer/AttachmentChip.tsx": [
+      "src/app/admin/command-center/agent-drawer/types.ts"
+    ],
+    "src/app/admin/command-center/agent-drawer/AttachmentTray.tsx": [
+      "src/app/admin/command-center/agent-drawer/AttachmentChip.tsx",
+      "src/app/admin/command-center/agent-drawer/types.ts"
+    ],
+    "src/app/admin/command-center/agent-drawer/Composer.tsx": [],
+    "src/app/admin/command-center/agent-drawer/GuardrailsCard.tsx": [
+      "src/app/admin/command-center/agents.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/agent-drawer/IdentityStrip.tsx": [
+      "src/app/admin/command-center/agent-drawer/agent-skill-catalog.ts",
+      "src/app/admin/command-center/agent-drawer/GuardrailsCard.tsx",
+      "src/app/admin/command-center/agents.ts",
+      "src/server/agents/company/agent-models.ts",
+      "src/server/agents/company/memory-topics.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/agent-drawer/MessageBubble.tsx": [
+      "src/app/admin/command-center/_markdown.tsx",
+      "src/app/admin/command-center/agent-drawer/ToolCallCard.tsx",
+      "src/app/admin/command-center/agent-drawer/types.ts"
+    ],
+    "src/app/admin/command-center/agent-drawer/MessageList.tsx": [
+      "src/app/admin/command-center/agent-drawer/MessageBubble.tsx",
+      "src/app/admin/command-center/agent-drawer/types.ts"
+    ],
+    "src/app/admin/command-center/agent-drawer/SkillIcon.tsx": [],
+    "src/app/admin/command-center/agent-drawer/SkillsPanel.tsx": [
+      "src/app/admin/command-center/agent-drawer/agent-skill-catalog.ts",
+      "src/app/admin/command-center/agent-drawer/SkillIcon.tsx",
+      "src/app/admin/command-center/agent-drawer/types.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/agent-drawer/ToolCallCard.tsx": [
+      "src/app/admin/command-center/agent-drawer/agent-skill-catalog.ts",
+      "src/app/admin/command-center/agent-drawer/types.ts",
+      "src/app/admin/command-center/artifacts/index.tsx"
+    ],
+    "src/app/admin/command-center/agent-drawer/types.ts": [
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/agent-drawer/useAgentStream.ts": [
+      "src/app/admin/command-center/agent-drawer/types.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/agents.ts": [
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/artifacts/index.tsx": [
+      "src/app/admin/command-center/artifacts/ListCard.tsx",
+      "src/app/admin/command-center/artifacts/MetricsCard.tsx",
+      "src/app/admin/command-center/artifacts/TicketsCard.tsx"
+    ],
+    "src/app/admin/command-center/artifacts/ListCard.tsx": [],
+    "src/app/admin/command-center/artifacts/MetricsCard.tsx": [],
+    "src/app/admin/command-center/artifacts/TicketsCard.tsx": [
+      "src/app/admin/command-center/agents.ts",
+      "src/app/admin/command-center/TaskKanban.tsx",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/AuditTimeline.tsx": [
+      "src/app/admin/command-center/_action-copy.ts",
+      "src/app/admin/command-center/_primitives.tsx",
+      "src/app/admin/command-center/agents.ts",
+      "src/lib/relative-time.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/CeoChatWidget.tsx": [],
+    "src/app/admin/command-center/CommandCenterClient.tsx": [
+      "src/app/admin/command-center/_approvals.tsx",
+      "src/app/admin/command-center/_section-frame.tsx",
+      "src/app/admin/command-center/agent-drawer/AgentDrawer.tsx",
+      "src/app/admin/command-center/agents.ts",
+      "src/app/admin/command-center/artifacts/index.tsx",
+      "src/app/admin/command-center/AuditTimeline.tsx",
+      "src/app/admin/command-center/CeoChatWidget.tsx",
+      "src/app/admin/command-center/DashboardHero.tsx",
+      "src/app/admin/command-center/DecisionsStrip.tsx",
+      "src/app/admin/command-center/HeroApprovalCard.tsx",
+      "src/app/admin/command-center/IdeasTab.tsx",
+      "src/app/admin/command-center/InboxTab.tsx",
+      "src/app/admin/command-center/MissionStatusBar.tsx",
+      "src/app/admin/command-center/OrgChartCard.tsx",
+      "src/app/admin/command-center/RejectActionDialog.tsx",
+      "src/app/admin/command-center/RoadmapStatusCard.tsx",
+      "src/app/admin/command-center/TaskKanban.tsx",
+      "src/lib/relative-time.ts",
+      "src/server/agents/company/heartbeats.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/DashboardHero.tsx": [
+      "src/app/admin/command-center/_primitives.tsx",
+      "src/lib/relative-time.ts"
+    ],
+    "src/app/admin/command-center/DecisionsStrip.tsx": [
+      "src/lib/relative-time.ts"
+    ],
+    "src/app/admin/command-center/HeroApprovalCard.tsx": [
+      "src/app/admin/command-center/_approvals.tsx",
+      "src/app/admin/command-center/_primitives.tsx",
+      "src/app/admin/command-center/agents.ts",
+      "src/lib/relative-time.ts"
+    ],
+    "src/app/admin/command-center/ideas/[id]/IdeaActionsList.tsx": [
+      "src/app/admin/command-center/_action-copy.ts",
+      "src/app/admin/command-center/agents.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/ideas/[id]/page.tsx": [
+      "src/app/admin/command-center/ideas/[id]/IdeaActionsList.tsx",
+      "src/app/admin/command-center/ideas/[id]/TriageTranscript.tsx",
+      "src/lib/admin.ts",
+      "src/lib/relative-time.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/ideas/[id]/TriageTranscript.tsx": [
+      "src/app/admin/command-center/_markdown.tsx"
+    ],
+    "src/app/admin/command-center/ideas/page.tsx": [
+      "src/lib/admin.ts",
+      "src/lib/relative-time.ts"
+    ],
+    "src/app/admin/command-center/IdeasTab.tsx": [
+      "src/lib/relative-time.ts"
+    ],
+    "src/app/admin/command-center/InboxFilters.tsx": [
+      "src/app/admin/command-center/_primitives.tsx",
+      "src/app/admin/command-center/agents.ts",
+      "src/app/admin/command-center/useInboxQuery.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/InboxGroup.tsx": [
+      "src/app/admin/command-center/_approvals.tsx",
+      "src/app/admin/command-center/agents.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/InboxTab.tsx": [
+      "src/app/admin/command-center/_approvals.tsx",
+      "src/app/admin/command-center/agents.ts",
+      "src/app/admin/command-center/InboxFilters.tsx",
+      "src/app/admin/command-center/InboxGroup.tsx",
+      "src/app/admin/command-center/useInboxQuery.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/MissionStatusBar.tsx": [],
+    "src/app/admin/command-center/OrgChartCard.tsx": [
+      "src/app/admin/command-center/agents.ts",
+      "src/server/agents/company/heartbeats.ts",
+      "src/server/agents/company/org.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/page.tsx": [
+      "src/app/admin/command-center/CommandCenterClient.tsx",
+      "src/lib/admin.ts",
+      "src/server/agents/company/company-metrics.ts",
+      "src/server/agents/company/heartbeats.ts",
+      "src/server/agents/company/on-visit.ts",
+      "src/server/agents/company/spend.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/RejectActionDialog.tsx": [
+      "src/app/admin/command-center/_approvals.tsx"
+    ],
+    "src/app/admin/command-center/RoadmapStatusCard.tsx": [],
+    "src/app/admin/command-center/TaskDetailDialog.tsx": [
+      "src/app/admin/command-center/_markdown.tsx",
+      "src/app/admin/command-center/agents.ts",
+      "src/app/admin/command-center/TaskKanban.tsx",
+      "src/lib/relative-time.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/TaskKanban.tsx": [
+      "src/app/admin/command-center/agents.ts",
+      "src/app/admin/command-center/TaskDetailDialog.tsx",
+      "src/lib/relative-time.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/admin/command-center/useInboxQuery.ts": [
+      "src/app/admin/command-center/_approvals.tsx",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/ambassadors/page.tsx": [],
+    "src/app/api/account/linked-accounts/[provider]/route.ts": [],
+    "src/app/api/account/linked-accounts/route.ts": [],
+    "src/app/api/account/route.ts": [],
+    "src/app/api/admin/company-agent/actions/[id]/route.ts": [
+      "src/lib/admin.ts",
+      "src/server/agents/company/action-executors/index.ts",
+      "src/server/agents/company/ceo-orchestrator.ts",
+      "src/server/agents/company/company-actions.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/api/admin/company-agent/actions/route.ts": [
+      "src/lib/admin.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/api/admin/company-agent/audit-timeline/route.ts": [
+      "src/lib/admin.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/api/admin/company-agent/brief/route.ts": [
+      "src/lib/admin.ts",
+      "src/server/agents/company/company-metrics.ts",
+      "src/server/agents/company/heartbeats.ts",
+      "src/server/agents/company/spend.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/api/admin/company-agent/guardrails/route.ts": [
+      "src/lib/admin.ts",
+      "src/server/agents/company/guardrails-spend.ts",
+      "src/server/agents/company/guardrails.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/api/admin/company-agent/memory/route.ts": [
+      "src/lib/admin.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/api/admin/company-agent/message/route.ts": [
+      "src/lib/admin.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/company/ceo-orchestrator.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/api/admin/company-agent/metrics/route.ts": [
+      "src/lib/admin.ts",
+      "src/server/agents/company/company-metrics.ts"
+    ],
+    "src/app/api/admin/company-agent/roadmap-status/route.ts": [
+      "src/lib/admin.ts"
+    ],
+    "src/app/api/admin/company-agent/sessions/[id]/messages/route.ts": [
+      "src/lib/admin.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/api/admin/company-agent/sessions/route.ts": [
+      "src/lib/admin.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/api/admin/company-agent/upload/route.ts": [
+      "src/lib/admin.ts",
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/admin/company-decisions/route.ts": [
+      "src/lib/admin.ts"
+    ],
+    "src/app/api/admin/company-tasks/route.ts": [
+      "src/lib/admin.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/api/agent/actions/[id]/route.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/agent/actions/route.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/agent/answer-feedback/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/answer-feedback.ts",
+      "src/server/agents/context-loader.ts"
+    ],
+    "src/app/api/agent/application-materials/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/application-materials.ts",
+      "src/server/agents/context-loader.ts"
+    ],
+    "src/app/api/agent/chat/stream/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/chat.ts",
+      "src/server/agents/context-loader.ts"
+    ],
+    "src/app/api/agent/company-research/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/company-research.ts",
+      "src/server/agents/context-loader.ts"
+    ],
+    "src/app/api/agent/debrief/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/debrief.ts"
+    ],
+    "src/app/api/agent/memory/route.ts": [
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/agent/mock-interview/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/mock-interview.ts"
+    ],
+    "src/app/api/agent/opportunity-tracker/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/opportunity-tracker.ts"
+    ],
+    "src/app/api/agent/orchestrator/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/prep-orchestrator.ts"
+    ],
+    "src/app/api/agent/prep-plan/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/prep-plan.ts"
+    ],
+    "src/app/api/agent/readiness-coach/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/readiness-coach.ts"
+    ],
+    "src/app/api/agent/recruiter-comm/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/recruiter-comm.ts"
+    ],
+    "src/app/api/agent/resume-evidence/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/resume-evidence.ts"
+    ],
+    "src/app/api/agent/sessions/[id]/messages/route.ts": [
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/agent/sessions/[id]/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/agent/sessions/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/ambassadors/apply/route.ts": [
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/auth/google/callback/route.ts": [
+      "src/lib/linked-accounts/crypto.ts",
+      "src/lib/linked-accounts/google.ts"
+    ],
+    "src/app/api/auth/google/start/route.ts": [
+      "src/lib/linked-accounts/google.ts"
+    ],
+    "src/app/api/ceo/chat/route.ts": [
+      "src/lib/admin.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/company/ceo-context.ts",
+      "src/server/agents/company/org.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/api/ceo/idea/[id]/actions/route.ts": [
+      "src/lib/admin.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/app/api/ceo/idea/[id]/status/route.ts": [
+      "src/lib/admin.ts"
+    ],
+    "src/app/api/ceo/idea/route.ts": [
+      "src/lib/security.ts",
+      "src/server/agents/company/ceo-idea-triage.ts"
+    ],
+    "src/app/api/ceo/ideas/route.ts": [
+      "src/lib/admin.ts"
+    ],
+    "src/app/api/checkout/credits/route.ts": [
+      "src/lib/stripe.ts"
+    ],
+    "src/app/api/checkout/route.ts": [
+      "src/lib/stripe.ts"
+    ],
+    "src/app/api/credits/history/route.ts": [],
+    "src/app/api/cron/cleanup-stale-actions/route.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/security.ts"
+    ],
+    "src/app/api/cron/clear-spend-pause/route.ts": [
+      "src/lib/security.ts"
+    ],
+    "src/app/api/cron/company-agent/[role]/route.ts": [
+      "src/lib/security.ts",
+      "src/server/agents/company/dispatcher.ts"
+    ],
+    "src/app/api/cron/copilot-digest/route.ts": [
+      "src/lib/agent/types.ts",
+      "src/lib/security.ts",
+      "src/server/agents/prep-orchestrator.ts"
+    ],
+    "src/app/api/cron/execute-approved-actions/route.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/security.ts",
+      "src/server/executors/index.ts"
+    ],
+    "src/app/api/cron/feedback-emails/route.ts": [
+      "src/lib/audit.ts",
+      "src/lib/feedback-emails.ts",
+      "src/lib/resend.ts",
+      "src/lib/security.ts"
+    ],
+    "src/app/api/cron/opportunity-ingest/route.ts": [
+      "src/lib/agent/types.ts",
+      "src/lib/security.ts"
+    ],
+    "src/app/api/e2e/seed-session/route.ts": [],
+    "src/app/api/feedback/route.ts": [
+      "src/lib/audit.ts",
+      "src/lib/feedback-emails.ts",
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/insights/route.ts": [
+      "src/types/index.ts"
+    ],
+    "src/app/api/jobs/search/route.ts": [
+      "src/lib/adzuna.ts",
+      "src/lib/jsearch.ts",
+      "src/lib/rate-limit.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/api/me/latest-report/route.ts": [],
+    "src/app/api/newsletter/subscribe/route.ts": [
+      "src/lib/rate-limit.ts",
+      "src/lib/waitlist.ts"
+    ],
+    "src/app/api/notifications/[id]/route.ts": [],
+    "src/app/api/notifications/mark-all-read/route.ts": [],
+    "src/app/api/notifications/route.ts": [
+      "src/types/index.ts"
+    ],
+    "src/app/api/onboarding/aha-insights/route.ts": [
+      "src/lib/openai.ts",
+      "src/lib/rate-limit.ts",
+      "src/lib/resume-signals.ts",
+      "src/server/rag/retrieval.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/api/onboarding/benchmarks/route.ts": [
+      "src/lib/rate-limit.ts",
+      "src/server/scoring/competency-heatmap.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/api/opportunities/[id]/route.ts": [
+      "src/lib/opportunities.ts",
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/opportunities/route.ts": [
+      "src/lib/opportunities.ts",
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/outbox/route.ts": [
+      "src/lib/agent/types.ts"
+    ],
+    "src/app/api/parse-pdf/route.ts": [
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/profile/resume-pdf/route.ts": [],
+    "src/app/api/profile/resume-upload/route.ts": [
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/profile/route.ts": [
+      "src/types/index.ts"
+    ],
+    "src/app/api/referral/route.ts": [
+      "src/lib/credits.ts"
+    ],
+    "src/app/api/report/[id]/pdf/route.ts": [
+      "src/server/pdf/template.tsx",
+      "src/types/index.ts"
+    ],
+    "src/app/api/report/[id]/practice-answers/route.ts": [
+      "src/lib/rate-limit.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/api/report/[id]/practice-progress/route.ts": [
+      "src/lib/rate-limit.ts",
+      "src/server/agents/practice-progress.ts"
+    ],
+    "src/app/api/report/[id]/practice-session/route.ts": [
+      "src/lib/rate-limit.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/api/report/[id]/prep-plan-tasks/route.ts": [
+      "src/lib/prep-plan-tasks.ts",
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/report/[id]/questions/best-answer/route.ts": [
+      "src/lib/rate-limit.ts",
+      "src/server/questions.ts"
+    ],
+    "src/app/api/report/[id]/questions/feedback/route.ts": [
+      "src/lib/rate-limit.ts",
+      "src/server/questions.ts"
+    ],
+    "src/app/api/report/[id]/questions/generate/route.ts": [
+      "src/lib/rate-limit.ts",
+      "src/server/questions.ts"
+    ],
+    "src/app/api/report/[id]/route.ts": [],
+    "src/app/api/report/[id]/share/route.ts": [
+      "src/lib/audit.ts"
+    ],
+    "src/app/api/report/analyze/complete/route.ts": [
+      "src/lib/credits.ts",
+      "src/server/pipeline.ts",
+      "src/server/questions.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/api/report/analyze/llm/route.ts": [
+      "src/server/pipeline.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/api/report/analyze/prepare/route.ts": [
+      "src/server/pipeline.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/api/report/analyze/route.ts": [
+      "src/lib/audit.ts",
+      "src/lib/credits.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/pipeline.ts",
+      "src/server/questions.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/api/report/create/route.ts": [
+      "src/lib/rate-limit.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/api/report/rerun/route.ts": [
+      "src/lib/audit.ts",
+      "src/lib/rate-limit.ts",
+      "src/server/pipeline.ts",
+      "src/server/questions.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/api/report/shared/[token]/route.ts": [
+      "src/lib/rate-limit.ts"
+    ],
+    "src/app/api/report/unlock/route.ts": [
+      "src/lib/audit.ts",
+      "src/lib/credits.ts",
+      "src/lib/stripe.ts"
+    ],
+    "src/app/api/waitlist/confirm/route.ts": [
+      "src/lib/resend.ts",
+      "src/lib/waitlist-emails.ts",
+      "src/lib/waitlist.ts"
+    ],
+    "src/app/api/waitlist/count/route.ts": [],
+    "src/app/api/waitlist/join/route.ts": [
+      "src/lib/resend.ts",
+      "src/lib/waitlist-emails.ts",
+      "src/lib/waitlist.ts"
+    ],
+    "src/app/api/waitlist/status/route.ts": [
+      "src/lib/waitlist.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/api/webhook/stripe/route.ts": [
+      "src/lib/audit.ts",
+      "src/lib/credits.ts",
+      "src/lib/stripe.ts"
+    ],
+    "src/app/apple-icon.tsx": [],
+    "src/app/auth/callback/route.ts": [
+      "src/lib/credits.ts"
+    ],
+    "src/app/auth/login/page.tsx": [],
+    "src/app/blog/[slug]/page.tsx": [
+      "src/app/blog/lib.ts"
+    ],
+    "src/app/blog/lib.ts": [],
+    "src/app/blog/page.tsx": [
+      "src/app/blog/lib.ts"
+    ],
+    "src/app/case-studies/page.tsx": [],
+    "src/app/contact/page.tsx": [],
+    "src/app/dashboard/page.tsx": [
+      "src/types/index.ts"
+    ],
+    "src/app/feedback/[reportId]/page.tsx": [],
+    "src/app/globals.css": [],
+    "src/app/icon.tsx": [],
+    "src/app/interview-prep/[role]/page.tsx": [],
+    "src/app/interview-questions/[company]/page.tsx": [],
+    "src/app/interview/live/page.tsx": [
+      "src/lib/api.ts"
+    ],
+    "src/app/layout.tsx": [
+      "src/app/globals.css",
+      "src/lib/jsonld.ts"
+    ],
+    "src/app/methodology/page.tsx": [],
+    "src/app/new/page.tsx": [
+      "src/lib/api.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/onboarding/layout.tsx": [],
+    "src/app/onboarding/page.tsx": [
+      "src/lib/onboarding-scoring.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/opengraph-image.tsx": [],
+    "src/app/opportunities/page.tsx": [
+      "src/lib/opportunities.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/outbox/page.tsx": [
+      "src/types/index.ts"
+    ],
+    "src/app/page.tsx": [
+      "src/types/index.ts"
+    ],
+    "src/app/privacy/page.tsx": [],
+    "src/app/r/[id]/full/page.tsx": [
+      "src/lib/api.ts",
+      "src/types/index.ts"
+    ],
+    "src/app/r/[id]/page.tsx": [
+      "src/lib/api.ts"
+    ],
+    "src/app/risk-simulation/page.tsx": [
+      "src/types/index.ts"
+    ],
+    "src/app/robots.ts": [],
+    "src/app/s/[token]/opengraph-image.tsx": [],
+    "src/app/s/[token]/page.tsx": [
+      "src/lib/api.ts"
+    ],
+    "src/app/sitemap.ts": [],
+    "src/app/study-intelligence/page.tsx": [
+      "src/types/index.ts"
+    ],
+    "src/app/terms/page.tsx": [],
+    "src/app/twitter-image.tsx": [],
+    "src/app/waitlist/confirm/page.tsx": [],
+    "src/app/wallet/page.tsx": [],
+    "src/lib/admin.ts": [],
+    "src/lib/adzuna.ts": [
+      "src/lib/location-data.ts",
+      "src/lib/seniority.ts",
+      "src/types/index.ts"
+    ],
+    "src/lib/agent/actions.ts": [
+      "src/lib/agent/types.ts"
+    ],
+    "src/lib/agent/audit.ts": [],
+    "src/lib/agent/company-cache.ts": [],
+    "src/lib/agent/types.ts": [
+      "src/types/index.ts"
+    ],
+    "src/lib/anthropic-pricing.ts": [
+      "src/lib/anthropic.ts"
+    ],
+    "src/lib/anthropic.ts": [],
+    "src/lib/api.ts": [
+      "src/types/index.ts"
+    ],
+    "src/lib/audit.ts": [],
+    "src/lib/credits.ts": [],
+    "src/lib/feedback-emails.ts": [],
+    "src/lib/focus-area-pool.ts": [
+      "src/lib/resume-signals.ts",
+      "src/types/index.ts"
+    ],
+    "src/lib/format.ts": [],
+    "src/lib/highlight.ts": [],
+    "src/lib/insights.ts": [
+      "src/types/index.ts"
+    ],
+    "src/lib/jsearch.ts": [
+      "src/lib/location-data.ts",
+      "src/lib/seniority.ts",
+      "src/types/index.ts"
+    ],
+    "src/lib/jsonld.ts": [],
+    "src/lib/linked-accounts/crypto.ts": [],
+    "src/lib/linked-accounts/gmail.ts": [],
+    "src/lib/linked-accounts/google.ts": [],
+    "src/lib/linked-accounts/store.ts": [
+      "src/lib/linked-accounts/crypto.ts",
+      "src/lib/linked-accounts/google.ts"
+    ],
+    "src/lib/location-coordinates.ts": [],
+    "src/lib/location-data.ts": [],
+    "src/lib/onboarding-emotional-anchor.ts": [
+      "src/types/index.ts"
+    ],
+    "src/lib/onboarding-scoring.ts": [
+      "src/lib/focus-area-pool.ts",
+      "src/lib/resume-signals.ts",
+      "src/types/index.ts"
+    ],
+    "src/lib/onboarding-strength-acknowledgment.ts": [
+      "src/lib/resume-signals.ts",
+      "src/types/index.ts"
+    ],
+    "src/lib/onboarding-trajectory.ts": [
+      "src/lib/resume-signals.ts",
+      "src/types/index.ts"
+    ],
+    "src/lib/openai.ts": [],
+    "src/lib/opportunities.ts": [
+      "src/types/index.ts"
+    ],
+    "src/lib/prep-plan-tasks.ts": [
+      "src/types/index.ts"
+    ],
+    "src/lib/rate-limit.ts": [],
+    "src/lib/relative-time.ts": [],
+    "src/lib/resend.ts": [],
+    "src/lib/resume-signals.ts": [],
+    "src/lib/role-suggestions.ts": [
+      "src/types/index.ts"
+    ],
+    "src/lib/security.ts": [],
+    "src/lib/seniority.ts": [
+      "src/types/index.ts"
+    ],
+    "src/lib/stripe-config.ts": [],
+    "src/lib/stripe.ts": [],
+    "src/lib/utils.ts": [],
+    "src/lib/waitlist-emails.ts": [
+      "src/lib/waitlist.ts",
+      "src/types/index.ts"
+    ],
+    "src/lib/waitlist.ts": [
+      "src/types/index.ts"
+    ],
+    "src/server/agents/answer-feedback.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/prompts/answer-feedback.ts",
+      "src/server/questions.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/application-materials.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/prompts/application-materials.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/chat.ts": [
+      "src/lib/agent/audit.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/prompts/chat.ts"
+    ],
+    "src/server/agents/company-research.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/company-cache.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/prompts/company-research.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/company/action-executors/index.ts": [
+      "src/lib/anthropic.ts",
+      "src/server/agents/company/agent-models.ts",
+      "src/server/agents/company/company-metrics.ts",
+      "src/server/agents/company/types.ts",
+      "src/server/agents/company/voice.ts"
+    ],
+    "src/server/agents/company/agent-models.ts": [
+      "src/lib/anthropic.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/ceo-context.ts": [
+      "src/server/agents/company/director-context.ts",
+      "src/server/agents/company/org.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/ceo-idea-triage.ts": [
+      "src/server/agents/company/ceo-orchestrator.ts"
+    ],
+    "src/server/agents/company/ceo-orchestrator.ts": [
+      "src/server/agents/company/company-agent-runner.ts",
+      "src/server/agents/company/company-metrics.ts",
+      "src/server/agents/company/director-context.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/company-actions.ts": [
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/company-agent-prompts.ts": [
+      "src/server/agents/company/memory-topics.ts",
+      "src/server/agents/company/org.ts",
+      "src/server/agents/company/types.ts",
+      "src/server/agents/company/voice.ts"
+    ],
+    "src/server/agents/company/company-agent-runner.ts": [
+      "src/lib/anthropic.ts",
+      "src/server/agents/company/agent-models.ts",
+      "src/server/agents/company/company-agent-prompts.ts",
+      "src/server/agents/company/director-context.ts",
+      "src/server/agents/company/guardrails-spend.ts",
+      "src/server/agents/company/guardrails.ts",
+      "src/server/agents/company/memory-topics.ts",
+      "src/server/agents/company/skills/index.ts",
+      "src/server/agents/company/skills/router.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/company-agent-tools.ts": [],
+    "src/server/agents/company/company-metrics.ts": [
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/director-context.ts": [
+      "src/server/agents/company/ceo-context.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/director-engineering.ts": [
+      "src/server/agents/company/company-agent-runner.ts",
+      "src/server/agents/company/company-metrics.ts"
+    ],
+    "src/server/agents/company/director-finance.ts": [
+      "src/server/agents/company/company-agent-runner.ts",
+      "src/server/agents/company/company-metrics.ts"
+    ],
+    "src/server/agents/company/director-marketing.ts": [
+      "src/server/agents/company/company-agent-runner.ts",
+      "src/server/agents/company/company-metrics.ts"
+    ],
+    "src/server/agents/company/dispatcher.ts": [
+      "src/server/agents/company/company-agent-runner.ts",
+      "src/server/agents/company/company-metrics.ts",
+      "src/server/agents/company/director-context.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/executive-assistant.ts": [
+      "src/server/agents/company/company-agent-runner.ts",
+      "src/server/agents/company/company-metrics.ts"
+    ],
+    "src/server/agents/company/guardrails-spend.ts": [
+      "src/lib/anthropic-pricing.ts",
+      "src/server/agents/company/agent-models.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/guardrails.ts": [
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/heartbeats.ts": [
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/memory-topics.ts": [],
+    "src/server/agents/company/on-visit.ts": [
+      "src/server/agents/company/dispatcher.ts"
+    ],
+    "src/server/agents/company/org.ts": [
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/skills/ceo_orchestrator/consult_director.ts": [
+      "src/server/agents/company/skills/types.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/skills/ceo_orchestrator/delegate_task.ts": [
+      "src/server/agents/company/skills/types.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/skills/director_engineering/draft_engineering_spec.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_engineering/fetch_deploy_history.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_engineering/fetch_open_incidents.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_engineering/fetch_uptime.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_engineering/query_codebase_summary.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_finance/draft_finance_memo.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_finance/fetch_burn_breakdown.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_finance/fetch_revenue_snapshot.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_finance/fetch_runway.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_finance/model_pricing_change.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_marketing/draft_landing_copy.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_marketing/draft_social_post.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_marketing/fetch_funnel_metrics.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_marketing/query_brand_guidelines.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/director_marketing/search_competitor_landing_pages.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/executive_assistant/schedule_followup.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/executive_assistant/search_emails.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/executive_assistant/summarize_threads.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/index.ts": [
+      "src/server/agents/company/skills/ceo_orchestrator/consult_director.ts",
+      "src/server/agents/company/skills/ceo_orchestrator/delegate_task.ts",
+      "src/server/agents/company/skills/director_engineering/draft_engineering_spec.ts",
+      "src/server/agents/company/skills/director_engineering/fetch_deploy_history.ts",
+      "src/server/agents/company/skills/director_engineering/fetch_open_incidents.ts",
+      "src/server/agents/company/skills/director_engineering/fetch_uptime.ts",
+      "src/server/agents/company/skills/director_engineering/query_codebase_summary.ts",
+      "src/server/agents/company/skills/director_finance/draft_finance_memo.ts",
+      "src/server/agents/company/skills/director_finance/fetch_burn_breakdown.ts",
+      "src/server/agents/company/skills/director_finance/fetch_revenue_snapshot.ts",
+      "src/server/agents/company/skills/director_finance/fetch_runway.ts",
+      "src/server/agents/company/skills/director_finance/model_pricing_change.ts",
+      "src/server/agents/company/skills/director_marketing/draft_landing_copy.ts",
+      "src/server/agents/company/skills/director_marketing/draft_social_post.ts",
+      "src/server/agents/company/skills/director_marketing/fetch_funnel_metrics.ts",
+      "src/server/agents/company/skills/director_marketing/query_brand_guidelines.ts",
+      "src/server/agents/company/skills/director_marketing/search_competitor_landing_pages.ts",
+      "src/server/agents/company/skills/executive_assistant/schedule_followup.ts",
+      "src/server/agents/company/skills/executive_assistant/search_emails.ts",
+      "src/server/agents/company/skills/executive_assistant/summarize_threads.ts",
+      "src/server/agents/company/skills/shared/escalate_to_ceo.ts",
+      "src/server/agents/company/skills/shared/file_ticket.ts",
+      "src/server/agents/company/skills/shared/propose_roadmap_row.ts",
+      "src/server/agents/company/skills/shared/remember.ts",
+      "src/server/agents/company/skills/types.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/skills/router.ts": [
+      "src/server/agents/company/action-executors/index.ts",
+      "src/server/agents/company/guardrails.ts",
+      "src/server/agents/company/skills/index.ts",
+      "src/server/agents/company/skills/types.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/skills/shared/escalate_to_ceo.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/shared/file_ticket.ts": [
+      "src/server/agents/company/skills/types.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/skills/shared/propose_roadmap_row.ts": [
+      "src/server/agents/company/skills/types.ts"
+    ],
+    "src/server/agents/company/skills/shared/remember.ts": [
+      "src/server/agents/company/memory-topics.ts",
+      "src/server/agents/company/skills/types.ts",
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/skills/types.ts": [
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/company/spend.ts": [],
+    "src/server/agents/company/types.ts": [],
+    "src/server/agents/company/voice.ts": [
+      "src/server/agents/company/types.ts"
+    ],
+    "src/server/agents/context-loader.ts": [
+      "src/lib/agent/types.ts",
+      "src/server/agents/practice-progress.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/debrief.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/delegations.ts",
+      "src/server/agents/prompts/debrief.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/delegations.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/types.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/mock-interview.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/prompts/mock-interview.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/opportunity-tracker.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/prompts/opportunity-tracker.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/practice-progress.ts": [
+      "src/types/index.ts"
+    ],
+    "src/server/agents/prep-orchestrator.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/prompts/prep-orchestrator.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/prep-plan.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/prompts/prep-plan.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/prompts/answer-feedback.ts": [
+      "src/server/agents/context-loader.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/prompts/application-materials.ts": [
+      "src/server/agents/context-loader.ts"
+    ],
+    "src/server/agents/prompts/chat.ts": [
+      "src/server/agents/context-loader.ts"
+    ],
+    "src/server/agents/prompts/company-research.ts": [
+      "src/server/agents/context-loader.ts"
+    ],
+    "src/server/agents/prompts/debrief.ts": [
+      "src/server/agents/context-loader.ts"
+    ],
+    "src/server/agents/prompts/mock-interview.ts": [
+      "src/server/agents/context-loader.ts"
+    ],
+    "src/server/agents/prompts/opportunity-tracker.ts": [
+      "src/server/agents/context-loader.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/prompts/prep-orchestrator.ts": [
+      "src/lib/agent/types.ts",
+      "src/server/agents/context-loader.ts"
+    ],
+    "src/server/agents/prompts/prep-plan.ts": [
+      "src/server/agents/context-loader.ts"
+    ],
+    "src/server/agents/prompts/readiness-coach.ts": [
+      "src/server/agents/context-loader.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/prompts/recruiter-comm.ts": [
+      "src/server/agents/context-loader.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/prompts/resume-evidence.ts": [
+      "src/server/agents/context-loader.ts"
+    ],
+    "src/server/agents/readiness-coach.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/agent/types.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/delegations.ts",
+      "src/server/agents/prompts/readiness-coach.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/recruiter-comm.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/prompts/recruiter-comm.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/agents/resume-evidence.ts": [
+      "src/lib/agent/actions.ts",
+      "src/lib/agent/audit.ts",
+      "src/lib/anthropic.ts",
+      "src/server/agents/context-loader.ts",
+      "src/server/agents/prompts/resume-evidence.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/executors/delegate_to_specialist.ts": [
+      "src/server/executors/index.ts"
+    ],
+    "src/server/executors/draft_recruiter_reply.ts": [
+      "src/lib/linked-accounts/gmail.ts",
+      "src/lib/linked-accounts/store.ts",
+      "src/server/executors/index.ts"
+    ],
+    "src/server/executors/index.ts": [
+      "src/lib/agent/types.ts",
+      "src/server/executors/delegate_to_specialist.ts",
+      "src/server/executors/draft_recruiter_reply.ts",
+      "src/server/executors/propose_opportunity_create.ts",
+      "src/server/executors/rewrite_resume_bullet.ts"
+    ],
+    "src/server/executors/propose_opportunity_create.ts": [
+      "src/server/executors/index.ts"
+    ],
+    "src/server/executors/rewrite_resume_bullet.ts": [
+      "src/server/executors/index.ts"
+    ],
+    "src/server/pdf/template.tsx": [
+      "src/lib/format.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/pipeline.ts": [
+      "src/server/rag/analysis.ts",
+      "src/server/rag/extraction.ts",
+      "src/server/rag/retrieval.ts",
+      "src/server/rag/validation.ts",
+      "src/server/scoring/engine.ts",
+      "src/server/scoring/studyplan.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/questions.ts": [
+      "src/lib/openai.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/rag/analysis.ts": [
+      "src/lib/openai.ts",
+      "src/server/rag/resource-bank.ts",
+      "src/server/rag/retrieval.ts",
+      "src/server/scoring/company-difficulty.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/rag/extraction.ts": [
+      "src/lib/openai.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/rag/resource-bank.ts": [
+      "src/types/index.ts"
+    ],
+    "src/server/rag/retrieval.ts": [
+      "src/lib/openai.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/rag/validation.ts": [
+      "src/server/rag/resource-bank.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/archetype.ts": [
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/cognitive.ts": [
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/company-difficulty.ts": [
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/competency-heatmap.ts": [
+      "src/server/scoring/company-difficulty.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/engine.ts": [
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/evidence.ts": [
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/forecast.ts": [
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/hirezone.ts": [
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/pool-percentile.ts": [
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/practice.ts": [
+      "src/lib/format.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/prior-employment.ts": [
+      "src/server/scoring/company-difficulty.ts",
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/studyplan.ts": [
+      "src/types/index.ts"
+    ],
+    "src/server/scoring/trajectory.ts": [
+      "src/types/index.ts"
+    ],
+    "src/types/index.ts": [],
+    "tsconfig.json": [],
+    "vercel.json": []
+  }
+}
