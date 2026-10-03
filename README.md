@@ -1,3 +1,16 @@
+# InterviewProof (Legacy)
+
+> [!IMPORTANT]
+> **A completely new InterviewProof is in development.**
+>
+> This repository contains the original interview-readiness app. We're rebuilding InterviewProof from the ground up with a different product direction and architecture. The code and documentation here belong to the legacy version.
+
+**What's next:** An AI career operating system that learns how you work and puts your next move in motion.
+
+---
+
+## Legacy development reference
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
